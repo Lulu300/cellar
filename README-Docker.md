@@ -42,8 +42,10 @@ This guide runs Cellar with Docker Compose, for example on a home NAS.
    docker compose up -d
    ```
 
-   The image is public: pulling it needs no login. To build it yourself instead, see
-   [Building from source](#building-from-source).
+   The image is public: pulling it needs no login. If `docker compose pull` fails, for example
+   without Internet access, `docker compose up -d` tries to build the image instead, which fails
+   in this folder with `open Dockerfile: no such file or directory`: run the pull again first. To
+   build the image yourself instead, see [Building from source](#building-from-source).
 
 5. **Open the application** at the exact URL set in `ORIGIN` (port `3005` is mapped in
    `docker-compose.yml`), and choose an access code: see [Access code](#access-code).

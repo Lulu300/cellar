@@ -8,6 +8,7 @@
     import { Button } from '#lib/components/ui/button/index.js';
     import { Label } from '#lib/components/ui/label/index.js';
     import OptionSelect from '#lib/components/forms/OptionSelect.svelte';
+    import ScrollRegion from '#lib/components/admin/ScrollRegion.svelte';
     import { Badge } from '#lib/components/ui/badge/index.js';
     import { FileUp, X, ChevronUp, ChevronDown, FileArchive } from '@lucide/svelte';
     import { m } from '#lib/paraglide/messages.js';
@@ -159,7 +160,10 @@
                             {m['admin.csv_guide_description']()}
                         </p>
 
-                        <div class="space-y-3 max-h-80 overflow-y-auto">
+                        <ScrollRegion
+                            label={m['admin.csv_file_format_guide']()}
+                            class="space-y-3 max-h-80"
+                        >
                             {#each tables as config (config.table)}
                                 {@const texts = CSV_TABLE_TEXTS[config.table]}
                                 <div class="border rounded p-3 bg-muted/30">
@@ -182,12 +186,12 @@
                                             >
                                             {m['admin.csv_anywhere_in_name']()}
                                         </p>
-                                        <p class="text-xs text-muted-foreground/80">
+                                        <p class="text-xs text-muted-foreground">
                                             {m['admin.csv_examples']()}
-                                            <code class="bg-muted/50 px-1 rounded text-xs"
+                                            <code class="bg-muted px-1 rounded"
                                                 >{`${config.table}.csv`}</code
                                             >,
-                                            <code class="bg-muted/50 px-1 rounded text-xs"
+                                            <code class="bg-muted px-1 rounded"
                                                 >{`2024-${config.table}.csv`}</code
                                             >
                                         </p>
@@ -218,7 +222,7 @@
                                     </div>
                                 </div>
                             {/each}
-                        </div>
+                        </ScrollRegion>
 
                         <div class="text-xs text-muted-foreground bg-primary/10 p-3 rounded">
                             <strong>{m['admin.csv_note']()}</strong>

@@ -6,6 +6,7 @@
         DialogTitle
     } from '#lib/components/ui/dialog/index.js';
     import { Button } from '#lib/components/ui/button/index.js';
+    import ScrollRegion from '#lib/components/admin/ScrollRegion.svelte';
     import { FileArchive } from '@lucide/svelte';
     import { m } from '#lib/paraglide/messages.js';
     import type { ZipImportDTO } from '#lib/shared/dto.js';
@@ -44,6 +45,9 @@
         </DialogHeader>
 
         {#if zipImportResults}
+            {@const detailsTitle = m['admin.detailed_results_files_processed']({
+                count: zipImportResults.totalProcessed || zipImportResults.summary?.length || 0
+            })}
             <div class="space-y-4">
                 <!-- Summary -->
                 <div class="grid grid-cols-3 gap-2 sm:gap-4">
@@ -72,17 +76,10 @@
                 <!-- Detailed Results -->
                 <div class="border rounded-lg overflow-hidden">
                     <div class="bg-muted px-4 py-2 border-b">
-                        <h4 class="font-semibold">
-                            {m['admin.detailed_results_files_processed']({
-                                count:
-                                    zipImportResults.totalProcessed ||
-                                    zipImportResults.summary?.length ||
-                                    0
-                            })}
-                        </h4>
+                        <h4 class="font-semibold">{detailsTitle}</h4>
                     </div>
 
-                    <div class="max-h-96 overflow-y-auto">
+                    <ScrollRegion label={detailsTitle} class="max-h-96 rounded-none">
                         {#if zipImportResults.summary && zipImportResults.summary.length > 0}
                             <div class="divide-y">
                                 <!-- By position: the report can list a name twice. -->
@@ -137,7 +134,7 @@
                                 {m['admin.no_detailed_results_available']()}
                             </div>
                         {/if}
-                    </div>
+                    </ScrollRegion>
                 </div>
 
                 <!-- Overall Status Message -->

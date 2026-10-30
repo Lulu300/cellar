@@ -13,6 +13,7 @@
     import type { CsvImportDTO } from '#lib/shared/dto.js';
     import { rowProblemsText, skipReasonText } from '#lib/utils/import-problems.js';
     import { CSV_TABLE_TEXTS } from '#lib/components/admin/csv-tables.js';
+    import ScrollRegion from '#lib/components/admin/ScrollRegion.svelte';
 
     let {
         open = $bindable(false),
@@ -96,7 +97,10 @@
                     </div>
 
                     <!-- Results per table -->
-                    <div class="flex-1 overflow-y-auto space-y-3 pr-2">
+                    <ScrollRegion
+                        label={m['admin.csv_import_results']()}
+                        class="flex-1 space-y-3 pr-2"
+                    >
                         {#each csvImportResults.results as result (result.file)}
                             <div class="border rounded-lg p-3">
                                 <div class="flex items-center justify-between mb-2">
@@ -169,7 +173,12 @@
                                                 })}
                                             </p>
                                         {/if}
-                                        <div class="max-h-60 overflow-y-auto space-y-1 rounded p-2">
+                                        <ScrollRegion
+                                            label={m['admin.errors_count']({
+                                                count: result.failedImports
+                                            })}
+                                            class="max-h-60 space-y-1 p-2"
+                                        >
                                             {#each expandedErrors.has(result.file) ? result.errors : result.errors.slice(0, 5) as error (error.row)}
                                                 <div
                                                     class="text-xs bg-destructive/10 p-1.5 rounded break-words"
@@ -196,7 +205,7 @@
                                                     })}
                                                 </div>
                                             {/if}
-                                        </div>
+                                        </ScrollRegion>
                                     </div>
                                 {/if}
 
@@ -240,7 +249,12 @@
                                                 <strong>{m['admin.row_numbers']()}</strong>
                                                 {result.skipped.map((s) => s.row).join(', ')}
                                             </div>
-                                            <div class="max-h-40 overflow-y-auto space-y-1">
+                                            <ScrollRegion
+                                                label={m['admin.duplicates_skipped_count']({
+                                                    count: result.skippedImports
+                                                })}
+                                                class="max-h-40 space-y-1"
+                                            >
                                                 {#each expandedErrors.has(`skipped-${result.file}`) ? result.skipped : result.skipped.slice(0, 5) as skipped (skipped.row)}
                                                     <div
                                                         class="text-xs bg-warning/10 p-1.5 rounded break-words"
@@ -264,13 +278,13 @@
                                                         })}
                                                     </div>
                                                 {/if}
-                                            </div>
+                                            </ScrollRegion>
                                         </div>
                                     </div>
                                 {/if}
                             </div>
                         {/each}
-                    </div>
+                    </ScrollRegion>
                 </div>
             {/if}
         </div>

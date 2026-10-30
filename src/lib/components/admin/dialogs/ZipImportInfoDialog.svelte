@@ -6,6 +6,7 @@
         DialogTitle
     } from '#lib/components/ui/dialog/index.js';
     import { Button } from '#lib/components/ui/button/index.js';
+    import ScrollRegion from '#lib/components/admin/ScrollRegion.svelte';
     import { FileArchive, CircleAlert } from '@lucide/svelte';
     import { m } from '#lib/paraglide/messages.js';
 
@@ -28,15 +29,15 @@
 </script>
 
 <Dialog bind:open>
-    <DialogContent class="max-w-lg">
-        <DialogHeader>
+    <DialogContent class="max-w-lg max-h-[85vh] flex flex-col">
+        <DialogHeader class="flex-shrink-0">
             <DialogTitle class="flex items-center gap-2">
                 <FileArchive class="h-5 w-5 text-primary" />
                 {m['admin.import_images_from_zip']()}
             </DialogTitle>
         </DialogHeader>
 
-        <div class="space-y-4">
+        <ScrollRegion label={m['admin.import_images_from_zip']()} class="space-y-4 flex-1">
             <div class="bg-primary/10 border border-primary/30 rounded-lg p-4">
                 <h4 class="font-semibold text-foreground mb-2">
                     {m['admin.what_does_this_feature_do']()}
@@ -94,9 +95,9 @@
                     {@html m['admin.zip_import_use_case']({ imageName: '<code>imageName</code>' })}
                 </p>
             </div>
-        </div>
+        </ScrollRegion>
 
-        <div class="flex justify-end gap-2 pt-4 border-t">
+        <div class="flex justify-end gap-2 pt-4 border-t flex-shrink-0">
             <Button variant="outline" onclick={closeDialog}>{m['common.cancel']()}</Button>
             <Button onclick={proceedWithZipImport} class="bg-primary">
                 <FileArchive class="h-4 w-4 mr-2" />

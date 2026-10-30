@@ -88,11 +88,11 @@
 </script>
 
 <Dialog bind:open onOpenChange={(isOpen) => !isOpen && closeDialog()}>
-    <DialogContent class="max-w-2xl">
-        <DialogHeader>
+    <DialogContent class="max-w-2xl max-h-[85vh] flex flex-col">
+        <DialogHeader class="flex-shrink-0">
             <DialogTitle>{m['admin.export_to_csv_files']()}</DialogTitle>
         </DialogHeader>
-        <div class="space-y-6 py-4">
+        <div class="space-y-6 py-4 flex-1 overflow-y-auto">
             <div class="space-y-3">
                 <div class="flex items-center justify-between">
                     <Label class="text-base font-medium"
@@ -169,15 +169,15 @@
                     {csvExportError}
                 </div>
             {/if}
+        </div>
 
-            <div class="flex justify-end gap-2">
-                <Button variant="outline" onclick={closeDialog}>
-                    {m['common.cancel']()}
-                </Button>
-                <Button onclick={executeCsvExport} disabled={isExportingCsv}>
-                    {isExportingCsv ? m['admin.loading']() : m['admin.export_csv_files']()}
-                </Button>
-            </div>
+        <div class="flex justify-end gap-2 flex-shrink-0">
+            <Button variant="outline" onclick={closeDialog}>
+                {m['common.cancel']()}
+            </Button>
+            <Button onclick={executeCsvExport} disabled={isExportingCsv}>
+                {isExportingCsv ? m['admin.loading']() : m['admin.export_csv_files']()}
+            </Button>
         </div>
     </DialogContent>
 </Dialog>

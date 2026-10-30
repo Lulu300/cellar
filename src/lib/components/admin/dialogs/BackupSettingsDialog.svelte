@@ -86,11 +86,11 @@
 </script>
 
 <Dialog bind:open>
-    <DialogContent class="max-w-md">
-        <DialogHeader>
+    <DialogContent class="max-w-md max-h-[85vh] flex flex-col">
+        <DialogHeader class="flex-shrink-0">
             <DialogTitle>{m['admin.backup_settings_dialog']()}</DialogTitle>
         </DialogHeader>
-        <div class="space-y-4 py-4">
+        <div class="space-y-4 py-4 flex-1 overflow-y-auto">
             <div class="flex items-start gap-3">
                 <div
                     class="flex-shrink-0 w-8 h-8 bg-primary/10 rounded-full flex items-center justify-center"
@@ -201,12 +201,12 @@
                     </div>
                 </div>
             </div>
-            <div class="flex justify-end gap-2">
-                <Button variant="outline" onclick={() => (open = false)}>
-                    {m['common.cancel']()}
-                </Button>
-                <Button onclick={save} disabled={saving}>{m['common.save']()}</Button>
-            </div>
+        </div>
+        <div class="flex justify-end gap-2 flex-shrink-0">
+            <Button variant="outline" onclick={() => (open = false)}>
+                {m['common.cancel']()}
+            </Button>
+            <Button onclick={save} disabled={saving}>{m['common.save']()}</Button>
         </div>
     </DialogContent>
 </Dialog>

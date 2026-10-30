@@ -51,6 +51,13 @@ test('back up, wipe the cellar, then restore the backup from the list', async ({
     await page.keyboard.press('Tab');
     await expect(delimiter).toHaveAttribute('aria-expanded', 'false');
     await expect(delimiter).toHaveText(',');
+    // On a small phone the dialog scrolls inside, and its buttons stay on the screen (UI-21).
+    const viewport = page.viewportSize();
+    await page.setViewportSize({ width: 375, height: 667 });
+    await expect(csvExportDialog.getByRole('button', { name: 'Export CSV Files' })).toBeInViewport({
+        ratio: 1
+    });
+    if (viewport) await page.setViewportSize(viewport);
     await csvExportDialog.getByRole('button', { name: 'Cancel' }).click();
 
     await page.getByRole('button', { name: 'Wipe All Data' }).click();

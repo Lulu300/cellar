@@ -55,10 +55,13 @@ stop). Before updating, read [UPGRADING.md](UPGRADING.md) for every version betw
 new one.
 
 Cellar also checks the upgrade when it starts. It refuses to start when the update skips a mandatory
-stop, and its log names the version to install first; no data is changed, so the previous version
-still runs. Otherwise its log lists the upgrade actions of the versions you passed, and the Admin
-page shows them until you tick each one as done. Some older versions did not record themselves:
-Cellar then judges the version from the database.
+stop, and its log names the version to install first. No data is changed: put the tag of that
+version in place of `latest` in `docker-compose.yml` (see [Image tags](#image-tags)), run
+`docker compose pull` and `docker compose up -d`, let it start once, then put `latest` back and
+update again. To return to the version you ran, put its tag there instead. Otherwise its log lists
+the upgrade actions of the versions you passed, and the Admin page shows them until you tick each
+one as done. Some older versions did not record themselves: Cellar then judges the version from the
+database.
 
 To update, run these commands next to `docker-compose.yml`: they download the new image and
 restart the container with it. If you replaced `latest` with a version tag (see
@@ -99,13 +102,18 @@ lists them all.
 Instead of pulling the image, you can build it from the source code, which needs Internet access
 and the disk space given in [Prerequisites](#prerequisites). Open the
 [latest release](https://github.com/Lulu300/cellar/releases/latest), download
-`Source code (tar.gz)`, copy it to the server and extract it, or clone the repository with
-`git clone https://github.com/Lulu300/cellar.git`, whose default branch, `main`, holds the latest
-release:
+`Source code (tar.gz)`, copy it to the server and extract it:
 
 ```bash
 tar -xzf cellar-X.Y.Z.tar.gz
 mv cellar-X.Y.Z cellar
+cd cellar
+```
+
+Or clone the repository, whose default branch, `main`, holds the latest release:
+
+```bash
+git clone https://github.com/Lulu300/cellar.git
 cd cellar
 ```
 
@@ -657,4 +665,4 @@ docker compose logs -f cellar
 
 Then report it in the [issues](https://github.com/Lulu300/cellar/issues), with the version that the
 admin page shows, what you did and what you saw, and the log lines around it. Never post your access
-code, setup token or cron token.
+code, setup token, cron token or backups: they give access to your cellar.

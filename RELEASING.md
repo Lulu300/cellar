@@ -1,6 +1,6 @@
 # Releasing
 
-Versions follow SemVer, from 1.0.0, the first public release: a patch version never needs a manual action, a major version is only for an action that concerns every user and without which Cellar does not work, and a conditional action (for your own scripts, for the cron backup mode…) goes in a minor version. In practice, the version after a final release is at least its next minor version: see [Version of develop](#version-of-develop).
+Versions follow SemVer and start at 1.0.0, the first public release: a patch version never needs a manual action, a major version is only for an action that concerns every user and without which Cellar does not work, and a conditional action (for your own scripts, for the cron backup mode…) goes in a minor version. In practice, the version after a final release is at least its next minor version (see [Version of develop](#version-of-develop)); a patch version only fixes a release whose images are already published, before `develop` moves on (see [When the workflow fails](#when-the-workflow-fails)).
 
 A release is a git tag. Pushing it runs `.github/workflows/release.yml`. It first runs `.github/workflows/ci.yml` on the tagged commit, its `verify` job (migrations matching `schema.ts`, type-check, lint, tests, translation check, knip, build, and the `ORIGIN` check of the built server), its `image` job (the Docker image must become healthy) and its `e2e` job (the end-to-end journeys), then checks the release, builds the Docker image for amd64 and arm64, each on a runner of that platform, starts each one and waits until it is healthy before pushing it, tags the two as one multi-platform image, and creates the GitHub release. Pushes without a tag publish nothing. `ci.yml` also runs on every pull request and every push to `develop`, without publishing anything.
 
@@ -43,7 +43,7 @@ A build of `develop` counts as a release candidate of its version: once a databa
 
 ## First public release: v1.0.0
 
-1.0.0 is the first public release: `releases.json` starts with it, and no tag comes before it. Since `scripts/release.mjs` compares a version with the tag of the one before it, the release notes and the changelog section of 1.0.0 hold its summary and its upgrade actions, without a list of changes, and its release check finds no earlier commit to look for breaking changes in.
+1.0.0 is the first public release: it has no previous version, so no entry of `releases.json` and no tag come before it. Since `scripts/release.mjs` compares a version with the tag of the one before it, the release notes and the changelog section of 1.0.0 hold its summary and its upgrade actions, without a list of changes, and its release check finds no earlier commit to look for breaking changes in.
 
 There is no `main` branch before 1.0.0 either: in step 2 of [Final release](#final-release), create it from the release commit with `git switch -c main` instead of `git switch main` and `git merge --ff-only develop`.
 

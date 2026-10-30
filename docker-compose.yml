@@ -1,7 +1,8 @@
 services:
   cellar:
-    # Prebuilt image of the latest stable release (see README-Docker.md);
-    # `docker compose up -d --build` still builds it locally from source
+    # Published image of the latest stable release: `docker compose pull` downloads it.
+    # In a copy of the source code, `docker compose up -d --build` builds it instead
+    # (see README-Docker.md, Building from source).
     image: ghcr.io/lulu300/cellar:latest
     build: .
     container_name: wine-cellar

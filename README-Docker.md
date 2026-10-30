@@ -5,27 +5,20 @@ This guide runs Cellar with Docker Compose, for example on a home NAS.
 ## Prerequisites
 
 - Docker with the Compose plugin: the commands below use `docker compose`.
-- A GitHub account with access to the repository: the repository and its Docker image stay
-  private until version 1.0.0.
-- Free disk space for Docker: about 400 MB for the image, and about 1.5 GB more when you build
-  it from source (the base image and the build cache, which `docker builder prune` frees), plus
-  your data and its backups. Building from source also needs Internet access.
+- Free disk space for Docker: about 400 MB for the image, plus your data and its backups.
+  [Building the image from source](#building-from-source) takes about 1.5 GB more (the base image
+  and the build cache, which `docker builder prune` frees).
 
 ## Quick start
 
-1. **Get the files.** While logged in to GitHub, open the
-   [latest release](https://github.com/Lulu300/cellar/releases/latest), download
-   `Source code (tar.gz)`, copy it to the server and extract it:
+1. **Get the files.** Create a folder for Cellar on the server, and download `docker-compose.yml`
+   and `.env.example` into it. The `main` branch holds the latest release:
 
    ```bash
-   tar -xzf cellar-X.Y.Z.tar.gz
-   mv cellar-X.Y.Z cellar
-   cd cellar
+   mkdir cellar && cd cellar
+   curl -fsSLO https://raw.githubusercontent.com/Lulu300/cellar/main/docker-compose.yml
+   curl -fsSLO https://raw.githubusercontent.com/Lulu300/cellar/main/.env.example
    ```
-
-   With Git, `git clone https://github.com/Lulu300/cellar.git` gives the same files, with a
-   personal access token or an SSH key that has access (GitHub refuses account passwords). Its
-   default branch, `main`, holds the latest release.
 
 2. **Create the data directories**, owned by the user the container runs as (see
    [Data ownership](#data-ownership)):
@@ -42,14 +35,15 @@ This guide runs Cellar with Docker Compose, for example on a home NAS.
    # then edit ORIGIN, e.g. ORIGIN=http://192.168.1.20:3005
    ```
 
-4. **Build and start the application** in the background:
+4. **Download the image and start the application** in the background:
 
    ```bash
-   docker compose up -d --build
+   docker compose pull
+   docker compose up -d
    ```
 
-   This builds the image from the source in the folder. To use the prebuilt image instead, see
-   [Using the prebuilt image](#using-the-prebuilt-image).
+   The image is public: pulling it needs no login. To build it yourself instead, see
+   [Building from source](#building-from-source).
 
 5. **Open the application** at the exact URL set in `ORIGIN` (port `3005` is mapped in
    `docker-compose.yml`), and choose an access code: see [Access code](#access-code).
@@ -67,9 +61,61 @@ page shows them until you tick each one as done. Versions before 0.6.0 did not r
 when you upgrade from one of them, Cellar judges the version from the database and also lists the
 actions that you may already have taken.
 
-With a release archive, replace the folder and move `docker-data/` and `.env` into the new one.
-The move needs `sudo`: `docker-data/` belongs to the container user, and moving a folder to
-another folder needs write access to it. The `&&` stop the commands at the first error, so that
+Then, next to `docker-compose.yml`, download the new image and restart the container with it:
+
+```bash
+docker compose pull
+docker compose up -d
+```
+
+A new version may also change `docker-compose.yml`. This command shows how yours differs from that
+of the latest release, your own changes (port, `user:`, proxy headers) included; make the new
+release's changes in yours:
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/Lulu300/cellar/main/docker-compose.yml | diff docker-compose.yml -
+```
+
+Each update leaves the previous image on disk: `docker image prune` frees it.
+
+## Image tags
+
+GitHub Actions publishes an image to `ghcr.io/lulu300/cellar` for each release, for `linux/amd64`
+and `linux/arm64`, with these tags:
+
+- stable versions: `latest`, `X.Y.Z` and `X.Y`;
+- release candidates, for testing only: `dev` and `X.Y.Z-rc.N`.
+
+`docker-compose.yml` uses `latest`, the latest stable version. To stay on a version, replace
+`latest` with its tag, such as `ghcr.io/lulu300/cellar:1.0.0`. Each release has
+[release notes](https://github.com/Lulu300/cellar/releases), and [CHANGELOG.md](CHANGELOG.md)
+lists them all.
+
+## Building from source
+
+Instead of pulling the image, you can build it from the source code, which needs Internet access
+and the disk space given in [Prerequisites](#prerequisites). Open the
+[latest release](https://github.com/Lulu300/cellar/releases/latest), download
+`Source code (tar.gz)`, copy it to the server and extract it, or clone the repository with
+`git clone https://github.com/Lulu300/cellar.git`, whose default branch, `main`, holds the latest
+release:
+
+```bash
+tar -xzf cellar-X.Y.Z.tar.gz
+mv cellar-X.Y.Z cellar
+cd cellar
+```
+
+Follow steps 2 and 3 of the [Quick start](#quick-start) in this folder, then build the image and
+start the application:
+
+```bash
+docker compose up -d --build
+```
+
+To update, with a release archive, replace the folder and move `docker-data/` and `.env` into the
+new one. The move needs `sudo`: `docker-data/` belongs to the container user, and moving a folder
+to another folder needs write access to it. The `&&` stop the commands at the first error, so that
 nothing starts on a half-moved folder:
 
 ```bash
@@ -87,40 +133,9 @@ and check that your wines are there before you delete `cellar-old`. Each build t
 space: `docker builder prune` and `docker image prune` free what earlier builds use. With a Git
 clone, run `git pull`, then `docker compose up -d --build`.
 
-Keep `--build`: without it, Compose starts the image built for the previous version again. With
-the prebuilt image, see [Using the prebuilt image](#using-the-prebuilt-image).
-
-## Using the prebuilt image
-
-GitHub Actions publishes an image to `ghcr.io/lulu300/cellar` for each release, for `linux/amd64`
-and `linux/arm64`, with these tags:
-
-- stable versions: `latest`, `X.Y.Z` and `X.Y`;
-- release candidates, for testing only: `dev` and `X.Y.Z-rc.N`.
-
-Each release has [release notes](https://github.com/Lulu300/cellar/releases), and
-[CHANGELOG.md](CHANGELOG.md) lists them all.
-
-The image is private, so log in once on the server with a GitHub personal access token (classic)
-that has the `read:packages` scope (the account must have access to the repository):
-
-```bash
-echo <TOKEN> | docker login ghcr.io -u <github-username> --password-stdin
-```
-
-The server then needs only `docker-compose.yml` (from a release archive or the repository), the
-`docker-data/` folders of step 2 of the [Quick start](#quick-start), and a `.env` file next to
-`docker-compose.yml` that holds `ORIGIN=<URL>` (step 3).
-To install or update the application, after reading [UPGRADING.md](UPGRADING.md):
-
-```bash
-docker compose pull
-docker compose up -d
-```
-
-`docker compose pull` replaces an image built from source with the published one. Without the
-login, the registry refuses the pull; if the server has no Cellar image yet, `docker compose up -d`
-then tries to build one from source, which fails in a folder that holds only `docker-compose.yml`.
+Keep `--build`: without it, Compose starts the image built for the previous version again. The
+image you build takes the name of the published one, `ghcr.io/lulu300/cellar:latest`, so
+`docker compose pull` replaces it with the published image.
 
 ## Application URL (ORIGIN)
 
@@ -416,13 +431,14 @@ fewer at once: a container that runs out of memory restarts, and nothing is impo
 
 Run them next to `docker-compose.yml`.
 
-### Build and start in the background
+### Start in the background
 
 ```bash
-docker compose up -d --build
+docker compose up -d
 ```
 
-With the prebuilt image, run `docker compose pull`, then `docker compose up -d`.
+With an image [built from source](#building-from-source), `docker compose up -d --build` builds it
+again first.
 
 ### Stop and remove the container
 
@@ -439,6 +455,8 @@ docker compose logs -f cellar
 ```
 
 ### Rebuild the image without the build cache
+
+When you [build from source](#building-from-source):
 
 ```bash
 docker compose build --no-cache
@@ -633,3 +651,7 @@ If you encounter any issues, please check the logs first:
 ```bash
 docker compose logs -f cellar
 ```
+
+Then report it in the [issues](https://github.com/Lulu300/cellar/issues), with the version that the
+admin page shows, what you did and what you saw, and the log lines around it. Never post your access
+code, setup token or backup token.

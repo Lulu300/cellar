@@ -1906,9 +1906,9 @@ curl -fsS -b cookies.txt -H 'Content-Type: application/zip' \
 
 ### `POST /api/admin/restore`
 
-Replaces the database with that of a backup zip and copies its images into the image folder, over
-the files of the same name (the other image files stay), after saving the current data in a
-pre-restore backup.
+Replaces the database with that of a backup zip, copies its images into the image folder over the
+files of the same name, and deletes the image files that no image of the restored database names.
+The current data, images included, is first saved in a pre-restore backup.
 
 - **Session:** required.
 - **Body:** the backup zip, by its file name or as an upload: see
@@ -1922,12 +1922,12 @@ pre-restore backup.
   - `imagesCopyFailed`: `true` when the database was restored but its images could not be copied;
     the pre-restore backup still holds the former images.
   - `backup`: the name of the pre-restore backup, `cellar-backup-pre-restore-<timestamp>.zip`.
-- The image files that no image of the restored database names are deleted; the pre-restore backup
-  holds them.
-- What stays as it was: the access code, the automatic backup settings and the backup token, the
-  upgrade actions and the last barcode numbers given. The upgrade actions of the versions between
-  the backup's and this one are added to the list, with `mayBeDone: true`, unless it holds them
-  already. Every session but the caller's ends.
+- What stays as it was: the access code, the automatic backup settings and the backup token, and
+  the upgrade actions. The upgrade actions of the versions between the backup's and this one are
+  added to the list, with `mayBeDone: true`, unless it holds them already. Every session but the
+  caller's ends.
+- Each barcode prefix keeps the higher of its last numbers given, that of the backup and that of
+  the current data, so that no number printed since the backup is given again.
 - The database of a backup from an earlier version is upgraded as the server upgrades its own: from
   a version before 0.10.0, the line breaks of notes and descriptions become LF, and a note or a
   description of more than 5,000 characters is cut to 5,000 characters; from a version before

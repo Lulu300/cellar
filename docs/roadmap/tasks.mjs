@@ -74,12 +74,12 @@ export const phases = [
 	{
 		id: 'P11',
 		title: 'Rangement des composants',
-		goal: 'Deux petites corrections trouvées en P10, puis le rangement des composants par domaine, à la toute fin, comme le veut la décision « Architecture (revue 7) ». Lots : 1. UI-20, BUG-21 ; 2. UI-19, seule, qui déplace presque tous les composants. Prévue pour la 1.0.0, après la vérification de P12. Terminée le 2026-10-29 (develop 70d9e148), pas encore publiée.'
+		goal: 'Deux petites corrections trouvées en P10, puis le rangement des composants par domaine, à la toute fin, comme le veut la décision « Architecture (revue 7) ». Lots : 1. UI-20, BUG-21 ; 2. UI-19, seule, qui déplace presque tous les composants. Prévue pour la 1.0.0, après la vérification de P12. Terminée le 2026-10-29 (develop 70d9e148), publiée en 1.0.0 le 2026-10-30.'
 	},
 	{
 		id: 'P12',
 		title: 'Vérification d’avant 1.0',
-		goal: 'Une revue complète en lecture seule après P11, comme l’audit d’avant 1.0 puis sa vérification : tout ce que l’audit demandait est fait, et le nettoyage n’a pas créé de nouveaux problèmes. Le mainteneur juge chaque constat : à corriger avant la 1.0 (tâches ajoutées ici) ou acceptable en l’état. Puis la 1.0.0, avec R2 de l’audit au tag : dépôt et image publics, protection de `main`. Revue faite le 2026-10-30 (QA-06). Lots des corrections, chacun mergé avant le suivant, résumé 1.0.0 : 1. SEC-12, API-12, BUG-22, BUG-23 ; 2. UI-21, UI-22, DEP-07 ; 3. DOC-04 (documentation d’après les deux premiers lots) ; 4. UI-23 ; puis REL-06, la publication, avec le mainteneur. Lots 1 à 3 faits le 2026-10-30 ; depuis le lot 2, le dépôt public repart d’un nouveau commit racine (décision « Nouveau départ à la 1.0 (REL-06) »).'
+		goal: 'Une revue complète en lecture seule après P11, comme l’audit d’avant 1.0 puis sa vérification : tout ce que l’audit demandait est fait, et le nettoyage n’a pas créé de nouveaux problèmes. Le mainteneur juge chaque constat : à corriger avant la 1.0 (tâches ajoutées ici) ou acceptable en l’état. Puis la 1.0.0, avec R2 de l’audit au tag : dépôt et image publics, protection de `main`. Revue faite le 2026-10-30 (QA-06). Lots des corrections, chacun mergé avant le suivant, résumé 1.0.0 : 1. SEC-12, API-12, BUG-22, BUG-23 ; 2. UI-21, UI-22, DEP-07 ; 3. DOC-04 (documentation d’après les deux premiers lots) ; 4. UI-23 ; puis REL-06, la publication, avec le mainteneur. Terminée le 2026-10-30 (develop 89d2c4c1), publiée en 1.0.0 le 2026-10-30. Lots 1 à 4 faits le 2026-10-30, puis la 1.0.0 publiée le même jour (tag v1.0.0 sur 8ad43dff) ; depuis le lot 2, le dépôt public repart d’un nouveau commit racine (décision « Nouveau départ à la 1.0 (REL-06) »).'
 	},
 	{
 		id: 'P13',
@@ -1959,7 +1959,9 @@ export const tasks = [
 		todo: [
 			'Décision « Deux « Import ZIP » (UI-23) » : deux libellés distincts, en anglais et en français, qui disent ce que le bouton importe ; même règle pour « Export ZIP » si l’onglet Images et l’onglet Backups le partagent.',
 			'Les textes qui citent ces boutons suivent : guide de l’import CSV, README-Docker, docs/API.md, parcours e2e.',
-			'Lot 4 de P12, avant REL-06.'
+			'Lot 4 de P12, avant REL-06.',
+			'Fait en P12 (2026-10-30, bcd62570..950e848a) : « Importer un export » (Backups, titre de sa carte) et « Importer des images depuis un ZIP » (Images, titre de son dialogue) ; « Exporter ZIP » gardé, seul l’onglet Images l’a (décision du mainteneur) ; l’aide de l’export CSV renvoie à « Export complet » au lieu d’un bouton qui n’existait pas.',
+			'Trouvé pendant UI-23 : « Edit » ouvre deux réglages différents, « Clear All » vide les filtres de Data et la sélection de l’export CSV ; « Export complet » s’appelle aussi « Create JSON Export » et « Create Export » ; le bouton de téléchargement d’un export se nomme « Download backup » ; le dialogue des résultats d’import d’images a un titre générique.'
 		],
 		done: 'Aucun libellé de bouton de l’admin n’est porté par deux actions différentes ; chaque texte qui cite un de ces boutons le nomme comme l’interface ; portes vertes.',
 		deps: ['DOC-04'], src: ['Trouvé pendant DOC-04', 'Décision « Deux « Import ZIP » (UI-23) »']
@@ -1973,7 +1975,9 @@ export const tasks = [
 			'Décisions « Visibilité (REL-01) » et « Protection des branches (QA-04) », R2 de l’audit : réécrire les passages de README-Docker et du compose qui évitent de télécharger l’image ; résumé 1.0.0 complet.',
 			'Avec le mainteneur, qui seul change les réglages de GitHub : dépôt public, paquet GHCR public, protection de `main` ; puis la release finale selon RELEASING.md, banc de mise à jour compris.',
 			'Décision « Nouveau départ à la 1.0 (REL-06) » : `releases.json` ne garde que l’entrée 1.0.0, sans action de mise à jour ; son résumé est réécrit comme celui d’une première version publique (ce que fait Cellar, pas ce qui change depuis la 0.12.0) ; `CHANGELOG.md` et `UPGRADING.md` régénérés par `release.mjs prepare`. Décision « Versions 0.x dans la doc (REL-06) » : README-Docker et docs/API.md sans numéro de version 0.x.',
-			'Banc local de la 0.12.0 vers la 1.0.0 avant le tag (images Docker locales). `main` naît à la release (`git switch -c main`, RELEASING.md) ; ensuite le mainteneur en fait la branche par défaut et la protège. Le paquet GHCR, recréé par la première release, doit être public.'
+			'Banc local de la 0.12.0 vers la 1.0.0 avant le tag (images Docker locales). `main` naît à la release (`git switch -c main`, RELEASING.md) ; ensuite le mainteneur en fait la branche par défaut et la protège. Le paquet GHCR, recréé par la première release, doit être public.',
+			'Fait en P12 (2026-10-30, 0cebc545..8ad43dff) : `releases.json` ne garde que la 1.0.0, avec un résumé de première version publique ; plus de version 0.x dans README-Docker ni docs/API.md ; démarrage rapide par `docker compose pull`, sections « Image tags » et « Building from source » ; tests de passage depuis une version absente de `releases.json` (`src/test/releases.ts`). Banc local 0.12.0 et 0.1.0 vers 1.0.0 à 176 sur 176, après adaptation du banc à un `releases.json` qui commence à la 1.0.0. `main` créée sur 8ad43dff, branche par défaut, force-push et suppression refusés ; tag v1.0.0, release 41128928220 verte ; paquet public, `docker pull ghcr.io/lulu300/cellar:1.0.0` sans connexion (tags `1.0.0`, `1.0`, `latest`, amd64 et arm64). develop passe à 1.1.0-rc.0 (89d2c4c1).',
+			'Trouvé pendant REL-06 : docs/API.md cite un onglet « Admin › Barcodes » qui n’existe pas ; des commentaires citent encore des versions 0.x (`ci.yml`, `upgrade.ts`, `imported-rows.ts`) ; une sauvegarde nommée `auto` reçoit le message « cannot start with auto- ».'
 		],
 		done: 'v1.0.0 est publiée sur `main` ; le dépôt et l’image sont publics, `docker pull ghcr.io/lulu300/cellar:1.0.0` marche sans connexion ; `main` est protégée.',
 		deps: ['DOC-04', 'UI-23'], src: ['Décisions « Visibilité (REL-01) », « Protection des branches (QA-04) »', 'audit-pre-1.0/synthese.md#R2']

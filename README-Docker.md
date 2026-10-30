@@ -395,9 +395,9 @@ The import reads files sent from your browser, not files on the server:
 ### Adding images (optional)
 
 Images are normally added from the wine forms. After a CSV import that names images (wine images
-with their `filename`, and wines with their `imageName`), add the files with **Import ZIP** in
-the **Images** tab of the admin page, or copy them into `docker-data/uploads/wines/` and give
-them to the container user (see [Data ownership](#data-ownership)):
+with their `filename`, and wines with their `imageName`), add the files with **Import Images from
+ZIP** in the **Images** tab of the admin page, or copy them into `docker-data/uploads/wines/` and
+give them to the container user (see [Data ownership](#data-ownership)):
 
 ```bash
 mkdir -p docker-data/uploads/wines
@@ -407,10 +407,10 @@ sudo chown -R 1000:1000 docker-data/uploads
 
 Cellar only shows the files whose name matches an imported wine image.
 
-**Import ZIP** in the **Images** tab reads the whole ZIP into memory, and can take up to 5 times its
-size: over 2 GB for a ZIP of 450 MB. **Upload Images** does the same with the images sent at once.
-On a NAS with little memory, import the images in several smaller ZIPs, or upload fewer at once: a
-container that runs out of memory restarts, and nothing is imported.
+**Import Images from ZIP** in the **Images** tab reads the whole ZIP into memory, and can take up
+to 5 times its size: over 2 GB for a ZIP of 450 MB. **Upload Images** does the same with the images
+sent at once. On a NAS with little memory, import the images in several smaller ZIPs, or upload
+fewer at once: a container that runs out of memory restarts, and nothing is imported.
 
 ## Docker commands
 

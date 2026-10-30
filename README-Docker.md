@@ -407,6 +407,11 @@ sudo chown -R 1000:1000 docker-data/uploads
 
 Cellar only shows the files whose name matches an imported wine image.
 
+**Import ZIP** reads the whole ZIP into memory, and can take up to 5 times its size: about 2 GB for
+a ZIP of 450 MB. **Upload Images** does the same with the images sent at once. On a NAS with little
+memory, import the images in several smaller ZIPs: a container that runs out of memory restarts,
+and nothing is imported.
+
 ## Docker commands
 
 Run them next to `docker-compose.yml`.

@@ -106,7 +106,7 @@ Revue du code du 2026-10-08, commit `556c7bb`. Ce fichier est la version pour le
 - **Récapitulatif des préférences retiré (UI-17)** : Le bloc « Préférences de l’application », qui répétait en badges les réglages de la page, est retiré dans UI-17, à la demande du mainteneur, alors que la tâche le laissait hors périmètre (décision du 2026-10-29).
 - **Couleurs décoratives et statuts (UI-18)** : Le thème n’a qu’une teinte : sur Statistiques et Pénurie, les icônes prennent `text-primary` et les chiffres `text-foreground`, sauf le nombre de bouteilles manquantes, en `text-destructive`. Un vin sans photo affiche `bg-muted` et une icône `text-muted-foreground` ; le lien du site d’un vin est en `text-foreground` souligné, `text-primary-text` au survol depuis UI-20. Succès et avertissement ont des couleurs fixes, `--success` et `--warning` (green-800 et amber-800 en clair, nuances 400 en sombre) ; le `--destructive` clair passe à red-700 (`oklch(0.505 0.213 27.518)`), pour que le texte d’erreur atteigne 4,5:1 sur sa teinte ; les toasts sont des cartes opaques, à bordure et icône colorées. Restent en dur, avec un commentaire : badges de type et de couleur (UI-03), échelle d’occupation et lettres des rangements, échelle de pénurie, badge de pénurie `bg-red-700` (UI-16), pastilles de disponibilité, places pleines de `CaseLoad`, bouton de retrait et légende posés sur une photo, vue caméra du scanner, et primitives shadcn (décisions du 2026-10-29).
 - **Avant la 1.0 (P11, P12)** : Les deux défauts de P10 les plus visibles passent avant la 1.0, en petites tâches de P11 avant le rangement : le texte en couleur du thème trop pâle dans les thèmes clairs jaune, orange et vert (UI-20), et la page qui défile derrière un dialogue quand on choisit dans un Select (BUG-21, qui s’est révélé être un effet de Playwright, voir « Pas un défaut (BUG-21) »). Après P11, une revue complète vérifie l’ensemble avant la 1.0.0 (P12). Le dépôt et l’image deviennent publics au tag de la 1.0.0 (décisions du 2026-10-29).
-- **Serveur MCP (P13)** : Cellar sert un serveur MCP à l’adresse `/mcp` (transport HTTP « streamable »), dans la 1.1.0, juste après la 1.0.0. Le SDK officiel `@modelcontextprotocol/sdk` est accepté en dépendance. L’accès passe par un jeton dédié, généré dans l’admin, stocké haché, affiché une fois et régénérable, en lecture seule par défaut, l’écriture étant une option à cocher. Outils de lecture : chercher des vins, voir un vin avec ses bouteilles et leurs emplacements, retrouver une bouteille par son code-barres, statistiques, pénurie, place libre dans les rangements. Outils d’écriture : ajouter des bouteilles (ou un vin et ses bouteilles), marquer des bouteilles bues (date, note, commentaire), déplacer des bouteilles, modifier les notes. Jamais l’admin : sauvegardes, restauration, effacement, imports et code d’accès restent hors du MCP. Cellar reste prévu pour un réseau local ou un VPN : le MCP vise les assistants qui tournent sur ce réseau (modèles locaux, CLI, applications de bureau) ; un assistant en ligne qui appelle depuis internet ne l’atteint pas, limite documentée et acceptée (décisions du 2026-10-29).
+- **Serveur MCP (P14)** : Cellar sert un serveur MCP à l’adresse `/mcp` (transport HTTP « streamable »), dans la 1.2.0, juste après la 1.1.0 (décision « Versions après la 1.0 »). Le SDK officiel `@modelcontextprotocol/sdk` est accepté en dépendance. L’accès passe par un jeton dédié, généré dans l’admin, stocké haché, affiché une fois et régénérable, en lecture seule par défaut, l’écriture étant une option à cocher. Outils de lecture : chercher des vins, voir un vin avec ses bouteilles et leurs emplacements, retrouver une bouteille par son code-barres, statistiques, pénurie, place libre dans les rangements. Outils d’écriture : ajouter des bouteilles (ou un vin et ses bouteilles), marquer des bouteilles bues (date, note, commentaire), déplacer des bouteilles, modifier les notes. Jamais l’admin : sauvegardes, restauration, effacement, imports et code d’accès restent hors du MCP. Cellar reste prévu pour un réseau local ou un VPN : le MCP vise les assistants qui tournent sur ce réseau (modèles locaux, CLI, applications de bureau) ; un assistant en ligne qui appelle depuis internet ne l’atteint pas, limite documentée et acceptée (décisions du 2026-10-29).
 - **Pas un défaut (BUG-21)** : Le défilement derrière un dialogue ne vient que du `locator.click()` de Playwright, relancé pendant l’animation d’ouverture de la liste ; souris, toucher et clavier laissent la page immobile, et le mainteneur ne l’a jamais vu à la main. BUG-21 est clos sans changement de code (décision du 2026-10-29).
 - **Titre des erreurs de l’admin (UI-17)** : Une page d’erreur de l’admin garde le menu de l’admin, et son titre le dit : « 404 - Administration - Cave à vin ». Les autres pages d’erreur gardent « {statut} - Cave à vin » (décision du 2026-10-30).
 - **Revue d’avant 1.0 (QA-06)** : Le mainteneur suit les recommandations de la synthèse de `verification-pre-1.0` : les constats « avant 1.0 » deviennent les tâches SEC-12, API-12, BUG-22, BUG-23, UI-21, UI-22, DEP-07 et DOC-04 ; les autres sont acceptés pour la 1.0 et peuvent revenir après : S-m1 (message brut d’une erreur d’images de l’admin), V3-m1 (mémoire de l’import d’un zip d’images, avec une phrase dans README-Docker, DOC-04), V5-m6 (noms coupés sur les cartes), V5-m3 (recherche sensible aux accents), V5-m4, V5-m7, V4-m4, V6-m1, V6-m2, V7-m2, le badge d’un ancien préfixe long à 390 px, le HTML de `/wines` sans compression, `--input` sur `muted`, Firefox non essayé, et les points « Trouvé pendant » que la synthèse dit informatifs (décision du 2026-10-30).
@@ -122,6 +122,9 @@ Revue du code du 2026-10-08, commit `556c7bb`. Ce fichier est la version pour le
 - **Versions 0.x dans la doc (REL-06)** : README-Docker et docs/API.md ne citent plus de version 0.x ; le comportement reste décrit (une ancienne sauvegarde se restaure toujours), sans numéro de version (décision du 2026-10-30).
 - **Nettoyage du dossier d’images (DOC-04)** : Une restauration supprime tout fichier non caché du dossier d’images que la base restaurée ne cite pas, image ou non ; ils passent d’abord dans la sauvegarde de sécurité. C’est voulu et documenté : le dossier appartient à Cellar (décision du 2026-10-30).
 - **Deux « Import ZIP » (UI-23)** : Avant la 1.0, chaque bouton de l’admin dit ce qu’il importe ou exporte : l’import d’un export de données (onglet Backups) et l’import d’images (onglet Images) ne portent plus le même libellé, en anglais comme en français (décision du 2026-10-30).
+- **Versions après la 1.0** : La 1.1.0 vient vite et reste petite : installation dans le README, liens vers la doc de l’API, PWA et finitions (P13). Le MCP suit aussitôt en 1.2.0 (P14), avec la description OpenAPI de l’API. Les fonctionnalités de « Idées après la 1.0 » sont discutées une par une avec le mainteneur avant d’être placées dans des versions, selon leur taille (décision du 2026-10-30).
+- **Doc de l’API (DOC-05, API-14)** : `docs/API.md` reste la référence, liée depuis le README et la page d’admin (1.1.0). Une description OpenAPI générée depuis les schémas zod de l’API (zod 4 sait les convertir, sans dépendance) s’y ajoute en 1.2.0, pour les outils ; une interface comme Swagger UI demanderait une dépendance, à proposer au mainteneur (décision du 2026-10-30).
+- **Idées après la 1.0** : À discuter une par une avant toute tâche (2026-10-30). « À boire » : mettre en avant les bouteilles à boire, pas seulement par l’année de consommation ; pouvoir marquer une bouteille à boire cette année ou ce mois-ci, idée à étoffer. Plan de la cave : les conteneurs en grille, un clic sur une case montre ses bouteilles ; avec une vraie couleur choisie pour chaque couleur de vin (blanc, rouge…), affichée partout dans l’app, pour voir d’un coup d’œil ce que contient un casier. Liste d’envies : la page Pénurie se partage entre le stock minimum (« j’en veux toujours une, préviens-moi ») et une liste d’envies ou d’achats ; on y ajoute un vin depuis la liste des vins (un petit bouton), ou en tapant son nom (proposé s’il existe, sinon créé dans la base et ajouté) ; le retrait automatique une fois acheté reste à décider. Compte rendu d’import (voir « Après la 1.0 : compte rendu de l’import »). Fiche producteur : facultative, créée d’elle-même quand on ajoute un producteur comme aujourd’hui, complétée si on le souhaite. Fiche de dégustation : à chaque bouteille bue, une appréciation sur 5, l’occasion, l’accord avec le plat et une note, relues sur la fiche du vin et utiles au MCP ; la fiche et chacun de ses champs restent facultatifs, mais l’interface la met en avant pour donner envie de la remplir. Photo de l’étiquette : sur le téléphone, le formulaire du vin ouvre l’appareil photo et réduit l’image avant l’envoi. Notifications par ntfy ou webhook (sauvegarde ratée, bouteilles à boire), avec le choix de ce qu’on reçoit. Écartée : la valeur de la cave dans le temps, car personne ne met ses prix à jour.
 - **Après la 1.0 : compte rendu de l’import** : Idée du mainteneur pour la première version après la 1.0, une fois tout ce qu’il faut pour la 1.0 terminé : au lieu de refuser les lignes qui ne s’importent pas, l’import finit par un compte rendu de ce qui est importé et de ce qui ne l’est pas, et permet de refaire à la main les correspondances des lignes refusées, par exemple les bouteilles qui correspondent à plusieurs vins (2026-10-18).
 
 ## Vue d’ensemble
@@ -141,7 +144,8 @@ Revue du code du 2026-10-08, commit `556c7bb`. Ce fichier est la version pour le
 | P10 · Fin de l’audit | Le reste de l’audit d’avant 1.0 : thème, accessibilité, seeding, documentation, dépendances, lint et tests. Prévue pour 0.12.0. DEP-06 applique la convention de logs déjà décidée (« Petits choix ») mais attend P10 : passer `no-console` en erreur touche presque tous les composants, que P9 réécrit d’abord. Lots, mêmes règles qu’en P9 (résumé 0.12.0) : 1. DEP-06, DATA-14 (DEP-06 change les règles de lint de tout le code) ; 2. UI-16, DOC-03 ; 3. UI-17 ; 4. UI-18 (couleurs et sélecteurs de presque tous les composants). Terminée le 2026-10-29 (develop f14a795f), publiée en 0.12.0 le 2026-10-29. | DEP-06, DATA-14, UI-16, DOC-03, UI-17, UI-18 | 6 / 6 |
 | P11 · Rangement des composants | Deux petites corrections trouvées en P10, puis le rangement des composants par domaine, à la toute fin, comme le veut la décision « Architecture (revue 7) ». Lots : 1. UI-20, BUG-21 ; 2. UI-19, seule, qui déplace presque tous les composants. Prévue pour la 1.0.0, après la vérification de P12. Terminée le 2026-10-29 (develop 70d9e148), publiée en 1.0.0 le 2026-10-30. | UI-20, BUG-21, UI-19 | 3 / 3 |
 | P12 · Vérification d’avant 1.0 | Une revue complète en lecture seule après P11, comme l’audit d’avant 1.0 puis sa vérification : tout ce que l’audit demandait est fait, et le nettoyage n’a pas créé de nouveaux problèmes. Le mainteneur juge chaque constat : à corriger avant la 1.0 (tâches ajoutées ici) ou acceptable en l’état. Puis la 1.0.0, avec R2 de l’audit au tag : dépôt et image publics, protection de `main`. Revue faite le 2026-10-30 (QA-06). Lots des corrections, chacun mergé avant le suivant, résumé 1.0.0 : 1. SEC-12, API-12, BUG-22, BUG-23 ; 2. UI-21, UI-22, DEP-07 ; 3. DOC-04 (documentation d’après les deux premiers lots) ; 4. UI-23 ; puis REL-06, la publication, avec le mainteneur. Terminée le 2026-10-30 (develop 89d2c4c1), publiée en 1.0.0 le 2026-10-30. Lots 1 à 4 faits le 2026-10-30, puis la 1.0.0 publiée le même jour (tag v1.0.0 sur 8ad43dff) ; depuis le lot 2, le dépôt public repart d’un nouveau commit racine (décision « Nouveau départ à la 1.0 (REL-06) »). | QA-06, SEC-12, API-12, BUG-22, BUG-23, UI-21, UI-22, DEP-07, DOC-04, UI-23, REL-06 | 11 / 11 |
-| P13 · Serveur MCP | Juste après la 1.0.0, pour la 1.1.0 : un serveur MCP intégré à Cellar, pour les assistants d’IA du réseau local (décision « Serveur MCP (P13) »). Lots : 1. SEC-11 ; 2. API-10 ; 3. API-11. | SEC-11, API-10, API-11 | 0 / 3 |
+| P13 · Finitions et installation | Pour la 1.1.0, juste après la 1.0.0 : ce que voit d’abord un nouveau visiteur (installation dans le README, liens vers la doc de l’API), l’app installable sur le téléphone (PWA), et les finitions notées pendant P12 (décision « Versions après la 1.0 »). Lots, chacun mergé avant le suivant, résumé 1.1.0 : 1. DOC-05, UI-27, SEC-13, BUG-24 ; 2. UI-24, UI-25, API-13 ; 3. UI-26, DEP-08 ; puis REL-07. | DOC-05, UI-27, SEC-13, BUG-24, UI-24, UI-25, API-13, UI-26, DEP-08, REL-07 | 0 / 10 |
+| P14 · Serveur MCP | Pour la 1.2.0, enchaînée juste après la 1.1.0 : un serveur MCP intégré à Cellar, pour les assistants d’IA du réseau local (décision « Serveur MCP (P14) »), et la description OpenAPI de l’API, tirée des mêmes schémas zod. Lots : 1. SEC-11, API-14 ; 2. API-10 ; 3. API-11 ; puis la release. | SEC-11, API-14, API-10, API-11 | 0 / 4 |
 
 ## P0 · Sécurité urgente
 
@@ -2679,13 +2683,193 @@ Sévérité **évolution** · effort **S** · dépend de DOC-04, UI-23 · statut
 
 **Sources** : Décisions « Visibilité (REL-01) », « Protection des branches (QA-04) », audit-pre-1.0/synthese.md#R2
 
-## P13 · Serveur MCP
+## P13 · Finitions et installation
 
-Juste après la 1.0.0, pour la 1.1.0 : un serveur MCP intégré à Cellar, pour les assistants d’IA du réseau local (décision « Serveur MCP (P13) »). Lots : 1. SEC-11 ; 2. API-10 ; 3. API-11.
+Pour la 1.1.0, juste après la 1.0.0 : ce que voit d’abord un nouveau visiteur (installation dans le README, liens vers la doc de l’API), l’app installable sur le téléphone (PWA), et les finitions notées pendant P12 (décision « Versions après la 1.0 »). Lots, chacun mergé avant le suivant, résumé 1.1.0 : 1. DOC-05, UI-27, SEC-13, BUG-24 ; 2. UI-24, UI-25, API-13 ; 3. UI-26, DEP-08 ; puis REL-07.
+
+### DOC-05 · Installation dans le README et liens vers la doc de l’API
+
+Sévérité **mineur** · effort **S** · dépend de REL-06 · statut **À faire**
+
+**Problème** : Le README ne dit comment installer Cellar que par un lien vers README-Docker, et ne cite pas la doc de l’API, que rien dans l’app ne montre non plus. Des restes d’avant 1.0 trompent le lecteur : un onglet « Admin › Barcodes » qui n’existe pas dans docs/API.md, des commentaires qui citent des versions 0.x.
+
+**Fichiers** : `README.md`, `README-Docker.md`, `docs/API.md`, `src/routes/admin/`, `src/lib/i18n/locales/`, `.github/workflows/ci.yml`, `src/lib/server/upgrade.ts`, `src/lib/server/features/csv-import/imported-rows.ts`
+
+**À faire**
+
+- Une section « Installation » dans le README : le compose d’exemple (image `ghcr.io/lulu300/cellar:latest`, sans `build`), le `.env` avec `ORIGIN`, `docker compose pull` et `up -d`, puis les liens vers README-Docker (mise à jour, reverse proxy, sauvegardes) ; le compose d’exemple et `docker-compose.yml` ne se contredisent pas.
+- Décision « Doc de l’API (DOC-05, API-14) » : un lien vers `docs/API.md` (adresse GitHub de `main`) dans le README et dans la page d’admin, traduit.
+- Trouvé pendant REL-06 : « Admin › Barcodes » dans docs/API.md nomme le vrai chemin ; les commentaires de `ci.yml`, `upgrade.ts` et `imported-rows.ts` ne citent plus de version 0.x.
+- Lot 1 de P13.
+
+**Critère d’acceptation** : Le README montre comment installer Cellar en quelques lignes, rejouées sur une machine sans le code source ; la doc de l’API est liée depuis le README et l’admin ; plus de « Admin › Barcodes » ni de version 0.x dans le code et la doc.
+
+**Sources** : Trouvé pendant REL-06, Décision « Versions après la 1.0 »
+
+### UI-27 · Application installable sur le téléphone (PWA)
+
+Sévérité **évolution** · effort **S** · dépend de REL-06 · statut **À faire**
+
+**Problème** : Sur le téléphone, Cellar s’ouvre dans un onglet du navigateur. Avec un manifeste et des icônes, il s’installe sur l’écran d’accueil et s’ouvre en plein écran, comme une application, sans store.
+
+**Fichiers** : `src/app.html`, `static/`, `src/routes/`, `README-Docker.md`
+
+**À faire**
+
+- Un manifeste web (nom, icônes, couleurs, affichage `standalone`, langue) et les icônes à partir du logo existant ; `theme-color` suit le thème clair ou sombre.
+- Pas de mode hors ligne ni de cache des données : un service worker seulement si un navigateur l’exige pour proposer l’installation, sans rien mettre en cache de l’API.
+- README-Docker dit comment l’installer, et que l’installation complète sur Android demande HTTPS (reverse proxy), un raccourci sur l’écran d’accueil marchant partout.
+- Lot 1 de P13.
+
+**Critère d’acceptation** : Chromium reconnaît l’app comme installable en HTTPS ou sur `localhost` (manifeste valide, icônes) ; installée, elle s’ouvre en plein écran ; rien de l’API n’est mis en cache.
+
+**Sources** : Décision « Versions après la 1.0 »
+
+### SEC-13 · En-têtes anti-cadre sur toutes les réponses
+
+Sévérité **mineur** · effort **S** · dépend de REL-06 · statut **À faire**
+
+**Problème** : Trouvé pendant SEC-12 : les réponses qui ne passent pas par `handle` (403 brut de SvelteKit, fichiers statiques servis par adapter-node, exception dans `handle`) n’envoient ni `frame-ancestors` ni `X-Frame-Options`.
+
+**Fichiers** : `server.js`, `src/hooks.server.ts`, `src/hooks.server.test.ts`
+
+**À faire**
+
+- Décision « Pas de cadre (SEC-12) » : chaque réponse du serveur envoie les deux en-têtes, statiques et erreurs comprises, ou le rapport justifie celles qui ne peuvent pas ; testé.
+- Lot 1 de P13.
+
+**Critère d’acceptation** : Une page statique, une image de `/uploads`, un 403 et une erreur serveur envoient les deux en-têtes (preuve sur l’app compilée) ; testé.
+
+**Sources** : Trouvé pendant SEC-12, Décision « Pas de cadre (SEC-12) »
+
+### BUG-24 · Messages des sauvegardes
+
+Sévérité **mineur** · effort **S** · dépend de REL-06 · statut **À faire**
+
+**Problème** : Une sauvegarde nommée `auto` reçoit « cannot start with auto- », qui ne lui correspond pas. Le téléchargement d’une sauvegarde déjà supprimée dit à la fois qu’elle n’existe plus et qu’elle reste dans la liste. Après un 401 dans un dialogue de l’admin, `invalidateAll` recharge la page et le dialogue perd son message.
+
+**Fichiers** : `src/lib/server/features/backups/`, `src/lib/components/admin/backups/`, `src/lib/components/admin/jobs.svelte.ts`, `src/lib/i18n/locales/`
+
+**À faire**
+
+- Trouvé pendant REL-06 : le message du nom réservé dit vraiment pourquoi `auto` est refusé.
+- Trouvé pendant BUG-22 : une sauvegarde absente donne un seul message cohérent ; un 401 dans un dialogue de l’admin garde le message visible jusqu’à la reconnexion.
+- Chaque correction avec un test qui échoue avant ; lot 1 de P13.
+
+**Critère d’acceptation** : Chacun des trois cas montre un message juste et unique, prouvé dans Chromium ; testé.
+
+**Sources** : Trouvé pendant BUG-22, Trouvé pendant REL-06
+
+### UI-24 · Libellés ambigus de l’admin
+
+Sévérité **mineur** · effort **S** · dépend de DOC-05 · statut **À faire**
+
+**Problème** : Trouvé pendant UI-23 : « Edit » ouvre deux réglages différents ; « Clear All » vide les filtres de Data et la sélection de l’export CSV ; « Export complet » s’appelle aussi « Create JSON Export » et « Create Export », et son toast « JSON export created » ; le bouton de téléchargement d’un export se nomme « Download backup » ; les résultats d’import d’images ont un titre générique ; en français, le titre du dialogue ZIP passe 3 px sous la croix.
+
+**Fichiers** : `src/lib/components/admin/`, `src/routes/admin/`, `src/lib/i18n/locales/`, `README-Docker.md`
+
+**À faire**
+
+- Décision « Deux « Import ZIP » (UI-23) », étendue : un libellé ne désigne qu’une action ; une même action garde un seul nom, du bouton au toast ; les boutons à icône seule ont un nom accessible juste.
+- Les textes qui citent ces libellés suivent (README-Docker, docs/API.md).
+- Lot 2 de P13.
+
+**Critère d’acceptation** : Aucun libellé de l’admin ne désigne deux actions ; « Export complet » garde un nom ; le titre ZIP ne touche plus la croix ; i18n:check vert.
+
+**Sources** : Trouvé pendant UI-23, Trouvé pendant UI-21
+
+### UI-25 · Boutons grisés sans raison et noms coupés au toucher
+
+Sévérité **mineur** · effort **S** · dépend de DOC-05 · statut **À faire**
+
+**Problème** : Trouvé pendant UI-22 : des boutons restent grisés sans dire pourquoi (préréglages d’étiquettes, connexion, code d’accès, liste de recherche), contre la décision « Messages d’erreur (P7) ». Dans les statistiques, un nom coupé ne se lit en entier qu’au survol, impossible au toucher.
+
+**Fichiers** : `src/lib/components/barcode/PresetManager.svelte`, `src/lib/components/layout/LoginDialog.svelte`, `src/lib/components/admin/dialogs/AccessCodeDialog.svelte`, `src/lib/components/forms/SearchableSelect.svelte`, `src/routes/statistics/`, `src/lib/i18n/locales/`
+
+**À faire**
+
+- Décision « Messages d’erreur (P7) » : chaque bouton grisé dit pourquoi, comme le nom de conteneur vide depuis UI-22.
+- Un nom coupé des statistiques se lit en entier au toucher (légende, toucher long ou autre, au choix de la tâche).
+- Lot 2 de P13.
+
+**Critère d’acceptation** : Aucun bouton grisé sans raison visible dans ces quatre composants ; au toucher (Chromium en émulation mobile), un nom coupé se lit en entier.
+
+**Sources** : Trouvé pendant UI-22, Décision « Messages d’erreur (P7) »
+
+### API-13 · Longueur des noms en unités UTF-16
+
+Sévérité **mineur** · effort **S** · dépend de DOC-05 · statut **À faire**
+
+**Problème** : Trouvé pendant API-12 : `name` et `optionalText` comptent encore en points de code, alors que `longText` et l’interface comptent en unités UTF-16 : un nom d’emoji accepté par l’API peut dépasser la limite d’un formulaire.
+
+**Fichiers** : `src/lib/shared/schemas/common.ts`, `src/lib/server/features/csv-import/`, `docs/API.md`
+
+**À faire**
+
+- Décision « Longueur des textes (DATA-10) » et API-12 : une seule mesure, en unités UTF-16, pour tous les textes, par le même helper ; tests avec emoji à la limite ; docs/API.md suit.
+- Lot 2 de P13.
+
+**Critère d’acceptation** : Un nom d’emoji à la limite est accepté ou refusé de la même façon par l’API, l’import et les formulaires ; testé.
+
+**Sources** : Trouvé pendant API-12
+
+### UI-26 · Mise en page commune des derniers dialogues
+
+Sévérité **mineur** · effort **S** · dépend de UI-24 · statut **À faire**
+
+**Problème** : Trouvé pendant UI-21 : le détail des bouteilles, toutes les bouteilles, les préréglages, les codes-barres en lot et l’effacement des données ont encore leur mise en page faite à la main, sans `layout/ScrollingDialogContent` ; ordre des titres signalé par axe-core (modéré) ; `85vh` plutôt que `dvh`, qui déborde avec la barre d’adresse d’un téléphone.
+
+**Fichiers** : `src/lib/components/layout/ScrollingDialogContent.svelte`, `src/lib/components/bottles/BottleDetailsDialog.svelte`, `src/lib/components/storage/AllBottlesDialog.svelte`, `src/lib/components/barcode/`, `src/lib/components/admin/`
+
+**À faire**
+
+- Ces dialogues passent à `ScrollingDialogContent` ; la hauteur maximale suit la hauteur visible (`dvh`) ; l’ordre des titres est juste.
+- Lot 3 de P13.
+
+**Critère d’acceptation** : À 375 × 667, chacun de ces dialogues garde son titre et ses boutons visibles ; axe-core ne remonte plus l’ordre des titres ; captures avant et après.
+
+**Sources** : Trouvé pendant UI-21
+
+### DEP-08 · Revue des dépendances d’avant la 1.1.0
+
+Sévérité **mineur** · effort **S** · dépend de DEP-07 · statut **À faire**
+
+**Problème** : Écarts laissés par DEP-07 : correctifs de SvelteKit, Svelte, adapter-node et Paraglide trop récents, image node 24.22.2 éligible vers le 2026-11-04, docker/login-action 4.7.0 (mineure).
+
+**Fichiers** : `package.json`, `pnpm-lock.yaml`, `.github/workflows/`, `Dockerfile`
+
+**À faire**
+
+- Comme DEP-07 : correctifs publiés depuis au moins 7 jours, une mise à jour par commit, portes à chaque fois ; une mineure seulement avec une raison dans le rapport ; `pnpm audit --prod` vide.
+- Lot 3 de P13, juste avant la release.
+
+**Critère d’acceptation** : `pnpm audit --prod` ne remonte rien ; chaque dépendance, action et image de base est à son dernier correctif publié depuis au moins 7 jours, ou l’écart est justifié.
+
+**Sources** : Trouvé pendant DEP-07
+
+### REL-07 · Publication de la 1.1.0
+
+Sévérité **évolution** · effort **S** · dépend de DOC-05, UI-27, SEC-13, BUG-24, UI-24, UI-25, API-13, UI-26, DEP-08 · statut **À faire**
+
+**Problème** : La 1.1.0 apporte aux utilisateurs l’installation dans le README, l’app installable sur le téléphone et les finitions de P13.
+
+**Fichiers** : `releases.json`, `CHANGELOG.md`, `UPGRADING.md`
+
+**À faire**
+
+- Résumé 1.1.0 complété à chaque tâche ; banc de la 1.0.0 vers la 1.1.0 ; release selon RELEASING.md, avec le mainteneur.
+
+**Critère d’acceptation** : v1.1.0 est publiée sur `main` et son image se télécharge sans connexion ; develop passe à 1.2.0-rc.0.
+
+**Sources** : Décision « Versions après la 1.0 »
+
+## P14 · Serveur MCP
+
+Pour la 1.2.0, enchaînée juste après la 1.1.0 : un serveur MCP intégré à Cellar, pour les assistants d’IA du réseau local (décision « Serveur MCP (P14) »), et la description OpenAPI de l’API, tirée des mêmes schémas zod. Lots : 1. SEC-11, API-14 ; 2. API-10 ; 3. API-11 ; puis la release.
 
 ### SEC-11 · Jeton d’accès du MCP
 
-Sévérité **évolution** · effort **M** · dépend de QA-06 · statut **À faire**
+Sévérité **évolution** · effort **M** · dépend de REL-07 · statut **À faire**
 
 **Problème** : Un assistant d’IA ne peut pas se connecter comme le navigateur, avec le code d’accès et un cookie : il lui faut un jeton dédié, qui ne donne accès qu’au MCP.
 
@@ -2693,12 +2877,30 @@ Sévérité **évolution** · effort **M** · dépend de QA-06 · statut **À fa
 
 **À faire**
 
-- Décision « Serveur MCP (P13) » : un jeton généré dans l’admin, stocké haché, affiché une fois, régénérable, sur le modèle du jeton du mode cron (décision « Sauvegardes par cron (DATA-05) ») ; lecture seule par défaut, écriture en option ; le jeton n’ouvre que `/mcp`.
+- Décision « Serveur MCP (P14) » : un jeton généré dans l’admin, stocké haché, affiché une fois, régénérable, sur le modèle du jeton du mode cron (décision « Sauvegardes par cron (DATA-05) ») ; lecture seule par défaut, écriture en option ; le jeton n’ouvre que `/mcp`.
 - Migration par `pnpm db:generate` ; une restauration garde le jeton de l’instance, comme le jeton cron (décision « Restauration (audit d’avant 1.0) ») ; tests des refus (jeton absent, faux, révoqué, écriture sans l’option).
 
 **Critère d’acceptation** : Un jeton créé dans l’admin ouvre `/mcp` et rien d’autre ; régénéré, l’ancien est refusé ; sans l’option d’écriture, une écriture est refusée ; testé.
 
-**Sources** : Décision « Serveur MCP (P13) »
+**Sources** : Décision « Serveur MCP (P14) »
+
+### API-14 · Description OpenAPI de l’API
+
+Sévérité **évolution** · effort **M** · dépend de REL-07 · statut **À faire**
+
+**Problème** : docs/API.md se lit, mais aucun outil ne peut le lire : une description OpenAPI permet de générer un client, de tester l’API ou de la parcourir dans un outil.
+
+**Fichiers** : `src/lib/shared/schemas/`, `scripts/`, `docs/`, `src/routes/api/`
+
+**À faire**
+
+- Décision « Doc de l’API (DOC-05, API-14) » : une description OpenAPI 3.1 générée depuis les schémas zod de l’API (`z.toJSONSchema`, sans dépendance), publiée avec la doc ; un test vérifie qu’elle couvre chaque route, comme `api-doc.test.ts` pour docs/API.md.
+- Une interface de lecture (Swagger UI ou autre) seulement avec l’accord du mainteneur pour sa dépendance.
+- Lot 1 de P14.
+
+**Critère d’acceptation** : La description OpenAPI couvre chaque route de l’API et se valide avec un outil standard ; elle est à jour à chaque build ; testé.
+
+**Sources** : Décision « Doc de l’API (DOC-05, API-14) »
 
 ### API-10 · Serveur MCP : outils de lecture
 
@@ -2710,13 +2912,13 @@ Sévérité **évolution** · effort **L** · dépend de SEC-11 · statut **À f
 
 **À faire**
 
-- Décision « Serveur MCP (P13) » : `@modelcontextprotocol/sdk` (version publiée depuis au moins 7 jours, en `dependencies`), transport HTTP « streamable » à `/mcp`, monté dans une route SvelteKit ; vérifier ce que le SDK ajoute à l’image et qu’il s’intègre au contrôle d’origine de `hooks.server.ts`.
+- Décision « Serveur MCP (P14) » : `@modelcontextprotocol/sdk` (version publiée depuis au moins 7 jours, en `dependencies`), transport HTTP « streamable » à `/mcp`, monté dans une route SvelteKit ; vérifier ce que le SDK ajoute à l’image et qu’il s’intègre au contrôle d’origine de `hooks.server.ts`.
 - Outils de lecture, qui appellent les services (jamais les repositories) et décrivent leurs paramètres à partir des schémas zod partagés : chercher des vins, voir un vin avec ses bouteilles et leurs emplacements, retrouver une bouteille par son code-barres, statistiques, pénurie, place libre dans les rangements.
 - Documenter la configuration d’un client (Claude Code, une application de bureau, un modèle local) et la limite : réseau local ou VPN seulement.
 
 **Critère d’acceptation** : Un client MCP réel, configuré avec l’adresse et le jeton, liste les outils et obtient des réponses justes sur des données inventées ; sans jeton, `/mcp` répond 401 ; les portes et les parcours passent.
 
-**Sources** : Décision « Serveur MCP (P13) »
+**Sources** : Décision « Serveur MCP (P14) »
 
 ### API-11 · Serveur MCP : outils d’écriture
 
@@ -2728,9 +2930,9 @@ Sévérité **évolution** · effort **M** · dépend de API-10 · statut **À f
 
 **À faire**
 
-- Décision « Serveur MCP (P13) » : ajouter des bouteilles (ou un vin et ses bouteilles), marquer des bouteilles bues (date, note, commentaire), déplacer des bouteilles, modifier les notes ; mêmes règles et mêmes validations que l’API, par les services.
+- Décision « Serveur MCP (P14) » : ajouter des bouteilles (ou un vin et ses bouteilles), marquer des bouteilles bues (date, note, commentaire), déplacer des bouteilles, modifier les notes ; mêmes règles et mêmes validations que l’API, par les services.
 - Outils marqués comme écritures pour le client (annotations du protocole), refusés quand le jeton est en lecture seule ; aucun outil d’admin.
 
 **Critère d’acceptation** : Avec un jeton en écriture, un client MCP réel ajoute des bouteilles, en marque une bue et la déplace, et l’interface montre le résultat ; avec un jeton en lecture seule, chaque écriture est refusée ; testé.
 
-**Sources** : Décision « Serveur MCP (P13) »
+**Sources** : Décision « Serveur MCP (P14) »

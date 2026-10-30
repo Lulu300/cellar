@@ -1,7 +1,7 @@
 [
   {
     "version": "1.1.0",
-    "summary": "1.1.0 adds an MCP server to Cellar, so that AI assistants on the home network can read the cellar.",
+    "summary": "1.1.0 makes Cellar easier to install and use: install steps in the README, a link to the API documentation, an app you can install on your phone, and fixes found after 1.0.0.",
     "mandatoryStop": false,
     "actions": []
   },

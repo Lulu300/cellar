@@ -57,7 +57,7 @@ new one.
 Cellar also checks the upgrade when it starts. It refuses to start when the update skips a mandatory
 stop, and its log names the version to install first; no data is changed, so the previous version
 still runs. Otherwise its log lists the upgrade actions of the versions you passed, and the Admin
-page shows them until you tick each one as done. Versions before 0.6.0 did not record themselves:
+page shows them until you tick each one as done. Some older versions did not record themselves:
 when you upgrade from one of them, Cellar judges the version from the database and also lists the
 actions that you may already have taken.
 
@@ -382,7 +382,7 @@ its database. A named volume that already holds data keeps the owner you give it
 If the application cannot write to one of the folders, or to a file or folder inside them, for
 example because it belongs to root, the container stops right after starting (and, with a restart
 policy such as the one in `docker-compose.yml`, keeps restarting), and `docker compose logs cellar`
-names them, their owner and the `chown` to run. Versions up to 0.2.0-rc.1 ran as root, so data
+names them, their owner and the `chown` to run. The first versions of Cellar ran as root, so data
 created by them belongs to root: change the owner once, as above, when upgrading.
 
 Owning the folders is not enough: a common upgraded layout has folders that belong to uid `1000`

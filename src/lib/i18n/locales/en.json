@@ -643,7 +643,7 @@
   "admin.create_export": "Create Export",
   "admin.confirm_delete_backup": "Are you sure you want to delete the backup \"{filename}\"? This action cannot be undone.",
   "admin.dont_forget_export_images": "Don't forget to export your images!",
-  "admin.csv_export_images_help": "CSV exports only contain data, not images. Use 'Export ZIP' in the main backup section to include images with your data.",
+  "admin.csv_export_images_help": "CSV exports only contain data, not images. Use \"Full Export\" to include the images with your data.",
   "admin.select_tables_to_export": "Select Tables to Export",
   "admin.clear_all": "Clear All",
   "admin.classifications": "Classifications",

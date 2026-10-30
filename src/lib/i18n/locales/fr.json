@@ -643,7 +643,7 @@
   "admin.create_export": "Créer un export",
   "admin.confirm_delete_backup": "Êtes-vous sûr de vouloir supprimer la sauvegarde « {filename} » ? Cette action ne peut pas être annulée.",
   "admin.dont_forget_export_images": "N’oubliez pas d’exporter vos images !",
-  "admin.csv_export_images_help": "Les exports CSV ne contiennent que les données, pas les images. Utilisez l’export ZIP de la section Sauvegardes pour inclure les images avec les données.",
+  "admin.csv_export_images_help": "Les exports CSV ne contiennent que les données, pas les images. Utilisez « Export complet » pour inclure les images avec les données.",
   "admin.select_tables_to_export": "Tables à exporter",
   "admin.clear_all": "Effacer tout",
   "admin.classifications": "Classifications",

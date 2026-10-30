@@ -292,9 +292,9 @@ docker-data/
   colors, classifications, bottle formats, appellations (with their countries and regions) and
   label presets. Shortly after each start, Cellar copies there the default file of any that is
   missing, and replaces a copy that you never edited when a release corrects that file. It reads
-  them when it creates a new database and after **Wipe All Data** (Admin › Backups), so
-  editing them changes what those fill in. Your own data is imported from the browser instead: see
-  [Importing CSV data](#importing-csv-data-optional).
+  them when it creates a new database and after **Wipe All Data** (in the **Backups** tab of the
+  admin page), so editing them changes what those fill in. Your own data is imported from the
+  browser instead: see [Importing CSV data](#importing-csv-data-optional).
 
 The container needs nothing else: Cellar finds these folders relative to `/app`. To keep them
 elsewhere, for example when running Cellar without Docker, set `DATA_DIR` (database, backups and
@@ -407,10 +407,10 @@ sudo chown -R 1000:1000 docker-data/uploads
 
 Cellar only shows the files whose name matches an imported wine image.
 
-**Import ZIP** reads the whole ZIP into memory, and can take up to 5 times its size: about 2 GB for
-a ZIP of 450 MB. **Upload Images** does the same with the images sent at once. On a NAS with little
-memory, import the images in several smaller ZIPs: a container that runs out of memory restarts,
-and nothing is imported.
+**Import ZIP** in the **Images** tab reads the whole ZIP into memory, and can take up to 5 times its
+size: over 2 GB for a ZIP of 450 MB. **Upload Images** does the same with the images sent at once.
+On a NAS with little memory, import the images in several smaller ZIPs, or upload fewer at once: a
+container that runs out of memory restarts, and nothing is imported.
 
 ## Docker commands
 

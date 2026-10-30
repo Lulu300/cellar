@@ -141,6 +141,14 @@ describe('planUpgrade', () => {
         );
     });
 
+    it('upgrades from a version that releases.json does not list, such as 0.12.0 to 1.0.0', () => {
+        const plan = planUpgrade(RELEASES, '1.0.0', recorded('0.12.0'));
+
+        expect(plan.upgraded).toBe(true);
+        expect(plan.from).toMatchObject({ lowest: '0.12.0', highest: '0.12.0', recorded: true });
+        expect(plan.actions).toEqual([]);
+    });
+
     it('lets an upgrade end on a mandatory stop, or start from it', () => {
         expect(summary(planUpgrade(WITH_STOP, '0.4.0', recorded('0.3.0')).actions)).toEqual([
             '0.4.0#0'
@@ -149,14 +157,6 @@ describe('planUpgrade', () => {
             '0.5.0#0'
         ]);
     });
-});
-
-it('upgrades from a version that releases.json does not list, such as 0.12.0 to 1.0.0', () => {
-    const plan = planUpgrade(RELEASES, '1.0.0', recorded('0.12.0'));
-
-    expect(plan.upgraded).toBe(true);
-    expect(plan.from).toMatchObject({ lowest: '0.12.0', highest: '0.12.0', recorded: true });
-    expect(plan.actions).toEqual([]);
 });
 
 describe('a database from a version that did not record itself', () => {

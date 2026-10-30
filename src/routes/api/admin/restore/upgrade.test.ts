@@ -166,6 +166,7 @@ describe('POST /api/admin/restore and the upgrade check', () => {
         expect((await restore(file)).status).toBe(200);
 
         expect(getAppSetting(APP_VERSION_KEY)?.value).toBe(__APP_VERSION__);
+        expect(storedActions()).toEqual(JSON.parse(LIVE_ACTIONS));
     });
 
     it('adds the actions of an older version that did not record itself', async () => {

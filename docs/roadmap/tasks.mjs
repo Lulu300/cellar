@@ -79,7 +79,7 @@ export const phases = [
 	{
 		id: 'P12',
 		title: 'Vérification d’avant 1.0',
-		goal: 'Une revue complète en lecture seule après P11, comme l’audit d’avant 1.0 puis sa vérification : tout ce que l’audit demandait est fait, et le nettoyage n’a pas créé de nouveaux problèmes. Le mainteneur juge chaque constat : à corriger avant la 1.0 (tâches ajoutées ici) ou acceptable en l’état. Puis la 1.0.0, avec R2 de l’audit au tag : dépôt et image publics, protection de `main`. Revue faite le 2026-10-30 (QA-06). Lots des corrections, chacun mergé avant le suivant, résumé 1.0.0 : 1. SEC-12, API-12, BUG-22, BUG-23 ; 2. UI-21, UI-22, DEP-07 ; 3. DOC-04 (documentation d’après les deux premiers lots) ; puis REL-06, la publication, avec le mainteneur.'
+		goal: 'Une revue complète en lecture seule après P11, comme l’audit d’avant 1.0 puis sa vérification : tout ce que l’audit demandait est fait, et le nettoyage n’a pas créé de nouveaux problèmes. Le mainteneur juge chaque constat : à corriger avant la 1.0 (tâches ajoutées ici) ou acceptable en l’état. Puis la 1.0.0, avec R2 de l’audit au tag : dépôt et image publics, protection de `main`. Revue faite le 2026-10-30 (QA-06). Lots des corrections, chacun mergé avant le suivant, résumé 1.0.0 : 1. SEC-12, API-12, BUG-22, BUG-23 ; 2. UI-21, UI-22, DEP-07 ; 3. DOC-04 (documentation d’après les deux premiers lots) ; 4. UI-23 ; puis REL-06, la publication, avec le mainteneur. Lots 1 à 3 faits le 2026-10-30 ; depuis le lot 2, le dépôt public repart d’un nouveau commit racine (décision « Nouveau départ à la 1.0 (REL-06) »).'
 	},
 	{
 		id: 'P13',
@@ -187,6 +187,14 @@ export const decisions = [
 	{ topic: 'Contraste des icônes (UI-18, UI-20)', choice: 'Les icônes en couleur du thème (`text-primary`) peuvent rester sous 3:1 dans les thèmes clairs jaune et orange (2,26 et 2,75:1) : elles accompagnent toujours un texte qui porte le sens, et ce texte atteint 4,5:1 depuis UI-20 (décision du 2026-10-30).' },
 	{ topic: 'Comportements voulus (QA-06)', choice: '« Retour » sur la page d’un vin mène à `/wines` même après Précédent, et `updatedAt` des conteneurs est à la seconde : ces deux comportements, documentés dans leurs tâches, sont voulus (décision du 2026-10-30).' },
 	{ topic: 'Taille de l’import CSV (API-04)', choice: 'La limite de 700 lignes du critère d’API-04 est retirée : le fichier fait 914 lignes hors tests à cause des fonctions ajoutées ensuite (BUG-15, BUG-18, API-08, UI-12), sans défaut de comportement (2 200 lignes importées en 318 ms) (décision du 2026-10-30).' },
+	{ topic: 'Pas de cadre (SEC-12)', choice: 'Toutes les réponses envoient `frame-ancestors \'none\'` et `X-Frame-Options: DENY`, sans option pour l’autoriser : un tableau de bord de NAS ouvre Cellar par un lien, pas dans un cadre. Les notes de la 1.0.0 le disent (décision du 2026-10-30).' },
+	{ topic: 'Doublons hérités (API-12)', choice: 'Un `PUT` qui garde un nom qu’une autre ligne porte à la casse près (doublon d’avant API-03) répond 409 comme les autres, sans cas particulier : on renomme d’abord l’une des deux lignes (décision du 2026-10-30).' },
+	{ topic: 'Points de suspension (UI-22)', choice: '« … » dans les deux langues, jamais « ... » ; `i18n:check` le refuse dans les fichiers de langue et dans les composants (décision du 2026-10-30).' },
+	{ topic: 'Paquets de tar-stream (DEP-07)', choice: 'Le mainteneur accepte tar-stream 3.1.9 et les 9 paquets qu’il ajoute à l’arbre et à l’image : bare-fs, bare-stream, bare-url, bare-path, teex, events-universal, streamx 2.28.1, b4a 1.9.0 et bare-events 2.9.2 (décision du 2026-10-30).' },
+	{ topic: 'Nouveau départ à la 1.0 (REL-06)', choice: 'Le 2026-10-30, la facturation de GitHub Actions bloque la CI du dépôt privé, et le mainteneur ne paie pas GitHub. Son historique contient une vraie base (`data/cellar.db`, 92 commits) : l’ancien dépôt devient `Lulu300/cellar-archive`, privé, Actions coupées, et le paquet GHCR `cellar` est supprimé. Le nouveau dépôt public `Lulu300/cellar` repart du commit racine 2fff2246 (le code de develop c350b2dd), sans ancien tag. Publiquement, Cellar commence à la 1.0.0 : les versions 0.x et leurs changements cassants ne comptent plus. Seul le serveur de test d’un ami, en 0.12.0, en vient, et le banc local couvre ce passage. Aucun commit ni tag de l’archive ne va dans le dépôt public ; les hachages cités ici avant 2fff2246 renvoient à l’archive.' },
+	{ topic: 'Versions 0.x dans la doc (REL-06)', choice: 'README-Docker et docs/API.md ne citent plus de version 0.x ; le comportement reste décrit (une ancienne sauvegarde se restaure toujours), sans numéro de version (décision du 2026-10-30).' },
+	{ topic: 'Nettoyage du dossier d’images (DOC-04)', choice: 'Une restauration supprime tout fichier non caché du dossier d’images que la base restaurée ne cite pas, image ou non ; ils passent d’abord dans la sauvegarde de sécurité. C’est voulu et documenté : le dossier appartient à Cellar (décision du 2026-10-30).' },
+	{ topic: 'Deux « Import ZIP » (UI-23)', choice: 'Avant la 1.0, chaque bouton de l’admin dit ce qu’il importe ou exporte : l’import d’un export de données (onglet Backups) et l’import d’images (onglet Images) ne portent plus le même libellé, en anglais comme en français (décision du 2026-10-30).' },
 	{ topic: 'Après la 1.0 : compte rendu de l’import', choice: 'Idée du mainteneur pour la première version après la 1.0, une fois tout ce qu’il faut pour la 1.0 terminé : au lieu de refuser les lignes qui ne s’importent pas, l’import finit par un compte rendu de ce qui est importé et de ce qui ne l’est pas, et permet de refaire à la main les correspondances des lignes refusées, par exemple les bouteilles qui correspondent à plusieurs vins (2026-10-18).' }
 ];
 
@@ -1828,7 +1836,9 @@ export const tasks = [
 		todo: [
 			'V2-m1 : chaque réponse envoie `Content-Security-Policy: frame-ancestors \'none\'` (ou `\'self\'` si Cellar s’encadre lui-même quelque part) et `X-Frame-Options: DENY` pour les anciens navigateurs, dans `handle`, sans casser les images de `/uploads` ni les téléchargements.',
 			'Un test du `handle` et une preuve dans Chromium : une page d’un autre port qui encadre l’admin reste vide.',
-			'Lot 1 de P12.'
+			'Lot 1 de P12.',
+			'Fait en P12 (2026-10-30, 0292716e..010dcc83, commits de l’historique archivé, voir « Nouveau départ à la 1.0 (REL-06) ») : `frame-ancestors \'none\'` et `X-Frame-Options: DENY` sur chaque réponse de `handle` ; une page d’un autre port reste vide dans Chromium (décision « Pas de cadre (SEC-12) »).',
+			'Trouvé pendant SEC-12 : les réponses qui ne passent pas par `handle` (403 brut de SvelteKit, fichiers statiques, exception dans `handle`) n’ont pas l’en-tête.'
 		],
 		done: 'Une page d’un autre port ne peut plus afficher Cellar dans un cadre (preuve dans Chromium) ; toutes les pages, l’API et `/uploads` envoient l’en-tête ; testé.',
 		deps: ['QA-06'], src: ['verification-pre-1.0/synthese.md#V2-m1', 'Décision « Revue d’avant 1.0 (QA-06) »']
@@ -1841,7 +1851,9 @@ export const tasks = [
 		todo: [
 			'V1-m1 : une seule mesure de la longueur, la même que l’export et l’import CSV et que l’interface (`.length`, unités UTF-16), dans `longText`, sans migration ; tests avec emoji à la limite, à la création, au PATCH et en aller-retour CSV.',
 			'Trouvé pendant API-08 : `PUT /api/<table>/{id}` refuse en 409 un nom qui ne diffère d’un autre que par la casse, comme `POST` ; tests.',
-			'Lot 1 de P12.'
+			'Lot 1 de P12.',
+			'Fait en P12 (2026-10-30, c629b212..8fc8ebf5, commits de l’historique archivé, voir « Nouveau départ à la 1.0 (REL-06) ») : une seule mesure des textes longs, en unités UTF-16, dans l’API et les imports ; 2 500 emoji passent, 2 501 répondent 422, et une note revient entière d’un aller-retour CSV ; renommer en un nom existant à la casse près répond 409 (décision « Doublons hérités (API-12) »).',
+			'Trouvé pendant API-12 : `name` et `optionalText` comptent encore en points de code.'
 		],
 		done: 'Une note de 5 000 unités avec des emoji est acceptée ou refusée de la même façon partout, et revient entière d’un aller-retour CSV ; renommer un pays en un nom existant à la casse près répond 409 ; testé.',
 		deps: ['QA-06'], src: ['verification-pre-1.0/synthese.md#V1-m1', 'Décision « Revue d’avant 1.0 (QA-06) »']
@@ -1854,7 +1866,9 @@ export const tasks = [
 		todo: [
 			'V4-m6 et UI-07/Trouvé-7 : un échec du téléchargement de la sauvegarde de sécurité se voit (message d’erreur qui dit où retrouver le fichier), avec un test qui échoue avant.',
 			'Trouvé pendant DATA-12 : « Download » laisse le navigateur télécharger le fichier lui-même (lien direct ou contrôle de la réponse avant `<a download>`), sans le charger en mémoire, par le même helper que le téléchargement de sécurité.',
-			'Lot 1 de P12.'
+			'Lot 1 de P12.',
+			'Fait en P12 (2026-10-30, 76043435..8904c5b6, commits de l’historique archivé, voir « Nouveau départ à la 1.0 (REL-06) ») : un téléchargement de sécurité raté affiche une erreur qui dit où retrouver le fichier, session expirée comprise ; « Download » laisse le navigateur enregistrer le fichier (0 octet en mémoire de la page pour 600 Mo, contre 629 Mo avant).',
+			'Trouvé pendant BUG-22 : une sauvegarde déjà supprimée donne un toast contradictoire (« n’existe plus » et « reste dans la liste ») ; après un 401, `invalidateAll` recharge la page et le dialogue de l’admin perd son message.'
 		],
 		done: 'Un téléchargement de sécurité qui échoue affiche une erreur ; « Download » d’une sauvegarde de plus de 500 Mo ne la charge pas dans la mémoire de la page (preuve dans Chromium) ; testé.',
 		deps: ['QA-06'], src: ['verification-pre-1.0/synthese.md#V4-m6', 'Décision « Revue d’avant 1.0 (QA-06) »']
@@ -1867,7 +1881,9 @@ export const tasks = [
 		todo: [
 			'V4-m7 : la recherche par lettre ne réagit qu’aux caractères imprimables, jamais à Tab, Échap ou aux touches de modification ; Tab quitte le champ sans changer sa valeur.',
 			'Un test (composant ou e2e) qui échoue avant la correction.',
-			'Lot 1 de P12.'
+			'Lot 1 de P12.',
+			'Fait en P12 (2026-10-30, fc3ea2aa..3c17a6f4, commits de l’historique archivé, voir « Nouveau départ à la 1.0 (REL-06) ») : la recherche par lettre de bits-ui recevait toutes les touches quand la liste était fermée ; `OptionSelect` ne lui donne ses options que pour un caractère imprimable. Étape e2e dans `backup.spec`, liste fermée et ouverte.',
+			'Trouvé pendant BUG-23 : le comportement vient de bits-ui lui-même (recherche par lettre d’une liste fermée), à signaler en amont.'
 		],
 		done: 'Tab sur un OptionSelect fermé ou ouvert ne change pas sa valeur, dans les dialogues CSV et ailleurs ; la première lettre choisit toujours ; testé.',
 		deps: ['QA-06'], src: ['verification-pre-1.0/synthese.md#V4-m7', 'Décision « Revue d’avant 1.0 (QA-06) »']
@@ -1880,7 +1896,9 @@ export const tasks = [
 		todo: [
 			'V4-m1 : même hauteur maximale et même défilement que `CsvImportDialog` ; vérifier tous les dialogues de l’admin à 375 × 667.',
 			'V4-m2 : exemples à 4,5:1 au moins dans les 16 modes. V4-m3 : la liste défilante reçoit le focus (`tabindex="0"`, nom accessible).',
-			'Lot 2 de P12.'
+			'Lot 2 de P12.',
+			'Fait en P12 (2026-10-30, 2fff2246..e67f206e) : `layout/ScrollingDialogContent` donne aux longs dialogues de l’admin un corps qui défile et des boutons toujours visibles à 375 × 667, erreurs à côté des boutons ; guide de l’import CSV à 5,26:1 au moins dans les 16 modes, liste défilante au clavier ; aucune violation sérieuse ni critique d’axe-core sur 372 ouvertures.',
+			'Trouvé pendant UI-21 : détail des bouteilles, toutes les bouteilles, préréglages, codes-barres en lot et effacement ont encore leur mise en page à la main ; en français, le titre du dialogue ZIP passe 3 px sous la croix ; ordre des titres (modéré) ; `85vh` plutôt que `dvh`.'
 		],
 		done: 'Aucun dialogue de l’admin ne dépasse un écran de 375 × 667 sans défiler jusqu’à son bouton ; axe-core ne remonte aucune violation sérieuse ni critique dans l’admin, dialogues ouverts, en clair et en sombre.',
 		deps: ['QA-06'], src: ['verification-pre-1.0/synthese.md#V4-m1', 'Décision « Revue d’avant 1.0 (QA-06) »']
@@ -1895,7 +1913,9 @@ export const tasks = [
 			'V5-m2 : à 390 et 768 px, les actions du détail des bouteilles restent dans le dialogue, visibles sans défilement horizontal.',
 			'V5-m5 et V6-m3 : « Mise à jour… » par une clé de texte partagée ; `abbreviate` coupe par « … » et le nom complet reste lisible (`title` ou légende) ; si possible, `i18n:check` refuse « ... » écrit dans un composant.',
 			'Trouvé pendant UI-12, décision « Messages d’erreur (P7) » : un nom de conteneur vide dit pourquoi « Enregistrer » est grisé.',
-			'Lot 2 de P12.'
+			'Lot 2 de P12.',
+			'Fait en P12 (2026-10-30, 05cee3b1..e290bebd, commits de l’historique archivé, voir « Nouveau départ à la 1.0 (REL-06) ») : nom accessible du champ « Nb bouteilles », actions du détail des bouteilles visibles à 390 px, « Mise à jour… » par `common.updating`, `abbreviate` coupe par « … » avec le nom entier en `title`, raison d’un nom de conteneur vide ; « … » dans les deux langues et `i18n:check` refuse « ... » (décision « Points de suspension (UI-22) »).',
+			'Trouvé pendant UI-22 : d’autres boutons sont grisés sans raison (préréglages d’étiquettes, connexion, code d’accès, liste de recherche) ; au toucher, un nom coupé des statistiques reste illisible.'
 		],
 		done: 'axe-core ne remonte aucune violation critique ni sérieuse sur la liste, la page vin, les préférences, les statistiques et le stockage ; les actions du détail des bouteilles sont visibles à 390 px ; plus aucun « ... » visible ; un nom de conteneur vide montre sa raison.',
 		deps: ['QA-06'], src: ['verification-pre-1.0/synthese.md#V5-m1', 'Décision « Revue d’avant 1.0 (QA-06) »']
@@ -1908,7 +1928,9 @@ export const tasks = [
 		todo: [
 			'V7-m1 : dompurify 3.4.17 ou plus (publiée depuis au moins 7 jours), par une mise à jour de jsPDF ou un `overrides` de pnpm si jsPDF ne suit pas.',
 			'Décisions « Fraîcheur des dépendances (SEC-08) », « Plages de versions (DEP-02) » et « Actions GitHub épinglées (SEC-10) » : correctifs publiés depuis au moins 7 jours, une mise à jour par commit, portes à chaque fois ; image de base et actions comprises.',
-			'Lot 2 de P12.'
+			'Lot 2 de P12.',
+			'Fait en P12 (2026-10-30, e0dd937e..9ea78102) : dompurify 3.4.17, bits-ui 2.20.2, tar-stream 3.1.9 (décision « Paquets de tar-stream (DEP-07) »), pnpm 10.34.8, @babel/runtime 7.29.10, text-decoder 1.2.7 ; `pnpm audit --prod` vide ; une sauvegarde zip se crée et se restaure.',
+			'Écarts justifiés : correctifs de SvelteKit, Svelte, adapter-node et Paraglide de moins de 7 jours ; image node 24.22.2 éligible vers le 2026-11-04 ; docker/login-action 4.7.0 et tar-stream 3.2 sont des mineures.'
 		],
 		done: '`pnpm audit --prod` ne remonte rien ; chaque dépendance, action et image de base est à son dernier correctif publié depuis au moins 7 jours, ou l’écart est justifié dans le rapport.',
 		deps: ['QA-06'], src: ['verification-pre-1.0/synthese.md#V7-m1', 'Décision « Revue d’avant 1.0 (QA-06) »']
@@ -1922,22 +1944,39 @@ export const tasks = [
 			'V3-m2 : les phrases de la restauration (images, compteurs) suivent le code. Trouvé pendant BUG-20 : un exemple de `label_too_small` qui répond vraiment 422.',
 			'V4-m5 : README-Docker nomme l’onglet Backups de l’admin. V3-m1 (accepté) : une phrase sur la mémoire qu’il faut pour importer un gros zip d’images.',
 			'RELEASING.md pour la 1.0 : plus de « 0.x » au présent, la section « First release: v0.1.0 » réduite à ce qui reste utile. Reprendre aussi ce que les lots 1 et 2 ont changé dans l’API (SEC-12, API-12).',
-			'Lot 3 de P12, après les lots 1 et 2.'
+			'Lot 3 de P12, après les lots 1 et 2.',
+			'Fait en P12 (2026-10-30, 7c3dfddb..bb97876c) : docs/API.md décrit la restauration réelle (images écrasées, fichiers non cités supprimés, compteur de codes-barres au plus grand) et un `label_too_small` qui répond vraiment 422 ; README-Docker nomme l’onglet Backups et la mémoire d’un zip d’images (jusqu’à 5 fois sa taille) ; RELEASING.md part de la 1.0.0, première version publique sans version précédente. Chaque phrase rejouée contre l’app compilée.',
+			'Trouvé pendant DOC-04 : `release.mjs` échoue (« Tag v0.12.0 not found ») tant que `releases.json` garde les versions 0.x ; README-Docker et docs/API.md citent encore des versions 0.x ; deux boutons « Import ZIP » (onglets Backups et Images, UI-23) ; une restauration supprime aussi les fichiers non images du dossier d’images (décision « Nettoyage du dossier d’images (DOC-04) »).'
 		],
 		done: 'Chaque phrase citée par V3-m2, V4-m5 et l’exemple de `label_too_small` est juste, rejouée contre l’app compilée ; RELEASING.md décrit les versions à partir de la 1.0.',
 		deps: ['SEC-12', 'API-12', 'BUG-22', 'BUG-23', 'UI-21', 'UI-22', 'DEP-07'], src: ['verification-pre-1.0/synthese.md#V3-m2', 'Décision « Revue d’avant 1.0 (QA-06) »']
 	},
 	{
+		id: 'UI-23', phase: 'P12', size: 'S', sev: 'mineur',
+		title: 'Admin : deux boutons « Import ZIP »',
+		why: 'L’onglet Backups et l’onglet Images ont chacun un bouton « Import ZIP » (« Importer ZIP ») : le premier importe un export de données avec ses images, le second des images à rattacher aux vins. README-Docker doit nommer l’onglet pour les distinguer (DOC-04).',
+		where: ['src/lib/components/admin/backups/BackupActions.svelte', 'src/routes/admin/images/+page.svelte', 'src/lib/components/admin/dialogs/CsvImportDialog.svelte', 'src/lib/i18n/locales/', 'README-Docker.md', 'docs/API.md', 'e2e/'],
+		todo: [
+			'Décision « Deux « Import ZIP » (UI-23) » : deux libellés distincts, en anglais et en français, qui disent ce que le bouton importe ; même règle pour « Export ZIP » si l’onglet Images et l’onglet Backups le partagent.',
+			'Les textes qui citent ces boutons suivent : guide de l’import CSV, README-Docker, docs/API.md, parcours e2e.',
+			'Lot 4 de P12, avant REL-06.'
+		],
+		done: 'Aucun libellé de bouton de l’admin n’est porté par deux actions différentes ; chaque texte qui cite un de ces boutons le nomme comme l’interface ; portes vertes.',
+		deps: ['DOC-04'], src: ['Trouvé pendant DOC-04', 'Décision « Deux « Import ZIP » (UI-23) »']
+	},
+	{
 		id: 'REL-06', phase: 'P12', size: 'S', sev: 'evolution',
 		title: 'Publication de la 1.0.0',
 		why: 'La 1.0.0 rend le dépôt et l’image publics : la documentation doit alors dire comment télécharger l’image, et `main` doit être protégée.',
-		where: ['README.md', 'README-Docker.md', 'docker-compose.yml', 'releases.json', '.github/'],
+		where: ['README.md', 'README-Docker.md', 'docker-compose.yml', 'releases.json', 'CHANGELOG.md', 'UPGRADING.md', 'docs/API.md', '.github/'],
 		todo: [
 			'Décisions « Visibilité (REL-01) » et « Protection des branches (QA-04) », R2 de l’audit : réécrire les passages de README-Docker et du compose qui évitent de télécharger l’image ; résumé 1.0.0 complet.',
-			'Avec le mainteneur, qui seul change les réglages de GitHub : dépôt public, paquet GHCR public, protection de `main` ; puis la release finale selon RELEASING.md, banc de mise à jour compris.'
+			'Avec le mainteneur, qui seul change les réglages de GitHub : dépôt public, paquet GHCR public, protection de `main` ; puis la release finale selon RELEASING.md, banc de mise à jour compris.',
+			'Décision « Nouveau départ à la 1.0 (REL-06) » : `releases.json` ne garde que l’entrée 1.0.0, sans action de mise à jour ; son résumé est réécrit comme celui d’une première version publique (ce que fait Cellar, pas ce qui change depuis la 0.12.0) ; `CHANGELOG.md` et `UPGRADING.md` régénérés par `release.mjs prepare`. Décision « Versions 0.x dans la doc (REL-06) » : README-Docker et docs/API.md sans numéro de version 0.x.',
+			'Banc local de la 0.12.0 vers la 1.0.0 avant le tag (images Docker locales). `main` naît à la release (`git switch -c main`, RELEASING.md) ; ensuite le mainteneur en fait la branche par défaut et la protège. Le paquet GHCR, recréé par la première release, doit être public.'
 		],
 		done: 'v1.0.0 est publiée sur `main` ; le dépôt et l’image sont publics, `docker pull ghcr.io/lulu300/cellar:1.0.0` marche sans connexion ; `main` est protégée.',
-		deps: ['DOC-04'], src: ['Décisions « Visibilité (REL-01) », « Protection des branches (QA-04) »', 'audit-pre-1.0/synthese.md#R2']
+		deps: ['DOC-04', 'UI-23'], src: ['Décisions « Visibilité (REL-01) », « Protection des branches (QA-04) »', 'audit-pre-1.0/synthese.md#R2']
 	},
 
 	// ───────── P13 Serveur MCP

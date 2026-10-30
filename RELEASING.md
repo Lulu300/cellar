@@ -1,6 +1,6 @@
 # Releasing
 
-Versions follow SemVer, in 0.x during the clean-up: the minor version goes up for each released roadmap phase and whenever upgrading needs a manual action, the patch version otherwise. In practice, the version after a final release is at least its next minor version: see [Version of develop](#version-of-develop). From 1.0.0 on, a patch version never needs a manual action, a major version is only for an action that concerns every user and without which Cellar does not work, and a conditional action (for your own scripts, for the cron backup mode…) goes in a minor version.
+Versions follow SemVer, from 1.0.0, the first public release: a patch version never needs a manual action, a major version is only for an action that concerns every user and without which Cellar does not work, and a conditional action (for your own scripts, for the cron backup mode…) goes in a minor version. In practice, the version after a final release is at least its next minor version: see [Version of develop](#version-of-develop).
 
 A release is a git tag. Pushing it runs `.github/workflows/release.yml`. It first runs `.github/workflows/ci.yml` on the tagged commit, its `verify` job (migrations matching `schema.ts`, type-check, lint, tests, translation check, knip, build, and the `ORIGIN` check of the built server), its `image` job (the Docker image must become healthy) and its `e2e` job (the end-to-end journeys), then checks the release, builds the Docker image for amd64 and arm64, each on a runner of that platform, starts each one and waits until it is healthy before pushing it, tags the two as one multi-platform image, and creates the GitHub release. Pushes without a tag publish nothing. `ci.yml` also runs on every pull request and every push to `develop`, without publishing anything.
 
@@ -13,7 +13,7 @@ A release is a git tag. Pushing it runs `.github/workflows/release.yml`. It firs
 
 Between two tags, `develop` carries the number of the next release candidate, so that a build of `develop`, such as one made from a Git checkout, never claims to be a published version. Cellar records its version in the database when it starts, and an older version refuses to start on that database: a build that called itself the last release would let that release start again on a database that newer migrations have changed.
 
-After each tag, `develop` moves to the next rc number: `0.9.0-rc.2` after `0.9.0-rc.1`, and `0.10.0-rc.0` after `0.9.0`, with a new entry for `0.10.0` at the top of `releases.json`, since a build needs an entry for its version. The first tagged rc of a version is `rc.1`. The number of `develop` is a floor: the next version may get a higher number (rename its entry when you prepare its first rc), never a lower one, which a database opened by a build of `develop` would refuse. After `0.9.0`, a release with fixes only is therefore `0.10.0`, not `0.9.1`.
+After each tag, `develop` moves to the next rc number: `1.1.0-rc.2` after `1.1.0-rc.1`, and `1.2.0-rc.0` after `1.1.0`, with a new entry for `1.2.0` at the top of `releases.json`, since a build needs an entry for its version. The first tagged rc of a version is `rc.1`. The number of `develop` is a floor: the next version may get a higher number (rename its entry when you prepare its first rc), never a lower one, which a database opened by a build of `develop` would refuse. After `1.1.0`, a release with fixes only is therefore `1.2.0`, not `1.1.1`.
 
 A build of `develop` counts as a release candidate of its version: once a database has run one, the actions added to that version later are shown neither by newer builds nor by the release (see `actions` below).
 
@@ -23,39 +23,29 @@ A build of `develop` counts as a release candidate of its version: once a databa
 
 ```json
 {
-  "version": "0.3.0",
+  "version": "1.1.0",
   "summary": "What this version brings, in a few sentences of Markdown.",
   "mandatoryStop": false,
-  "actions": ["One manual step the user must take when upgrading to 0.3.0, in Markdown."]
+  "actions": ["One manual step the user must take when upgrading to 1.1.0, in Markdown."]
 }
 ```
 
-- `actions`: add the action in the same change as the commit that requires it, which also carries a `BREAKING CHANGE:` footer. Put it in the entry of the next version, creating the entry at the top if needed. A version with actions must be a minor version (0.Y.0) during 0.x, and a minor or major version from 1.0.0 on, as described at the top; nothing enforces this, so check it when choosing the version. Write actions for users, and use absolute links: relative links break in the GitHub release notes. The Admin page stores each action by its version and its position in the list: add a new action only at the end of its list, and never remove or reorder an action of a published version (reword it in place instead). Actions are shown in the Admin page with a subset of Markdown: `code`, **bold** and absolute links; anything else shows as typed.
+- `actions`: add the action in the same change as the commit that requires it, which also carries a `BREAKING CHANGE:` footer. Put it in the entry of the next version, creating the entry at the top if needed. A version with actions must be a minor or major version, as described at the top; nothing enforces this, so check it when choosing the version. Write actions for users, and use absolute links: relative links break in the GitHub release notes. The Admin page stores each action by its version and its position in the list: add a new action only at the end of its list, and never remove or reorder an action of a published version (reword it in place instead). Actions are shown in the Admin page with a subset of Markdown: `code`, **bold** and absolute links; anything else shows as typed.
 
   The release check fails when a version contains a breaking commit (`BREAKING CHANGE:` footer or `type!:`) but has no action at all. It works per version, not per commit: once a version has one action, further breaking commits pass. Whoever adds a breaking commit must add or update its action by hand. Once a release candidate of a version has shipped, avoid adding actions to that version: rc users would never see them, because an rc counts as its final version. If it cannot be avoided, announce the new action in the final release's summary. Builds of `develop` carry the rc number of the next version all along, so they only show the actions that existed when a database first ran that version: whoever builds `develop` reads the actions of each release in its release notes.
 
-- `mandatoryStop`: `true` when users must install and start this version before upgrading past it, for example because it runs a data migration that later versions no longer contain. A configuration change, like a new environment variable, is not a stop: it can be done when upgrading straight to a later version. Only a version from 0.6.0 on can be a stop: older versions did not record themselves in the database, so Cellar cannot always tell whether a database passed them.
+- `mandatoryStop`: `true` when users must install and start this version before upgrading past it, for example because it runs a data migration that later versions no longer contain. A configuration change, like a new environment variable, is not a stop: it can be done when upgrading straight to a later version.
 - `summary`: required. When you create an entry early, write what you know; complete it just before the release.
 
 `CHANGELOG.md` and `UPGRADING.md` are generated: never edit them. Each changelog section holds the summary, the upgrade actions and the changes since the previous final version, which git-cliff (`cliff.toml`) builds from the Conventional Commits. The GitHub release notes are the same section. A release candidate covers everything since the previous final version too.
 
 `node scripts/upgrade-path.mjs <from> <to>` prints the actions and mandatory stops between two versions. `<to>` must have an entry in `releases.json`; a release candidate counts as its final version.
 
-## First release: v0.1.0
+## First public release: v1.0.0
 
-The first rc needs a `v0.1.0` tag to start its changelog from. Create it once, on the last commit published before releases existed:
+1.0.0 is the first public release: `releases.json` starts with it, and no tag comes before it. Since `scripts/release.mjs` compares a version with the tag of the one before it, the release notes and the changelog section of 1.0.0 hold its summary and its upgrade actions, without a list of changes, and its release check finds no earlier commit to look for breaking changes in.
 
-```bash
-git tag -a v0.1.0 -m "0.1.0" 556c7bb
-git push origin v0.1.0
-```
-
-That commit still has the old `docker-publish.yml`, which GitHub runs for this tag. It rebuilds the same source as the current `:latest` and pushes `:0.1.0`, `:sha-556c7bb` and `:latest` (metadata-action adds `latest` to semver tags by default). It does not check `package.json`, which says `0.0.1` there, and creates no GitHub release. Create the release from a `develop` checkout that has the release scripts:
-
-```bash
-node scripts/release.mjs notes v0.1.0 > /tmp/notes-0.1.0.md
-gh release create v0.1.0 --verify-tag --title v0.1.0 --notes-file /tmp/notes-0.1.0.md
-```
+There is no `main` branch before 1.0.0 either: in step 2 of [Final release](#final-release), create it from the release commit with `git switch -c main` instead of `git switch main` and `git merge --ff-only develop`.
 
 ## Release candidate
 

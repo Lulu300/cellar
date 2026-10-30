@@ -292,7 +292,7 @@ docker-data/
   colors, classifications, bottle formats, appellations (with their countries and regions) and
   label presets. Shortly after each start, Cellar copies there the default file of any that is
   missing, and replaces a copy that you never edited when a release corrects that file. It reads
-  them when it creates a new database and after **Wipe All Data** (Admin, Backup & Restore), so
+  them when it creates a new database and after **Wipe All Data** (Admin › Backups), so
   editing them changes what those fill in. Your own data is imported from the browser instead: see
   [Importing CSV data](#importing-csv-data-optional).
 
@@ -388,8 +388,9 @@ The import reads files sent from your browser, not files on the server:
 
 1. Open the admin page: the URL set in `ORIGIN` followed by `/admin` (e.g.
    `http://192.168.1.20:3005/admin`).
-2. In **Backup & Restore**, choose **CSV Import** and select the CSV files on your computer. The
-   dialog's **CSV File Format Guide** lists the file names and columns it expects.
+2. In the **Backups** tab, under **Backup & Restore**, choose **CSV Import** and select the CSV
+   files on your computer. The dialog's **CSV File Format Guide** lists the file names and columns
+   it expects.
 
 ### Adding images (optional)
 
@@ -454,9 +455,10 @@ This data persists when you stop, remove or rebuild the container.
 
 ## Backup
 
-The admin page makes backups while Cellar runs: **Backup & Restore** creates one on demand, and
-the automatic backup settings make them on a schedule. Each backup is a zip holding a copy of the
-database and the images, kept in `docker-data/data/`.
+The **Backups** tab of the admin page makes backups while Cellar runs: **Full Backup**, under
+**Backup & Restore**, creates one on demand, and the automatic backup settings make them on a
+schedule. Each backup is a zip holding a copy of the database and the images, kept in
+`docker-data/data/`.
 
 Restoring a backup from the admin page refuses one made by a newer version of Cellar, or by a
 version older than a mandatory stop that this version passed: the message names the version to

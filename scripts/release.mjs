@@ -48,7 +48,7 @@ function commitRange(releases, index) {
             .status !== 0
     ) {
         throw new Error(
-            `Tag v${previous.version} not found: fetch the tags with "git fetch --tags", or create it if it was never tagged (see RELEASING.md).`
+            `Tag v${previous.version} not found: fetch the tags with "git fetch --tags".`
         );
     }
     return `v${previous.version}..${index === 0 ? 'HEAD' : `v${releases[index].version}`}`;

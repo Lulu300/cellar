@@ -1907,8 +1907,9 @@ curl -fsS -b cookies.txt -H 'Content-Type: application/zip' \
 ### `POST /api/admin/restore`
 
 Replaces the database with that of a backup zip, copies its images into the image folder over the
-files of the same name, and deletes the image files that no image of the restored database names.
-The current data, images included, is first saved in a pre-restore backup.
+files of the same name, and deletes the files of the image folder, hidden ones aside, that no image
+of the restored database names, even those that are not images. The current data, images
+included, is first saved in a pre-restore backup.
 
 - **Session:** required.
 - **Body:** the backup zip, by its file name or as an upload: see

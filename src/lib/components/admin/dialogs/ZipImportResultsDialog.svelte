@@ -1,12 +1,8 @@
 <script lang="ts">
-    import {
-        Dialog,
-        DialogContent,
-        DialogHeader,
-        DialogTitle
-    } from '#lib/components/ui/dialog/index.js';
+    import { Dialog } from '#lib/components/ui/dialog/index.js';
+    import ScrollingDialogContent from '#lib/components/layout/ScrollingDialogContent.svelte';
     import { Button } from '#lib/components/ui/button/index.js';
-    import ScrollRegion from '#lib/components/admin/ScrollRegion.svelte';
+    import ScrollRegion from '#lib/components/layout/ScrollRegion.svelte';
     import { FileArchive } from '@lucide/svelte';
     import { m } from '#lib/paraglide/messages.js';
     import type { ZipImportDTO } from '#lib/shared/dto.js';
@@ -36,14 +32,11 @@
 </script>
 
 <Dialog bind:open>
-    <DialogContent class="sm:max-w-4xl max-h-[85vh] overflow-y-auto">
-        <DialogHeader>
-            <DialogTitle class="flex items-center gap-2">
-                <FileArchive class="h-5 w-5 text-primary" />
-                {m['admin.zip_import_results']()}
-            </DialogTitle>
-        </DialogHeader>
-
+    <ScrollingDialogContent
+        title={m['admin.zip_import_results']()}
+        icon={FileArchive}
+        class="sm:max-w-4xl"
+    >
         {#if zipImportResults}
             {@const detailsTitle = m['admin.detailed_results_files_processed']({
                 count: zipImportResults.totalProcessed || zipImportResults.summary?.length || 0
@@ -161,10 +154,10 @@
             </div>
         {/if}
 
-        <div class="flex justify-end pt-4 border-t">
+        {#snippet footer()}
             <Button onclick={closeDialog}>
                 {m['common.close']()}
             </Button>
-        </div>
-    </DialogContent>
+        {/snippet}
+    </ScrollingDialogContent>
 </Dialog>

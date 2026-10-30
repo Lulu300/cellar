@@ -1,14 +1,10 @@
 <script lang="ts">
-    import {
-        Dialog,
-        DialogContent,
-        DialogHeader,
-        DialogTitle
-    } from '#lib/components/ui/dialog/index.js';
+    import { Dialog } from '#lib/components/ui/dialog/index.js';
+    import ScrollingDialogContent from '#lib/components/layout/ScrollingDialogContent.svelte';
     import { Button } from '#lib/components/ui/button/index.js';
     import { Label } from '#lib/components/ui/label/index.js';
     import OptionSelect from '#lib/components/forms/OptionSelect.svelte';
-    import ScrollRegion from '#lib/components/admin/ScrollRegion.svelte';
+    import ScrollRegion from '#lib/components/layout/ScrollRegion.svelte';
     import { Badge } from '#lib/components/ui/badge/index.js';
     import { FileUp, X, ChevronUp, ChevronDown, FileArchive } from '@lucide/svelte';
     import { m } from '#lib/paraglide/messages.js';
@@ -83,11 +79,8 @@
 </script>
 
 <Dialog bind:open onOpenChange={(isOpen) => !isOpen && closeDialog()}>
-    <DialogContent class="max-w-2xl max-h-[85vh] flex flex-col">
-        <DialogHeader class="flex-shrink-0">
-            <DialogTitle>{m['admin.import_from_csv_files']()}</DialogTitle>
-        </DialogHeader>
-        <div class="space-y-6 py-4 flex-1 overflow-y-auto">
+    <ScrollingDialogContent title={m['admin.import_from_csv_files']()} class="max-w-2xl">
+        <div class="space-y-6 py-3">
             <div class="space-y-3">
                 <Label class="text-base font-medium"
                     >{m['admin.select_csv_files_to_import']()}</Label
@@ -275,7 +268,7 @@
             </div>
         </div>
 
-        <div class="flex flex-wrap justify-end gap-2 pt-4 border-t flex-shrink-0">
+        {#snippet footer()}
             <Button variant="outline" onclick={closeDialog}>
                 {m['common.cancel']()}
             </Button>
@@ -289,6 +282,6 @@
             <Button onclick={() => executeCsvImport(false)} disabled={csvImportFiles.length === 0}>
                 {m['admin.import_files']({ count: csvImportFiles.length })}
             </Button>
-        </div>
-    </DialogContent>
+        {/snippet}
+    </ScrollingDialogContent>
 </Dialog>

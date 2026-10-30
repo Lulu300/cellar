@@ -1,11 +1,7 @@
 <script lang="ts">
     import { invalidateAll } from '$app/navigation';
-    import {
-        Dialog,
-        DialogContent,
-        DialogHeader,
-        DialogTitle
-    } from '#lib/components/ui/dialog/index.js';
+    import { Dialog } from '#lib/components/ui/dialog/index.js';
+    import ScrollingDialogContent from '#lib/components/layout/ScrollingDialogContent.svelte';
     import { Button } from '#lib/components/ui/button/index.js';
     import { Input } from '#lib/components/ui/input/index.js';
     import { Label } from '#lib/components/ui/label/index.js';
@@ -63,11 +59,8 @@
 </script>
 
 <Dialog bind:open>
-    <DialogContent class="max-w-md">
-        <DialogHeader>
-            <DialogTitle>{m['admin.barcode_settings']()}</DialogTitle>
-        </DialogHeader>
-        <div class="space-y-4 py-4">
+    <ScrollingDialogContent title={m['admin.barcode_settings']()} {error} class="max-w-md">
+        <div class="py-3">
             <div class="flex items-start gap-3">
                 <div
                     class="flex-shrink-0 w-8 h-8 bg-primary/10 rounded-full flex items-center justify-center"
@@ -141,21 +134,17 @@
                                 </p>
                             </div>
                         {/if}
-
-                        {#if error}
-                            <p class="text-sm text-destructive">{error}</p>
-                        {/if}
                     </div>
                 </div>
             </div>
-            <div class="flex justify-end gap-2">
-                <Button variant="outline" onclick={() => (open = false)}>
-                    {m['common.cancel']()}
-                </Button>
-                <Button onclick={save} disabled={saving}>
-                    {m['common.save']()}
-                </Button>
-            </div>
         </div>
-    </DialogContent>
+        {#snippet footer()}
+            <Button variant="outline" onclick={() => (open = false)}>
+                {m['common.cancel']()}
+            </Button>
+            <Button onclick={save} disabled={saving}>
+                {m['common.save']()}
+            </Button>
+        {/snippet}
+    </ScrollingDialogContent>
 </Dialog>

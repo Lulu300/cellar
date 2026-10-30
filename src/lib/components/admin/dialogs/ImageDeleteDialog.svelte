@@ -1,10 +1,6 @@
 <script lang="ts">
-    import {
-        Dialog,
-        DialogContent,
-        DialogHeader,
-        DialogTitle
-    } from '#lib/components/ui/dialog/index.js';
+    import { Dialog } from '#lib/components/ui/dialog/index.js';
+    import ScrollingDialogContent from '#lib/components/layout/ScrollingDialogContent.svelte';
     import { Button } from '#lib/components/ui/button/index.js';
     import { CircleAlert } from '@lucide/svelte';
     import { m } from '#lib/paraglide/messages.js';
@@ -86,15 +82,11 @@
 </script>
 
 <Dialog bind:open onOpenChange={(isOpen) => !isOpen && closeDialog()}>
-    <DialogContent class="max-w-md">
-        <DialogHeader>
-            <DialogTitle
-                >{imagesToDelete.length > 1
-                    ? m['admin.delete_images']()
-                    : m['admin.delete_image']()}</DialogTitle
-            >
-        </DialogHeader>
-        <div class="space-y-4 py-4">
+    <ScrollingDialogContent
+        title={imagesToDelete.length > 1 ? m['admin.delete_images']() : m['admin.delete_image']()}
+        class="max-w-md"
+    >
+        <div class="py-3">
             <div class="flex items-start gap-3">
                 <div
                     class="flex-shrink-0 w-8 h-8 bg-destructive/10 rounded-full flex items-center justify-center"
@@ -139,30 +131,30 @@
                     </p>
                 </div>
             </div>
-            <div class="flex justify-end gap-2">
-                <Button variant="outline" onclick={closeDialog}>
-                    {m['common.cancel']()}
-                </Button>
-                {#if imagesInUse.length === 0}
-                    <Button
-                        variant="destructive"
-                        disabled={isDeleting}
-                        onclick={() => deleteImages(false)}
-                    >
-                        {imagesToDelete.length > 1
-                            ? m['admin.delete_images']()
-                            : m['admin.delete_image']()}
-                    </Button>
-                {:else}
-                    <Button
-                        variant="destructive"
-                        disabled={isDeleting}
-                        onclick={() => deleteImages(true)}
-                    >
-                        {m['admin.delete_anyway']()}
-                    </Button>
-                {/if}
-            </div>
         </div>
-    </DialogContent>
+        {#snippet footer()}
+            <Button variant="outline" onclick={closeDialog}>
+                {m['common.cancel']()}
+            </Button>
+            {#if imagesInUse.length === 0}
+                <Button
+                    variant="destructive"
+                    disabled={isDeleting}
+                    onclick={() => deleteImages(false)}
+                >
+                    {imagesToDelete.length > 1
+                        ? m['admin.delete_images']()
+                        : m['admin.delete_image']()}
+                </Button>
+            {:else}
+                <Button
+                    variant="destructive"
+                    disabled={isDeleting}
+                    onclick={() => deleteImages(true)}
+                >
+                    {m['admin.delete_anyway']()}
+                </Button>
+            {/if}
+        {/snippet}
+    </ScrollingDialogContent>
 </Dialog>

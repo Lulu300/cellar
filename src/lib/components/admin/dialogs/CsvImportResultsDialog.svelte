@@ -1,10 +1,6 @@
 <script lang="ts">
-    import {
-        Dialog,
-        DialogContent,
-        DialogHeader,
-        DialogTitle
-    } from '#lib/components/ui/dialog/index.js';
+    import { Dialog } from '#lib/components/ui/dialog/index.js';
+    import ScrollingDialogContent from '#lib/components/layout/ScrollingDialogContent.svelte';
     import { Button } from '#lib/components/ui/button/index.js';
     import { Badge } from '#lib/components/ui/badge/index.js';
     import { ChevronUp, ChevronDown, FileArchive } from '@lucide/svelte';
@@ -13,7 +9,7 @@
     import type { CsvImportDTO } from '#lib/shared/dto.js';
     import { rowProblemsText, skipReasonText } from '#lib/utils/import-problems.js';
     import { CSV_TABLE_TEXTS } from '#lib/components/admin/csv-tables.js';
-    import ScrollRegion from '#lib/components/admin/ScrollRegion.svelte';
+    import ScrollRegion from '#lib/components/layout/ScrollRegion.svelte';
 
     let {
         open = $bindable(false),
@@ -24,6 +20,8 @@
     } = $props();
 
     const expandedErrors = new SvelteSet<string>();
+    // A report's lists are named by their heading and their file's title.
+    const uid = $props.id();
 
     function closeDialog() {
         open = false;
@@ -46,22 +44,17 @@
 </script>
 
 <Dialog bind:open onOpenChange={(isOpen) => !isOpen && closeDialog()}>
-    <DialogContent class="sm:max-w-4xl max-h-[90vh] flex flex-col">
-        <DialogHeader class="flex-shrink-0">
-            <DialogTitle>{m['admin.csv_import_results']()}</DialogTitle>
-        </DialogHeader>
-        <div class="flex-1 overflow-hidden flex flex-col">
+    <ScrollingDialogContent title={m['admin.csv_import_results']()} class="sm:max-w-4xl">
+        <div class="space-y-4">
             {#if csvImportResults}
-                <div class="space-y-4 flex-1 overflow-hidden flex flex-col">
+                <div class="space-y-4">
                     {#if csvImportResults.dryRun}
-                        <p
-                            class="flex-shrink-0 rounded-lg bg-primary/10 p-3 text-sm text-foreground"
-                        >
+                        <p class="rounded-lg bg-primary/10 p-3 text-sm text-foreground">
                             {m['admin.csv_dry_run_notice']()}
                         </p>
                     {/if}
                     <!-- Summary -->
-                    <div class="grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-4 flex-shrink-0">
+                    <div class="grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-4">
                         <div class="text-center p-3 bg-success/10 rounded-lg">
                             <div class="text-xl font-bold text-success">
                                 {csvImportResults.summary?.totalImported || 0}
@@ -97,14 +90,13 @@
                     </div>
 
                     <!-- Results per table -->
-                    <ScrollRegion
-                        label={m['admin.csv_import_results']()}
-                        class="flex-1 space-y-3 pr-2"
-                    >
-                        {#each csvImportResults.results as result (result.file)}
+                    <div class="space-y-3">
+                        {#each csvImportResults.results as result, index (result.file)}
+                            {@const fileId = `${uid}-${index}-file`}
                             <div class="border rounded-lg p-3">
                                 <div class="flex items-center justify-between mb-2">
                                     <h3
+                                        id={fileId}
                                         class="font-medium text-sm truncate pr-2"
                                         title={titleOf(result)}
                                     >
@@ -143,7 +135,10 @@
                                 {#if result.errors && result.errors.length > 0}
                                     <div class="space-y-2">
                                         <div class="flex items-center justify-between">
-                                            <h4 class="text-xs font-medium text-destructive">
+                                            <h4
+                                                id="{uid}-{index}-errors"
+                                                class="text-xs font-medium text-destructive"
+                                            >
                                                 {m['admin.errors_count']({
                                                     count: result.failedImports
                                                 })}
@@ -174,9 +169,7 @@
                                             </p>
                                         {/if}
                                         <ScrollRegion
-                                            label={m['admin.errors_count']({
-                                                count: result.failedImports
-                                            })}
+                                            labelledby="{fileId} {uid}-{index}-errors"
                                             class="max-h-60 space-y-1 p-2"
                                         >
                                             {#each expandedErrors.has(result.file) ? result.errors : result.errors.slice(0, 5) as error (error.row)}
@@ -212,7 +205,10 @@
                                 {#if result.skipped && result.skipped.length > 0}
                                     <div class="space-y-2 mt-2">
                                         <div class="flex items-center justify-between">
-                                            <h4 class="text-xs font-medium text-warning">
+                                            <h4
+                                                id="{uid}-{index}-skipped"
+                                                class="text-xs font-medium text-warning"
+                                            >
                                                 {m['admin.duplicates_skipped_count']({
                                                     count: result.skippedImports
                                                 })}
@@ -250,9 +246,7 @@
                                                 {result.skipped.map((s) => s.row).join(', ')}
                                             </div>
                                             <ScrollRegion
-                                                label={m['admin.duplicates_skipped_count']({
-                                                    count: result.skippedImports
-                                                })}
+                                                labelledby="{fileId} {uid}-{index}-skipped"
                                                 class="max-h-40 space-y-1"
                                             >
                                                 {#each expandedErrors.has(`skipped-${result.file}`) ? result.skipped : result.skipped.slice(0, 5) as skipped (skipped.row)}
@@ -284,31 +278,31 @@
                                 {/if}
                             </div>
                         {/each}
-                    </ScrollRegion>
+                    </div>
+                </div>
+            {/if}
+
+            <!-- After a dry run, nothing was imported yet. -->
+            {#if csvImportResults && !csvImportResults.dryRun && csvImportResults.summary.totalImported > 0}
+                <div class="bg-warning/10 border border-warning/30 rounded-lg p-3">
+                    <div class="flex items-start gap-2">
+                        <FileArchive class="h-4 w-4 text-warning mt-0.5 flex-shrink-0" />
+                        <div class="text-sm">
+                            <p class="font-medium text-warning mb-1">
+                                {m['admin.next_step_import_images']()}
+                            </p>
+                            <p class="text-foreground">
+                                <!-- eslint-disable-next-line svelte/no-at-html-tags -- markup from our own locale files, no user data -->
+                                {@html m['admin.csv_data_with_imagename_fields']()}
+                            </p>
+                        </div>
+                    </div>
                 </div>
             {/if}
         </div>
 
-        <!-- After a dry run, nothing was imported yet. -->
-        {#if csvImportResults && !csvImportResults.dryRun && csvImportResults.summary.totalImported > 0}
-            <div class="bg-warning/10 border border-warning/30 rounded-lg p-3">
-                <div class="flex items-start gap-2">
-                    <FileArchive class="h-4 w-4 text-warning mt-0.5 flex-shrink-0" />
-                    <div class="text-sm">
-                        <p class="font-medium text-warning mb-1">
-                            {m['admin.next_step_import_images']()}
-                        </p>
-                        <p class="text-foreground">
-                            <!-- eslint-disable-next-line svelte/no-at-html-tags -- markup from our own locale files, no user data -->
-                            {@html m['admin.csv_data_with_imagename_fields']()}
-                        </p>
-                    </div>
-                </div>
-            </div>
-        {/if}
-
-        <div class="flex justify-end pt-4 border-t flex-shrink-0">
+        {#snippet footer()}
             <Button onclick={closeDialog}>{m['common.close']()}</Button>
-        </div>
-    </DialogContent>
+        {/snippet}
+    </ScrollingDialogContent>
 </Dialog>

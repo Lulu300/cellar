@@ -1,12 +1,7 @@
 <script lang="ts">
-    import {
-        Dialog,
-        DialogContent,
-        DialogHeader,
-        DialogTitle
-    } from '#lib/components/ui/dialog/index.js';
+    import { Dialog } from '#lib/components/ui/dialog/index.js';
+    import ScrollingDialogContent from '#lib/components/layout/ScrollingDialogContent.svelte';
     import { Button } from '#lib/components/ui/button/index.js';
-    import ScrollRegion from '#lib/components/admin/ScrollRegion.svelte';
     import { FileArchive, CircleAlert } from '@lucide/svelte';
     import { m } from '#lib/paraglide/messages.js';
 
@@ -29,15 +24,12 @@
 </script>
 
 <Dialog bind:open>
-    <DialogContent class="max-w-lg max-h-[85vh] flex flex-col">
-        <DialogHeader class="flex-shrink-0">
-            <DialogTitle class="flex items-center gap-2">
-                <FileArchive class="h-5 w-5 text-primary" />
-                {m['admin.import_images_from_zip']()}
-            </DialogTitle>
-        </DialogHeader>
-
-        <ScrollRegion label={m['admin.import_images_from_zip']()} class="space-y-4 flex-1">
+    <ScrollingDialogContent
+        title={m['admin.import_images_from_zip']()}
+        icon={FileArchive}
+        class="max-w-lg"
+    >
+        <div class="space-y-4">
             <div class="bg-primary/10 border border-primary/30 rounded-lg p-4">
                 <h4 class="font-semibold text-foreground mb-2">
                     {m['admin.what_does_this_feature_do']()}
@@ -95,14 +87,14 @@
                     {@html m['admin.zip_import_use_case']({ imageName: '<code>imageName</code>' })}
                 </p>
             </div>
-        </ScrollRegion>
+        </div>
 
-        <div class="flex justify-end gap-2 pt-4 border-t flex-shrink-0">
+        {#snippet footer()}
             <Button variant="outline" onclick={closeDialog}>{m['common.cancel']()}</Button>
             <Button onclick={proceedWithZipImport} class="bg-primary">
                 <FileArchive class="h-4 w-4 mr-2" />
                 {m['admin.choose_zip_file']()}
             </Button>
-        </div>
-    </DialogContent>
+        {/snippet}
+    </ScrollingDialogContent>
 </Dialog>

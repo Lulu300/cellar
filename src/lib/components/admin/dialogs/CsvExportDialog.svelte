@@ -1,10 +1,6 @@
 <script lang="ts">
-    import {
-        Dialog,
-        DialogContent,
-        DialogHeader,
-        DialogTitle
-    } from '#lib/components/ui/dialog/index.js';
+    import { Dialog } from '#lib/components/ui/dialog/index.js';
+    import ScrollingDialogContent from '#lib/components/layout/ScrollingDialogContent.svelte';
     import { Button } from '#lib/components/ui/button/index.js';
     import { Input } from '#lib/components/ui/input/index.js';
     import { Label } from '#lib/components/ui/label/index.js';
@@ -88,11 +84,12 @@
 </script>
 
 <Dialog bind:open onOpenChange={(isOpen) => !isOpen && closeDialog()}>
-    <DialogContent class="max-w-2xl max-h-[85vh] flex flex-col">
-        <DialogHeader class="flex-shrink-0">
-            <DialogTitle>{m['admin.export_to_csv_files']()}</DialogTitle>
-        </DialogHeader>
-        <div class="space-y-6 py-4 flex-1 overflow-y-auto">
+    <ScrollingDialogContent
+        title={m['admin.export_to_csv_files']()}
+        error={csvExportError}
+        class="max-w-2xl"
+    >
+        <div class="space-y-6 py-3">
             <div class="space-y-3">
                 <div class="flex items-center justify-between">
                     <Label class="text-base font-medium"
@@ -163,21 +160,15 @@
                     </div>
                 </div>
             </div>
-
-            {#if csvExportError}
-                <div class="text-sm text-destructive bg-destructive/10 p-2 rounded">
-                    {csvExportError}
-                </div>
-            {/if}
         </div>
 
-        <div class="flex justify-end gap-2 flex-shrink-0">
+        {#snippet footer()}
             <Button variant="outline" onclick={closeDialog}>
                 {m['common.cancel']()}
             </Button>
             <Button onclick={executeCsvExport} disabled={isExportingCsv}>
                 {isExportingCsv ? m['admin.loading']() : m['admin.export_csv_files']()}
             </Button>
-        </div>
-    </DialogContent>
+        {/snippet}
+    </ScrollingDialogContent>
 </Dialog>

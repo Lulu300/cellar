@@ -7,6 +7,7 @@ import { appSettings } from '#lib/server/db/schema.js';
 import { getAppSetting, setAppSetting } from '#lib/server/features/settings/repository.js';
 import { checkReleases, findRelease, type Release } from '#lib/server/releases.js';
 import { migrationsBefore, openOldDatabase } from '../../test/database';
+import { release } from '../../test/releases';
 import releasesJson from '../../../releases.json';
 import {
     APP_VERSION_KEY,
@@ -28,13 +29,6 @@ vi.mock('../../../releases.json', async (importOriginal) =>
 
 // releases.json, then made-up older versions.
 const RELEASES = checkReleases(releasesJson);
-
-const release = (version: string, actions: string[], mandatoryStop = false): Release => ({
-    version,
-    summary: `Version ${version}.`,
-    mandatoryStop,
-    actions
-});
 
 // Like releases.json, newest first, with a mandatory stop at 0.4.0.
 const WITH_STOP = [
@@ -157,6 +151,14 @@ describe('planUpgrade', () => {
     });
 });
 
+it('upgrades from a version that releases.json does not list, such as 0.12.0 to 1.0.0', () => {
+    const plan = planUpgrade(RELEASES, '1.0.0', recorded('0.12.0'));
+
+    expect(plan.upgraded).toBe(true);
+    expect(plan.from).toMatchObject({ lowest: '0.12.0', highest: '0.12.0', recorded: true });
+    expect(plan.actions).toEqual([]);
+});
+
 describe('a database from a version that did not record itself', () => {
     it('is known to come from 0.1.0 by its migrations, so every later action is due', () => {
         const plan = planUpgrade(RELEASES, '0.5.0', startOfDatabaseBefore('0003_modern_caretaker'));
@@ -233,8 +235,11 @@ describe('readPreviousStart', () => {
     });
 });
 
-it('has an entry in releases.json for the version of package.json', () => {
-    expect(findRelease(RELEASES, __APP_VERSION__).version).toBe(
+it('has an entry in releases.json for the version of package.json', async () => {
+    const { default: actual } = await vi.importActual<{ default: Release[] }>(
+        '../../../releases.json'
+    );
+    expect(findRelease(checkReleases(actual), __APP_VERSION__).version).toBe(
         __APP_VERSION__.replace(/-rc\.\d+$/, '')
     );
 });

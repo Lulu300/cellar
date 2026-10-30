@@ -1,9 +1,14 @@
 import type { Release } from '#lib/server/releases.js';
 
-const release = (version: string, actions: string[] = []): Release => ({
+/** A release with a made-up summary. */
+export const release = (
+    version: string,
+    actions: string[] = [],
+    mandatoryStop = false
+): Release => ({
     version,
     summary: `Version ${version}.`,
-    mandatoryStop: false,
+    mandatoryStop,
     actions
 });
 

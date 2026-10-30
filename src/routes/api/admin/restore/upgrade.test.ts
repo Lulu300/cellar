@@ -160,6 +160,14 @@ describe('POST /api/admin/restore and the upgrade check', () => {
         expect(actions).toHaveLength(actionsFrom('0.8.0').length);
     });
 
+    it('restores a backup of a version that releases.json does not list, such as 0.12.0', async () => {
+        const file = backupZip((backup) => setAppSetting(APP_VERSION_KEY, '0.12.0', backup));
+
+        expect((await restore(file)).status).toBe(200);
+
+        expect(getAppSetting(APP_VERSION_KEY)?.value).toBe(__APP_VERSION__);
+    });
+
     it('adds the actions of an older version that did not record itself', async () => {
         const file = backupZip(() => {}, { migrationsFolder: migrations05 });
 

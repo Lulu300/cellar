@@ -20,16 +20,19 @@
 
     // A box that scrolls with nothing focusable in it cannot be scrolled from the keyboard (WCAG
     // 2.1.1, axe scrollable-region-focusable): while its content overflows, it takes the focus
-    // itself. A box that fits stays out of the tab order and of the regions.
+    // itself. A box that fits, or whose fields and buttons the keyboard scrolls to, stays out of
+    // the tab order and of the regions.
+    const FOCUSABLE =
+        'a[href], button:not([disabled]), input:not([disabled], [type="hidden"]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])';
     const focusableWhileScrolling: Attachment<HTMLElement> = (box) => {
         const setOrRemove = (name: string, value: string | false | undefined) => {
             if (value) box.setAttribute(name, value);
             else box.removeAttribute(name);
         };
         const update = () => {
-            const scrolls = box.scrollHeight > box.clientHeight;
-            setOrRemove('tabindex', scrolls && '0');
-            const named = scrolls && !!(label || labelledby);
+            const focusable = box.scrollHeight > box.clientHeight && !box.querySelector(FOCUSABLE);
+            setOrRemove('tabindex', focusable && '0');
+            const named = focusable && !!(label || labelledby);
             setOrRemove('role', named && 'region');
             setOrRemove('aria-label', named && label);
             setOrRemove('aria-labelledby', named && labelledby);

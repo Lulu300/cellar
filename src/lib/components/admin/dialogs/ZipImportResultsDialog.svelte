@@ -72,7 +72,7 @@
                         <h4 class="font-semibold">{detailsTitle}</h4>
                     </div>
 
-                    <ScrollRegion label={detailsTitle} class="max-h-96 rounded-none">
+                    <ScrollRegion label={detailsTitle} class="max-h-96 rounded-none p-0">
                         {#if zipImportResults.summary && zipImportResults.summary.length > 0}
                             <div class="divide-y">
                                 <!-- By position: the report can list a name twice. -->

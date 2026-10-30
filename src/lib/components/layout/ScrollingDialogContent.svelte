@@ -36,7 +36,8 @@
             {title}
         </DialogTitle>
     </DialogHeader>
-    <ScrollRegion class="flex-1 min-h-0">
+    <!-- Pulled out by its padding, so that its content lines up with the title and the buttons. -->
+    <ScrollRegion class="flex-1 min-h-0 -mx-1">
         {@render children()}
     </ScrollRegion>
     <div class="flex-shrink-0 space-y-2 border-t pt-4">

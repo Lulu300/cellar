@@ -22,6 +22,11 @@ import {
     type PreviousStart
 } from './upgrade';
 
+vi.mock('../../../releases.json', async (importOriginal) =>
+    (await import('../../test/releases')).withOldReleases(importOriginal)
+);
+
+// releases.json, then made-up older versions.
 const RELEASES = checkReleases(releasesJson);
 
 const release = (version: string, actions: string[], mandatoryStop = false): Release => ({
@@ -248,12 +253,12 @@ describe('recordStartup', () => {
         const logged = log.mock.calls.map(([line]) => line).join('\n');
         expect(logged).toContain(`Cellar upgraded from 0.1.0 (judged from the database migrations`);
         expect(logged).toContain(`did not record itself) to ${CURRENT}.`);
-        expect(logged).toMatch(/ {2}- 0\.2\.0: Set `ORIGIN` to the exact URL/);
-        expect(logged).toMatch(/ {2}- 0\.5\.0: Only if you run Cellar from source/);
+        expect(logged).toContain('  - 0.2.0: Do 0.2.0 A.');
+        expect(logged).toContain('  - 0.5.0: Do 0.5.0.');
         const { actions } = getUpgradeNotice();
         expect(actions).toHaveLength(9);
         expect(actions[0]).toMatchObject({ version: '0.2.0', index: 0, mayBeDone: false });
-        expect(actions[0].text).toMatch(/^Set `ORIGIN` to the exact URL/);
+        expect(actions[0].text).toBe('Do 0.2.0 A.');
     });
 
     it('keeps the actions left to do at the next upgrade, and drops those done', async () => {

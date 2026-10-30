@@ -1,8 +1,12 @@
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import { setAppSetting } from '#lib/server/features/settings/repository.js';
 import { getUpgradeNotice, UPGRADE_ACTIONS_KEY } from '#lib/server/upgrade.js';
 import { fakeEvent } from '../../../../test/event';
 import { PUT } from './+server';
+
+vi.mock('../../../../../releases.json', async (importOriginal) =>
+    (await import('../../../../test/releases')).withOldReleases(importOriginal)
+);
 
 type Event = Parameters<typeof PUT>[0];
 

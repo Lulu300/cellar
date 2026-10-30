@@ -5,15 +5,10 @@ import { setAppSetting } from '#lib/server/features/settings/repository.js';
 import { APP_VERSION_KEY } from '#lib/server/upgrade.js';
 import { backupZip, restore } from '../../../../test/restore';
 
-// releases.json, with 0.4.0 as a mandatory stop.
-vi.mock('../../../../../releases.json', async (importOriginal) => {
-    const { default: releases } = await importOriginal<{ default: { version: string }[] }>();
-    return {
-        default: releases.map((release) =>
-            release.version === '0.4.0' ? { ...release, mandatoryStop: true } : release
-        )
-    };
-});
+// releases.json and older versions, with 0.4.0 as a mandatory stop.
+vi.mock('../../../../../releases.json', async (importOriginal) =>
+    (await import('../../../../test/releases')).withOldReleases(importOriginal, '0.4.0')
+);
 
 describe('POST /api/admin/restore', () => {
     it('refuses with 409 a backup from before a mandatory stop that this version passed', async () => {

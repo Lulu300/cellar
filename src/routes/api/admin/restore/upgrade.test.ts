@@ -16,6 +16,10 @@ import releasesJson from '../../../../../releases.json';
 import { migrationsBefore } from '../../../../test/database';
 import { backupZip, restore } from '../../../../test/restore';
 
+vi.mock('../../../../../releases.json', async (importOriginal) =>
+    (await import('../../../../test/releases')).withOldReleases(importOriginal)
+);
+
 const timestamps = { createdAt: new Date(), updatedAt: new Date() };
 // A database of 0.4.0 or 0.5.0, which did not record their version.
 const migrations05 = migrationsBefore('0005_label_preset_spacing');

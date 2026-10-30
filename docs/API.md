@@ -1929,10 +1929,10 @@ included, is first saved in a pre-restore backup.
   caller's ends.
 - Each barcode prefix keeps the higher of its last numbers given, that of the backup and that of
   the current data, so that no number printed since the backup is given again.
-- The database of a backup from an earlier version is upgraded as the server upgrades its own: in
-  a backup of an older version, the line breaks of notes and descriptions become LF, a note or a
-  description of more than 5,000 characters is cut to 5,000 characters, and a negative purchase
-  price or current value is removed and written into the bottle's notes.
+- The database of a backup from an earlier version is upgraded as the server upgrades its own:
+  when the backup predates these changes, the line breaks of notes and descriptions become LF, a
+  note or a description of more than 5,000 characters is cut to 5,000 characters, and a negative
+  purchase price or current value is removed and written into the bottle's notes.
 - While the restore runs, other writes get `503 writes_held`.
 - **Errors:**
   - `422 invalid_backup` when the file is not a backup this version can restore. `details` has

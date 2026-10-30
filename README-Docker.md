@@ -58,10 +58,11 @@ Cellar also checks the upgrade when it starts. It refuses to start when the upda
 stop, and its log names the version to install first; no data is changed, so the previous version
 still runs. Otherwise its log lists the upgrade actions of the versions you passed, and the Admin
 page shows them until you tick each one as done. Some older versions did not record themselves:
-when you upgrade from one of them, Cellar judges the version from the database and also lists the
-actions that you may already have taken.
+Cellar then judges the version from the database.
 
-Then, next to `docker-compose.yml`, download the new image and restart the container with it:
+To update, run these commands next to `docker-compose.yml`: they download the new image and
+restart the container with it. If you replaced `latest` with a version tag (see
+[Image tags](#image-tags)), put the tag of the new version there first.
 
 ```bash
 docker compose pull
@@ -76,7 +77,9 @@ release's changes in yours:
 curl -fsSL https://raw.githubusercontent.com/Lulu300/cellar/main/docker-compose.yml | diff docker-compose.yml -
 ```
 
-Each update leaves the previous image on disk: `docker image prune` frees it.
+The image of the previous version stays on disk: once it has lost its tag to the new one,
+`docker image prune` frees it; a version tag you set yourself goes with
+`docker rmi ghcr.io/lulu300/cellar:<tag>`.
 
 ## Image tags
 
@@ -654,4 +657,4 @@ docker compose logs -f cellar
 
 Then report it in the [issues](https://github.com/Lulu300/cellar/issues), with the version that the
 admin page shows, what you did and what you saw, and the log lines around it. Never post your access
-code, setup token or backup token.
+code, setup token or cron token.

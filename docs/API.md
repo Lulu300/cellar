@@ -1512,6 +1512,9 @@ Downloads a PDF of labels for a range of generated codes, laid out on pages.
 }
 ```
 
+With `"labelHeight": 18` instead, the barcode is 9 mm high (18 mm, minus 2 × 2 mm of padding and
+5 mm for the code value), and the answer is `422`:
+
 ```json
 {
   "error": {
@@ -1519,7 +1522,7 @@ Downloads a PDF of labels for a range of generated codes, laid out on pages.
     "message": "The labels are too small for their code: height_below_minimum",
     "details": {
       "issues": [
-        { "code": "height_below_minimum", "blocking": true, "values": { "actual": 4, "limit": 10 } }
+        { "code": "height_below_minimum", "blocking": true, "values": { "actual": 9, "limit": 10 } }
       ]
     }
   }

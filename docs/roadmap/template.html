@@ -1,0 +1,778 @@
+<!doctype html>
+<html lang="fr">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Feuille de route Cellar</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Spectral:wght@500;600;700&family=Public+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap">
+<style>
+/* Layout : en-tête avec progression globale, puis phases empilées (lignes de tâches) ; panneau de détail latéral (bas d'écran sur mobile). */
+:root {
+	--bg: #f6f4f5;
+	--surface: #ffffff;
+	--surface-2: #efeaec;
+	--fg: #1f1a1d;
+	--muted: #6b6168;
+	--line: #ddd5d9;
+	--accent: #7a1f3d;
+	--accent-soft: #f3e4ea;
+	--done: #2f6b4f;
+	--done-soft: #e3f0e8;
+	--doing: #9a6200;
+	--doing-soft: #fbefd9;
+	--blocked: #b42318;
+	--blocked-soft: #fbe5e3;
+	--todo: #5f5a66;
+	--todo-soft: #ebe8ee;
+	--crit: #b42318;
+	--maj: #b35c00;
+	--min: #5f6b7a;
+	--evo: #3a5ba0;
+	--evo-soft: #e6ecf7;
+	--shadow: 0 10px 30px rgba(40, 10, 20, .14);
+	--f-display: "Spectral", Georgia, "Times New Roman", serif;
+	--f-body: "Public Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+	--f-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+}
+@media (prefers-color-scheme: dark) {
+	:root:not([data-theme="light"]) {
+		--bg: #161215; --surface: #1f1a1e; --surface-2: #2a2329; --fg: #f1eaee; --muted: #a99da5; --line: #3a3138;
+		--accent: #e07a9b; --accent-soft: #3a1e2a;
+		--done: #6fcf9c; --done-soft: #1b3327; --doing: #f0b34e; --doing-soft: #3a2c12; --blocked: #f28b82; --blocked-soft: #3d1c1a;
+		--todo: #b9b2bf; --todo-soft: #2d2830;
+		--crit: #f28b82; --maj: #f0a65a; --min: #a9b4c2; --evo: #8fb0ef; --evo-soft: #1d2740;
+		--shadow: 0 10px 30px rgba(0, 0, 0, .5);
+		color-scheme: dark;
+	}
+}
+:root[data-theme="dark"] {
+	--bg: #161215; --surface: #1f1a1e; --surface-2: #2a2329; --fg: #f1eaee; --muted: #a99da5; --line: #3a3138;
+	--accent: #e07a9b; --accent-soft: #3a1e2a;
+	--done: #6fcf9c; --done-soft: #1b3327; --doing: #f0b34e; --doing-soft: #3a2c12; --blocked: #f28b82; --blocked-soft: #3d1c1a;
+	--todo: #b9b2bf; --todo-soft: #2d2830;
+	--crit: #f28b82; --maj: #f0a65a; --min: #a9b4c2; --evo: #8fb0ef; --evo-soft: #1d2740;
+	--shadow: 0 10px 30px rgba(0, 0, 0, .5);
+	color-scheme: dark;
+}
+* { box-sizing: border-box; }
+/* Sans cette règle, display: flex de .panel l'emporterait sur l'attribut hidden. */
+[hidden] { display: none !important; }
+body { background: var(--bg); color: var(--fg); font-family: var(--f-body); font-size: 15px; line-height: 1.5; }
+.wrap { max-width: 1080px; margin: 0 auto; padding-inline: 20px; padding-block: 32px 64px; }
+h1, h2, h3 { font-family: var(--f-display); text-wrap: balance; margin: 0; letter-spacing: -.01em; }
+code, .mono { font-family: var(--f-mono); font-size: .86em; }
+code { background: var(--surface-2); padding: .1em .35em; border-radius: 4px; overflow-wrap: anywhere; }
+button { font: inherit; color: inherit; }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+/* En-tête */
+.top { display: grid; gap: 20px; grid-template-columns: minmax(0, 1fr) auto; align-items: end; border-bottom: 1px solid var(--line); padding-bottom: 24px; }
+.eyebrow { font-size: 12px; letter-spacing: .08em; text-transform: uppercase; color: var(--accent); font-weight: 600; }
+h1 { font-size: clamp(30px, 5vw, 44px); line-height: 1.1; margin-top: 6px; }
+.lede { color: var(--muted); max-width: 62ch; margin: 10px 0 0; }
+.ring { width: 112px; height: 112px; position: relative; }
+.ring svg { width: 100%; height: 100%; transform: rotate(-90deg); }
+.ring .pct { position: absolute; inset: 0; display: grid; place-items: center; text-align: center; font-family: var(--f-display); font-size: 26px; font-weight: 700; line-height: 1; }
+.ring .pct small { display: block; font-family: var(--f-body); font-size: 11px; font-weight: 500; color: var(--muted); margin-top: 4px; }
+
+.stats { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 20px; }
+.chip { display: inline-flex; align-items: center; gap: 6px; border: 1px solid var(--line); background: var(--surface); border-radius: 999px; padding: 5px 12px; font-size: 13px; cursor: pointer; font-variant-numeric: tabular-nums; }
+.chip[aria-pressed="true"] { border-color: var(--accent); background: var(--accent-soft); color: var(--fg); }
+.chip .dot { width: 8px; height: 8px; border-radius: 50%; }
+.filters { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin-top: 10px; }
+.filters .lab { font-size: 12px; color: var(--muted); margin-right: 2px; }
+.search { flex: 1 1 200px; min-width: 0; max-width: 320px; border: 1px solid var(--line); background: var(--surface); border-radius: 8px; padding: 6px 10px; font: inherit; color: var(--fg); }
+
+/* Phases */
+.phase { margin-top: 36px; }
+.phase-head { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; gap: 4px 14px; align-items: baseline; }
+.phase-id { font-family: var(--f-mono); font-size: 13px; color: var(--accent); font-weight: 500; }
+.phase-head h2 { font-size: 24px; }
+.phase-count { font-size: 13px; color: var(--muted); font-variant-numeric: tabular-nums; }
+.phase-goal { grid-column: 2 / -1; color: var(--muted); font-size: 14px; max-width: 70ch; }
+.bar { grid-column: 2 / -1; height: 6px; background: var(--surface-2); border-radius: 3px; overflow: hidden; display: flex; margin-top: 6px; }
+.bar span { display: block; height: 100%; }
+
+.list { margin-top: 14px; border: 1px solid var(--line); border-radius: 10px; background: var(--surface); overflow: hidden; }
+.row { display: grid; grid-template-columns: 74px minmax(0, 1fr) auto auto; gap: 12px; align-items: center; width: 100%; text-align: left; background: none; border: 0; border-top: 1px solid var(--line); padding: 11px 14px; cursor: pointer; }
+.row:first-child { border-top: 0; }
+.row:hover { background: var(--surface-2); }
+.row[aria-current="true"] { background: var(--accent-soft); }
+.row .tid { font-family: var(--f-mono); font-size: 12.5px; color: var(--muted); }
+.row .ttl { font-weight: 500; min-width: 0; }
+.row .ttl .sub { display: flex; flex-wrap: wrap; gap: 6px 10px; font-size: 12px; color: var(--muted); font-weight: 400; margin-top: 2px; }
+.row.is-done .ttl > span:first-child { color: var(--muted); text-decoration: line-through; text-decoration-color: var(--line); }
+.sev { font-size: 11px; font-weight: 600; letter-spacing: .04em; text-transform: uppercase; }
+.sev-critique { color: var(--crit); } .sev-majeur { color: var(--maj); } .sev-mineur { color: var(--min); } .sev-evolution { color: var(--evo); }
+.size { font-family: var(--f-mono); font-size: 11.5px; border: 1px solid var(--line); border-radius: 4px; padding: 1px 6px; color: var(--muted); }
+.pill { font-size: 12px; font-weight: 600; border-radius: 999px; padding: 3px 10px; white-space: nowrap; }
+.st-todo { background: var(--todo-soft); color: var(--todo); }
+.st-doing { background: var(--doing-soft); color: var(--doing); }
+.st-done { background: var(--done-soft); color: var(--done); }
+.st-blocked { background: var(--blocked-soft); color: var(--blocked); }
+.ready { color: var(--done); }
+.waiting { color: var(--muted); }
+.empty { padding: 14px; color: var(--muted); font-size: 14px; }
+
+/* Panneau de détail */
+.scrim { position: fixed; inset: 0; background: rgba(20, 10, 15, .35); }
+.panel { position: fixed; top: 0; right: 0; bottom: 0; width: min(560px, 100%); background: var(--surface); border-left: 1px solid var(--line); box-shadow: var(--shadow); display: flex; flex-direction: column; padding-top: env(safe-area-inset-top, 0px); }
+.panel-head { padding: 18px 20px 14px; border-bottom: 1px solid var(--line); display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 6px 12px; }
+.panel-head h3 { font-size: 22px; line-height: 1.2; }
+.panel-meta { display: flex; flex-wrap: wrap; gap: 8px 12px; align-items: center; font-size: 13px; color: var(--muted); grid-column: 1 / -1; }
+.x { border: 1px solid var(--line); background: var(--surface); border-radius: 8px; width: 34px; height: 34px; cursor: pointer; font-size: 18px; line-height: 1; }
+.panel-body { overflow-y: auto; padding: 18px 20px calc(24px + env(safe-area-inset-bottom, 0px)); display: grid; gap: 20px; align-content: start; }
+.panel-body h4 { font-size: 12px; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); margin: 0 0 6px; font-weight: 600; }
+.panel-body p { margin: 0; }
+.panel-body ul, .panel-body ol { margin: 0; padding-left: 20px; display: grid; gap: 6px; }
+.files { list-style: none; padding: 0 !important; gap: 4px !important; }
+.files li { font-family: var(--f-mono); font-size: 12.5px; overflow-wrap: anywhere; color: var(--fg); }
+.accept { border-left: 3px solid var(--done); padding: 8px 12px; background: var(--done-soft); border-radius: 0 8px 8px 0; color: var(--fg); }
+.deps { display: flex; flex-wrap: wrap; gap: 6px; }
+.dep { font-family: var(--f-mono); font-size: 12px; border: 1px solid var(--line); background: var(--surface); border-radius: 6px; padding: 3px 8px; cursor: pointer; }
+.dep.ok { border-color: var(--done); color: var(--done); }
+.track { border: 1px solid var(--line); border-radius: 10px; padding: 14px; display: grid; gap: 10px; background: var(--surface-2); }
+.track .foot { display: flex; justify-content: space-between; gap: 10px; align-items: center; flex-wrap: wrap; font-size: 12px; color: var(--muted); }
+.btn { border: 1px solid var(--accent); background: var(--accent); color: #fff; border-radius: 8px; padding: 7px 14px; cursor: pointer; font-weight: 600; font-size: 13px; }
+:root[data-theme="dark"] .btn { color: #1f1a1d; }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .btn { color: #1f1a1d; } }
+.copyarea { width: 100%; min-height: 120px; font-family: var(--f-mono); font-size: 12px; border: 1px solid var(--line); border-radius: 8px; padding: 8px; background: var(--surface); color: var(--fg); }
+
+.decisions { margin-top: 28px; border: 1px solid var(--line); border-radius: 10px; background: var(--surface); padding: 16px 18px; }
+.decisions h2 { font-size: 18px; }
+.decisions dl { margin: 10px 0 0; display: grid; grid-template-columns: minmax(0, 220px) minmax(0, 1fr); gap: 8px 16px; font-size: 14px; }
+.decisions dt { font-weight: 600; }
+.decisions dd { margin: 0; color: var(--muted); }
+@media (max-width: 640px) { .decisions dl { grid-template-columns: 1fr; gap: 2px; } .decisions dd { margin-bottom: 8px; } }
+/* Onglets : feuille de route et audit d'avant 1.0 */
+.tabs { display: flex; gap: 4px; border-bottom: 1px solid var(--line); margin-bottom: 28px; overflow-x: auto; }
+.tabs button { border: 0; background: none; padding: 10px 14px; font-weight: 600; font-size: 14.5px; color: var(--muted); border-bottom: 2px solid transparent; margin-bottom: -1px; cursor: pointer; white-space: nowrap; }
+.tabs button[aria-selected="true"] { color: var(--fg); border-bottom-color: var(--accent); }
+.tabs button:hover { color: var(--fg); }
+.deps .dep { text-align: left; }
+
+/* Audit : chiffres, sous-vues, texte rendu depuis les fichiers Markdown */
+.lede.prose { max-width: 70ch; }
+.figures { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 12px; margin-top: 22px; }
+.fig { border: 1px solid var(--line); background: var(--surface); border-radius: 10px; padding: 14px 16px; display: grid; gap: 10px; align-content: start; min-width: 0; }
+.fig h3 { font-family: var(--f-body); font-size: 12px; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); font-weight: 600; }
+.fig .big { font-family: var(--f-display); font-size: 32px; font-weight: 700; line-height: 1; font-variant-numeric: tabular-nums; }
+.fig .big small { font-family: var(--f-body); font-size: 13px; font-weight: 500; color: var(--muted); margin-left: 6px; }
+.sbar { height: 8px; background: var(--surface-2); border-radius: 4px; overflow: hidden; display: flex; }
+.sbar span { display: block; height: 100%; }
+.legend { display: flex; flex-wrap: wrap; gap: 4px 14px; font-size: 12.5px; color: var(--muted); }
+.legend b { color: var(--fg); font-variant-numeric: tabular-nums; font-weight: 600; }
+.legend i { display: inline-block; width: 8px; height: 8px; border-radius: 50%; margin-right: 5px; }
+.meter { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 3px 10px; font-size: 13.5px; }
+.meter strong { font-variant-numeric: tabular-nums; }
+.meter .sbar { grid-column: 1 / -1; height: 6px; }
+.subnav { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 26px; }
+.subnav .chip { font-size: 14px; padding: 6px 14px; font-weight: 500; }
+.asec { margin-top: 36px; display: grid; gap: 14px; min-width: 0; }
+.asec > h2 { font-size: 24px; }
+.agroup { display: grid; gap: 10px; min-width: 0; }
+.agroup > h3 { font-size: 18px; }
+.muted { color: var(--muted); }
+.small { font-size: 13px; }
+.prose { display: grid; gap: 10px; max-width: 78ch; min-width: 0; font-size: 14.5px; }
+.prose p, .prose ul, .prose ol, .prose pre { margin: 0; }
+.prose ul, .prose ol { padding-left: 20px; display: grid; gap: 5px; }
+.prose li > ul, .prose li > ol { margin-top: 5px; }
+.prose h3, .prose h4, .prose h5 { font-family: var(--f-display); margin: 8px 0 0; font-size: 17px; letter-spacing: 0; text-transform: none; color: var(--fg); }
+.prose h4 { font-size: 15.5px; }
+.prose h5 { font-size: 14.5px; }
+.prose pre { overflow-x: auto; background: var(--surface-2); border-radius: 8px; padding: 10px 12px; font-size: 12.5px; line-height: 1.45; }
+.prose pre code { background: none; padding: 0; font-size: inherit; }
+.prose li .tbl, .prose li pre { margin-top: 6px; }
+.tbl { overflow-x: auto; border: 1px solid var(--line); border-radius: 8px; background: var(--surface); min-width: 0; max-width: 100%; }
+.tbl table { border-collapse: collapse; width: 100%; font-size: 13px; }
+.tbl th, .tbl td { text-align: left; vertical-align: top; padding: 7px 10px; border-top: 1px solid var(--line); }
+.tbl thead th { border-top: 0; background: var(--surface-2); font-weight: 600; font-size: 12.5px; }
+.prose .tbl table { min-width: 560px; }
+.tbl .num { text-align: right; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.trace table { min-width: 720px; }
+.trace td:first-child { font-family: var(--f-mono); font-size: 12px; white-space: nowrap; }
+.trace td:nth-child(3) { white-space: nowrap; }
+.trace td:nth-child(2) { width: 32%; }
+.vpill { font-size: 11.5px; font-weight: 600; border-radius: 999px; padding: 2px 8px; white-space: nowrap; }
+.vp-corrige { background: var(--done-soft); color: var(--done); }
+.vp-partiel { background: var(--doing-soft); color: var(--doing); }
+.vp-nonfait { background: var(--blocked-soft); color: var(--blocked); }
+.vp-sansobjet { background: var(--todo-soft); color: var(--todo); }
+.vp-ecart { background: var(--evo-soft); color: var(--evo); }
+a.ref { color: var(--accent); font-family: var(--f-mono); font-size: .88em; text-decoration: none; border-bottom: 1px dotted var(--accent); }
+a.ref:hover { border-bottom-style: solid; }
+.mini { display: inline-flex; align-items: center; font-family: var(--f-mono); font-size: 11.5px; border: 1px solid var(--line); border-radius: 4px; padding: 0 6px; white-space: nowrap; }
+.mini.ok { border-color: var(--done); color: var(--done); }
+.row .where { font-family: var(--f-mono); font-size: 11.5px; overflow-wrap: anywhere; }
+details.notes { border: 1px solid var(--line); border-radius: 10px; background: var(--surface); margin-top: 12px; }
+details.notes summary { cursor: pointer; padding: 10px 14px; font-size: 13.5px; font-weight: 500; color: var(--muted); }
+details.notes[open] summary { border-bottom: 1px solid var(--line); }
+details.notes .prose { padding: 14px 16px 16px; max-width: none; }
+.axsum th { white-space: nowrap; }
+.axsum td.barcell { width: 30%; min-width: 120px; }
+.files-box { border: 1px solid var(--line); background: var(--surface-2); border-radius: 10px; padding: 12px 14px; font-size: 13.5px; display: grid; gap: 4px; }
+footer { margin-top: 48px; color: var(--muted); font-size: 13px; border-top: 1px solid var(--line); padding-top: 16px; display: grid; gap: 6px; }
+
+@media (max-width: 640px) {
+	.wrap { padding-inline: 16px; padding-block: 20px 48px; }
+	.top { grid-template-columns: 1fr; }
+	.ring { width: 92px; height: 92px; }
+	.row { grid-template-columns: minmax(0, 1fr) auto; gap: 6px 10px; }
+	.row .tid { grid-column: 1 / -1; }
+	.row .size { display: none; }
+	.phase-head { grid-template-columns: minmax(0, 1fr) auto; }
+	.phase-id { grid-column: 1 / -1; }
+	.phase-goal, .bar { grid-column: 1 / -1; }
+	.panel { top: auto; height: 88vh; border-left: 0; border-top: 1px solid var(--line); border-radius: 14px 14px 0 0; }
+}
+@media (prefers-reduced-motion: no-preference) {
+	.bar span, .ring circle { transition: all .4s ease; }
+}
+</style>
+
+<div class="wrap">
+	<nav class="tabs" id="tabs" role="tablist" aria-label="Vues">
+		<button role="tab" data-tab="roadmap" aria-selected="true">Feuille de route</button>
+		<button role="tab" data-tab="audit" aria-selected="false">Audit d’avant 1.0</button>
+	</nav>
+
+	<div id="view-roadmap">
+	<header class="top">
+		<div>
+			<div class="eyebrow">Refactoring · audit du <span id="date"></span></div>
+			<h1>Feuille de route Cellar</h1>
+			<p class="lede">Les tâches issues de la revue du code, puis de l’audit d’avant 1.0 (P7), regroupées par phase dans l’ordre conseillé. Cliquez sur une tâche pour voir son contexte, ses fichiers, son critère d’acceptation et son statut.</p>
+		</div>
+		<div class="ring" aria-label="Avancement global">
+			<svg viewBox="0 0 36 36" aria-hidden="true">
+				<circle cx="18" cy="18" r="15.9" fill="none" stroke="var(--surface-2)" stroke-width="3.2"></circle>
+				<circle id="ringFill" cx="18" cy="18" r="15.9" fill="none" stroke="var(--done)" stroke-width="3.2" stroke-linecap="round" stroke-dasharray="0 100"></circle>
+			</svg>
+			<div class="pct"><div><span id="pct">0 %</span><small id="pctSub"></small></div></div>
+		</div>
+	</header>
+
+	<div class="stats" id="stateChips" role="group" aria-label="Filtrer par statut"></div>
+	<div class="filters">
+		<span class="lab">Sévérité</span>
+		<span id="sevChips" style="display:contents"></span>
+		<input id="q" class="search" type="search" placeholder="Rechercher (ID, titre, fichier)" aria-label="Rechercher une tâche">
+	</div>
+	<section class="decisions" aria-labelledby="h-dec"><h2 id="h-dec">Décisions prises</h2><dl id="decisions"></dl></section>
+
+	<main id="phases"></main>
+	</div>
+
+	<div id="view-audit" hidden>
+		<header class="top">
+			<div>
+				<div class="eyebrow">Audit · sept axes · lecture seule</div>
+				<h1>Audit d’avant 1.0</h1>
+				<div class="lede prose" id="aLede"></div>
+			</div>
+			<div class="ring" aria-label="Bloquants levés">
+				<svg viewBox="0 0 36 36" aria-hidden="true">
+					<circle cx="18" cy="18" r="15.9" fill="none" stroke="var(--surface-2)" stroke-width="3.2"></circle>
+					<circle id="aRingFill" cx="18" cy="18" r="15.9" fill="none" stroke="var(--done)" stroke-width="3.2" stroke-linecap="round" stroke-dasharray="0 100"></circle>
+				</svg>
+				<div class="pct"><div><span id="aPct">0 %</span><small id="aPctSub"></small></div></div>
+			</div>
+		</header>
+		<div class="figures" id="aFigures"></div>
+		<nav class="subnav" id="aSubnav" aria-label="Parties de l’audit"></nav>
+
+		<div id="a-synthese"></div>
+		<div id="a-constats" hidden>
+			<div class="stats" id="fStateChips" role="group" aria-label="Filtrer par statut"></div>
+			<div class="filters">
+				<span class="lab">Axe</span><span id="fAxisChips" style="display:contents"></span>
+			</div>
+			<div class="filters">
+				<span class="lab">Sévérité</span><span id="fSevChips" style="display:contents"></span>
+				<input id="fq" class="search" type="search" placeholder="Rechercher (titre, fichier, texte)" aria-label="Rechercher un constat">
+			</div>
+			<div id="fList"></div>
+		</div>
+		<div id="a-tracabilite" hidden>
+			<section class="asec" style="margin-top:24px"><div class="tbl" id="tSummary"></div></section>
+			<div class="filters" style="margin-top:18px">
+				<span class="lab">Verdict</span><span id="tVerdictChips" style="display:contents"></span>
+			</div>
+			<div class="filters">
+				<span class="lab">Axe</span><span id="tAxisChips" style="display:contents"></span>
+				<input id="tq" class="search" type="search" placeholder="Rechercher (référence, point, preuve)" aria-label="Rechercher une ligne de traçabilité">
+			</div>
+			<div id="tList"></div>
+		</div>
+		<div id="a-deroulement" hidden></div>
+	</div>
+
+	<footer>
+		<div>Généré depuis la revue du commit <span class="mono" id="commit"></span>. Les rapports détaillés et la version Markdown pour les agents sont dans <code>docs/roadmap/</code> du dépôt.</div>
+		<div>Page en lecture seule : les statuts viennent de <code>docs/roadmap/status.json</code>. Pour en changer un : <code>node docs/roadmap/status.mjs &lt;id&gt; &lt;statut&gt; [note]</code>, qui régénère cette page et <code>ROADMAP.md</code>. L’identifiant est celui d’une tâche (<code>SEC-02</code>) ou d’un point de l’audit préfixé par <code>audit-</code> (<code>audit-B1</code>, <code>audit-A6-M2</code>).</div>
+		<div>Lien direct vers une tâche : ajoutez son identifiant après <code>#</code> dans l’URL, par exemple <code>#SEC-02</code>. Pour l’audit : <code>#B1</code>, <code>#D5</code>, <code>#T3</code>, <code>#A6-M2</code> pour un constat, ou <code>#audit-constats</code> pour une vue.</div>
+	</footer>
+</div>
+
+<div class="scrim" id="scrim" hidden></div>
+<aside class="panel" id="panel" hidden role="dialog" aria-modal="true" aria-labelledby="pTitle"></aside>
+
+<script>
+const DATA = /*__DATA__*/null;
+const STATES = DATA.states;
+const SEVS = [
+	{ key: 'critique', label: 'Critique' },
+	{ key: 'majeur', label: 'Majeur' },
+	{ key: 'mineur', label: 'Mineur' },
+	{ key: 'evolution', label: 'Évolution' }
+];
+const stateLabel = Object.fromEntries(STATES.map(s => [s.key, s.label]));
+const sevLabel = Object.fromEntries(SEVS.map(s => [s.key, s.label]));
+const byId = Object.fromEntries(DATA.tasks.map(t => [t.id, t]));
+
+const status = DATA.status; // id -> {state, note, updatedAt}, depuis status.json
+let filterState = null;   // null | 'todo' | ... | 'ready'
+let filterSev = null;
+let query = '';
+let openId = null;
+
+const $ = s => document.querySelector(s);
+const esc = s => String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+const md = s => esc(s).replace(/`([^`]+)`/g, '<code>$1</code>');
+const st = id => (status[id] && status[id].state) || 'todo';
+const isReady = t => st(t.id) === 'todo' && t.deps.every(d => st(d) === 'done');
+
+function counts(list) {
+	const c = { todo: 0, doing: 0, done: 0, blocked: 0 };
+	list.forEach(t => c[st(t.id)]++);
+	return c;
+}
+
+function matches(t) {
+	if (filterState === 'ready' && !isReady(t)) return false;
+	if (filterState && filterState !== 'ready' && st(t.id) !== filterState) return false;
+	if (filterSev && t.sev !== filterSev) return false;
+	if (query) {
+		const hay = (t.id + ' ' + t.title + ' ' + t.why + ' ' + t.where.join(' ')).toLowerCase();
+		if (!hay.includes(query)) return false;
+	}
+	return true;
+}
+
+function renderHeader() {
+	const c = counts(DATA.tasks);
+	const total = DATA.tasks.length;
+	const pct = Math.round((c.done / total) * 100);
+	$('#pct').textContent = pct + ' %';
+	$('#pctSub').textContent = c.done + ' / ' + total + ' faites';
+	$('#ringFill').setAttribute('stroke-dasharray', pct + ' 100');
+	const ready = DATA.tasks.filter(isReady).length;
+	const chips = STATES.map(s => ({ key: s.key, label: s.label, n: c[s.key], color: 'var(--' + s.key + ')' }));
+	chips.push({ key: 'ready', label: 'Prêtes à démarrer', n: ready, color: 'var(--accent)' });
+	$('#stateChips').innerHTML = chips.map(ch =>
+		`<button class="chip" data-state="${ch.key}" aria-pressed="${filterState === ch.key}"><span class="dot" style="background:${ch.color}"></span>${ch.label} <strong>${ch.n}</strong></button>`
+	).join('');
+	$('#sevChips').innerHTML = SEVS.map(s => {
+		const n = DATA.tasks.filter(t => t.sev === s.key).length;
+		return `<button class="chip" data-sev="${s.key}" aria-pressed="${filterSev === s.key}"><span class="sev sev-${s.key}">${s.label}</span> ${n}</button>`;
+	}).join('');
+}
+
+function renderPhases() {
+	$('#phases').innerHTML = DATA.phases.map(p => {
+		const all = DATA.tasks.filter(t => t.phase === p.id);
+		const shown = all.filter(matches);
+		const c = counts(all);
+		const w = k => (c[k] / all.length * 100) + '%';
+		const rows = shown.map(t => {
+			const s = st(t.id);
+			const waiting = s === 'todo' && !isReady(t) ? t.deps.filter(d => st(d) !== 'done') : [];
+			const hint = s === 'todo'
+				? (waiting.length ? `<span class="waiting">attend ${waiting.join(', ')}</span>` : `<span class="ready">prête</span>`)
+				: '';
+			const note = status[t.id] && status[t.id].note ? `<span>Note : ${esc(status[t.id].note.slice(0, 60))}${status[t.id].note.length > 60 ? '…' : ''}</span>` : '';
+			return `<button class="row ${s === 'done' ? 'is-done' : ''}" data-open="${t.id}" aria-current="${openId === t.id}">
+				<span class="tid">${t.id}</span>
+				<span class="ttl"><span>${md(t.title)}</span><span class="sub"><span class="sev sev-${t.sev}">${sevLabel[t.sev]}</span>${hint}${note}</span></span>
+				<span class="size" title="Effort estimé">${t.size}</span>
+				<span class="pill st-${s}">${stateLabel[s]}</span>
+			</button>`;
+		}).join('');
+		return `<section class="phase" aria-labelledby="h-${p.id}">
+			<div class="phase-head">
+				<span class="phase-id">${p.id}</span>
+				<h2 id="h-${p.id}">${esc(p.title)}</h2>
+				<span class="phase-count">${c.done} / ${all.length}</span>
+				<p class="phase-goal">${md(p.goal)}</p>
+				<div class="bar" aria-hidden="true"><span style="width:${w('done')};background:var(--done)"></span><span style="width:${w('doing')};background:var(--doing)"></span><span style="width:${w('blocked')};background:var(--blocked)"></span></div>
+			</div>
+			<div class="list">${rows || '<div class="empty">Aucune tâche de cette phase ne correspond aux filtres.</div>'}</div>
+		</section>`;
+	}).join('');
+}
+
+function taskMarkdown(t) {
+	const lines = [
+		`## ${t.id} · ${t.title}`,
+		`Phase ${t.phase} · sévérité ${sevLabel[t.sev].toLowerCase()} · effort ${t.size}` + (t.deps.length ? ` · dépend de ${t.deps.join(', ')}` : ''),
+		'', '**Problème**', t.why, '', '**Fichiers**', ...t.where.map(w => '- `' + w + '`'),
+		'', '**À faire**', ...t.todo.map(x => '- ' + x), '', '**Critère d’acceptation**', t.done,
+		'', '**Sources**', ...t.src.map(s => '- ' + s)
+	];
+	return lines.join('\n');
+}
+
+// Suivi en lecture seule : la note et sa date viennent de status.json.
+function trackBox(rec, label) {
+	const when = rec.updatedAt ? 'Mis à jour le ' + new Date(rec.updatedAt).toLocaleString('fr-FR', { dateStyle: 'medium', timeStyle: 'short' }) : 'Pas encore suivi';
+	return `<div class="track">${rec.note ? `<div><h4>${label}</h4><p>${esc(rec.note)}</p></div>` : ''}<div class="foot">${when}</div></div>`;
+}
+
+function renderPanel() {
+	const panel = $('#panel'), scrim = $('#scrim');
+	if (openId && auditItems[openId]) { renderAuditPanel(auditItems[openId]); panel.hidden = false; scrim.hidden = false; return; }
+	if (!openId || !byId[openId]) { panel.hidden = true; scrim.hidden = true; return; }
+	const t = byId[openId];
+	const s = st(t.id);
+	const rec = status[t.id] || {};
+	const phase = DATA.phases.find(p => p.id === t.phase);
+	panel.innerHTML = `
+		<div class="panel-head">
+			<div><div class="tid mono" style="color:var(--accent)">${t.id}</div><h3 id="pTitle">${md(t.title)}</h3></div>
+			<button class="x" id="close" aria-label="Fermer">×</button>
+			<div class="panel-meta"><span>${t.phase} · ${esc(phase.title)}</span><span class="sev sev-${t.sev}">${sevLabel[t.sev]}</span><span class="size">effort ${t.size}</span><span class="pill st-${s}">${stateLabel[s]}</span></div>
+		</div>
+		<div class="panel-body">
+			${trackBox(rec, 'Note')}
+			<div><h4>Problème</h4><p>${md(t.why)}</p></div>
+			<div><h4>Fichiers concernés</h4><ul class="files">${t.where.map(w => `<li>${esc(w)}</li>`).join('')}</ul></div>
+			<div><h4>À faire</h4><ul>${t.todo.map(x => `<li>${md(x)}</li>`).join('')}</ul></div>
+			<div><h4>Critère d’acceptation</h4><p class="accept">${md(t.done)}</p></div>
+			${t.deps.length ? `<div><h4>Dépend de</h4><div class="deps">${t.deps.map(d => `<button class="dep ${st(d) === 'done' ? 'ok' : ''}" data-open="${d}">${d} · ${esc(byId[d].title)}${st(d) === 'done' ? ' ✓' : ''}</button>`).join('')}</div></div>` : ''}
+			${(() => { const rev = DATA.tasks.filter(x => x.deps.includes(t.id)); return rev.length ? `<div><h4>Débloque</h4><div class="deps">${rev.map(d => `<button class="dep" data-open="${d.id}">${d.id} · ${esc(d.title)}</button>`).join('')}</div></div>` : ''; })()}
+			<div><h4>Sources</h4><ul class="files">${t.src.map(x => `<li>${esc(x)}</li>`).join('')}</ul></div>
+			<div><h4>Pour un ticket</h4><div class="foot" style="display:flex;gap:10px;align-items:center;flex-wrap:wrap"><button class="btn" id="copy">Copier en Markdown</button><span id="copyMsg" style="font-size:12px;color:var(--muted)"></span></div><textarea class="copyarea" id="copyArea" readonly hidden aria-label="Contexte de la tâche en Markdown"></textarea></div>
+		</div>`;
+	panel.hidden = false; scrim.hidden = false;
+}
+
+// ---- Audit d’avant 1.0 : données lues dans docs/roadmap/reviews/audit-pre-1.0/ par build.mjs ----
+const AUDIT = DATA.audit || null;
+const VKEY = { 'Corrigé': 'corrige', 'Partiel': 'partiel', 'Non fait': 'nonfait', 'Sans objet': 'sansobjet', 'Écart décidé': 'ecart' };
+const VCOLOR = { corrige: 'var(--done)', partiel: 'var(--doing)', nonfait: 'var(--blocked)', sansobjet: 'var(--todo)', ecart: 'var(--evo)' };
+const DEC_LABEL = { todo: 'À trancher', doing: 'En discussion', done: 'Tranchée', blocked: 'Bloquée' };
+const KIND_LABEL = { blocker: 'Bloquant pour la 1.0', decision: 'Décision', task: 'Tâche proposée', finding: 'Constat' };
+const AUDIT_VIEWS = [
+	{ key: 'synthese', label: 'Synthèse' },
+	{ key: 'constats', label: 'Constats' },
+	{ key: 'tracabilite', label: 'Traçabilité' },
+	{ key: 'deroulement', label: 'Déroulement' }
+];
+const auditItems = {};    // id -> bloquant (R, B), décision (D), tâche (T) ou constat (A6-M2)
+let currentTab = 'roadmap';
+let auditView = 'synthese';
+let fAxis = null, fSev = null, fState = null, fQuery = '';
+let tAxis = null, tVerdict = null, tQuery = '';
+const openNotes = new Set();
+const plain = h => h.replace(/<[^>]+>/g, '').replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&quot;/g, '"').replace(/&amp;/g, '&');
+const noLinks = h => h.replace(/<a [^>]*>|<\/a>/g, '');
+
+if (AUDIT) {
+	AUDIT.synthese.blockers.forEach(g => g.items.forEach(b => { auditItems[b.id] = Object.assign({ kind: 'blocker', ref: b.id }, b); }));
+	AUDIT.synthese.decisions.forEach(d => { auditItems[d.id] = Object.assign({ kind: 'decision', ref: d.id }, d); });
+	AUDIT.synthese.tasks.forEach(t => { auditItems[t.id] = Object.assign({ kind: 'task', ref: t.id, html: `<p>${t.content}</p><p><strong>Sources :</strong> ${t.sources}</p>` }, t); });
+	AUDIT.axes.forEach(a => a.findings.forEach(f => { auditItems[f.key] = Object.assign({ kind: 'finding', ref: f.key, axisTitle: a.title }, f); }));
+	const all = Object.values(auditItems);
+	all.forEach(it => {
+		it.sid = 'audit-' + it.ref;
+		it.findings = [...new Set([...it.html.matchAll(/data-open="(A\d-[CMm]\d+)"/g)].map(m => m[1]))].filter(k => k !== it.ref);
+		// « R3-m16 » ou « DATA-05/Reste-1 » désignent une ligne de revue, pas un bloquant ni une tâche.
+		it.links = it.kind === 'finding' ? [] : [...new Set([...it.md.matchAll(/(?<![-\/\w])([RBTD]\d{1,2})\b(?!-)/g)].map(m => m[1]))]
+			.filter(k => k !== it.ref && auditItems[k] && auditItems[k].kind !== 'finding');
+		it.hay = (it.ref + ' ' + plain(it.title) + ' ' + (it.where || '') + ' ' + plain(it.html)).toLowerCase();
+	});
+	all.forEach(it => { it.citedBy = all.filter(o => o.kind !== 'finding' && (o.findings.includes(it.ref) || o.links.includes(it.ref))).map(o => o.ref); });
+	AUDIT.axes.forEach(a => a.trace.groups.forEach(g => g.rows.forEach(r => { r.hay = (r.ref + ' ' + plain(r.point) + ' ' + plain(r.proof)).toLowerCase(); })));
+}
+
+const ast = it => st(it.sid);
+const auditLabels = it => it.kind === 'decision' ? DEC_LABEL : stateLabel;
+const auditList = kind => Object.values(auditItems).filter(it => it.kind === kind);
+const traceRows = a => a.trace.groups.flatMap(g => g.rows);
+const countBy = (list, f) => list.reduce((c, x) => { const k = f(x); c[k] = (c[k] || 0) + 1; return c; }, {});
+
+function tabHash() {
+	if (currentTab !== 'audit') return location.pathname + location.search;
+	return '#' + (auditView === 'synthese' ? 'audit' : 'audit-' + auditView);
+}
+
+function showTab(tab, view) {
+	currentTab = AUDIT ? tab : 'roadmap';
+	if (view) auditView = view;
+	$('#view-roadmap').hidden = currentTab !== 'roadmap';
+	$('#view-audit').hidden = currentTab !== 'audit';
+	document.querySelectorAll('[data-tab]').forEach(b => b.setAttribute('aria-selected', String(b.dataset.tab === currentTab)));
+	AUDIT_VIEWS.forEach(v => { $('#a-' + v.key).hidden = v.key !== auditView; });
+	$('#aSubnav').innerHTML = AUDIT_VIEWS.map(v => `<button class="chip" data-aview="${v.key}" aria-pressed="${v.key === auditView}">${v.label}</button>`).join('');
+	try { localStorage.setItem('cellar-roadmap-tab', currentTab); } catch (e) {}
+}
+
+function noteSpan(it) {
+	const n = status[it.sid] && status[it.sid].note;
+	if (!n) return '';
+	return `<span>${it.kind === 'decision' ? 'Réponse' : 'Note'} : ${esc(n.slice(0, 70))}${n.length > 70 ? '…' : ''}</span>`;
+}
+
+function auditRow(it, tid, sub) {
+	const s = ast(it);
+	return `<button class="row ${s === 'done' ? 'is-done' : ''}" data-open="${it.ref}" aria-current="${openId === it.ref}">
+		<span class="tid">${tid}</span>
+		<span class="ttl"><span>${noLinks(it.title)}</span>${sub ? `<span class="sub">${sub}</span>` : ''}</span>
+		<span class="pill st-${s}">${auditLabels(it)[s]}</span>
+	</button>`;
+}
+
+function findingChips(it) {
+	return it.findings.map(k => { const f = auditItems[k]; return `<span class="mini ${ast(f) === 'done' ? 'ok' : ''}">axe ${f.axis} · ${f.id}</span>`; }).join('');
+}
+
+function decisionHints(it) {
+	return [...it.links, ...it.citedBy].filter((k, i, l) => l.indexOf(k) === i && auditItems[k].kind === 'decision').map(k => {
+		const done = ast(auditItems[k]) === 'done';
+		return `<span class="${done ? 'ready' : 'waiting'}">${done ? k + ' tranchée' : 'attend ' + k}</span>`;
+	}).join('');
+}
+
+function renderAuditTop() {
+	const blockers = auditList('blocker'), decisions = auditList('decision'), tasks = auditList('task'), findings = auditList('finding');
+	const done = blockers.filter(b => ast(b) === 'done').length;
+	const pct = Math.round(done / blockers.length * 100);
+	$('#aPct').textContent = pct + ' %';
+	$('#aPctSub').textContent = done + ' / ' + blockers.length + ' bloquants levés';
+	$('#aRingFill').setAttribute('stroke-dasharray', pct + ' 100');
+	const rows = AUDIT.axes.flatMap(traceRows);
+	const vc = countBy(rows, r => r.verdict);
+	const sc = countBy(findings, f => f.sev);
+	const meter = (label, list) => {
+		const d = list.filter(x => ast(x) === 'done').length;
+		return `<div class="meter"><span>${label}</span><strong>${d} / ${list.length}</strong><div class="sbar"><span style="width:${d / list.length * 100}%;background:var(--done)"></span></div></div>`;
+	};
+	$('#aFigures').innerHTML = `
+		<div class="fig"><h3>Passe 1 · traçabilité</h3><div class="big">${rows.length}<small>lignes vérifiées</small></div>
+			<div class="sbar">${AUDIT.verdicts.map(v => `<span style="width:${(vc[v] || 0) / rows.length * 100}%;background:${VCOLOR[VKEY[v]]}"></span>`).join('')}</div>
+			<div class="legend">${AUDIT.verdicts.map(v => `<span><i style="background:${VCOLOR[VKEY[v]]}"></i>${v} <b>${vc[v] || 0}</b></span>`).join('')}</div></div>
+		<div class="fig"><h3>Passe 2 · nouveaux constats</h3><div class="big">${findings.length}<small>confirmés par un second agent</small></div>
+			<div class="legend">${['critique', 'majeur', 'mineur'].map(k => `<span><span class="sev sev-${k}">${sevLabel[k]}</span> <b>${sc[k] || 0}</b></span>`).join('')}</div>
+			<div class="legend"><span>Critères des ${DATA.tasks.length} tâches de la feuille de route : tous tenus</span></div></div>
+		<div class="fig"><h3>Suivi</h3>${meter('Bloquants levés', blockers)}${meter('Décisions tranchées', decisions)}${meter('Tâches faites', tasks)}${meter('Constats corrigés', findings)}</div>`;
+}
+
+function renderSynth() {
+	const S = AUDIT.synthese;
+	const blockers = S.blockers.map(g => `<div class="agroup"><h3>${g.title}</h3>${g.intro ? `<div class="prose muted">${g.intro}</div>` : ''}
+		<div class="list">${g.items.map(b => { const it = auditItems[b.id]; return auditRow(it, it.ref, findingChips(it) + decisionHints(it) + noteSpan(it)); }).join('')}</div></div>`).join('');
+	const groups = [...new Set(S.decisions.map(d => d.group))];
+	const decisions = groups.map(gr => `<div class="agroup"><h3>${esc(gr)}</h3><div class="list">${S.decisions.filter(d => d.group === gr).map(d => {
+		const it = auditItems[d.id];
+		const about = it.links.filter(k => auditItems[k].kind !== 'decision').map(k => `<span class="mini ${ast(auditItems[k]) === 'done' ? 'ok' : ''}">${k}</span>`).join('');
+		return auditRow(it, it.ref, about + noteSpan(it));
+	}).join('')}</div></div>`).join('');
+	const tasks = S.tasks.map(t => {
+		const it = auditItems[t.id];
+		const d = it.findings.filter(k => ast(auditItems[k]) === 'done').length;
+		const sub = (it.findings.length ? `<span>${it.findings.length} constats liés, ${d} corrigés</span>` : '') + decisionHints(it) + noteSpan(it);
+		return auditRow(it, it.ref, sub);
+	}).join('');
+	$('#a-synthese').innerHTML = `
+		<section class="asec"><h2>Bloquants pour la 1.0</h2>${blockers}
+			${S.calendar ? `<div class="agroup"><h3>${S.calendar.title}</h3><div class="prose">${S.calendar.html}</div></div>` : ''}</section>
+		<section class="asec"><h2>Décisions qui te reviennent</h2>${decisions}</section>
+		<section class="asec"><h2>Le reste, en tâches proposées</h2><div class="prose muted">${S.tasksIntro}</div><div class="list">${tasks}</div></section>`;
+}
+
+function findingMatches(f) {
+	if (fAxis && f.axis !== fAxis) return false;
+	if (fSev && f.sev !== fSev) return false;
+	if (fState && ast(f) !== fState) return false;
+	return !fQuery || f.hay.includes(fQuery);
+}
+
+function renderFindings() {
+	const findings = auditList('finding');
+	const c = countBy(findings, f => ast(f));
+	$('#fStateChips').innerHTML = STATES.map(s => `<button class="chip" data-fst="${s.key}" aria-pressed="${fState === s.key}"><span class="dot" style="background:var(--${s.key})"></span>${s.label} <strong>${c[s.key] || 0}</strong></button>`).join('');
+	$('#fAxisChips').innerHTML = AUDIT.axes.map(a => `<button class="chip" data-fax="${a.n}" aria-pressed="${fAxis === a.n}" title="${esc(a.title)}">Axe ${a.n} <strong>${a.findings.length}</strong></button>`).join('');
+	$('#fSevChips').innerHTML = ['critique', 'majeur', 'mineur'].map(k => `<button class="chip" data-fsev="${k}" aria-pressed="${fSev === k}"><span class="sev sev-${k}">${sevLabel[k]}</span> ${findings.filter(f => f.sev === k).length}</button>`).join('');
+	$('#fList').innerHTML = AUDIT.axes.map(a => {
+		const all = a.findings.map(f => auditItems[f.key]);
+		if (fAxis && a.n !== fAxis) return '';
+		const shown = all.filter(findingMatches);
+		const d = all.filter(f => ast(f) === 'done').length;
+		const notes = `${a.intro}${a.findingsIntro || ''}${a.sections.map(x => `<h3>${x.title}</h3>${x.html}`).join('')}${(a.extras || []).map(x => `<h3>${x.title}</h3>${x.html}`).join('')}`;
+		return `<section class="phase" aria-labelledby="h-ax${a.n}">
+			<div class="phase-head">
+				<span class="phase-id">Axe ${a.n}</span>
+				<h2 id="h-ax${a.n}">${esc(a.title)}</h2>
+				<span class="phase-count">${d} / ${all.length}</span>
+				<div class="bar" aria-hidden="true"><span style="width:${all.length ? d / all.length * 100 : 0}%;background:var(--done)"></span></div>
+			</div>
+			<details class="notes" data-axis="${a.n}" ${openNotes.has(String(a.n)) ? 'open' : ''}><summary>Fiche de l’axe : résumé, points restés ouverts, constats écartés, renvois</summary><div class="prose">${notes}</div></details>
+			<div class="list">${shown.map(f => auditRow(f, f.id, `<span class="sev sev-${f.sev}">${sevLabel[f.sev]}</span>${f.where ? `<span class="where">${esc(f.where)}</span>` : ''}${noteSpan(f)}`)).join('') || `<div class="empty">${all.length ? 'Aucun constat de cet axe ne correspond aux filtres.' : 'Aucun nouveau constat sur cet axe.'}</div>`}</div>
+		</section>`;
+	}).join('');
+}
+
+function renderTraceStatic() {
+	const vs = AUDIT.verdicts;
+	const all = AUDIT.axes.flatMap(traceRows);
+	const line = (label, title, rows) => {
+		const c = countBy(rows, r => r.verdict);
+		return `<tr><th>${label}</th><td>${title}</td><td class="num">${rows.length}</td><td class="barcell"><div class="sbar">${vs.map(v => `<span style="width:${(c[v] || 0) / rows.length * 100}%;background:${VCOLOR[VKEY[v]]}"></span>`).join('')}</div></td>${vs.map(v => `<td class="num">${c[v] || 0}</td>`).join('')}</tr>`;
+	};
+	$('#tSummary').innerHTML = `<table class="axsum"><thead><tr><th>Axe</th><th>Périmètre</th><th class="num">Lignes</th><th>Répartition</th>${vs.map(v => `<th class="num">${v}</th>`).join('')}</tr></thead><tbody>
+		${AUDIT.axes.map(a => line(String(a.n), esc(a.title), traceRows(a))).join('')}${line('Total', '', all)}</tbody></table>`;
+}
+
+function renderTrace() {
+	const all = AUDIT.axes.flatMap(traceRows);
+	const c = countBy(all, r => r.verdict);
+	$('#tVerdictChips').innerHTML = AUDIT.verdicts.map(v => `<button class="chip" data-tv="${v}" aria-pressed="${tVerdict === v}"><span class="dot" style="background:${VCOLOR[VKEY[v]]}"></span>${v} <strong>${c[v] || 0}</strong></button>`).join('');
+	$('#tAxisChips').innerHTML = AUDIT.axes.map(a => `<button class="chip" data-tax="${a.n}" aria-pressed="${tAxis === a.n}" title="${esc(a.title)}">Axe ${a.n}</button>`).join('');
+	const filtered = !!(tVerdict || tQuery);
+	const html = AUDIT.axes.filter(a => !tAxis || a.n === tAxis).map(a => {
+		let n = 0;
+		const groups = a.trace.groups.map(g => {
+			const rows = g.rows.filter(r => (!tVerdict || r.verdict === tVerdict) && (!tQuery || r.hay.includes(tQuery)));
+			n += rows.length;
+			const extra = g.html && !filtered ? `<div class="prose">${g.html}</div>` : '';
+			if (!rows.length && !extra) return '';
+			return `<div class="agroup"><h3>${g.title}</h3>${rows.length ? `<div class="tbl trace"><table><thead><tr><th>Réf</th><th>Point</th><th>Verdict</th><th>Preuve</th></tr></thead><tbody>${rows.map(r =>
+				`<tr><td>${esc(r.ref)}</td><td>${r.point}</td><td><span class="vpill vp-${VKEY[r.verdict] || 'sansobjet'}">${esc(r.verdict)}</span></td><td>${r.proof}</td></tr>`).join('')}</tbody></table></div>` : ''}${extra}</div>`;
+		}).join('');
+		if (!groups) return '';
+		return `<section class="asec" aria-labelledby="h-tr${a.n}">
+			<div class="phase-head"><span class="phase-id">Axe ${a.n}</span><h2 id="h-tr${a.n}">${esc(a.title)}</h2><span class="phase-count">${n} ligne${n > 1 ? 's' : ''}</span></div>
+			${filtered ? '' : `<div class="prose muted small">${a.trace.intro}</div>`}${groups}</section>`;
+	}).join('');
+	$('#tList').innerHTML = html || '<div class="empty">Aucune ligne ne correspond aux filtres.</div>';
+}
+
+function renderDeroulement() {
+	const S = AUDIT.synthese;
+	const dismissed = AUDIT.axes.map(a => { const x = a.sections.find(s => s.num === '5'); return x ? `<h3>Axe ${a.n} · ${esc(a.title)}</h3>${x.html}` : ''; }).join('');
+	const extras = AUDIT.axes.flatMap(a => (a.extras || []).map(x => `<section class="asec"><h2>${x.title}</h2><div class="prose">${x.html}</div></section>`)).join('');
+	$('#a-deroulement').innerHTML = `
+		<section class="asec"><div class="files-box"><div><strong>Livrable :</strong> branche <code>docs/audit-pre-1.0</code>, non mergée.</div><div>Un fichier par axe et la synthèse dans <code>docs/roadmap/reviews/audit-pre-1.0/</code> : ${AUDIT.axes.map(a => `<code>${esc(a.file)}</code>`).join(', ')}, <code>synthese.md</code>.</div></div></section>
+		${S.sections.map(x => `<section class="asec"><h2>${x.title}</h2><div class="prose">${x.html}</div></section>`).join('')}
+		<section class="asec"><h2>Constats écartés, axe par axe</h2><div class="prose">${dismissed}</div></section>
+		${extras}`;
+}
+
+function renderAudit() {
+	if (!AUDIT) return;
+	renderAuditTop(); renderSynth(); renderFindings();
+}
+
+function renderAuditPanel(it) {
+	const s = ast(it);
+	const rec = status[it.sid] || {};
+	const labels = auditLabels(it);
+	const dep = k => { const o = auditItems[k]; const ok = ast(o) === 'done'; return `<button class="dep ${ok ? 'ok' : ''}" data-open="${k}">${o.kind === 'finding' ? 'Axe ' + o.axis + ' · ' + o.id : k} · ${noLinks(o.title)}${ok ? ' ✓' : ''}</button>`; };
+	const related = it.kind === 'finding' ? it.citedBy : [...new Set([...it.links, ...it.citedBy])];
+	const meta = it.kind === 'finding'
+		? `<span>Axe ${it.axis} · ${esc(it.axisTitle)}</span><span class="sev sev-${it.sev}">${sevLabel[it.sev]}</span>`
+		: `<span>${KIND_LABEL[it.kind]}</span>`;
+	const decision = it.kind === 'decision';
+	$('#panel').innerHTML = `
+		<div class="panel-head">
+			<div><div class="tid mono" style="color:var(--accent)">${it.kind === 'finding' ? 'Axe ' + it.axis + ' · ' + it.id : it.ref}</div><h3 id="pTitle">${noLinks(it.title)}</h3></div>
+			<button class="x" id="close" aria-label="Fermer">×</button>
+			<div class="panel-meta">${meta}<span class="pill st-${s}">${labels[s]}</span></div>
+		</div>
+		<div class="panel-body">
+			${trackBox(rec, decision ? 'Réponse' : 'Note')}
+			${it.origin ? `<p class="muted small">${it.origin}</p>` : ''}
+			<div class="prose">${it.html}</div>
+			${it.kind !== 'finding' && it.findings.length ? `<div><h4>Constats liés</h4><div class="deps">${it.findings.map(dep).join('')}</div></div>` : ''}
+			${related.length ? `<div><h4>${it.kind === 'finding' ? 'Repris dans' : 'Liens'}</h4><div class="deps">${related.map(dep).join('')}</div></div>` : ''}
+			<div><h4>Pour un ticket</h4><div class="foot" style="display:flex;gap:10px;align-items:center;flex-wrap:wrap"><button class="btn" id="copy">Copier en Markdown</button><span id="copyMsg" style="font-size:12px;color:var(--muted)"></span></div><textarea class="copyarea" id="copyArea" readonly hidden aria-label="Texte en Markdown"></textarea></div>
+		</div>`;
+}
+
+function render() { renderHeader(); renderPhases(); renderAudit(); renderPanel(); }
+
+function open(id) {
+	if (id && auditItems[id] && currentTab !== 'audit') showTab('audit');
+	if (id && byId[id] && currentTab !== 'roadmap') showTab('roadmap');
+	openId = id;
+	try { history.replaceState(null, '', id ? '#' + id : tabHash()); } catch (e) {}
+	render();
+	if (id) { const c = $('#close'); if (c) c.focus(); }
+}
+
+document.addEventListener('click', e => {
+	const o = e.target.closest('[data-open]');
+	if (o) { e.preventDefault(); open(o.dataset.open); return; }
+	const tb = e.target.closest('[data-tab]');
+	if (tb) { showTab(tb.dataset.tab); openId = null; render(); try { history.replaceState(null, '', tabHash()); } catch (err) {} return; }
+	const av = e.target.closest('[data-aview]');
+	if (av) { showTab('audit', av.dataset.aview); try { history.replaceState(null, '', tabHash()); } catch (err) {} return; }
+	const fx = e.target.closest('[data-fax],[data-fsev],[data-fst]');
+	if (fx) {
+		if (fx.dataset.fax) fAxis = fAxis === Number(fx.dataset.fax) ? null : Number(fx.dataset.fax);
+		if (fx.dataset.fsev) fSev = fSev === fx.dataset.fsev ? null : fx.dataset.fsev;
+		if (fx.dataset.fst) fState = fState === fx.dataset.fst ? null : fx.dataset.fst;
+		renderFindings(); return;
+	}
+	const tx = e.target.closest('[data-tax],[data-tv]');
+	if (tx) {
+		if (tx.dataset.tax) tAxis = tAxis === Number(tx.dataset.tax) ? null : Number(tx.dataset.tax);
+		if (tx.dataset.tv) tVerdict = tVerdict === tx.dataset.tv ? null : tx.dataset.tv;
+		renderTrace(); return;
+	}
+	const sc = e.target.closest('[data-state]');
+	if (sc) { filterState = filterState === sc.dataset.state ? null : sc.dataset.state; render(); return; }
+	const sv = e.target.closest('[data-sev]');
+	if (sv) { filterSev = filterSev === sv.dataset.sev ? null : sv.dataset.sev; render(); return; }
+	if (e.target.id === 'close' || e.target.id === 'scrim') { open(null); return; }
+	if (e.target.id === 'copy' && openId) {
+		const text = byId[openId] ? taskMarkdown(byId[openId]) : auditItems[openId].md;
+		const done = () => { $('#copyMsg').textContent = 'Copié'; };
+		const fallback = () => { const a = $('#copyArea'); a.hidden = false; a.value = text; a.focus(); a.select(); $('#copyMsg').textContent = 'Sélectionné : copiez avec Ctrl+C / Cmd+C'; };
+		try { navigator.clipboard.writeText(text).then(done, fallback); } catch (err) { fallback(); }
+	}
+});
+document.addEventListener('keydown', e => { if (e.key === 'Escape' && openId) open(null); });
+$('#q').addEventListener('input', e => { query = e.target.value.trim().toLowerCase(); renderPhases(); });
+$('#fq').addEventListener('input', e => { fQuery = e.target.value.trim().toLowerCase(); renderFindings(); });
+$('#tq').addEventListener('input', e => { tQuery = e.target.value.trim().toLowerCase(); renderTrace(); });
+document.addEventListener('toggle', e => {
+	const d = e.target;
+	if (d.matches && d.matches('details.notes')) { if (d.open) openNotes.add(d.dataset.axis); else openNotes.delete(d.dataset.axis); }
+}, true);
+
+function fromHash() {
+	const h = decodeURIComponent(location.hash.slice(1));
+	if (byId[h] || auditItems[h]) { open(h); return; }
+	const view = h === 'audit' ? 'synthese' : (h.startsWith('audit-') ? h.slice(6) : null);
+	if (view && AUDIT_VIEWS.some(v => v.key === view)) { showTab('audit', view); openId = null; render(); }
+}
+window.addEventListener('hashchange', fromHash);
+
+$('#date').textContent = new Date(DATA.meta.date).toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' });
+$('#commit').textContent = DATA.meta.baseCommit;
+$('#decisions').innerHTML = (DATA.decisions || []).map(d => `<dt>${esc(d.topic)}</dt><dd>${md(d.choice)}</dd>`).join('');
+if (AUDIT) {
+	$('#aLede').innerHTML = AUDIT.synthese.intro;
+	renderTraceStatic(); renderTrace(); renderDeroulement();
+	let saved = null;
+	try { saved = localStorage.getItem('cellar-roadmap-tab'); } catch (e) {}
+	showTab(saved === 'audit' ? 'audit' : 'roadmap');
+} else {
+	$('#tabs').hidden = true;
+}
+render();
+fromHash();
+</script>

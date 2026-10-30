@@ -1,0 +1,132 @@
+import Database from 'better-sqlite3';
+import { BottleAvailability } from '#lib/shared/bottle-availability.js';
+import { ApiError, ConflictError, invalidField } from './http/errors.js';
+
+function sqliteCode(error: unknown): string | undefined {
+    return error instanceof Database.SqliteError ? error.code : undefined;
+}
+
+interface Rule {
+    /** SQLite's code for the refusal. */
+    sqliteCode: string;
+    /** What SQLite's message names: the constraint, or the columns of the unique index. */
+    names: string;
+    /** What the API answers. */
+    error: () => ApiError;
+}
+
+/** The rules of migrations 0006 and 0014 that a write can break. */
+const RULES = {
+    duplicate_region: {
+        sqliteCode: 'SQLITE_CONSTRAINT_UNIQUE',
+        names: 'regions.country_id',
+        error: () =>
+            new ConflictError(
+                'duplicate_region',
+                'This country already has a region with this name'
+            )
+    },
+    duplicate_appellation: {
+        sqliteCode: 'SQLITE_CONSTRAINT_UNIQUE',
+        names: 'appellations.region_id',
+        error: () =>
+            new ConflictError(
+                'duplicate_appellation',
+                'This region already has an appellation with this name'
+            )
+    },
+    duplicate_barcode: {
+        sqliteCode: 'SQLITE_CONSTRAINT_UNIQUE',
+        names: 'wine_bottles.barcode',
+        error: () =>
+            new ConflictError(
+                'duplicate_barcode',
+                'This barcode is already assigned to another bottle'
+            )
+    },
+    duplicate_container: {
+        sqliteCode: 'SQLITE_CONSTRAINT_UNIQUE',
+        names: 'storage_containers.name',
+        error: () => new ConflictError('duplicate_container', 'A container has this name already')
+    },
+    duplicate_case: {
+        sqliteCode: 'SQLITE_CONSTRAINT_UNIQUE',
+        names: 'storage_cases.container_id',
+        error: () =>
+            new ConflictError('duplicate_case', 'This container has a case with this name already')
+    },
+    invalid_rating: {
+        sqliteCode: 'SQLITE_CONSTRAINT_CHECK',
+        names: 'wine_definitions_rating_check',
+        error: () => invalidField('rating', 'The rating must be from 1 to 5')
+    },
+    invalid_availability: {
+        sqliteCode: 'SQLITE_CONSTRAINT_CHECK',
+        names: 'wine_bottles_availability_check',
+        error: () =>
+            invalidField(
+                'availability',
+                `The availability must be one of ${Object.values(BottleAvailability).join(', ')}`
+            )
+    }
+} satisfies Record<string, Rule>;
+
+export type BrokenRule = keyof typeof RULES;
+
+const duplicateName = () =>
+    new ConflictError('duplicate_name', 'An entry with this name already exists');
+
+/**
+ * The 409 that the unique index of the reference table `table` answers for a name that another
+ * row has (under the same parent for regions and appellations). The index compares names exactly,
+ * so a name that differs only by case gets it from this function instead. For reference tables
+ * only: the rule is found by the table's name in the columns of its index, so another table with a
+ * unique column, such as wine_bottles and its barcode, would get that column's rule.
+ */
+export function duplicateNameError(table: string): ApiError {
+    const rule = Object.values(RULES).find(
+        (unique) =>
+            unique.sqliteCode === 'SQLITE_CONSTRAINT_UNIQUE' && unique.names.startsWith(`${table}.`)
+    );
+    return rule ? rule.error() : duplicateName();
+}
+
+/** The rule that SQLite refused a write for, or undefined for any other error. */
+export function brokenRule(error: unknown): BrokenRule | undefined {
+    const code = sqliteCode(error);
+    if (!code) return undefined;
+    const message = (error as Error).message;
+    return (Object.keys(RULES) as BrokenRule[]).find(
+        (rule) => RULES[rule].sqliteCode === code && message.includes(RULES[rule].names)
+    );
+}
+
+/**
+ * The ApiError for a write that SQLite refused, or undefined for any other error. A foreign key
+ * refuses a deletion when other rows still use the row, and any other write when a row it refers
+ * to does not exist.
+ */
+export function refusedWriteError(error: unknown, method: string): ApiError | undefined {
+    const rule = brokenRule(error);
+    if (rule) return RULES[rule].error();
+    switch (sqliteCode(error)) {
+        case 'SQLITE_CONSTRAINT_UNIQUE':
+            return duplicateName();
+        case 'SQLITE_CONSTRAINT_FOREIGNKEY':
+            return method === 'DELETE'
+                ? new ConflictError('in_use', 'Other entries still use this one')
+                : new ConflictError('missing_reference', 'An entry it refers to does not exist');
+        default:
+            return undefined;
+    }
+}
+
+/** Whether a foreign key refused the write: a deleted row that others use, or a missing one. */
+export function isForeignKeyRefusal(error: unknown): boolean {
+    return sqliteCode(error) === 'SQLITE_CONSTRAINT_FOREIGNKEY';
+}
+
+/** Whether SQLite refused the write for a constraint: NOT NULL, UNIQUE, CHECK or a foreign key. */
+export function isConstraintRefusal(error: unknown): boolean {
+    return sqliteCode(error)?.startsWith('SQLITE_CONSTRAINT') ?? false;
+}

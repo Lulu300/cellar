@@ -1,0 +1,26 @@
+# Also read by ESLint (eslint.config.js), on top of .gitignore.
+
+# Package manager
+pnpm-lock.yaml
+
+# Committed migrations and their snapshots must never change
+/drizzle/
+
+# Generated: scripts/release.mjs check compares them with their generated content
+/CHANGELOG.md
+/UPGRADING.md
+
+# Roadmap: generated ROADMAP.md and tracker page, frozen audit reports, and the task
+# data the lead edits continuously (see AGENTS.md)
+/docs/roadmap/
+
+# The cases of scripts/check-i18n.test.ts: fragments, not code of the app, whose line numbers
+# the test expects
+/scripts/check-i18n-cases/
+
+# Real data: .gitignore only covers some of its file types
+/data/
+
+# Agent tooling
+/.claude/
+/.omc/

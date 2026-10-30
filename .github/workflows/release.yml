@@ -1,0 +1,197 @@
+name: Release
+
+# Publishes a version from its git tag (see RELEASING.md), once ci.yml passes on the tagged commit;
+# pushes without a tag publish nothing.
+# - vX.Y.Z-rc.N, on develop: images :dev and :X.Y.Z-rc.N, GitHub pre-release.
+# - vX.Y.Z, on main: images :latest, :X.Y.Z and :X.Y, GitHub release.
+# Each platform's image is built on a runner of that platform, started until its healthcheck
+# passes, and pushed without a tag. Only once both are pushed does the release job tag them
+# together as one multi-platform image.
+on:
+  push:
+    tags: ['v*']
+
+env:
+  # Registry names must be lowercase
+  IMAGE: ghcr.io/lulu300/cellar
+  # The check step accepts only vX.Y.Z and vX.Y.Z-rc.N, so a "-" means a release candidate.
+  PRERELEASE: ${{ contains(github.ref_name, '-') }}
+
+jobs:
+  # The tagged commit usually passed CI on develop already. Verifying it again here keeps the
+  # guarantee in this workflow, even when the tag is pushed before that run ends or fails.
+  verify:
+    uses: ./.github/workflows/ci.yml
+    permissions:
+      contents: read
+
+  # Checks the release before anything is pushed, and computes what the next jobs need.
+  prepare:
+    needs: verify
+    runs-on: ubuntu-24.04
+    # A normal run takes 1 to 2 minutes; this stops a hung step long before the 6-hour default.
+    timeout-minutes: 10
+    permissions:
+      contents: read
+    outputs:
+      tags: ${{ steps.meta.outputs.tags }}
+      labels: ${{ steps.meta.outputs.labels }}
+      notes: ${{ steps.notes.outputs.notes }}
+    steps:
+      # Keep the action versions in step with ci.yml. Updating a pinned action: see AGENTS.md.
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          # All branches and tags: the checks need origin/develop, origin/main and the previous release tag.
+          fetch-depth: 0
+          # Nothing is pushed with git; keeps the token away from dependency code.
+          persist-credentials: false
+
+      - name: Set up Node.js
+        uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version-file: .nvmrc
+
+      # Same pnpm as the Dockerfile: the version pinned by packageManager in package.json.
+      # Only git-cliff is needed here, so skip install scripts.
+      - name: Install dependencies
+        run: |
+          npm install -g "$(node -p "require('./package.json').packageManager")"
+          pnpm install --frozen-lockfile --ignore-scripts
+
+      # Branch, package.json version, upgrade actions for breaking commits, generated files up to date.
+      - name: Check the release
+        run: node scripts/release.mjs check "$GITHUB_REF_NAME"
+
+      # Passed to the release job as an output. A random delimiter, so that no line of the notes
+      # can end the value early.
+      - name: Write the release notes
+        id: notes
+        run: |
+          notes="$(node scripts/release.mjs notes "$GITHUB_REF_NAME")"
+          # The release job hands them to gh as one argument, which Linux caps at 128 KiB, and
+          # GitHub caps a release body at 125000 characters: fail here, before anything is pushed,
+          # rather than there, after the image is tagged.
+          size="$(printf '%s' "$notes" | wc -c)"
+          if [ "$size" -gt 120000 ]; then
+            echo "::error::The release notes take $size bytes, over the 120000 the release job can pass to gh."
+            exit 1
+          fi
+          delimiter="$(openssl rand -hex 16)"
+          printf 'notes<<%s\n%s\n%s\n' "$delimiter" "$notes" "$delimiter" >> "$GITHUB_OUTPUT"
+
+      # For a release candidate, {{major}}.{{minor}} yields the full version, so only :X.Y.Z-rc.N and :dev remain.
+      - name: Compute image tags
+        id: meta
+        uses: docker/metadata-action@dc802804100637a589fabce1cb79ff13a1411302 # v6.2.0
+        with:
+          images: ${{ env.IMAGE }}
+          flavor: latest=false
+          tags: |
+            type=semver,pattern={{version}}
+            type=semver,pattern={{major}}.{{minor}}
+            type=raw,value=latest,enable=${{ env.PRERELEASE == 'false' }}
+            type=raw,value=dev,enable=${{ env.PRERELEASE == 'true' }}
+
+  # arm64 lets the image run on ARM servers and NAS (e.g. Raspberry Pi, some Synology).
+  build:
+    needs: prepare
+    strategy:
+      matrix:
+        include:
+          - arch: amd64
+            runner: ubuntu-24.04
+          - arch: arm64
+            runner: ubuntu-24.04-arm
+    runs-on: ${{ matrix.runner }}
+    # Room for a build without cache on the 2-vCPU arm64 runner. Under QEMU, arm64 needed more
+    # than 30 minutes; native builds should take a few minutes each.
+    timeout-minutes: 20
+    permissions:
+      contents: read
+      packages: write # push the image
+    # One output per platform: a matrix merges the outputs of its jobs, and for a name they share
+    # the last job to end wins. Each job sets only its own name; the runner does not send the
+    # other, empty one, so it cannot overwrite the value.
+    outputs:
+      amd64: ${{ matrix.arch == 'amd64' && steps.build.outputs.digest || '' }}
+      arm64: ${{ matrix.arch == 'arm64' && steps.build.outputs.digest || '' }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@f87e5991a6d7451dcb8d9637bfbc97413f497069 # v4.4.1
+
+      - name: Log in to GitHub Container Registry
+        uses: docker/login-action@dbcb813823bdd20940b903addbd779551569679f # v4.6.0
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      # Built into the runner's Docker first, to be started before anything is pushed. One cache
+      # scope per platform, so that the two builds do not overwrite each other's cache.
+      - name: Build
+        uses: docker/build-push-action@c3c9e263c25d99ce0380d002d59b67737d91b0dc # v7.4.0
+        with:
+          context: .
+          platforms: linux/${{ matrix.arch }}
+          labels: ${{ needs.prepare.outputs.labels }}
+          load: true
+          tags: cellar:release-check
+          cache-from: type=gha,scope=${{ matrix.arch }}
+
+      # The same check as ci.yml: an image that does not become healthy stops the job here.
+      - name: Start the image and wait until it is healthy
+        run: scripts/check-image.sh cellar:release-check
+
+      # The same build again, every layer taken from the builder's cache. Pushed by digest only: no
+      # tag moves until both platforms are pushed.
+      - name: Push by digest
+        id: build
+        uses: docker/build-push-action@c3c9e263c25d99ce0380d002d59b67737d91b0dc # v7.4.0
+        with:
+          context: .
+          platforms: linux/${{ matrix.arch }}
+          labels: ${{ needs.prepare.outputs.labels }}
+          outputs: type=image,name=${{ env.IMAGE }},push-by-digest=true,name-canonical=true,push=true
+          cache-from: type=gha,scope=${{ matrix.arch }}
+          cache-to: type=gha,mode=max,scope=${{ matrix.arch }}
+
+  release:
+    needs: [prepare, build]
+    runs-on: ubuntu-24.04
+    # A normal run takes under a minute: it copies no layers, only writes the image index.
+    timeout-minutes: 10
+    permissions:
+      contents: write # create the GitHub release
+      packages: write # tag the image
+    steps:
+      - name: Log in to GitHub Container Registry
+        uses: docker/login-action@dbcb813823bdd20940b903addbd779551569679f # v4.6.0
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      # One index for both platforms' images, pushed under each tag.
+      - name: Tag the multi-platform image
+        env:
+          TAGS: ${{ needs.prepare.outputs.tags }}
+          AMD64: ${{ needs.build.outputs.amd64 }}
+          ARM64: ${{ needs.build.outputs.arm64 }}
+        run: |
+          args=()
+          while read -r tag; do args+=(--tag "$tag"); done <<< "$TAGS"
+          docker buildx imagetools create "${args[@]}" "$IMAGE@$AMD64" "$IMAGE@$ARM64"
+
+      - name: Create the GitHub release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          NOTES: ${{ needs.prepare.outputs.notes }}
+        run: >
+          gh release create "$GITHUB_REF_NAME" --repo "$GITHUB_REPOSITORY" --prerelease="$PRERELEASE"
+          --verify-tag --title "$GITHUB_REF_NAME" --notes "$NOTES"

@@ -1,0 +1,29 @@
+services:
+  cellar:
+    # Prebuilt image of the latest stable release (see README-Docker.md);
+    # `docker compose up -d --build` still builds it locally from source
+    image: ghcr.io/lulu300/cellar:latest
+    build: .
+    container_name: wine-cellar
+    restart: unless-stopped
+    # The app runs as uid 1000, which must own ./docker-data. To run it as your own
+    # account instead, set its uid:gid here (see README-Docker.md, Data ownership).
+    # user: "1026:100"
+    ports:
+      - '3005:3000'
+    environment:
+      - NODE_ENV=production
+      - PORT=3000
+      - HOST=0.0.0.0
+      # Exact URL typed in the browser (scheme, host and port),
+      # e.g. ORIGIN=http://192.168.1.20:3005 in a .env file next to this file.
+      # Writes (POST/PUT/DELETE) from any other origin are rejected with 403.
+      # Behind a reverse proxy, see README-Docker.md (PROTOCOL_HEADER/HOST_HEADER).
+      - ORIGIN=${ORIGIN:?Set ORIGIN in .env to the URL used in the browser, e.g. http://192.168.1.20:3005}
+    volumes:
+      # Database and backup files
+      - ./docker-data/data:/app/data
+      # Wine images
+      - ./docker-data/uploads:/app/static/uploads
+      # Default reference lists (wine types, appellations...), editable; see README-Docker.md
+      - ./docker-data/csv-imports:/app/csv-imports

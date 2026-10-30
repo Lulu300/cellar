@@ -1,0 +1,1 @@
+ALTER TABLE `label_presets` ADD `show_border` integer DEFAULT false NOT NULL;

@@ -1,0 +1,36 @@
+import { describe, expect, it } from 'vitest';
+import { createBottles } from '#lib/server/features/bottles/service.js';
+import { fakeEvent } from '../../../../test/event';
+import { bottleData, insertWineDefinition } from '../../../../test/wine';
+import { GET } from './+server';
+
+describe('GET /api/bottles/non-consumed', () => {
+    // The storage page edits these bottles, and the API takes their format by id only.
+    it('gives the format and origin ids of each bottle', async () => {
+        const definitionId = await insertWineDefinition();
+        createBottles(bottleData(definitionId), 1);
+
+        const response = await GET(
+            fakeEvent<Parameters<typeof GET>[0]>({ path: '/api/bottles/non-consumed' })
+        );
+
+        expect(await response.json()).toMatchObject([
+            { formatId: 'bottle', format: 'Bottle', originId: null }
+        ]);
+    });
+
+    it('names the wine of each bottle `definition`, as the other bottle lists do', async () => {
+        const response = await GET(
+            fakeEvent<Parameters<typeof GET>[0]>({ path: '/api/bottles/non-consumed' })
+        );
+
+        const [bottle] = await response.json();
+        expect(bottle.definition).toEqual({
+            id: 'margaux',
+            name: 'Château Margaux',
+            producer: null,
+            appellation: 'Margaux'
+        });
+        expect(bottle).not.toHaveProperty('wineDefinition');
+    });
+});

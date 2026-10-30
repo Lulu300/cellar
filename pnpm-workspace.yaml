@@ -1,0 +1,5 @@
+# pnpm settings (no workspace packages: this file only holds configuration).
+# Only install versions published at least 7 days ago, to let malicious releases
+# get caught and unpublished first. For an urgent security fix, add the package
+# to minimumReleaseAgeExclude temporarily.
+minimumReleaseAge: 10080

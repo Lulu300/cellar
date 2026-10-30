@@ -1,0 +1,171 @@
+import type { Tx } from '#lib/server/db/connection.js';
+import { EXPORT_TABLES } from '#lib/server/features/backup/export.js';
+import { normalized } from '#lib/server/features/shared/names.js';
+import type { CsvRecord } from './parse';
+import { IMPORT_ORDER, parentOf, TABLES, type TableName } from './tables';
+
+export type Row = { id: string } & Record<string, unknown>;
+
+/** The columns that tell a wine apart, as the CSV export names them. */
+const WINE_KEY = [
+    'name',
+    'producer',
+    'appellationName',
+    'classificationName',
+    'typeName',
+    'colorName'
+];
+/** Those a bottle file may name its wine by, besides wineName. */
+export const WINE_COLUMNS = [...WINE_KEY.slice(1), 'regionName'];
+/**
+ * Those of the key that every bottle export writes, typeName aside, which exports before 0.9.0 left
+ * out. In a file that has them all, a blank one means that the wine has none.
+ */
+const EXPORTED_WINE_COLUMNS = WINE_KEY.filter(
+    (column) => column !== 'name' && column !== 'typeName'
+);
+
+/**
+ * The identity of a wine, the same for a wine of the cellar and for a row of a wine file. The region
+ * is left out: the appellation gives it, and older exports have no regionName column.
+ */
+function wineKey(wine: Record<string, unknown>): string {
+    return WINE_KEY.map((column) => normalized(wine[column])).join('|');
+}
+
+/** A row of a wine file as rows are compared: neither the order, the case nor blank columns count. */
+function rowIdentity(record: CsvRecord): string {
+    const values = Object.entries(record)
+        .filter(([, value]) => value !== '')
+        .map(([column, value]) => [column, normalized(value)]);
+    return JSON.stringify(values.toSorted(([a], [b]) => a.localeCompare(b)));
+}
+
+/**
+ * The rows that the files of an import refer to, loaded once, then kept up to date with the rows
+ * that the import adds.
+ */
+export class ReferenceIndex {
+    private byId = new Map<TableName, Map<string, Row>>();
+    /** The rows of each name, oldest first. */
+    private byName = new Map<TableName, Map<string, Row[]>>();
+    /** The wines that the cellar had before this import, the first of each key. */
+    private cellarWinesByKey = new Map<string, Row>();
+    private winesByName = new Map<string, Row[]>();
+    /**
+     * The distinct rows of the wine files of this import, by key, each with the wine that the
+     * import added for it, if any.
+     */
+    private wineRowsByKey = new Map<string, Map<string, Row | undefined>>();
+
+    constructor(tx: Tx) {
+        for (const table of IMPORT_ORDER) {
+            this.byId.set(table, new Map());
+            this.byName.set(table, new Map());
+            // Bottles are not referred to; bottles.ts reads those it needs.
+            if (table === 'wineBottles') continue;
+            for (const row of tx.select().from(EXPORT_TABLES[table]).all()) this.add(table, row);
+        }
+        for (const wine of [...this.winesByName.values()].flat()) {
+            const key = wineKey(wine);
+            if (!this.cellarWinesByKey.has(key)) this.cellarWinesByKey.set(key, wine);
+        }
+    }
+
+    add(table: TableName, row: Row): void {
+        this.byId.get(table)!.set(row.id, row);
+        const { nameColumn } = TABLES[table];
+        const name = nameColumn ? normalized(row[nameColumn]) : '';
+        const byName = this.byName.get(table)!;
+        if (name) byName.set(name, [...(byName.get(name) ?? []), row]);
+        if (table === 'wineDefinitions') this.addWine(row);
+    }
+
+    /**
+     * The row of `table` named `name`. A row named within a parent, such as a region within its
+     * country, is the one under `parent`, given by its id or its name; without a parent, it is the
+     * first row of the name, as the earlier versions did.
+     */
+    find(table: TableName, name: string, parent?: { id: string } | { name: string }) {
+        const rows = this.byName.get(table)!.get(normalized(name)) ?? [];
+        const of = parentOf(table);
+        if (!parent || !of) return rows[0];
+        return rows.find((row) =>
+            'id' in parent
+                ? row[of.column] === parent.id
+                : normalized(this.nameOf(of.reference.table, row[of.column])) ===
+                  normalized(parent.name)
+        );
+    }
+
+    ids(table: TableName): string[] {
+        return [...this.byId.get(table)!.keys()];
+    }
+
+    private nameOf(table: TableName, id: unknown, column = TABLES[table].nameColumn!): unknown {
+        return this.byId.get(table)!.get(id as string)?.[column];
+    }
+
+    /** A wine with the names of the rows it refers to, as the CSV export writes them. */
+    private addWine(row: Row): void {
+        const appellation = this.byId.get('appellations')!.get(row.appellationId as string);
+        const wine: Row = {
+            ...row,
+            appellationName: appellation?.name,
+            regionName: this.nameOf('regions', appellation?.regionId),
+            classificationName: this.nameOf('wineClassifications', row.classificationId),
+            typeName: this.nameOf('wineTypes', row.typeId),
+            colorName: this.nameOf('wineColors', row.colorId, 'color')
+        };
+        const name = normalized(wine.name);
+        this.winesByName.set(name, [...(this.winesByName.get(name) ?? []), wine]);
+    }
+
+    /**
+     * Records a row of a wine file, and returns the wine it stands for, if any: a wine of its key
+     * that the cellar had before this import, or the wine added for an identical row. Rows of one
+     * key that differ in another column, such as the rating, stand for several wines, so that the
+     * bottles of either are reported, in this import as in a later one; identical rows stand for
+     * one. A wine of the cellar is not compared to the rows: it may have changed since its file
+     * was exported, and importing that file again must not add it a second time.
+     */
+    recordWineRow(record: CsvRecord): Row | undefined {
+        const key = wineKey(record);
+        const identity = rowIdentity(record);
+        const rows = this.wineRowsByKey.get(key) ?? new Map();
+        if (!rows.has(identity)) rows.set(identity, undefined);
+        this.wineRowsByKey.set(key, rows);
+        return this.cellarWinesByKey.get(key) ?? rows.get(identity);
+    }
+
+    /** Records the wine that the import added for a row of a wine file, after recordWineRow. */
+    recordImportedWine(record: CsvRecord, wine: Row): void {
+        this.wineRowsByKey.get(wineKey(record))!.set(rowIdentity(record), wine);
+    }
+
+    /** The wine that a row of a bottle file stands for, or why it stands for none. */
+    wineOfBottle(record: CsvRecord): Row | 'unknown_wine' | 'several_wines' {
+        const wines = this.winesOfBottle(record);
+        if (wines.length === 0) return 'unknown_wine';
+        const [wine] = wines;
+        return wines.length > 1 || (this.wineRowsByKey.get(wineKey(wine))?.size ?? 0) > 1
+            ? 'several_wines'
+            : wine;
+    }
+
+    /**
+     * The wines that a row of a bottle file may stand for, by wineName and the columns the file has.
+     * A blank column matches any wine, except a column that every export writes, in a file that has
+     * them all.
+     */
+    private winesOfBottle(record: CsvRecord): Row[] {
+        const exported = EXPORTED_WINE_COLUMNS.every((column) => column in record);
+        return (this.winesByName.get(normalized(record.wineName)) ?? []).filter((wine) =>
+            WINE_COLUMNS.every(
+                (column) =>
+                    normalized(record[column]) === normalized(wine[column]) ||
+                    (!record[column] && !(exported && EXPORTED_WINE_COLUMNS.includes(column)))
+            )
+        );
+    }
+}

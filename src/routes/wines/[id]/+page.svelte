@@ -1,0 +1,426 @@
+<script lang="ts">
+    import { pageTitle } from '#lib/components/layout/navigation.js';
+    import { invalidate } from '$app/navigation';
+    import type { PageData } from './$types';
+    import { m } from '#lib/paraglide/messages.js';
+    import { formatRating, formatVintageRange } from '#lib/utils/format.js';
+    import { safeUrl } from '#lib/utils/url.js';
+    import { CELLAR } from '#lib/shared/dependencies.js';
+    import { MapPin, SquarePen } from '@lucide/svelte';
+    import { Button } from '#lib/components/ui/button/index.js';
+    import { auth } from '#lib/stores/auth.svelte.js';
+    import { Card, CardContent, CardHeader, CardTitle } from '#lib/components/ui/card/index.js';
+    import { Badge } from '#lib/components/ui/badge/index.js';
+    import WineBottleDialog from '#lib/components/bottles/WineBottleDialog.svelte';
+    import WineDefinitionDialog from '#lib/components/wines/WineDefinitionDialog.svelte';
+    import BarcodeDialog from '#lib/components/barcode/BarcodeDialog.svelte';
+    import BottleCard from '#lib/components/bottles/BottleCard.svelte';
+    import BottleStatusDialog from '#lib/components/bottles/BottleStatusDialog.svelte';
+    import BackButton from '#lib/components/layout/BackButton.svelte';
+    import { BottleAvailability } from '#lib/shared/bottle-availability.js';
+    import type { BottleWithDefinitionDTO } from '#lib/shared/dto.js';
+    import { colorBadgeClass, typeBadgeClass } from '#lib/utils/wine-badges.js';
+    import { ownedBottles, vintageRange } from '#lib/utils/wine-group-sort.js';
+    import { sortBottles } from '#lib/utils/bottle-sort.js';
+
+    type Bottle = BottleWithDefinitionDTO;
+
+    let { data }: { data: PageData } = $props();
+
+    const { wineDefinition, bottles, imageUrl } = $derived(data);
+
+    // The bottles below are replaced, never mutated: raw state does not proxy the objects of `data`.
+
+    /** What the bottle dialog does: add a bottle to this wine, or edit or duplicate `bottle`. */
+    let bottleDialog = $state.raw<{ mode: 'add' | 'edit' | 'duplicate'; bottle: Bottle | null }>({
+        mode: 'add',
+        bottle: null
+    });
+    let showBottleDialog = $state(false);
+
+    // Edit definition state
+    let showEditDefinitionDialog = $state(false);
+
+    // Barcode dialog state
+    let showBarcodeDialog = $state(false);
+    let selectedBarcode = $state('');
+
+    // Bottles section state
+    let showAvailableBottles = $state(true); // Default to shown
+    let showConsumedBottles = $state(false);
+
+    // The bottle whose status changes, while its dialog is open
+    let statusBottle = $state.raw<Bottle | null>(null);
+
+    // Separate bottles by availability status
+    const availableBottles = $derived(ownedBottles(bottles));
+    const consumedBottles = $derived(
+        sortBottles(
+            bottles.filter((bottle) => bottle.availability === BottleAvailability.CONSUMED),
+            { column: 'consumedDate', direction: 'desc' }
+        )
+    );
+
+    const vintages = $derived(vintageRange(availableBottles));
+
+    // Get unique storage locations with counts for available bottles only
+    const storageLocations = $derived(
+        availableBottles.reduce(
+            (acc, bottle) => {
+                const location = bottle.storageCase?.name || m['common.not_available']();
+                if (!acc[location]) {
+                    acc[location] = 0;
+                }
+                acc[location]++;
+                return acc;
+            },
+            {} as Record<string, number>
+        )
+    );
+
+    function openBottleDialog(mode: 'add' | 'edit' | 'duplicate', bottle: Bottle | null = null) {
+        bottleDialog = { mode, bottle };
+        showBottleDialog = true;
+    }
+
+    // Deleted elsewhere: nothing left to change
+    async function forgetStatusBottle() {
+        statusBottle = null;
+        await invalidate(CELLAR);
+    }
+
+    function showBarcode(wine: Bottle) {
+        if (wine.barcode) {
+            selectedBarcode = wine.barcode;
+            showBarcodeDialog = true;
+        }
+    }
+</script>
+
+<svelte:head>
+    <title>{pageTitle(wineDefinition.name)}</title>
+    <meta name="description" content={m['wine_details.meta_description']()} />
+</svelte:head>
+
+{#snippet card(bottle: Bottle)}
+    <BottleCard
+        {bottle}
+        onStatus={(chosen) => (statusBottle = chosen)}
+        onDuplicate={(chosen) => openBottleDialog('duplicate', chosen)}
+        onEdit={(chosen) => openBottleDialog('edit', chosen)}
+        onBarcode={showBarcode}
+    />
+{/snippet}
+
+<div class="container mx-auto py-8 max-w-none w-full px-4 lg:w-[90%] xl:w-[85%] 2xl:w-[80%]">
+    <div class="mb-6">
+        <BackButton />
+    </div>
+
+    <div class="space-y-6">
+        <!-- Wine Definition Details -->
+        <Card>
+            <CardHeader>
+                <CardTitle class="flex items-center gap-2">
+                    <h1>{wineDefinition.name}</h1>
+                    <Badge class={typeBadgeClass(wineDefinition.type)}>
+                        {wineDefinition.type}
+                    </Badge>
+                    <Badge class={colorBadgeClass(wineDefinition.color)}>
+                        {wineDefinition.color}
+                    </Badge>
+                    <!-- Edit Button -->
+                    {#if auth.isAuthenticated}
+                        <button
+                            class="ml-auto text-muted-foreground hover:text-foreground transition-colors rounded p-2 sm:p-2.5 text-sm sm:text-base min-h-[32px] sm:min-h-[36px] min-w-[32px] sm:min-w-[36px] flex items-center justify-center"
+                            onclick={() => (showEditDefinitionDialog = true)}
+                            title={m['forms.edit_wine']()}
+                            aria-label={m['forms.edit_wine']()}
+                        >
+                            <SquarePen class="h-6 w-6" aria-hidden="true" />
+                        </button>
+                    {/if}
+                </CardTitle>
+            </CardHeader>
+            <CardContent>
+                <div class="grid md:grid-cols-2 gap-6">
+                    <div class="space-y-4">
+                        <div>
+                            <h2 class="font-semibold mb-2">
+                                {m['wine_details.wine_information']()}
+                            </h2>
+                            <div class="space-y-2 text-sm">
+                                <div>
+                                    <strong
+                                        >{m['common.label']({
+                                            label: m['common.producer']()
+                                        })}</strong
+                                    >
+                                    {wineDefinition.producer}
+                                </div>
+                                {#if vintages}
+                                    <div>
+                                        <strong
+                                            >{m['common.label']({
+                                                label: m['common.vintage']()
+                                            })}</strong
+                                        >
+                                        {formatVintageRange(vintages)}
+                                    </div>
+                                {/if}
+                                <div>
+                                    <strong
+                                        >{m['common.label']({
+                                            label: m['common.region']()
+                                        })}</strong
+                                    >
+                                    {wineDefinition.appellation.region.name}
+                                </div>
+                                <div>
+                                    <strong
+                                        >{m['common.label']({
+                                            label: m['common.appellation']()
+                                        })}</strong
+                                    >
+                                    {wineDefinition.appellation.name}
+                                </div>
+                                <div>
+                                    <strong
+                                        >{m['common.label']({
+                                            label: m['common.country']()
+                                        })}</strong
+                                    >
+                                    {wineDefinition.appellation.region.country.name}
+                                </div>
+                                {#if wineDefinition.rating}
+                                    <div>
+                                        <strong
+                                            >{m['common.label']({
+                                                label: m['wine_details.rating']()
+                                            })}</strong
+                                        >
+                                        {formatRating(wineDefinition.rating)}
+                                    </div>
+                                {/if}
+                                {#if wineDefinition.classification}
+                                    <div>
+                                        <strong
+                                            >{m['common.label']({
+                                                label: m['common.classification']()
+                                            })}</strong
+                                        >
+                                        {wineDefinition.classification}
+                                    </div>
+                                {/if}
+                                {#if wineDefinition.website}
+                                    {@const websiteUrl = safeUrl(wineDefinition.website)}
+                                    <div>
+                                        <strong
+                                            >{m['common.label']({
+                                                label: m['common.website']()
+                                            })}</strong
+                                        >
+                                        {#if websiteUrl}
+                                            <a
+                                                href={websiteUrl}
+                                                target="_blank"
+                                                rel="noopener noreferrer"
+                                                class="text-foreground underline underline-offset-4 hover:text-primary-text"
+                                                >{wineDefinition.website}</a
+                                            >
+                                        {:else}
+                                            <span>{wineDefinition.website}</span>
+                                        {/if}
+                                    </div>
+                                {/if}
+                            </div>
+                        </div>
+                        {#if wineDefinition.description}
+                            <div>
+                                <h2 class="font-semibold mb-2">
+                                    {m['common.description']()}
+                                </h2>
+                                <p class="text-sm text-muted-foreground">
+                                    {wineDefinition.description}
+                                </p>
+                            </div>
+                        {/if}
+                        {#if wineDefinition.grapeVarieties && wineDefinition.grapeVarieties.length > 0}
+                            <div>
+                                <h2 class="font-semibold mb-2">
+                                    {m['wine_details.grape_varieties']()}
+                                </h2>
+                                <div class="flex gap-1 flex-wrap">
+                                    <!-- Nothing stops a grape from being listed twice: its position is the key. -->
+                                    {#each wineDefinition.grapeVarieties as variety, index (index)}
+                                        <Badge variant="outline">{variety}</Badge>
+                                    {/each}
+                                </div>
+                            </div>
+                        {/if}
+                    </div>
+                    <div class="flex justify-center">
+                        {#if imageUrl}
+                            <img
+                                src={imageUrl}
+                                alt={wineDefinition.name}
+                                class="w-48 h-64 object-cover rounded"
+                            />
+                        {:else}
+                            <div
+                                class="w-48 h-64 bg-muted rounded flex items-center justify-center"
+                            >
+                                <div class="text-center text-muted-foreground">
+                                    <svg
+                                        class="w-12 h-12 mx-auto mb-3"
+                                        fill="currentColor"
+                                        viewBox="0 0 20 20"
+                                        xmlns="http://www.w3.org/2000/svg"
+                                    >
+                                        <path
+                                            d="M3 4a1 1 0 011-1h12a1 1 0 011 1v2a1 1 0 01-1 1H4a1 1 0 01-1-1V4zM3 10a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H4a1 1 0 01-1-1v-6zM14 9a1 1 0 00-1 1v6a1 1 0 001 1h2a1 1 0 001-1v-6a1 1 0 00-1-1h-2z"
+                                        />
+                                    </svg>
+                                    <span class="text-sm"
+                                        >{m['wine_details.no_image_available']()}</span
+                                    >
+                                </div>
+                            </div>
+                        {/if}
+                    </div>
+                </div>
+            </CardContent>
+        </Card>
+
+        <!-- Storage Locations -->
+        {#if Object.keys(storageLocations).length > 0}
+            <div class="bg-muted/20 rounded-lg p-3 border">
+                <div class="flex items-center gap-2 mb-2">
+                    <MapPin class="h-4 w-4 text-muted-foreground" />
+                    <span class="text-sm font-medium">{m['wine_details.storage_locations']()}</span>
+                </div>
+                <div class="flex flex-wrap gap-2">
+                    {#each Object.entries(storageLocations) as [location, count] (location)}
+                        <Badge variant="outline" class="text-xs">
+                            {location} ({count})
+                        </Badge>
+                    {/each}
+                </div>
+            </div>
+        {/if}
+
+        <!-- Bottles Grid -->
+        <Card>
+            <CardHeader>
+                <CardTitle class="flex flex-wrap items-center justify-between gap-2">
+                    <span>{m['common.available_bottles']()} ({availableBottles.length})</span>
+                    <div class="flex flex-wrap gap-2 ml-auto">
+                        {#if auth.isAuthenticated}
+                            <Button
+                                size="sm"
+                                variant="secondary"
+                                onclick={() => openBottleDialog('add')}
+                            >
+                                {m['wine_details.add_bottle']()}
+                            </Button>
+                        {/if}
+                        <Button
+                            size="sm"
+                            variant="outline"
+                            onclick={() => (showAvailableBottles = !showAvailableBottles)}
+                        >
+                            {showAvailableBottles
+                                ? m['wine_details.hide_available']()
+                                : m['wine_details.show_available']()}
+                        </Button>
+                    </div>
+                </CardTitle>
+            </CardHeader>
+            {#if showAvailableBottles}
+                <CardContent>
+                    {#if availableBottles.length > 0}
+                        <div
+                            class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-4 3xl:grid-cols-5 4xl:grid-cols-6 gap-4"
+                        >
+                            {#each availableBottles as bottle (bottle.id)}
+                                {@render card(bottle)}
+                            {/each}
+                        </div>
+                    {:else}
+                        <p class="text-muted-foreground text-center py-8">
+                            {m['wine_details.no_available_bottles']()}
+                        </p>
+                    {/if}
+                </CardContent>
+            {/if}
+        </Card>
+
+        <!-- Consumed Bottles Section -->
+        <Card>
+            <CardHeader>
+                <CardTitle class="flex flex-wrap items-center justify-between gap-2">
+                    <span>{m['wine_details.consumed_bottles']()} ({consumedBottles.length})</span>
+                    <Button
+                        size="sm"
+                        variant="outline"
+                        onclick={() => (showConsumedBottles = !showConsumedBottles)}
+                        class="ml-auto"
+                    >
+                        {showConsumedBottles
+                            ? m['wine_details.hide_consumed']()
+                            : m['wine_details.show_consumed']()}
+                    </Button>
+                </CardTitle>
+            </CardHeader>
+            {#if showConsumedBottles}
+                <CardContent>
+                    {#if consumedBottles.length > 0}
+                        <div
+                            class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-4 3xl:grid-cols-5 4xl:grid-cols-6 gap-4"
+                        >
+                            {#each consumedBottles as bottle (bottle.id)}
+                                {@render card(bottle)}
+                            {/each}
+                        </div>
+                    {:else}
+                        <p class="text-muted-foreground text-center py-8">
+                            {m['wine_details.no_consumed_bottles']()}
+                        </p>
+                    {/if}
+                </CardContent>
+            {/if}
+        </Card>
+    </div>
+</div>
+
+<!-- Edit Wine Definition Dialog: saving reloads the image URL too, for a new image -->
+<WineDefinitionDialog
+    bind:open={showEditDefinitionDialog}
+    editDefinition={wineDefinition}
+    {imageUrl}
+    onSaved={() => invalidate(CELLAR)}
+/>
+
+<WineBottleDialog
+    bind:open={showBottleDialog}
+    selectedDefinitionId={wineDefinition.id}
+    editBottle={bottleDialog.bottle}
+    duplicateMode={bottleDialog.mode === 'duplicate'}
+    onSaved={() => invalidate(CELLAR)}
+/>
+
+<!-- Barcode Dialog -->
+<BarcodeDialog
+    bind:open={showBarcodeDialog}
+    barcodeValue={selectedBarcode}
+    onClose={() => (showBarcodeDialog = false)}
+/>
+
+{#if statusBottle}
+    <BottleStatusDialog
+        bottles={[statusBottle]}
+        onClose={() => (statusBottle = null)}
+        onSaved={() => invalidate(CELLAR)}
+        onMissing={forgetStatusBottle}
+    />
+{/if}

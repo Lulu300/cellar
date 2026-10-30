@@ -1,0 +1,48 @@
+<!doctype html>
+<!--
+    The page SvelteKit serves when it cannot render +error.svelte, which needs the root layout: an
+    error in the root layout's load, such as an unreadable database. Nothing of the app runs here,
+    neither the messages nor the theme, so it is plain, in both languages, with the texts of
+    error_page.* in the locale files. The error's own message is for the server logs.
+-->
+<html lang="en">
+    <head>
+        <meta charset="utf-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <meta name="color-scheme" content="light dark" />
+        <title>%sveltekit.status% - Wine Cellar · Cave à vin</title>
+        <style>
+            body {
+                margin: 0;
+                padding: 2rem 1rem;
+                font-family: system-ui, sans-serif;
+                line-height: 1.5;
+            }
+            main {
+                max-width: 40rem;
+                margin: 0 auto;
+            }
+            h1 {
+                font-size: 1.875rem;
+                margin: 0 0 1rem;
+            }
+            a {
+                display: inline-block;
+                margin-top: 1rem;
+            }
+        </style>
+    </head>
+    <body>
+        <main>
+            <h1>%sveltekit.status%</h1>
+            <p>
+                Something went wrong. Reload the page; if it happens again, check the server logs.
+            </p>
+            <p lang="fr">
+                Une erreur s’est produite. Rechargez la page ; si elle se reproduit, consultez les
+                journaux du serveur.
+            </p>
+            <a href="/wines">Back to my wines · <span lang="fr">Retour à mes vins</span></a>
+        </main>
+    </body>
+</html>

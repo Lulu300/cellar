@@ -1,0 +1,16 @@
+{
+  "cases.used": "Utilisé",
+  "cases.defined_twice": "Défini une fois",
+  "cases.hand_plural": "{count} bouteille{plural}",
+  "cases.not_text": { "nested": "Imbriqué" },
+  "cases.unused": "Jamais utilisé",
+  "cases.same_text": "Bouteille",
+  "cases.same_text_again": "Bouteille",
+  "cases.same_text_allowed": "Case",
+  "cases.same_text_allowed_too": "Case",
+  "cases.same_english": "Vin",
+  "cases.same_english_too": "Vin rouge",
+  "cases.apostrophe": "L'apostrophe",
+  "cases.quotes": "Les \"guillemets\"",
+  "cases.ellipsis": "Trois points..."
+}

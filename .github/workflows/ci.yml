@@ -1,0 +1,126 @@
+name: CI
+
+# Verifies a commit. Publishes nothing: release.yml calls this workflow and publishes only if it passes.
+on:
+  push:
+    branches: [develop]
+  pull_request:
+  workflow_call:
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    # Far above a normal run: a hung test would otherwise use up private-repo minutes for 6 hours.
+    timeout-minutes: 15
+    steps:
+      # Keep the action versions in step with release.yml. Updating a pinned action: see AGENTS.md.
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          # Nothing is pushed with git; keeps the token away from dependency code.
+          persist-credentials: false
+
+      - name: Set up Node.js
+        uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version-file: .nvmrc
+
+      # Same pnpm as the Dockerfile: the version pinned by packageManager in package.json.
+      # Install scripts run, unlike in release.yml: esbuild's postinstall checks the native binary
+      # that the build and the tests use. pnpm.onlyBuiltDependencies in package.json lists the
+      # packages allowed to run them.
+      - name: Install dependencies
+        run: |
+          npm install -g "$(node -p "require('./package.json').packageManager")"
+          pnpm install --frozen-lockfile
+
+      # The tests migrate from drizzle/, so a schema.ts change without its migration would pass them
+      # and reach no installed database.
+      - name: Check that the migrations match schema.ts
+        run: |
+          pnpm db:generate
+          git diff --exit-code drizzle/
+
+      - name: Type-check
+        run: pnpm check
+
+      - name: Lint
+        run: pnpm lint
+
+      - name: Test
+        run: pnpm test
+
+      - name: Check translations
+        run: pnpm i18n:check
+
+      - name: Find unused files, exports and dependencies
+        run: pnpm knip
+
+      - name: Build
+        run: pnpm build
+
+      # server.js applies ORIGIN, which adapter-node no longer reads: without it every write over
+      # plain http would get 403.
+      - name: Check ORIGIN and CSRF on the built app
+        run: node scripts/check-origin.mjs
+
+  # Same check as release.yml runs before it pushes an image, so that a Dockerfile that builds an
+  # image that does not start fails the pull request rather than the release.
+  image:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Build the Docker image
+        run: docker build --tag cellar:ci .
+
+      - name: Start the image and wait until it is healthy
+        run: scripts/check-image.sh cellar:ci
+
+  e2e:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      # Same checkout, Node.js and install as the verify job.
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Set up Node.js
+        uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version-file: .nvmrc
+
+      - name: Install dependencies
+        run: |
+          npm install -g "$(node -p "require('./package.json').packageManager")"
+          pnpm install --frozen-lockfile
+
+      # The journeys run against the built server (playwright.config.ts).
+      - name: Build
+        run: pnpm build
+
+      - name: Install Chromium
+        run: pnpm exec playwright install --with-deps chromium
+
+      - name: Run the end-to-end journeys
+        id: e2e
+        run: pnpm test:e2e
+
+      - name: Keep the traces and the report of a failed run
+        if: failure() && steps.e2e.outcome == 'failure'
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: playwright-report
+          path: |
+            playwright-report/
+            test-results/
+          retention-days: 14

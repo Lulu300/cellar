@@ -1,0 +1,19 @@
+{
+  "cases.used": "Used",
+  "cases.missing_in_fr": "Missing in French",
+  "cases.defined_twice": "Defined once",
+  "cases.defined_twice": "Defined twice",
+  "cases.hand_plural": "{count} bottle(s)",
+  "cases.not_text": { "nested": "Nested" },
+  "cases.english_only": "Only in English",
+  "cases.unused": "Never used",
+  "cases.same_text": "Bottle",
+  "cases.same_text_again": "Bottle",
+  "cases.same_text_allowed": "Case",
+  "cases.same_text_allowed_too": "Case",
+  "cases.same_english": "Wine",
+  "cases.same_english_too": "Wine",
+  "cases.apostrophe": "The apostrophe",
+  "cases.quotes": "The quotes",
+  "cases.ellipsis": "Three dots..."
+}

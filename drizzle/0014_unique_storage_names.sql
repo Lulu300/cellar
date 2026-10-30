@@ -1,0 +1,2 @@
+CREATE UNIQUE INDEX `storage_cases_container_id_name_unique` ON `storage_cases` (`container_id`,`name`);--> statement-breakpoint
+CREATE UNIQUE INDEX `storage_containers_name_unique` ON `storage_containers` (`name`);

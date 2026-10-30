@@ -1,0 +1,17 @@
+{
+  "extends": "$app/tsconfig",
+  "compilerOptions": {
+    "sourceMap": true,
+    "strict": true
+  },
+  "include": [
+    "src",
+    "scripts/*",
+    "e2e/**/*.ts",
+    "vite.config.ts",
+    "vite.config.test.ts",
+    "knip.config.ts",
+    "playwright.config.ts",
+    "drizzle.config.ts"
+  ]
+}

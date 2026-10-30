@@ -1,0 +1,152 @@
+import { BottleAvailability } from '#lib/shared/bottle-availability.js';
+import type { ListedBottleDTO, WineGroupDTO } from '#lib/shared/dto.js';
+
+/** What the bulk entry reads of a bottle to decide what an action changes on it. */
+export interface BulkBottle {
+    id: string;
+    availability: string;
+    storageCaseId?: string | null;
+    storageCase?: { id: string } | null;
+}
+
+type LineState = 'found' | 'ambiguous' | 'not_found' | 'duplicate';
+
+/** A checked code: the bottles it found when it was checked, and the one chosen among them. */
+export interface Line<B extends BulkBottle> {
+    code: string;
+    matches: B[];
+    chosenId: string;
+    included: boolean;
+}
+
+export interface Row<B extends BulkBottle> extends Line<B> {
+    index: number;
+    bottle: B | null;
+    state: LineState;
+    willChange: boolean;
+    locationIgnored: boolean;
+}
+
+/**
+ * The bottles whose barcode is `code` as typed, capitals included; failing that, the bottles whose
+ * barcode is `code` in other capitals. Two codes may differ only by their case (the prefixes `cv`
+ * and `CV` are both allowed), and a scanned code then finds its one bottle. Each search adds its
+ * own last fallback when this finds none.
+ */
+export function findSameBarcode<B extends { barcode: string | null }>(
+    bottles: B[],
+    code: string
+): B[] {
+    const exact = bottles.filter((bottle) => bottle.barcode === code);
+    if (exact.length > 0) return exact;
+    const term = code.toLowerCase();
+    return bottles.filter((bottle) => bottle.barcode?.toLowerCase() === term);
+}
+
+/** findSameBarcode, else the bottles whose code, in any case, passes `fallback` for `code`. */
+function findSameBarcodeOr<B extends { barcode: string }>(
+    bottles: B[],
+    code: string,
+    fallback: (barcode: string, term: string) => boolean
+): B[] {
+    const same = findSameBarcode(bottles, code);
+    if (same.length > 0) return same;
+    const term = code.toLowerCase();
+    return bottles.filter((bottle) => fallback(bottle.barcode.toLowerCase(), term));
+}
+
+/** findSameBarcode, else the bottles whose code ends with `code`: typing the end is enough. */
+export function findBarcodeMatches<B extends { barcode: string }>(bottles: B[], code: string): B[] {
+    return findSameBarcodeOr(bottles, code, (barcode, term) => barcode.endsWith(term));
+}
+
+/** findSameBarcode, else the bottles whose code contains `code`: the search of the wine list. */
+export function searchBarcode<B extends { barcode: string }>(bottles: B[], code: string): B[] {
+    return findSameBarcodeOr(bottles, code, (barcode, term) => barcode.includes(term));
+}
+
+/** A bottle of the wine list that has a barcode, with its wine. */
+export type BarcodedBottle = ListedBottleDTO & {
+    barcode: string;
+    definition: WineGroupDTO['definition'];
+};
+
+/**
+ * The bottles of the wine list that have a barcode, each with its wine: the list gives a wine's
+ * bottles without repeating the wine on each.
+ */
+export function barcodedBottles<D, B extends { barcode: string | null }>(
+    wines: { definition: D; bottles: B[] }[]
+): (B & { barcode: string; definition: D })[] {
+    return wines.flatMap(({ definition, bottles }) =>
+        bottles.flatMap((bottle) =>
+            bottle.barcode ? [{ ...bottle, barcode: bottle.barcode, definition }] : []
+        )
+    );
+}
+
+export function currentCaseId(bottle: BulkBottle): string | null {
+    return bottle.storageCaseId ?? bottle.storageCase?.id ?? null;
+}
+
+function finalAvailability(bottle: BulkBottle, availability: string): string {
+    return availability || bottle.availability;
+}
+
+function statusChanges(bottle: BulkBottle, availability: string): boolean {
+    return !!availability && availability !== bottle.availability;
+}
+
+// A consumed bottle has no location (the API clears it), so a move never applies to it
+function locationApplies(bottle: BulkBottle, availability: string, caseId: string): boolean {
+    return !!caseId && finalAvailability(bottle, availability) !== BottleAvailability.CONSUMED;
+}
+
+export function locationChanges(bottle: BulkBottle, availability: string, caseId: string): boolean {
+    return locationApplies(bottle, availability, caseId) && currentCaseId(bottle) !== caseId;
+}
+
+/**
+ * The rows of the checked lines, for the action that sets `availability` and the case `caseId`
+ * (either may be ''). Each row reads its bottles in `current`, the bottles as last loaded: those
+ * of a line date from when its code was checked, and the bottles may have changed since. A bottle
+ * that `current` lacks, deleted meanwhile, keeps its old values: the server refuses it by name.
+ */
+export function computeRows<B extends BulkBottle>(
+    lines: Line<B>[],
+    current: Map<string, B>,
+    availability: string,
+    caseId: string
+): Row<B>[] {
+    const seenIds = new Set<string>();
+
+    return lines.map((line, index) => {
+        const matches = line.matches.map((match) => current.get(match.id) ?? match);
+        const bottle = matches.find((match) => match.id === line.chosenId) || null;
+
+        let state: LineState;
+        if (matches.length === 0) {
+            state = 'not_found';
+        } else if (!bottle) {
+            state = 'ambiguous';
+        } else if (seenIds.has(bottle.id)) {
+            state = 'duplicate';
+        } else {
+            state = 'found';
+            seenIds.add(bottle.id);
+        }
+
+        return {
+            ...line,
+            matches,
+            index,
+            bottle,
+            state,
+            willChange:
+                !!bottle &&
+                (statusChanges(bottle, availability) ||
+                    locationChanges(bottle, availability, caseId)),
+            locationIgnored: !!bottle && !!caseId && !locationApplies(bottle, availability, caseId)
+        };
+    });
+}

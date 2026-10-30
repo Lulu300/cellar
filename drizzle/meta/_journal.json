@@ -1,0 +1,118 @@
+{
+  "version": "7",
+  "dialect": "sqlite",
+  "entries": [
+    {
+      "idx": 0,
+      "version": "6",
+      "when": 1758114685120,
+      "tag": "0000_clear_hellcat",
+      "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "6",
+      "when": 1758399932244,
+      "tag": "0001_known_lester",
+      "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "6",
+      "when": 1766167130064,
+      "tag": "0002_fine_nextwave",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "6",
+      "when": 1791553557502,
+      "tag": "0003_modern_caretaker",
+      "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "6",
+      "when": 1791719207262,
+      "tag": "0004_remove_csv_header_appellation",
+      "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "6",
+      "when": 1791804671323,
+      "tag": "0005_label_preset_spacing",
+      "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "6",
+      "when": 1791813126317,
+      "tag": "0006_constraints_and_indexes",
+      "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "6",
+      "when": 1791917735984,
+      "tag": "0007_case_position",
+      "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "6",
+      "when": 1791922606508,
+      "tag": "0008_label_preset_show_border",
+      "breakpoints": true
+    },
+    {
+      "idx": 9,
+      "version": "6",
+      "when": 1792249575564,
+      "tag": "0009_fix_shipped_label_presets",
+      "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "6",
+      "when": 1792263226358,
+      "tag": "0010_vintage_zero_as_null",
+      "breakpoints": true
+    },
+    {
+      "idx": 11,
+      "version": "6",
+      "when": 1792324470858,
+      "tag": "0011_long_texts_to_5000_characters",
+      "breakpoints": true
+    },
+    {
+      "idx": 12,
+      "version": "6",
+      "when": 1793181002325,
+      "tag": "0012_fix_avery_8160_description",
+      "breakpoints": true
+    },
+    {
+      "idx": 13,
+      "version": "6",
+      "when": 1793188318816,
+      "tag": "0013_rename_duplicate_storage_names",
+      "breakpoints": true
+    },
+    {
+      "idx": 14,
+      "version": "6",
+      "when": 1793188371040,
+      "tag": "0014_unique_storage_names",
+      "breakpoints": true
+    },
+    {
+      "idx": 15,
+      "version": "6",
+      "when": 1793196746105,
+      "tag": "0015_repair_negative_prices",
+      "breakpoints": true
+    }
+  ]
+}

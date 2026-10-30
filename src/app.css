@@ -1,0 +1,278 @@
+@import 'tailwindcss';
+
+@import 'tw-animate-css';
+
+@custom-variant dark (&:is(.dark *));
+
+:root {
+    /* Native controls (select lists, the date picker, scrollbars) follow the mode */
+    color-scheme: light;
+    --radius: 0.625rem;
+    --background: oklch(1 0 0);
+    --foreground: oklch(0.15 0.042 228);
+    --card: oklch(1 0 0);
+    --card-foreground: oklch(0.15 0.042 228);
+    --popover: oklch(1 0 0);
+    --popover-foreground: oklch(0.15 0.042 228);
+    --primary: oklch(0.47 0.14 226);
+    --primary-foreground: oklch(0.98 0.003 247.858);
+    /* Text in the theme colour (icons keep --primary): a theme whose primary falls short of 4.5:1
+       on some surface, such as the accent of a hovered row, sets its own in theme-colors.ts. */
+    --primary-text: var(--primary);
+    --secondary: oklch(0.96 0.007 228);
+    --secondary-foreground: oklch(0.15 0.042 228);
+    --muted: oklch(0.96 0.007 228);
+    --muted-foreground: oklch(0.5 0.046 228);
+    --accent: oklch(0.93 0.02 228);
+    --accent-foreground: oklch(0.15 0.042 228);
+    --destructive: oklch(0.505 0.213 27.518);
+    /* Success and warning keep their meaning, so they stay the same in every theme; dark enough
+       to stay readable on their own tint */
+    --success: oklch(0.448 0.119 151.328);
+    --warning: oklch(0.473 0.137 46.201);
+    --border: oklch(0.9 0.013 228);
+    --input: oklch(0.65 0.02 228);
+    --ring: oklch(0.47 0.14 226);
+    --chart-1: oklch(0.47 0.14 226);
+    --chart-2: oklch(0.6 0.118 210);
+    --chart-3: oklch(0.4 0.1 240);
+    --chart-4: oklch(0.55 0.12 215);
+    --chart-5: oklch(0.65 0.15 235);
+    --sidebar: oklch(0.98 0.003 247.858);
+    --sidebar-foreground: oklch(0.15 0.042 228);
+    --sidebar-primary: oklch(0.47 0.14 226);
+    --sidebar-primary-foreground: oklch(0.98 0.003 247.858);
+    --sidebar-accent: oklch(0.93 0.02 228);
+    --sidebar-accent-foreground: oklch(0.15 0.042 228);
+    --sidebar-border: oklch(0.9 0.013 228);
+    --sidebar-ring: oklch(0.47 0.14 226);
+}
+
+.dark {
+    color-scheme: dark;
+    --background: oklch(0.11 0.025 228);
+    --foreground: oklch(0.98 0.003 228);
+    --card: oklch(0.15 0.035 228);
+    --card-foreground: oklch(0.98 0.003 228);
+    --popover: oklch(0.15 0.035 228);
+    --popover-foreground: oklch(0.98 0.003 228);
+    --primary: oklch(0.6 0.18 226);
+    --primary-foreground: oklch(0.05 0.02 228);
+    --secondary: oklch(0.2 0.04 228);
+    --secondary-foreground: oklch(0.98 0.003 228);
+    --muted: oklch(0.2 0.04 228);
+    --muted-foreground: oklch(0.65 0.08 228);
+    --accent: oklch(0.25 0.05 228);
+    --accent-foreground: oklch(0.98 0.003 228);
+    --destructive: oklch(0.704 0.191 22.216);
+    --success: oklch(0.792 0.209 151.711);
+    --warning: oklch(0.828 0.189 84.429);
+    --border: oklch(0.25 0.05 228);
+    --input: oklch(0.5 0.05 228);
+    --ring: oklch(0.6 0.18 226);
+    --chart-1: oklch(0.6 0.18 226);
+    --chart-2: oklch(0.7 0.15 210);
+    --chart-3: oklch(0.5 0.12 240);
+    --chart-4: oklch(0.65 0.16 215);
+    --chart-5: oklch(0.75 0.18 235);
+    --sidebar: oklch(0.15 0.035 228);
+    --sidebar-foreground: oklch(0.98 0.003 228);
+    --sidebar-primary: oklch(0.6 0.18 226);
+    --sidebar-primary-foreground: oklch(0.05 0.02 228);
+    --sidebar-accent: oklch(0.25 0.05 228);
+    --sidebar-accent-foreground: oklch(0.98 0.003 228);
+    --sidebar-border: oklch(0.25 0.05 228);
+    --sidebar-ring: oklch(0.6 0.18 226);
+}
+
+@theme inline {
+    --breakpoint-3xl: 1920px;
+    --breakpoint-4xl: 2560px;
+    --breakpoint-5xl: 3840px;
+    --radius-sm: calc(var(--radius) - 4px);
+    --radius-md: calc(var(--radius) - 2px);
+    --radius-lg: var(--radius);
+    --radius-xl: calc(var(--radius) + 4px);
+    --color-background: var(--background);
+    --color-foreground: var(--foreground);
+    --color-card: var(--card);
+    --color-card-foreground: var(--card-foreground);
+    --color-popover: var(--popover);
+    --color-popover-foreground: var(--popover-foreground);
+    --color-primary: var(--primary);
+    --color-primary-foreground: var(--primary-foreground);
+    --color-primary-text: var(--primary-text);
+    --color-secondary: var(--secondary);
+    --color-secondary-foreground: var(--secondary-foreground);
+    --color-muted: var(--muted);
+    --color-muted-foreground: var(--muted-foreground);
+    --color-accent: var(--accent);
+    --color-accent-foreground: var(--accent-foreground);
+    --color-destructive: var(--destructive);
+    --color-success: var(--success);
+    --color-warning: var(--warning);
+    --color-border: var(--border);
+    --color-input: var(--input);
+    --color-ring: var(--ring);
+    --color-chart-1: var(--chart-1);
+    --color-chart-2: var(--chart-2);
+    --color-chart-3: var(--chart-3);
+    --color-chart-4: var(--chart-4);
+    --color-chart-5: var(--chart-5);
+    --color-sidebar: var(--sidebar);
+    --color-sidebar-foreground: var(--sidebar-foreground);
+    --color-sidebar-primary: var(--sidebar-primary);
+    --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+    --color-sidebar-accent: var(--sidebar-accent);
+    --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+    --color-sidebar-border: var(--sidebar-border);
+    --color-sidebar-ring: var(--sidebar-ring);
+}
+
+@layer base {
+    * {
+        @apply border-border outline-ring/50;
+    }
+    body {
+        @apply bg-background text-foreground;
+    }
+    /* In italics, so that an example in an empty field does not pass for a value already typed */
+    ::placeholder {
+        @apply italic;
+    }
+}
+
+@layer utilities {
+    /* Custom responsive grid for wine cards */
+    .wine-cards-grid {
+        @apply grid gap-6;
+        grid-template-columns: repeat(1, minmax(0, 1fr));
+        width: 100%;
+    }
+
+    @media (min-width: 768px) {
+        .wine-cards-grid {
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+    }
+
+    @media (min-width: 900px) {
+        .wine-cards-grid {
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+        }
+    }
+
+    @media (min-width: 1200px) {
+        .wine-cards-grid {
+            grid-template-columns: repeat(4, minmax(0, 1fr));
+        }
+    }
+
+    @media (min-width: 1800px) {
+        .wine-cards-grid {
+            grid-template-columns: repeat(5, minmax(0, 1fr));
+        }
+    }
+
+    @media (min-width: 2200px) {
+        .wine-cards-grid {
+            grid-template-columns: repeat(6, minmax(0, 1fr));
+        }
+    }
+
+    @media (min-width: 2800px) {
+        .wine-cards-grid {
+            grid-template-columns: repeat(7, minmax(0, 1fr));
+        }
+    }
+
+    @media (min-width: 3200px) {
+        .wine-cards-grid {
+            grid-template-columns: repeat(8, minmax(0, 1fr));
+        }
+    }
+
+    /* Ensure cards have consistent sizing */
+    .wine-card-min-width {
+        width: 100%; /* Force cards to fill their grid column */
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+        max-width: none; /* Remove any max-width constraints */
+    }
+
+    /* Make all cards same height and width in grid */
+    .wine-cards-grid > div {
+        display: flex;
+        flex-direction: column;
+        min-height: 450px; /* Set minimum height for cards with images */
+        width: 100%; /* Ensure consistent width */
+        overflow: hidden; /* Prevent content from breaking out */
+    }
+
+    /* Reduced height when images are not shown */
+    .wine-cards-grid.no-images > div {
+        min-height: 320px; /* Shorter height when images are off */
+    }
+
+    .wine-cards-grid > div > a {
+        height: 100%;
+        width: 100%;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .wine-cards-grid .wine-card-content {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        width: 100%;
+    }
+
+    /* Ensure all text content is properly constrained */
+    .wine-cards-grid .wine-card-content * {
+        word-wrap: break-word;
+        overflow-wrap: break-word;
+        max-width: 100%;
+    }
+
+    /* Specific fixes for potential width-breaking elements */
+    .wine-cards-grid .truncate {
+        min-width: 0; /* Allow truncation to work properly */
+    }
+
+    .wine-cards-grid .line-clamp-1 {
+        min-width: 0; /* Allow line clamping to work properly */
+    }
+
+    /* Adjust min-height based on screen size */
+    @media (max-width: 1024px) {
+        .wine-cards-grid > div {
+            min-height: 400px;
+        }
+        .wine-cards-grid.no-images > div {
+            min-height: 280px;
+        }
+    }
+
+    @media (max-width: 768px) {
+        .wine-cards-grid > div {
+            min-height: 350px;
+        }
+        .wine-cards-grid.no-images > div {
+            min-height: 250px;
+        }
+    }
+
+    /* Storage container grids */
+    .storage-containers-grid {
+        @apply grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-6 gap-4;
+    }
+
+    @media (min-width: 2560px) {
+        .storage-containers-grid {
+            grid-template-columns: repeat(10, minmax(200px, 1fr));
+        }
+    }
+}

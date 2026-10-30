@@ -140,13 +140,13 @@ Some routes also limit how many rows one request handles: their sections say so.
 
 ## Removed routes
 
-- `PUT /api/bottles/{id}` was removed in 0.9.0, and answers `405`: it replaced every field of the
-  bottle, so a field left out of the body was cleared. Use
-  [`PATCH /api/bottles/{id}`](#patch-apibottlesid), which changes only the fields it is given.
-- 0.7.0 removed `POST /api/wines` and `GET` or `PUT /api/wines/{id}` (use `/api/definitions`),
+- `PUT /api/bottles/{id}` answers `405`: it replaced every field of the bottle, so a field left
+  out of the body was cleared. Use [`PATCH /api/bottles/{id}`](#patch-apibottlesid), which changes
+  only the fields it is given.
+- `POST /api/wines` and `GET` or `PUT /api/wines/{id}` (use `/api/definitions`),
   `GET /api/admin/auto-backup` (use `GET /api/admin/backup-settings`),
   `POST /api/admin/restore-label-presets`, `seed-manufacturer-presets` and `cleanup-csv`, and the
-  reference tables under `/api/admin/<table>` (use [`/api/{table}`](#reference-tables)).
+  reference tables under `/api/admin/<table>` (use [`/api/{table}`](#reference-tables)) are gone.
 
 ## Route index
 
@@ -425,7 +425,7 @@ entries with only the bottles still owned.
     [`GET /api/bottles`](#get-apibottles) lists it but without its wine (`definition`), which the
     entry already gives. A wine without bottles has `bottles: []`.
 
-  Before 0.11.0, each entry also spread the fields of the wine's first bottle at its top level
+  In older versions, each entry also spread the fields of the wine's first bottle at its top level
   (a wine without bottles had the virtual id `def-<wine id>`), and each bottle repeated the wine in
   `definition`.
 
@@ -571,8 +571,8 @@ Reads one wine, with the names of its references and its location.
 - **Session:** not needed.
 - **Body:** none.
 - **Response:** `200` with the wine as [`GET /api/definitions`](#get-apidefinitions) lists it,
-  without the flat `appellationName`, `region` and `country`. Before 0.11.0 it also gave the rows
-  of its location flat, as `appellations`, `regions` and `countries`: read them in `appellation`.
+  without the flat `appellationName`, `region` and `country`. Older versions also gave the rows of
+  its location flat, as `appellations`, `regions` and `countries`: read them in `appellation`.
 - **Errors:** `404 not_found` when the wine does not exist.
 
 ### `PUT /api/definitions/{id}`
@@ -1758,8 +1758,8 @@ Lists the backups and exports in the data folder, newest first.
     `automatic-export-internal`, `automatic-backup-cron`, `automatic-export-cron`, or for the backup
     that Cellar makes first, `safety-backup-restore` (before a restore), `safety-backup-reset`
     (before a wipe) or `safety-export-import` (before a JSON import). The safety backups are not
-    automatic (`isAutomatic: false`), and neither is a manual backup named `auto` before 0.6.0
-    refused that name.
+    automatic (`isAutomatic: false`), and neither is a manual backup named `auto`, a name that
+    older versions accepted.
   - `isDatabase` (a backup), `isExport` (an export), `isAutomatic`, and `isZip`, always `true`.
 - **Errors:** none besides the common ones.
 
@@ -1837,7 +1837,7 @@ Downloads a backup or an export.
 
 - **Session:** required.
 - **Query:** `filename`: the name of the file, as `GET /api/admin/list-backups` gives it, as the
-  other backup routes take it. Before 0.11.0 it was `file`, which now answers `422`.
+  other backup routes take it. Older versions took `file`, which now answers `422`.
 - **Body:** none.
 - **Response:** `200` with the zip, `Content-Type: application/zip`, its `Content-Length`, and
   `Content-Disposition: attachment` with its name (in `filename*` too, for names outside ASCII).
@@ -1890,7 +1890,7 @@ chosen by the `Content-Type` of the request:
   - an empty body is not a zip: it gets the `422` of the route (`invalid_backup` with
     `unreadable_zip`, or `invalid_export` with `unreadable`).
 
-Any other `Content-Type`, the `multipart/form-data` form that versions before 0.9.0 took included,
+Any other `Content-Type`, the `multipart/form-data` form that older versions took included,
 gets `400 malformed_body` (or SvelteKit's `403` for a form sent without an `Origin` header). Neither
 way needs an `Origin` header (see [Origin check](#origin-check)).
 
@@ -1929,10 +1929,10 @@ included, is first saved in a pre-restore backup.
   caller's ends.
 - Each barcode prefix keeps the higher of its last numbers given, that of the backup and that of
   the current data, so that no number printed since the backup is given again.
-- The database of a backup from an earlier version is upgraded as the server upgrades its own: from
-  a version before 0.10.0, the line breaks of notes and descriptions become LF, and a note or a
-  description of more than 5,000 characters is cut to 5,000 characters; from a version before
-  0.11.0, a negative purchase price or current value is removed and written into the bottle's notes.
+- The database of a backup from an earlier version is upgraded as the server upgrades its own: in
+  a backup of an older version, the line breaks of notes and descriptions become LF, a note or a
+  description of more than 5,000 characters is cut to 5,000 characters, and a negative purchase
+  price or current value is removed and written into the bottle's notes.
 - While the restore runs, other writes get `503 writes_held`.
 - **Errors:**
   - `422 invalid_backup` when the file is not a backup this version can restore. `details` has
@@ -1981,10 +1981,10 @@ pre-import export.
   - `backup`: the name of the pre-import export, `cellar-export-pre-import-<timestamp>.zip`.
 - The import is all or nothing: a refused row leaves the data as it was. Settings, sessions and
   label presets are not part of an export and stay. The line breaks of notes and descriptions become
-  LF, and a note or a description of more than 5,000 characters, from an export of a version before
-  0.10.0, is cut to 5,000 characters, as the upgrade cuts those of the database. A negative
-  purchase price or current value is removed and written into the bottle's notes, as the upgrade to
-  0.11.0 does. While the import runs, other writes get `503 writes_held`.
+  LF, and a note or a description of more than 5,000 characters, from an export of an older
+  version, is cut to 5,000 characters, as the upgrade cuts those of the database. A negative
+  purchase price or current value is removed and written into the bottle's notes, as the upgrade of
+  an older database does. While the import runs, other writes get `503 writes_held`.
 - **Errors:**
   - `422 invalid_export` when the file is not an export this version can import. `details` has
     `problem` (`unreadable`, `incomplete` with `tables`, the missing ones as one comma-separated
@@ -1992,9 +1992,9 @@ pre-import export.
     `errors` of the CSV import) and `reason` (English).
   - `422 export_refused` when the database refuses a row. `details` has `rule` (`duplicate_region`,
     `duplicate_appellation`, `duplicate_barcode`, `duplicate_container`, `duplicate_case`,
-    `missing_reference` or `other`) and `reason`. An export made before 0.11.0 can hold containers,
-    or cases of a container, of the same name: restore a backup zip instead, which the upgrade
-    repairs.
+    `missing_reference` or `other`) and `reason`. An export made by an older version can hold
+    containers, or cases of a container, of the same name: restore a backup zip instead, which the
+    upgrade repairs.
   - `500 pre_import_backup_failed` when the current data could not be exported first: nothing was
     imported.
   - `500 internal_error` when the server cannot extract the export, such as on a full disk:
@@ -2191,9 +2191,9 @@ server.
 
 Imports the rows of CSV files, table by table. Rows already in the cellar are skipped, and rows that
 lack a value or break a rule are reported; the other rows are imported. The line breaks of notes and
-descriptions become LF, and a note or a description of more than 5,000 characters, as an export of a
-version before 0.10.0 may hold, is cut to 5,000 characters. A negative purchase price or current
-value, which a version before 0.11.0 may have stored, is removed and written into the bottle's notes.
+descriptions become LF, and a note or a description of more than 5,000 characters, as an export of
+an older version may hold, is cut to 5,000 characters. A negative purchase price or current value,
+which an older version may have stored, is removed and written into the bottle's notes.
 
 Names are compared without their case. A region is named within its country, an appellation within
 its region, and a case within its container: a file that gives the parent next to the name, as the
@@ -2593,5 +2593,5 @@ Ticks or unticks an action of the upgrade notice that the Admin page shows after
 - **Errors:** `404 not_found` when the instance has no such pending action.
 
 ```json
-{ "version": "0.9.0", "index": 0, "done": true }
+{ "version": "1.1.0", "index": 0, "done": true }
 ```

@@ -249,7 +249,7 @@
                 {:else}
                     <FileArchive class="h-4 w-4 mr-1" />
                 {/if}
-                {m['admin.import_zip']()}
+                {m['admin.import_images_from_zip']()}
             </Button>
             <input
                 type="file"

@@ -235,7 +235,7 @@
                         </p>
                         <p class="text-sm text-foreground">
                             {m['admin.after_importing_csv_data']()}
-                            <strong>{m['admin.import_zip']()}</strong>
+                            <strong>{m['admin.import_images_from_zip']()}</strong>
                             {m['admin.feature_in_images_tab']()}
                         </p>
                     </div>

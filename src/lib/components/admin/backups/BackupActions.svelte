@@ -112,7 +112,7 @@
         {
             title: m['admin.import_from_export'](),
             description: m['admin.import_wine_data_from_zip'](),
-            label: m['admin.import_zip'](),
+            label: m['admin.import_from_export'](),
             job: 'import',
             busyLabel: m['admin.importing'](),
             icon: FileUp,

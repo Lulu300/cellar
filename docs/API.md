@@ -691,8 +691,8 @@ Creates one or more identical bottles of a wine, all or none.
 
   Fields the API does not know are ignored. A `barcode` can only be given with `quantity` 1, and
   the bottle keeps it, whatever the settings. Without one, when automatic barcodes are on (Admin ›
-  Barcodes), each bottle gets the next barcode if it is `available`; a bottle created
-  `out_of_cellar` or `consumed` gets none, and takes no number of the sequence.
+  Settings › Barcode Settings), each bottle gets the next barcode if it is `available`; a bottle
+  created `out_of_cellar` or `consumed` gets none, and takes no number of the sequence.
 
 - **Response:** `201` with `{ "bottles", "count" }`: the bottles created (see
   [bottle fields](#bottle-fields)) and their number.

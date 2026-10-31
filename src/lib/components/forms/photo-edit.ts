@@ -11,8 +11,11 @@ export interface Crop {
 
 export const FULL_CROP: Crop = { x: 0, y: 0, width: 1, height: 1 };
 
-/** The smallest crop, in fractions of each side: a frame that stays easy to grab. */
-const MIN_CROP = 0.1;
+/**
+ * The smallest crop, in fractions of each side: on a phone, its frame keeps room to be dragged
+ * between the targets of its corners.
+ */
+const MIN_CROP = 0.2;
 
 /** A corner of the crop frame. */
 export type Corner = 'nw' | 'ne' | 'sw' | 'se';

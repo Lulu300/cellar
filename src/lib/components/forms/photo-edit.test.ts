@@ -42,7 +42,7 @@ describe('resizeCrop', () => {
         });
     });
 
-    it('keeps the frame inside the photo, and never smaller than a tenth of it', () => {
+    it('keeps the frame inside the photo, and never smaller than a fifth of it', () => {
         expect(rounded(resizeCrop(crop, 'ne', 2, -2))).toEqual({
             x: 0.1,
             y: 0,
@@ -50,10 +50,10 @@ describe('resizeCrop', () => {
             height: 0.6
         });
         expect(rounded(resizeCrop(crop, 'sw', 1, -1))).toEqual({
-            x: 0.3,
+            x: 0.2,
             y: 0.2,
-            width: 0.1,
-            height: 0.1
+            width: 0.2,
+            height: 0.2
         });
     });
 });

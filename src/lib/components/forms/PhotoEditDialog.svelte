@@ -128,10 +128,13 @@
     }
 
     async function done() {
-        if (!image || !file) return;
+        const chosen = file;
+        if (!image || !chosen) return;
         saving = true;
         try {
-            onDone(await photoFile(image, turns, crop, file.name));
+            const photo = await photoFile(image, turns, crop, chosen.name);
+            // Cancelled while it was being prepared: not sent
+            if (file === chosen) onDone(photo);
         } catch {
             toasts.add(m['photos.unreadable'](), 'error');
         } finally {
@@ -171,10 +174,10 @@
                         onkeydown={keydown}
                     >
                         {#each CORNERS as corner (corner)}
-                            <!-- A 28 px target for a finger, inside the frame: the preview
+                            <!-- A 24 px target for a finger, inside the frame: the preview
                                  clips what goes past its edges, where a whole photo puts them. -->
                             <span
-                                class="absolute flex size-7 {corner.includes('w')
+                                class="absolute flex size-6 {corner.includes('w')
                                     ? 'left-0 justify-start'
                                     : 'right-0 justify-end'} {corner.includes('n')
                                     ? 'top-0 items-start'
@@ -183,7 +186,7 @@
                                     : 'cursor-nesw-resize'}"
                                 data-corner={corner}
                             >
-                                <span class="size-3.5 border-2 border-black/40 bg-white"></span>
+                                <span class="size-3 border-2 border-black/40 bg-white"></span>
                             </span>
                         {/each}
                     </button>

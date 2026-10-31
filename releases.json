@@ -1,7 +1,7 @@
 [
   {
     "version": "1.1.0",
-    "summary": "1.1.0 makes Cellar easier to install and use: install steps in the README, a link to the API documentation, an app you can install on your phone, and fixes found after 1.0.0.",
+    "summary": "1.1.0 makes Cellar easier to install and use: install steps in the README, a link to the API documentation, an app you can install on your phone, and fixes found after 1.0.0.\n\nThe README now gives the installation steps, with a compose file to copy. The README and the admin page link to the API documentation.",
     "mandatoryStop": false,
     "actions": []
   },

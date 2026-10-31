@@ -19,7 +19,7 @@ importers:
         version: 7.0.3
       drizzle-orm:
         specifier: ^0.45.4
-        version: 0.45.4(@types/better-sqlite3@9.6.0)(better-sqlite3@13.0.3)(kysely@0.28.17)
+        version: 0.45.4(@types/better-sqlite3@9.6.0)(better-sqlite3@13.0.3)(kysely@0.28.18)
       jspdf:
         specifier: ^4.2.1
         version: 4.2.1
@@ -2314,8 +2314,8 @@ packages:
   known-css-properties@0.37.0:
     resolution: {integrity: sha512-JCDrsP4Z1Sb9JwG0aJ8Eo2r7k4Ou5MwmThS/6lcIe1ICyb7UBJKGRIUUdqc2ASdE/42lgz6zFUnzAIhtXnBVrQ==}
 
-  kysely@0.28.17:
-    resolution: {integrity: sha512-nbD8lB9EB3wNdMhOCdx5Li8DxnLbvKByylRLcJ1h+4SkrowVeECAyZlyiKMThF7xFdRz0jSQ2MoJr+wXux2y0Q==}
+  kysely@0.28.18:
+    resolution: {integrity: sha512-lf6nEHwPlaWbUDw5rycPSkEVGVC7sF7hzY7kH0OryleqK8Ym0zZ+RjI8o+RpHHlxpbKVC1d+UoQSW8GFxGQf4Q==}
     engines: {node: '>=20.0.0'}
 
   lazystream@1.0.1:
@@ -3601,7 +3601,7 @@ snapshots:
     dependencies:
       '@lix-js/sdk': 0.20.1
       '@sinclair/typebox': 0.31.30
-      kysely: 0.28.17
+      kysely: 0.28.18
       uuid: 14.0.2
 
   '@internationalized/date@3.12.4':
@@ -4421,11 +4421,11 @@ snapshots:
       esbuild: 0.25.9
       tsx: 4.23.15
 
-  drizzle-orm@0.45.4(@types/better-sqlite3@9.6.0)(better-sqlite3@13.0.3)(kysely@0.28.17):
+  drizzle-orm@0.45.4(@types/better-sqlite3@9.6.0)(better-sqlite3@13.0.3)(kysely@0.28.18):
     optionalDependencies:
       '@types/better-sqlite3': 9.6.0
       better-sqlite3: 13.0.3
-      kysely: 0.28.17
+      kysely: 0.28.18
 
   emoji-regex@8.0.0: {}
 
@@ -4869,7 +4869,7 @@ snapshots:
 
   known-css-properties@0.37.0: {}
 
-  kysely@0.28.17: {}
+  kysely@0.28.18: {}
 
   lazystream@1.0.1:
     dependencies:

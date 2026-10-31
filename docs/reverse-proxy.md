@@ -24,7 +24,7 @@ your network resolves.
   one request, and a wine image up to 20 MB. Cellar refuses anything larger than 512 MB itself;
   nginx refuses anything larger than 1 MB unless you raise its limit.
 - **Time.** An upload of a few hundred megabytes over Wi-Fi or a VPN takes minutes, and Cellar
-  gives an upload 5 minutes at most to arrive, so 500 MB need 1.7 MB/s or more. nginx and SWAG
+  gives an upload 5 minutes at most to arrive, so 500 MB need 1.8 MB/s or more. nginx and SWAG
   receive the whole upload first, in a temporary file that needs as much free disk space, then pass
   it on at once: a slower upload gets through them. Caddy and Traefik pass it on as it comes, so a
   slower one fails with `408`. Cellar answers a restore or an import only once it is done: the
@@ -249,13 +249,13 @@ in Traefik's own configuration: use yours. The redirect from `http://` to `https
 that configuration too, on the HTTP entry point, as for any other app.
 
 Traefik gives a client 60 seconds to send its whole request, body included: an upload of a few
-hundred megabytes over Wi-Fi or a VPN stops halfway, with `502 Bad Gateway`. Raise that limit to the
+hundred megabytes over Wi-Fi or a VPN stops halfway, with `502 Bad Gateway`. Raise that limit above the
 5 minutes that Cellar itself gives an upload, on the HTTPS entry point, in Traefik's static
 configuration: in the `command:` of its container,
 
 ```yaml
 command:
-  - --entrypoints.websecure.transport.respondingTimeouts.readTimeout=300s
+  - --entrypoints.websecure.transport.respondingTimeouts.readTimeout=600s
 ```
 
 or, in `traefik.yml`:
@@ -266,7 +266,7 @@ entryPoints:
     address: ':443'
     transport:
       respondingTimeouts:
-        readTimeout: 300s
+        readTimeout: 600s
 ```
 
 `/mcp` needs no rule of its own: Traefik passes the headers of the client, does not limit the time
@@ -284,8 +284,8 @@ with **Force SSL**. It already allows uploads of 2000 MB and uses HTTP/1.1, and 
 
 ## Synology reverse proxy
 
-In Control Panel › Login Portal › Advanced › Reverse Proxy, a rule from `HTTPS`, your hostname and
-port 443 to `HTTP`, `localhost` and port 3005, with the certificate chosen in Control Panel ›
+In Control Panel › Login Portal › Advanced › Reverse Proxy, a rule from `HTTPS`, your hostname
+and port 443 to `HTTP`, `localhost` and port 3005, with the certificate chosen in Control Panel ›
 Security › Certificate. It is nginx too, so the streams of `/mcp` pass unbuffered. Not replayed,
 for lack of a Synology NAS: if a large restore or import fails through it, look in the rule's
 advanced settings for its timeouts.

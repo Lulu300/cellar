@@ -144,7 +144,7 @@ export const phases = [
 		id: 'P13',
 		version: '1.1.0',
 		title: 'Finitions et installation',
-		goal: 'Pour la 1.1.0, juste après la 1.0.0 : ce que voit d’abord un nouveau visiteur (installation dans le README, liens vers la doc de l’API), l’app installable sur le téléphone (PWA), et les finitions notées pendant P12 (décision « Versions après la 1.0 »). Lots, chacun mergé avant le suivant, résumé 1.1.0 (lot 1 fait le 2026-10-31) : 1. DOC-05, UI-27, SEC-13, BUG-24 ; 2. UI-24, UI-25, API-13 ; 3. UI-26, DEP-08 ; puis REL-07.'
+		goal: 'Pour la 1.1.0, juste après la 1.0.0 : ce que voit d’abord un nouveau visiteur (installation dans le README, liens vers la doc de l’API), l’app installable sur le téléphone (PWA), et les finitions notées pendant P12 (décision « Versions après la 1.0 »). Lots, chacun mergé avant le suivant, résumé 1.1.0 (lots 1 et 2 faits le 2026-10-31) : 1. DOC-05, UI-27, SEC-13, BUG-24 ; 2. UI-24, UI-25, API-13 ; 3. UI-26, DEP-08 ; puis REL-07.'
 	},
 	{
 		id: 'P14',
@@ -295,6 +295,8 @@ export const decisions = [
 	{ topic: 'Doc de l’API (DOC-05, API-14)', choice: '`docs/API.md` reste la référence, liée depuis le README et la page d’admin (1.1.0). Une description OpenAPI générée depuis les schémas zod de l’API (zod 4 sait les convertir, sans dépendance) s’y ajoute en 1.2.0, pour les outils ; une interface comme Swagger UI demanderait une dépendance, à proposer au mainteneur (décision du 2026-10-30).' },
 	{ topic: 'Logo et icônes (UI-27)', choice: 'Le logo est le verre du pack que le mainteneur a fait faire (`cellar-logo-pack`, tracé P10, 2026-10-31) ; on en importe ce dont l’app a besoin, sans le script de génération du pack. L’icône de l’écran d’accueil et du manifeste est le verre blanc sur fond bordeaux `#582634`. Le verre remplace aussi le logo de Svelte du favicon et l’icône générique de l’en-tête, où il prend la couleur du texte du thème (décision du 2026-10-31).' },
 	{ topic: 'Page de suivi par version', choice: 'Depuis la 1.0.0, la page de suivi (`roadmap.html`) s’ouvre sur la version en cours, puis les suivantes ; tout ce qui a mené à la 1.0.0 (P0 à P12) et l’audit d’avant 1.0 passent dans un historique replié. La feuille de route reste en français (décision du 2026-10-31).' },
+	{ topic: 'Noms trop longs à l’import (API-13)', choice: 'Depuis que les noms se mesurent en unités UTF-16, un nom déjà enregistré peut dépasser 500. L’import d’un export (JSON) coupe alors le nom, le type, la couleur ou le producteur à sa limite, sans le signaler et jamais au milieu d’un emoji, comme les notes (décision « Longueur des textes (DATA-10) ») ; l’import CSV signale la ligne sans couper, parce qu’il retrouve les lignes par leur nom. Pas de migration : un nom gardé en base reste entier jusqu’à sa prochaine modification, que le formulaire refuse tant qu’il n’est pas raccourci. Le nom d’une case (conteneur puis suffixe) se mesure contre 500 + 50 unités (décision du mainteneur, et du coordinateur pour les cases, 2026-10-31).' },
+	{ topic: 'Millésimes des statistiques (UI-25)', choice: 'Chaque nom sous une barre tient sur une ligne, coupé par « … », et se lit en entier en touchant la barre (décision du mainteneur). Exception : le graphique des millésimes écrit « ’17 » sur deux chiffres, à toutes les largeurs, puisqu’« 2… » ne dirait rien ; l’année entière reste dans la ligne sous le graphique (décision du coordinateur, 2026-10-31).' },
 	{ topic: 'Versions de 1.3.0 à 1.7.0', choice: 'Après la 1.2.0 (MCP) : 1.3.0 la navigation, les photos d’étiquette et la page Achats, la liste d’envies étant ce que les utilisateurs demandent le plus ; 1.4.0 les couleurs des vins et le plan de la cave ; 1.5.0 « À boire » et la fiche de dégustation ; 1.6.0 les producteurs et la revue de l’import CSV ; 1.7.0 les notifications. Chaque fonctionnalité a été détaillée avec le mainteneur avant ce découpage (décision du 2026-10-31).' },
 	{ topic: 'Navigation (UI-28)', choice: 'Choisie sur maquette : des sections au survol, Cave (Mes vins, Producteurs, Stockage, Hors cave, Historique), Achats (Liste d’envies, Pénurie), Statistiques (ses sous-pages), Outils (Codes-barres) ; survoler ou viser au clavier une section montre ses pages, un clic ouvre sa première page, et ses sous-pages y sont des onglets, comme l’admin. Une icône d’engrenage regroupe Préférences, Admin (avec le signal « mise à jour disponible ») et Déconnexion. Achats porte un compteur rouge des vins en pénurie, ou à défaut un point sans chiffre de la couleur du thème quand la liste d’envies n’est pas vide, ou rien ; son menu donne le nombre de chaque onglet. Hors cave reste à portée : un lien « N hors cave » sous les filtres de Mes vins. Sur téléphone, l’app installée a une barre d’onglets en bas (Vins, Stockage, Hors cave, Achats, Plus) ; dans le navigateur, le menu ☰ reprend les sections avec leurs titres (décision du 2026-10-31).' },
 	{ topic: 'Photos des vins (FEAT-01)', choice: 'Un vin peut avoir plusieurs photos : une principale, montrée dans la liste des vins, les autres seulement sur la page du vin. Sur téléphone, le champ propose « Prendre une photo » (appareil photo, sans HTTPS) et « Choisir un fichier ». Avant l’envoi, un aperçu permet de pivoter et de recadrer ; l’image est réduite (environ 1 600 px au plus grand côté, JPEG), tournée dans le bon sens, et ses métadonnées, dont la position GPS, sont retirées ; partout, ordinateur compris. Les images déjà enregistrées restent telles quelles. Une bibliothèque de recadrage serait une dépendance, à proposer au mainteneur (décision du 2026-10-31).' },
@@ -2165,7 +2167,9 @@ export const tasks = [
 		todo: [
 			'Décision « Deux « Import ZIP » (UI-23) », étendue : un libellé ne désigne qu’une action ; une même action garde un seul nom, du bouton au toast ; les boutons à icône seule ont un nom accessible juste.',
 			'Les textes qui citent ces libellés suivent (README-Docker, docs/API.md).',
-			'Lot 2 de P13.'
+			'Lot 2 de P13.',
+			'Fait en P13 (2026-10-31, d035629a..0bc1e599) : les 25 libellés validés par le mainteneur (deux « Edit » qui disent ce qu’ils changent, « Sauvegarde complète » et « Export complet » de bout en bout, sauvegarde ou export selon la ligne, « Effacer les filtres » et « Tout désélectionner », « Exporter la sélection », import d’images nommé) ; les titres de dialogue passent à la ligne avant la croix, de 360 px à 1 280 px (le titre ZIP français était à 2,8 px sous la croix) ; deux fonctions de téléchargement d’images réunies.',
+			'Trouvé pendant UI-24 : en français à 320 px, les dialogues d’effacement et de restauration débordent encore, titre compris (`WipeDialog.svelte`, `ReplaceDataDialog.svelte`) ; en anglais seulement, « Wine Formats » contre « Bottle Formats » et « Wine Classifications » contre « Classifications » ; « All Appellations », « All Formats » et « All Availability » en majuscules à côté de « All colors ».'
 		],
 		done: 'Aucun libellé de l’admin ne désigne deux actions ; « Export complet » garde un nom ; le titre ZIP ne touche plus la croix ; i18n:check vert.',
 		deps: ['DOC-05'], src: ['Trouvé pendant UI-23', 'Trouvé pendant UI-21']
@@ -2178,7 +2182,9 @@ export const tasks = [
 		todo: [
 			'Décision « Messages d’erreur (P7) » : chaque bouton grisé dit pourquoi, comme le nom de conteneur vide depuis UI-22.',
 			'Un nom coupé des statistiques se lit en entier au toucher (légende, toucher long ou autre, au choix de la tâche).',
-			'Lot 2 de P13.'
+			'Lot 2 de P13.',
+			'Fait en P13 (2026-10-31, 881bd286..4ff030c4) : chaque bouton grisé des quatre composants dit pourquoi dans une ligne discrète liée par `aria-describedby`, comme depuis UI-22 ; dans les statistiques, un composant `BarChart` remplace quatre copies : chaque barre est un bouton, et un toucher, un clic ou le clavier donne le nom entier et le nombre sous le graphique ; noms sur une ligne coupés par « … », millésimes en « ’17 » (décision « Millésimes des statistiques (UI-25) »). Captures validées par le mainteneur.',
+			'Trouvé pendant UI-25 : d’autres boutons grisés sans raison visible, `admin/EntityFormDialog.svelte:108`, `admin/dialogs/SessionTimeoutDialog.svelte:91`, `admin/dialogs/ImageRenameDialog.svelte:81`, `admin/dialogs/CsvImportDialog.svelte:278` et `:282` (et, avec un nombre à 0 à côté, `barcode/BulkBarcodeDialog.svelte:291`, `barcode/BarcodeStatsCard.svelte:82`) ; quand toute la liste de `SearchableSelect` est désactivée, « Annuler » l’est aussi ; le changement de code d’accès et l’enregistrement d’un préréglage n’ont pas d’état « en cours » et partent deux fois sur un double clic ; un ZIP d’images cassé ne dit que « Some values are invalid. ».'
 		],
 		done: 'Aucun bouton grisé sans raison visible dans ces quatre composants ; au toucher (Chromium en émulation mobile), un nom coupé se lit en entier.',
 		deps: ['DOC-05'], src: ['Trouvé pendant UI-22', 'Décision « Messages d’erreur (P7) »']
@@ -2190,7 +2196,9 @@ export const tasks = [
 		where: ['src/lib/shared/schemas/common.ts', 'src/lib/server/features/csv-import/', 'docs/API.md'],
 		todo: [
 			'Décision « Longueur des textes (DATA-10) » et API-12 : une seule mesure, en unités UTF-16, pour tous les textes, par le même helper ; tests avec emoji à la limite ; docs/API.md suit.',
-			'Lot 2 de P13.'
+			'Lot 2 de P13.',
+			'Fait en P13 (2026-10-31, 1241bf5f..4f4b22ad) : un seul contrôle `maxLength` (unités UTF-16) dans `schemas/common.ts` pour les noms, le producteur, les cépages, la description d’un préréglage, les notes, les descriptions et les suffixes de case ; API, deux imports et formulaires refusent ou acceptent les mêmes noms (tests à 499, 500 et 501 unités) ; décision « Noms trop longs à l’import (API-13) » ; une sauvegarde de la 1.0.0 avec un nom de 501 unités se restaure et se met à jour entière.',
+			'Trouvé pendant API-13 : le code d’accès compte encore en points de code (`routes/api/access-code/+server.ts`, `server/access-code.ts`, `utils/access-code.ts`), laissé exprès pour ne bloquer aucun propriétaire ; le contrôle maison ne donne plus `maxLength` à `z.toJSONSchema` (pour API-14) ; un export de la 1.0.0 avec un conteneur de plus de 275 emojis et des cases reste refusé par l’import JSON, avec un message clair (la sauvegarde ZIP le restaure).'
 		],
 		done: 'Un nom d’emoji à la limite est accepté ou refusé de la même façon par l’API, l’import et les formulaires ; testé.',
 		deps: ['DOC-05'], src: ['Trouvé pendant API-12']
@@ -2202,7 +2210,8 @@ export const tasks = [
 		where: ['src/lib/components/layout/ScrollingDialogContent.svelte', 'src/lib/components/bottles/BottleDetailsDialog.svelte', 'src/lib/components/storage/AllBottlesDialog.svelte', 'src/lib/components/barcode/', 'src/lib/components/admin/'],
 		todo: [
 			'Ces dialogues passent à `ScrollingDialogContent` ; la hauteur maximale suit la hauteur visible (`dvh`) ; l’ordre des titres est juste.',
-			'Lot 3 de P13.'
+			'Lot 3 de P13.',
+			'Trouvé pendant UI-24 : en français à 320 px, les dialogues d’effacement et de restauration débordent, titre compris.'
 		],
 		done: 'À 375 × 667, chacun de ces dialogues garde son titre et ses boutons visibles ; axe-core ne remonte plus l’ordre des titres ; captures avant et après.',
 		deps: ['UI-24'], src: ['Trouvé pendant UI-21']
@@ -2252,7 +2261,8 @@ export const tasks = [
 		todo: [
 			'Décision « Doc de l’API (DOC-05, API-14) » : une description OpenAPI 3.1 générée depuis les schémas zod de l’API (`z.toJSONSchema`, sans dépendance), publiée avec la doc ; un test vérifie qu’elle couvre chaque route, comme `api-doc.test.ts` pour docs/API.md.',
 			'Une interface de lecture (Swagger UI ou autre) seulement avec l’accord du mainteneur pour sa dépendance.',
-			'Lot 1 de P14.'
+			'Lot 1 de P14.',
+			'Trouvé pendant API-13 : le contrôle `maxLength` en unités UTF-16 est un contrôle maison que `z.toJSONSchema` ne traduit pas ; la description OpenAPI doit remettre les longueurs maximales.'
 		],
 		done: 'La description OpenAPI couvre chaque route de l’API et se valide avec un outil standard ; elle est à jour à chaque build ; testé.',
 		deps: ['REL-07'], src: ['Décision « Doc de l’API (DOC-05, API-14) »']

@@ -53,6 +53,8 @@
     const bottleCount = $derived(
         shownWines.reduce((total, wine) => total + wine.bottles.length, 0)
     );
+    // Loaded by the root layout, for the menu too
+    const outOfCellarCount: number = $derived(page.data.outOfCellarCount);
 
     // The preference only sets the first state: the switch does not change it.
     let showImages = $state(true);
@@ -99,6 +101,7 @@
                 onChange={changeQuery}
                 wineCount={shownWines.length}
                 {bottleCount}
+                {outOfCellarCount}
                 bind:showImages
             />
         </CardContent>

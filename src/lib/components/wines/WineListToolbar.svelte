@@ -1,5 +1,5 @@
 <script lang="ts">
-    import { ArrowDownWideNarrow, ArrowUpNarrowWide } from '@lucide/svelte';
+    import { ArrowDownWideNarrow, ArrowUpNarrowWide, ChevronRight } from '@lucide/svelte';
     import { Button } from '#lib/components/ui/button/index.js';
     import * as Select from '#lib/components/ui/select/index.js';
     import DebouncedInput from '#lib/components/wines/DebouncedInput.svelte';
@@ -7,18 +7,24 @@
     import type { BottleCountMode, WineListQuery } from '#lib/utils/wine-filters.js';
     import type { WineGroupSortKey } from '#lib/utils/wine-group-sort.js';
 
-    /** The count of what the list shows, its sort, the bottle-count filter and the images switch. */
+    /**
+     * The count of what the list shows with a link to the bottles out of the cellar, its sort, the
+     * bottle-count filter and the images switch.
+     */
     let {
         query,
         onChange,
         wineCount,
         bottleCount,
+        outOfCellarCount,
         showImages = $bindable()
     }: {
         query: WineListQuery;
         onChange: (changes: Partial<WineListQuery>) => void;
         wineCount: number;
         bottleCount: number;
+        /** The bottles taken out of the cellar, which `bottleCount` includes; a link leads to them. */
+        outOfCellarCount: number;
         showImages: boolean;
     } = $props();
 
@@ -50,8 +56,17 @@
 </script>
 
 <div class="mt-4 flex flex-wrap justify-between items-center gap-4">
-    <div class="text-sm text-muted-foreground">
-        {m['wines.summary']({ wines: wineCount, bottles: bottleCount })}
+    <div class="flex flex-wrap items-center gap-x-3 gap-y-1 text-sm text-muted-foreground">
+        <span>{m['wines.summary']({ wines: wineCount, bottles: bottleCount })}</span>
+        {#if outOfCellarCount > 0}
+            <a
+                href="/out-of-cellar"
+                class="inline-flex items-center font-medium text-primary-text underline decoration-primary/40 underline-offset-[3px] hover:decoration-primary"
+            >
+                {m['wines.out_of_cellar_link']({ count: outOfCellarCount })}
+                <ChevronRight class="h-4 w-4" aria-hidden="true" />
+            </a>
+        {/if}
     </div>
     <div class="flex flex-wrap items-center gap-4">
         <!-- The label wraps above the select on narrow screens -->

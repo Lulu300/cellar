@@ -222,6 +222,7 @@
   "wines.barcode_search": "Recherche par code-barres",
   "wines.barcode_search_hint": "Saisissez ou scannez un code-barres, puis appuyez sur Entrée.",
   "wines.summary": "{wines, plural, one {# vin} other {# vins}} ({bottles, plural, one {# bouteille} other {# bouteilles}} au total)",
+  "wines.out_of_cellar_link": "{count} hors cave",
   "wines.bottle_count": "Nb bouteilles",
   "wines.bottle_count_value": "Nb bouteilles : {value}",
   "wines.bottle_count_number": "{mode} ce nombre de bouteilles",

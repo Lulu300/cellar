@@ -222,6 +222,7 @@
   "wines.barcode_search": "Barcode Search",
   "wines.barcode_search_hint": "Type or scan a barcode, then press Enter.",
   "wines.summary": "{wines, plural, one {# wine} other {# wines}} ({bottles, plural, one {# bottle} other {# bottles}} in all)",
+  "wines.out_of_cellar_link": "{count} out of cellar",
   "wines.bottle_count": "Bottle count",
   "wines.bottle_count_value": "Bottle count: {value}",
   "wines.bottle_count_number": "{mode} this many bottles",

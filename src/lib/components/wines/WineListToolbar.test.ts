@@ -13,7 +13,14 @@ describe('WineListToolbar', () => {
         ]);
 
         const { body } = render(WineListToolbar, {
-            props: { query, onChange: () => {}, wineCount: 1, bottleCount: 3, showImages: false }
+            props: {
+                query,
+                onChange: () => {},
+                wineCount: 1,
+                bottleCount: 3,
+                outOfCellarCount: 0,
+                showImages: false
+            }
         });
 
         const field = body.match(/<input[^>]*type="number"[^>]*>/)?.[0];

@@ -3,7 +3,7 @@
     import { page } from '$app/state';
     import NavCount from './NavCount.svelte';
     import NavRow from './NavRow.svelte';
-    import { alertOf, isInSection, type NavItem, type NavSection } from './navigation.js';
+    import { isInSection, signalOf, type NavItem, type NavSection } from './navigation.js';
 
     /**
      * A section of the top bar. Its name links to its first page, which a tap on a touch screen
@@ -28,7 +28,7 @@
     let openBeforePress = false;
 
     const current = $derived(isInSection(page.url.pathname, section));
-    const alert = $derived(alertOf([section]));
+    const signal = $derived(signalOf(section.items));
 
     function show() {
         if (!held) open = true;
@@ -113,7 +113,7 @@
             >
                 {section.label}
                 <ChevronDown class="h-3.5 w-3.5 opacity-70" aria-hidden="true" />
-                {#if alert}<NavCount count={alert} badge />{/if}
+                {#if signal}<NavCount count={signal} badge />{/if}
             </a>
         {/if}
 

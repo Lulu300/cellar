@@ -2,6 +2,7 @@
     import { Copy, SquarePen, SquarePlus, Star } from '@lucide/svelte';
     import { Badge } from '#lib/components/ui/badge/index.js';
     import { Card, CardContent } from '#lib/components/ui/card/index.js';
+    import WishButton from '#lib/components/wishlist/WishButton.svelte';
     import { m } from '#lib/paraglide/messages.js';
     import type { WineGroupDTO } from '#lib/shared/dto.js';
     import { auth } from '#lib/stores/auth.svelte.js';
@@ -92,6 +93,7 @@
                             </h2>
                             {#if auth.isAuthenticated}
                                 <div class="flex gap-1">
+                                    <WishButton wineId={wine.id} class={iconButton} />
                                     <button
                                         class={iconButton}
                                         onclick={() => onEdit(wine)}

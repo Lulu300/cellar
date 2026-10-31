@@ -1,5 +1,5 @@
 <script lang="ts">
-    import { Image, Search, X } from '@lucide/svelte';
+    import { Image, Search } from '@lucide/svelte';
     import { request } from '#lib/api/client.js';
     import { m } from '#lib/paraglide/messages.js';
     import { Button } from '#lib/components/ui/button/index.js';
@@ -8,8 +8,7 @@
     import { toasts } from '#lib/stores/toast.svelte.js';
     import { formatFileSize } from '#lib/utils/format.js';
     import { matchesImageSearch } from '#lib/utils/image-search.js';
-    import FormField from './FormField.svelte';
-    import PhotoCapture from './PhotoCapture.svelte';
+    import PhotoField from './PhotoField.svelte';
 
     type ExistingImage = Jsonified<AdminImagesDTO>['images'][number];
 
@@ -31,25 +30,6 @@
         (images ?? []).filter((image) => matchesImageSearch(image, query))
     );
 
-    // Frees the preview of a chosen file once it is replaced or the form closes.
-    $effect(() => {
-        const url = previewUrl;
-        return () => {
-            if (url.startsWith('blob:')) URL.revokeObjectURL(url);
-        };
-    });
-
-    function takePhoto(photo: File) {
-        remove();
-        file = photo;
-        previewUrl = URL.createObjectURL(photo);
-    }
-
-    function remove() {
-        file = null;
-        imageId = previewUrl = '';
-    }
-
     async function toggleBrowsing() {
         browsing = !browsing;
         query = '';
@@ -63,52 +43,27 @@
     }
 
     function choose(image: ExistingImage) {
-        remove();
+        file = null;
         imageId = image.id;
         previewUrl = image.url;
         browsing = false;
     }
 </script>
 
-<FormField label={m['common.main_photo']()} hint={m['wine_form.image_hint']()}>
-    <input type="hidden" name="imageId" value={imageId} />
-    {#if previewUrl}
-        <div class="flex items-start gap-4">
-            <div class="relative">
-                <img
-                    src={previewUrl}
-                    alt={m['forms.wine_preview']()}
-                    class="h-24 w-24 rounded-md border object-cover"
-                />
-                <!-- A fixed opaque red: the button sits over the photo, which a dimmed or theme red
-                     would let show through the white cross -->
-                <button
-                    type="button"
-                    class="absolute -right-2 -top-2 flex h-6 w-6 items-center justify-center rounded-full bg-red-700 text-white hover:bg-red-800"
-                    aria-label={m['wine_form.remove_image']()}
-                    onclick={remove}
-                >
-                    <X class="h-3 w-3" />
-                </button>
-            </div>
-            <p class="text-sm text-muted-foreground">
-                {#if file}
-                    {m['wine_form.new_image']()}<br />
-                    <span class="text-xs">{file.name} ({formatFileSize(file.size)})</span>
-                {:else}
-                    {m['wine_form.current_image']()}
-                {/if}
-            </p>
-        </div>
-    {/if}
-
-    <div class="flex flex-wrap items-center gap-2">
-        <PhotoCapture onPhoto={takePhoto} />
+<PhotoField
+    label={m['common.main_photo']()}
+    hint={m['wine_form.image_hint']()}
+    name="imageId"
+    bind:imageId
+    bind:file
+    bind:previewUrl
+>
+    {#snippet actions()}
         <Button type="button" variant="outline" onclick={toggleBrowsing}>
             <Image class="mr-2 h-4 w-4" />
             {m['forms.browse_existing']()}
         </Button>
-    </div>
+    {/snippet}
 
     {#if browsing}
         <div class="rounded-lg border bg-muted/30 p-4">
@@ -161,4 +116,4 @@
             {/if}
         </div>
     {/if}
-</FormField>
+</PhotoField>

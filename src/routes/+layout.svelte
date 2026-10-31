@@ -17,10 +17,10 @@
     import NavSectionMenu from '#lib/components/layout/NavSectionMenu.svelte';
     import TabBar from '#lib/components/layout/TabBar.svelte';
     import {
-        alertOf,
         navSections,
         pageTitle,
-        settingsSection
+        settingsSection,
+        signalOf
     } from '#lib/components/layout/navigation.js';
     import { auth } from '#lib/stores/auth.svelte.js';
     import { toasts } from '#lib/stores/toast.svelte.js';
@@ -39,11 +39,12 @@
         navSections({
             authenticated: auth.isAuthenticated,
             shortageCount: data.shortageCount,
+            wishCount: data.wishCount,
             outOfCellarCount: data.outOfCellarCount
         })
     );
     const settings = $derived(settingsSection(auth.isAuthenticated, handleLogout));
-    const shortage = $derived(alertOf(sections));
+    const signal = $derived(signalOf(sections.flatMap((section) => section.items)));
 
     onMount(promptLoginOnExpiredSession);
 
@@ -149,9 +150,9 @@
                         <!-- Named by its text rather than aria-label, which would hide the count -->
                         <span class="sr-only">{m['navigation.menu']()}</span>
                         <!-- Not next to the top bar of a touch laptop, whose Purchases shows it -->
-                        {#if shortage && !menuOpen}
+                        {#if signal && !menuOpen}
                             <span class="md:pointer-fine:hidden"
-                                ><NavCount count={shortage} badge /></span
+                                ><NavCount count={signal} badge /></span
                             >
                         {/if}
                     </Button>

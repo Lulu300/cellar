@@ -18,6 +18,9 @@ export type WineFormSource = {
     grapeVarieties: string[] | null;
 };
 
+/** What a new wine starts from: the name and the photo of a wish of the wishlist. */
+export type WineDraft = Pick<WineFormSource, 'name' | 'imageId'>;
+
 type Day = string | Date | null;
 
 /**

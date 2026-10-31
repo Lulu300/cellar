@@ -1,5 +1,6 @@
 import {
     ChartColumn,
+    Heart,
     History,
     LayoutGrid,
     LogOut,
@@ -18,8 +19,11 @@ export interface NavItem {
     icon: typeof Wine;
     href?: string;
     onclick?: () => void;
-    /** A number shown after the label; `label` says what it counts to screen readers. */
-    count?: { value: number; label: string; alert?: boolean };
+    /**
+     * A number shown after the label; `label` says what it counts to screen readers. On the button
+     * around the menu, an `alert` shows as a red count, and a `dot` as a dot without its number.
+     */
+    count?: { value: number; label: string; alert?: boolean; dot?: boolean };
 }
 
 /**
@@ -35,6 +39,7 @@ export interface NavSection {
 export interface NavCounts {
     authenticated: boolean;
     shortageCount: number;
+    wishCount: number;
     outOfCellarCount: number;
 }
 
@@ -42,6 +47,7 @@ export interface NavCounts {
 export function navSections({
     authenticated,
     shortageCount,
+    wishCount,
     outOfCellarCount
 }: NavCounts): NavSection[] {
     const sections: NavSection[] = [
@@ -62,7 +68,7 @@ export function navSections({
                 { href: '/cellar-history', label: m['navigation.history'](), icon: History }
             ]
         },
-        purchasesSection(shortageCount),
+        purchasesSection(shortageCount, wishCount),
         {
             label: m['navigation.statistics'](),
             direct: true,
@@ -78,11 +84,21 @@ export function navSections({
     return sections;
 }
 
-/** The purchases, whose pages are the tabs of its layout. */
-export function purchasesSection(shortageCount: number): NavSection {
+/** The purchases, whose pages are the tabs of its layout: the wishlist first. */
+export function purchasesSection(shortageCount: number, wishCount: number): NavSection {
     return {
         label: m['navigation.purchases'](),
         items: [
+            {
+                href: '/purchases/wishlist',
+                label: m['navigation.wishlist'](),
+                icon: Heart,
+                count: {
+                    value: wishCount,
+                    label: m['navigation.wish_count']({ count: wishCount }),
+                    dot: true
+                }
+            },
             {
                 href: '/purchases/shortage',
                 label: m['navigation.shortage'](),
@@ -113,9 +129,15 @@ export function settingsSection(authenticated: boolean, logout: () => void): Nav
     };
 }
 
-/** The alert count among these sections, the shortage, which a button around them shows. */
-export function alertOf(sections: NavSection[]): NavItem['count'] {
-    return sections.flatMap((section) => section.items).find((item) => item.count?.alert)?.count;
+/**
+ * What a button around these pages shows: the alert count when there is one (the wines in
+ * shortage), else a dot when a page has one to show (the wishes), else nothing.
+ */
+export function signalOf(items: NavItem[]): NavItem['count'] {
+    const counts = items.flatMap((item) =>
+        item.count && item.count.value > 0 ? [item.count] : []
+    );
+    return counts.find((count) => count.alert) ?? counts.find((count) => count.dot);
 }
 
 /** Whether a link of the navigation leads to the page at `pathname`, or to a page under it. */

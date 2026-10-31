@@ -7,7 +7,7 @@
     let { data, children }: LayoutProps = $props();
 
     // The root layout loads the counts that the tabs show, as the menu does.
-    const section = $derived(purchasesSection(data.shortageCount));
+    const section = $derived(purchasesSection(data.shortageCount, data.wishCount));
 </script>
 
 <div class="container mx-auto py-8 max-w-none w-full px-4 lg:w-[90%] xl:w-[85%] 2xl:w-[80%]">

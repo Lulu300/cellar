@@ -38,7 +38,7 @@
                 </div>
                 <div class="flex justify-end gap-2">
                     <Button variant="outline" onclick={() => confirmation.answer(false)}>
-                        {m['common.cancel']()}
+                        {confirmation.question?.cancelLabel ?? m['common.cancel']()}
                     </Button>
                     <Button variant="destructive" onclick={() => confirmation.answer(true)}>
                         {confirmation.question?.confirmLabel ?? m['common.delete']()}

@@ -14,6 +14,7 @@
     import WineBottleDialog from '#lib/components/bottles/WineBottleDialog.svelte';
     import WineDefinitionDialog from '#lib/components/wines/WineDefinitionDialog.svelte';
     import WinePhotos from '#lib/components/wines/WinePhotos.svelte';
+    import WishButton from '#lib/components/wishlist/WishButton.svelte';
     import BarcodeDialog from '#lib/components/barcode/BarcodeDialog.svelte';
     import BottleCard from '#lib/components/bottles/BottleCard.svelte';
     import BottleStatusDialog from '#lib/components/bottles/BottleStatusDialog.svelte';
@@ -90,6 +91,9 @@
         await invalidate(CELLAR);
     }
 
+    const headerButton =
+        'text-muted-foreground hover:text-foreground transition-colors rounded p-2 sm:p-2.5 text-sm sm:text-base min-h-[32px] sm:min-h-[36px] min-w-[32px] sm:min-w-[36px] flex items-center justify-center';
+
     function showBarcode(wine: Bottle) {
         if (wine.barcode) {
             selectedBarcode = wine.barcode;
@@ -132,14 +136,21 @@
                     </Badge>
                     <!-- Edit Button -->
                     {#if auth.isAuthenticated}
-                        <button
-                            class="ml-auto text-muted-foreground hover:text-foreground transition-colors rounded p-2 sm:p-2.5 text-sm sm:text-base min-h-[32px] sm:min-h-[36px] min-w-[32px] sm:min-w-[36px] flex items-center justify-center"
-                            onclick={() => (showEditDefinitionDialog = true)}
-                            title={m['forms.edit_wine']()}
-                            aria-label={m['forms.edit_wine']()}
-                        >
-                            <SquarePen class="h-6 w-6" aria-hidden="true" />
-                        </button>
+                        <div class="ml-auto flex">
+                            <WishButton
+                                wineId={wineDefinition.id}
+                                class={headerButton}
+                                iconClass="h-6 w-6"
+                            />
+                            <button
+                                class={headerButton}
+                                onclick={() => (showEditDefinitionDialog = true)}
+                                title={m['forms.edit_wine']()}
+                                aria-label={m['forms.edit_wine']()}
+                            >
+                                <SquarePen class="h-6 w-6" aria-hidden="true" />
+                            </button>
+                        </div>
                     {/if}
                 </CardTitle>
             </CardHeader>

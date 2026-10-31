@@ -32,6 +32,7 @@ import type {
     listBottlesWithDefinitions,
     WineBottleWithFormat
 } from '#lib/server/features/bottles/service.js';
+import type { listWishes } from '#lib/server/features/wishlist/service.js';
 import type {
     createDefinition,
     listDefinitions,
@@ -104,6 +105,9 @@ export type BottleWithDefinitionDTO = ReturnType<typeof listBottlesWithDefinitio
 
 /** GET /api/definitions */
 export type DefinitionDTO = ReturnType<typeof listDefinitions>[number];
+
+/** GET /api/wishes, and POST and PUT /api/wishes/{id}: a wish with its wine or its photo. */
+export type WishDTO = ReturnType<typeof listWishes>[number];
 
 /** POST /api/definitions and PUT /api/definitions/{id}: the wine as saved. */
 export type SavedDefinitionDTO = ReturnType<typeof createDefinition>;

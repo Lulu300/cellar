@@ -1,4 +1,6 @@
 <script lang="ts">
+    import { untrack } from 'svelte';
+    import { page } from '$app/state';
     import { m } from '#lib/paraglide/messages.js';
     import {
         Dialog,
@@ -8,6 +10,7 @@
     } from '#lib/components/ui/dialog/index.js';
     import type { BottleFormSource } from '#lib/components/forms/form-sources.js';
     import WineBottleForm from '#lib/components/forms/WineBottleForm.svelte';
+    import { offerToRemoveBought } from '#lib/components/wishlist/wishes.js';
     import type { BottleDTO } from '#lib/shared/dto.js';
 
     /** Adds bottles, of the wine `selectedDefinitionId` when given, duplicates `editBottle` or edits it. */
@@ -32,12 +35,25 @@
     // A new form for each bottle added in a row
     let formKey = $state(0);
 
-    // The form gives the bottles saved, which no page reads.
-    function saved(_bottles: BottleDTO[], addAnother: boolean) {
+    // The wines of the bottles added since the dialog opened, by a save or a duplicate: once it
+    // closes, after the last save or a cancel, those on the wishlist are offered for removal.
+    let addedTo: string[] = [];
+
+    function saved(bottles: BottleDTO[], addAnother: boolean) {
+        if (!editBottle || duplicateMode) {
+            addedTo.push(...bottles.map((bottle) => bottle.definitionId));
+        }
         if (addAnother) formKey++;
         else open = false;
         onSaved(addAnother);
     }
+
+    $effect(() => {
+        if (open || addedTo.length === 0) return;
+        const wines = addedTo;
+        addedTo = [];
+        untrack(() => offerToRemoveBought(wines, page.data.wishedWines));
+    });
 </script>
 
 <Dialog bind:open>

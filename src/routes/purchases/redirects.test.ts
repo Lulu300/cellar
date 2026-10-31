@@ -26,7 +26,7 @@ describe('the addresses of the purchases', () => {
     it('opens the purchases on their first tab', () => {
         expect(redirectOf(purchases, '/purchases')).toEqual({
             status: 307,
-            location: '/purchases/shortage'
+            location: '/purchases/wishlist'
         });
     });
 });

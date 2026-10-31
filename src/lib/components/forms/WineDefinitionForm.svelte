@@ -19,23 +19,26 @@
     import ImagePicker from './ImagePicker.svelte';
     import LocationPicker from './LocationPicker.svelte';
     import { createReference } from './references.js';
-    import type { WineFormSource } from './form-sources.js';
+    import type { WineDraft, WineFormSource } from './form-sources.js';
 
     /**
-     * The fields of a wine, created from scratch or from `wine` (duplicated), or `wine` edited. It
-     * starts from `wine` as it is when the dialog opens: the page data that a new reference
-     * reloads does not reset it.
+     * The fields of a wine, created from scratch, from a `draft` (a wish of the wishlist) or from
+     * `wine` (duplicated), or `wine` edited. It starts from them as they are when the dialog opens:
+     * the page data that a new reference reloads does not reset it.
      */
     let {
         wine,
+        draft,
         duplicate,
         imageUrl,
         onSaved,
         onCancel
     }: {
         wine: WineFormSource | null;
+        /** The name and the photo of a new wine. */
+        draft?: WineDraft;
         duplicate: boolean;
-        /** The URL of the image of `wine`. */
+        /** The URL of the image of `wine` or `draft`. */
         imageUrl?: string;
         /** The wine saved, and whether the user asked to add a bottle of it next. */
         onSaved: (definition: SavedDefinitionDTO, addBottle: boolean) => void;
@@ -43,7 +46,7 @@
     } = $props();
 
     const formId = $props.id();
-    const initial = untrack(() => wine);
+    const initial: Partial<WineFormSource> | null = untrack(() => wine ?? draft ?? null);
     const editedId = untrack(() => (duplicate ? undefined : wine?.id));
 
     const references: ReferencesDTO = $derived(page.data.references);
@@ -224,7 +227,7 @@
 
 <DialogFooter class="gap-2">
     <Button type="button" variant="outline" onclick={onCancel}>{m['common.cancel']()}</Button>
-    {#if !initial}
+    {#if !wine}
         <Button
             type="submit"
             form={formId}

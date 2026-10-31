@@ -1,9 +1,9 @@
 import { describe, expect, it } from 'vitest';
 import {
-    alertOf,
     isCurrentSection,
     navSections,
     settingsSection,
+    signalOf,
     TAB_BAR_PATHS,
     withoutPages,
     type NavSection
@@ -12,9 +12,9 @@ import {
 const logout = () => {};
 
 /** The menu as the layout builds it: the sections, then the gear. */
-function menu(authenticated: boolean, shortageCount = 0): NavSection[] {
+function menu(authenticated: boolean, shortageCount = 0, wishCount = 0): NavSection[] {
     return [
-        ...navSections({ authenticated, shortageCount, outOfCellarCount: 0 }),
+        ...navSections({ authenticated, shortageCount, wishCount, outOfCellarCount: 0 }),
         settingsSection(authenticated, logout)
     ];
 }
@@ -44,6 +44,7 @@ describe('the menu', () => {
             '/storage',
             '/out-of-cellar',
             '/cellar-history',
+            '/purchases/wishlist',
             '/purchases/shortage',
             '/statistics',
             '/barcode',
@@ -56,14 +57,23 @@ describe('the menu', () => {
             '/storage',
             '/out-of-cellar',
             '/cellar-history',
+            '/purchases/wishlist',
             '/purchases/shortage',
             '/statistics',
             '/preferences'
         ]);
     });
 
-    it('signals the number of wines in shortage', () => {
-        expect(alertOf(menu(true, 3))?.value).toBe(3);
+    // The signal of Purchases: a red count, else a dot without a number, else nothing.
+    it('signals the wines in shortage first, then the wishes, then nothing', () => {
+        const signal = (shortage: number, wishes: number) => {
+            const count = signalOf(menu(true, shortage, wishes).flatMap(({ items }) => items));
+            return count && { value: count.value, alert: !!count.alert, dot: !!count.dot };
+        };
+
+        expect(signal(3, 2)).toEqual({ value: 3, alert: true, dot: false });
+        expect(signal(0, 2)).toEqual({ value: 2, alert: false, dot: true });
+        expect(signal(0, 0)).toBeUndefined();
     });
 
     // « More », in the tab bar of the installed app, lists what the tabs do not show.

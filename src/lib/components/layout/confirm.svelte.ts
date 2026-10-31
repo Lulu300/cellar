@@ -2,6 +2,8 @@ interface Question {
     message: string;
     /** The label of the button that confirms; "Delete" by default. */
     confirmLabel?: string;
+    /** The label of the button that declines; "Cancel" by default. */
+    cancelLabel?: string;
 }
 
 /** The question that the confirmation dialog of the root layout shows, one at a time. */

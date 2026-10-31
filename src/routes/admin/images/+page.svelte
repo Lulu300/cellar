@@ -19,6 +19,7 @@
     import { Button } from '#lib/components/ui/button/index.js';
     import SearchField from '#lib/components/admin/SearchField.svelte';
     import ImageDeleteDialog from '#lib/components/admin/dialogs/ImageDeleteDialog.svelte';
+    import { wishLabel } from '#lib/components/admin/wine-labels.js';
     import ImageRenameDialog from '#lib/components/admin/dialogs/ImageRenameDialog.svelte';
     import ZipImportInfoDialog from '#lib/components/admin/dialogs/ZipImportInfoDialog.svelte';
     import ZipImportResultsDialog from '#lib/components/admin/dialogs/ZipImportResultsDialog.svelte';
@@ -280,7 +281,10 @@
     {:else}
         <ul class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
             {#each selection.visible as image (image.id)}
-                {@const wineNames = image.wines.map((wine) => wine.name).join(', ')}
+                {@const wineNames = [
+                    ...image.wines.map((wine) => wine.name),
+                    ...image.wishes.map(wishLabel)
+                ].join(', ')}
                 <li
                     class="border rounded-lg overflow-hidden bg-card hover:shadow-md transition-shadow"
                 >

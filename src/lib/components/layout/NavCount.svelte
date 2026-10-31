@@ -2,14 +2,21 @@
     import type { NavItem } from './navigation.js';
 
     /**
-     * The number of a menu entry: grey after its name, or a red pill for an alert, or a red badge
-     * on the corner of the button around it. Screen readers hear its label instead.
+     * The number of a menu entry: grey after its name, or a red pill for an alert; on the corner
+     * of the button around it, a red badge for an alert, or a dot of the theme's colour without
+     * the number. Screen readers hear its label instead.
      */
     let { count, badge = false }: { count: NonNullable<NavItem['count']>; badge?: boolean } =
         $props();
 </script>
 
-{#if count.value > 0}
+{#if count.value > 0 && badge && count.dot}
+    <span
+        class="pointer-events-none absolute -top-1 -right-1 h-3 w-3 rounded-full border-2 border-card bg-primary shadow"
+    >
+        <span class="sr-only">{count.label}</span>
+    </span>
+{:else if count.value > 0}
     <!-- A fixed dark red with white text keeps the count readable in every theme -->
     <span
         class={badge

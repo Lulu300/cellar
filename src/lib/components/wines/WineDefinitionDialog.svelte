@@ -6,22 +6,24 @@
         DialogHeader,
         DialogTitle
     } from '#lib/components/ui/dialog/index.js';
-    import type { WineFormSource } from '#lib/components/forms/form-sources.js';
+    import type { WineDraft, WineFormSource } from '#lib/components/forms/form-sources.js';
     import WineDefinitionForm from '#lib/components/forms/WineDefinitionForm.svelte';
     import type { SavedDefinitionDTO } from '#lib/shared/dto.js';
 
-    /** Creates a wine, duplicates `editDefinition` or edits it. */
+    /** Creates a wine, from scratch or from `draft`, duplicates `editDefinition` or edits it. */
     let {
         open = $bindable(false),
         editDefinition = null,
+        draft,
         duplicateMode = false,
         imageUrl,
         onSaved
     }: {
         open?: boolean;
         editDefinition?: WineFormSource | null;
+        draft?: WineDraft;
         duplicateMode?: boolean;
-        /** The URL of the image of `editDefinition`, for its preview. */
+        /** The URL of the image of `editDefinition` or `draft`, for its preview. */
         imageUrl?: string;
         /** Called once the dialog has closed on the wine saved, with whether to add a bottle to it. */
         onSaved: (definition: SavedDefinitionDTO, addBottle: boolean) => void;
@@ -49,6 +51,7 @@
         <!-- Mounted at each opening: the form starts from the wine as it is then. -->
         <WineDefinitionForm
             wine={editDefinition}
+            {draft}
             duplicate={duplicateMode}
             {imageUrl}
             onSaved={saved}

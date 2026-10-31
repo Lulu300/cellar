@@ -7,6 +7,7 @@
     import NavList from './NavList.svelte';
     import {
         isCurrentSection,
+        signalOf,
         TAB_BAR_PATHS,
         withoutPages,
         type NavItem,
@@ -29,12 +30,12 @@
         '/purchases': { label: m['navigation.purchases'](), icon: ShoppingCart }
     });
     // Each tab opens the first page of the menu at or under its path (the purchases, their first
-    // tab), and is current on every page under it.
+    // tab), is current on every page under it, and shows the signal of those pages.
     const items = $derived(sections.flatMap((section) => section.items));
     const tabs = $derived(
         TAB_BAR_PATHS.map((path) => {
-            const item = items.find((entry) => entry.href && isCurrentSection(entry.href, path))!;
-            return { ...item, ...SHORT[path], path };
+            const pages = items.filter((entry) => entry.href && isCurrentSection(entry.href, path));
+            return { ...pages[0], ...SHORT[path], path, signal: signalOf(pages) };
         })
     );
     const others = $derived(withoutPages(sections, TAB_BAR_PATHS));
@@ -72,7 +73,7 @@
             <span>{tab.label}</span>
             <span class="relative order-first">
                 <tab.icon class="h-[22px] w-[22px]" aria-hidden="true" />
-                {#if tab.count?.alert}<NavCount count={tab.count} badge />{/if}
+                {#if tab.signal}<NavCount count={tab.signal} badge />{/if}
             </span>
         </a>
     {/each}

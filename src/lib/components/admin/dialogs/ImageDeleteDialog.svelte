@@ -7,7 +7,7 @@
     import { invalidateAll } from '$app/navigation';
     import { toasts } from '#lib/stores/toast.svelte.js';
     import { ApiError, errorMessage, request } from '#lib/api/client.js';
-    import { wineLabel } from '#lib/components/admin/wine-labels.js';
+    import { wineLabel, wishLabel } from '#lib/components/admin/wine-labels.js';
 
     interface Wine {
         id: string;
@@ -19,6 +19,7 @@
         id: string;
         filename: string;
         wines: Wine[];
+        wishes: { id: string; name: string }[];
     }
 
     let {
@@ -70,7 +71,7 @@
             await invalidateAll();
         } catch (error) {
             if (error instanceof ApiError && error.code === 'in_use') {
-                // The images that wines use: "Delete anyway" then removes them from those wines.
+                // The images that wines or wishes use: "Delete anyway" then removes them from those.
                 conflict = { imageIds, inUse: error.details<{ inUse: ImageInUse[] }>().inUse };
             } else {
                 toasts.add(errorMessage(error), 'error');
@@ -118,7 +119,10 @@
                             {#each imagesInUse as image (image.id)}
                                 <li>
                                     <span class="font-mono">{image.filename}</span>:
-                                    {image.wines.map(wineLabel).join(', ')}
+                                    {[
+                                        ...image.wines.map(wineLabel),
+                                        ...image.wishes.map(wishLabel)
+                                    ].join(', ')}
                                 </li>
                             {/each}
                         </ul>

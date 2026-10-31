@@ -144,7 +144,7 @@ export const phases = [
 		id: 'P13',
 		version: '1.1.0',
 		title: 'Finitions et installation',
-		goal: 'Pour la 1.1.0, juste après la 1.0.0 : ce que voit d’abord un nouveau visiteur (installation dans le README, liens vers la doc de l’API), l’app installable sur le téléphone (PWA), et les finitions notées pendant P12 (décision « Versions après la 1.0 »). Lots, chacun mergé avant le suivant, résumé 1.1.0 (lots 1 à 3 faits le 2026-10-31) : 1. DOC-05, UI-27, SEC-13, BUG-24 ; 2. UI-24, UI-25, API-13 ; 3. UI-26, UI-29, DEP-08 ; puis REL-07.'
+		goal: 'Pour la 1.1.0, juste après la 1.0.0 : ce que voit d’abord un nouveau visiteur (installation dans le README, liens vers la doc de l’API), l’app installable sur le téléphone (PWA), et les finitions notées pendant P12 (décision « Versions après la 1.0 »). Lots, chacun mergé avant le suivant, résumé 1.1.0 (lots 1 à 3 faits le 2026-10-31) : 1. DOC-05, UI-27, SEC-13, BUG-24 ; 2. UI-24, UI-25, API-13 ; 3. UI-26, UI-29, DEP-08 ; UI-30 ; puis REL-07.'
 	},
 	{
 		id: 'P14',
@@ -2236,6 +2236,17 @@ export const tasks = [
 		deps: ['UI-25'], src: ['Trouvé pendant UI-25', 'Décision « Messages d’erreur (P7) »']
 	},
 	{
+		id: 'UI-30', phase: 'P13', size: 'S', sev: 'mineur',
+		title: 'Pagination de « Toutes les bouteilles » dans le pied du dialogue',
+		why: 'Trouvé pendant UI-26 : dans le dialogue « Toutes les bouteilles » de la page Stockage, la pagination suit la liste et disparaît quand on la fait défiler.',
+		where: ['src/lib/components/storage/AllBottlesDialog.svelte', 'src/lib/components/layout/ScrollingDialogContent.svelte'],
+		todo: [
+			'La pagination passe dans le pied du dialogue (`footer` de `ScrollingDialogContent`), toujours visible ; accord du mainteneur le 2026-10-31, juste avant la release si c’est rapide.'
+		],
+		done: 'À 375 × 667 et sur ordinateur, la pagination reste visible pendant qu’on fait défiler la liste, et change bien de page ; captures avant et après.',
+		deps: ['UI-26'], src: ['Trouvé pendant UI-26']
+	},
+	{
 		id: 'DEP-08', phase: 'P13', size: 'S', sev: 'mineur',
 		title: 'Revue des dépendances d’avant la 1.1.0',
 		why: 'Écarts laissés par DEP-07 : correctifs de SvelteKit, Svelte, adapter-node et Paraglide trop récents, image node 24.22.2 éligible vers le 2026-11-04, docker/login-action 4.7.0 (mineure).',
@@ -2258,7 +2269,7 @@ export const tasks = [
 			'Résumé 1.1.0 complété à chaque tâche ; banc de la 1.0.0 vers la 1.1.0 ; release selon RELEASING.md, avec le mainteneur.'
 		],
 		done: 'v1.1.0 est publiée sur `main` et son image se télécharge sans connexion ; develop passe à 1.2.0-rc.0.',
-		deps: ['DOC-05', 'UI-27', 'SEC-13', 'BUG-24', 'UI-24', 'UI-25', 'API-13', 'UI-26', 'UI-29', 'DEP-08'], src: ['Décision « Versions après la 1.0 »']
+		deps: ['DOC-05', 'UI-27', 'SEC-13', 'BUG-24', 'UI-24', 'UI-25', 'API-13', 'UI-26', 'UI-29', 'DEP-08', 'UI-30'], src: ['Décision « Versions après la 1.0 »']
 	},
 
 	// ───────── P14 Serveur MCP

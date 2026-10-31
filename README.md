@@ -4,7 +4,7 @@ Cellar is a self-hosted wine cellar manager. It runs as a Docker container, for 
 
 - **Install:** [Installation](#installation) below; [README-Docker.md](README-Docker.md) gives every detail.
 - **Upgrade:** read [UPGRADING.md](UPGRADING.md) for every version between yours and the new one, then follow [Updating](README-Docker.md#updating). [CHANGELOG.md](CHANGELOG.md) lists the changes of each version.
-- **API:** your own scripts can read and change the cellar through the HTTP API that the app uses, described in [docs/API.md](https://github.com/Lulu300/cellar/blob/main/docs/API.md). The admin page links to it too. For tools, [docs/openapi.json](https://github.com/Lulu300/cellar/blob/main/docs/openapi.json) describes the same API in OpenAPI 3.1, and Cellar serves the description of its own version at `/api/openapi.json`.
+- **API:** your own scripts can read and change the cellar through the HTTP API that the app uses, described in [docs/API.md](https://github.com/Lulu300/cellar/blob/main/docs/API.md). The admin page links to it too. For tools, [docs/openapi.json](https://github.com/Lulu300/cellar/blob/main/docs/openapi.json) describes the same API in OpenAPI 3.1, and Cellar serves, at `/api/openapi.json`, the description of the version it runs.
 
 ## Features
 

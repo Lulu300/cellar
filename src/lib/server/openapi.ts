@@ -58,14 +58,14 @@ const tags = {
     barcodes: ['Barcodes and labels', 'barcodes-and-labels'],
     barcodeSettings: ['Barcode settings', 'barcode-settings'],
     labelPresets: ['Label presets', 'label-presets'],
+    openApi: ['OpenAPI description', 'openapi-description'],
     backups: ['Backups', 'backups'],
     autoBackups: ['Automatic backups', 'automatic-backups'],
     mcp: ['MCP access', 'mcp-access'],
     csv: ['CSV import and export', 'csv-import-and-export'],
     data: ['Data', 'data'],
     adminImages: ['Admin images', 'images-1'],
-    upgradeActions: ['Upgrade actions', 'upgrade-actions'],
-    openApi: ['OpenAPI description', 'openapi-description']
+    upgradeActions: ['Upgrade actions', 'upgrade-actions']
 } as const satisfies Record<string, readonly [name: string, anchor: string]>;
 
 interface Parameter {
@@ -359,6 +359,12 @@ const operations: Record<string, Operation> = {
         answers: noContent
     },
 
+    'GET /api/openapi.json': {
+        tag: 'openApi',
+        summary: 'This description, as the running version gives it',
+        answers: ok
+    },
+
     'GET /api/admin/list-backups': {
         tag: 'backups',
         summary: 'The backups and exports on the server',
@@ -529,12 +535,6 @@ const operations: Record<string, Operation> = {
         summary: 'Ticks or unticks an upgrade action',
         body: json(upgradeTickRequest),
         answers: ok
-    },
-
-    'GET /api/openapi.json': {
-        tag: 'openApi',
-        summary: 'This description, as the running version gives it',
-        answers: ok
     }
 };
 
@@ -617,7 +617,7 @@ function operationObject(method: string, routeId: string, operation: Operation) 
     };
 }
 
-const DESCRIPTION = `The HTTP API of Cellar, a self-hosted wine cellar manager. [docs/API.md](${API_DOC}) describes each route in full, with the fields of its answers, which this description leaves out; the request bodies here come from the schemas that the server checks them with.
+const DESCRIPTION = `The HTTP API of Cellar, a self-hosted wine cellar manager. [docs/API.md](${API_DOC}) describes each route in full, with the fields of its answers, which this description leaves out; the request bodies here come from the schemas that the server checks them with. \`GET /api/openapi.json\` serves this description, for the version that runs.
 
 - **Lengths:** a name, a producer, a description, a note, a grape variety or a case suffix is measured in UTF-16 units once trimmed (a case suffix at its end only), as JavaScript's \`.length\`, a note or a description with its line breaks as LF. \`maxLength\` gives that limit, but a JSON Schema validator counts characters, an emoji as one: it may accept a text with emoji that the server refuses.
 - **Reads are public:** every \`GET\` outside \`/api/admin\` works without a session. Every other method, and all of \`/api/admin\`, needs one; \`POST /api/access-code\` logs in and sets the \`${SESSION_COOKIE}\` cookie.

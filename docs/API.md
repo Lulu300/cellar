@@ -1757,6 +1757,21 @@ Deletes a label preset.
 - **Response:** `204` with no body.
 - **Errors:** `404 not_found` when the preset does not exist.
 
+## OpenAPI description
+
+### `GET /api/openapi.json`
+
+The OpenAPI 3.1 description of this API, as the running version gives it: the same document as
+[openapi.json](openapi.json) for that version.
+
+- **Session:** not needed.
+- **Body:** none.
+- **Response:** `200` with the description, as JSON.
+
+```sh
+curl -s "$CELLAR/api/openapi.json" -o openapi.json
+```
+
 ## Backups
 
 Backups and exports are zip files kept in the data folder of the server (`DATA_DIR`). A backup holds
@@ -2680,19 +2695,4 @@ Ticks or unticks an action of the upgrade notice that the Admin page shows after
 
 ```json
 { "version": "1.1.0", "index": 0, "done": true }
-```
-
-## OpenAPI description
-
-### `GET /api/openapi.json`
-
-The OpenAPI 3.1 description of this API, as the running version gives it: the same document as
-[openapi.json](openapi.json) for that version.
-
-- **Session:** not needed.
-- **Body:** none.
-- **Response:** `200` with the description, as JSON.
-
-```sh
-curl -s "$CELLAR/api/openapi.json" -o openapi.json
 ```

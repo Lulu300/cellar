@@ -27,8 +27,8 @@ which is also the value of `ORIGIN` (see
   counted in UTF-16 units, like JavaScript's `.length`, once trimmed: an emoji counts two (or more,
   for a flag or a family). The forms and the imports count the same way, so 250 emoji fill the 500
   characters of a name. Versions before 1.1.0 counted an emoji as one character in a name, a
-  producer, a grape variety or a case suffix: a text they stored can be too long now, and a `PUT`
-  that keeps it answers `422 invalid_body` until it is shortened.
+  producer, a label preset description, a grape variety or a case suffix: a text they stored can be
+  too long now, and a `PUT` that keeps it answers `422 invalid_body` until it is shortened.
 - A `GET` route also answers `HEAD`.
 - Every answer of the app, static files and error pages included, carries
   `Content-Security-Policy: frame-ancestors 'none'` and `X-Frame-Options: DENY`: no web page can show
@@ -1993,10 +1993,10 @@ pre-import export.
   version, is cut to 5,000 characters, as the upgrade cuts those of the database. A name, a wine
   type or colour, or a producer over 500 characters and a grape variety over 100, which versions
   before 1.1.0 took because they counted an emoji as one character, is cut to its limit, never in
-  the middle of an emoji. Two names that become the same once cut answer `422 export_refused`, as
-  any two rows of the same name do. A negative
-  purchase price or current value is removed and written into the bottle's notes, as the upgrade of
-  an older database does. While the import runs, other writes get `503 writes_held`.
+  the middle of an emoji; a case name is not cut, as it ends with the case's suffix. Two names that
+  become the same once cut answer `422 export_refused`, as any two rows of the same name do. A
+  negative purchase price or current value is removed and written into the bottle's notes, as the
+  upgrade of an older database does. While the import runs, other writes get `503 writes_held`.
 - **Errors:**
   - `422 invalid_export` when the file is not an export this version can import. `details` has
     `problem` (`unreadable`, `incomplete` with `tables`, the missing ones as one comma-separated

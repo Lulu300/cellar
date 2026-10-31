@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { bottleChangesSchema, bottleFromForm, bottleSchema, newBottlesSchema } from './bottle';
+import { labelPresetSchema } from './label';
 import { newContainerSchema } from './storage';
 import { wineDefinitionSchema, wineFromForm } from './wine';
 
@@ -106,6 +107,11 @@ describe('the length of a text', () => {
             'a grape variety',
             100,
             (text: string) => wineDefinitionSchema.safeParse({ ...wine, grapeVarieties: [text] })
+        ],
+        [
+            'a label preset description',
+            500,
+            (text: string) => labelPresetSchema.shape.description.safeParse(text)
         ],
         [
             'a container name',

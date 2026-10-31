@@ -1,7 +1,7 @@
 <script lang="ts">
     import { invalidateAll } from '$app/navigation';
     import { page } from '$app/state';
-    import { Bot } from '@lucide/svelte';
+    import { Bot, Copy } from '@lucide/svelte';
     import { m } from '#lib/paraglide/messages.js';
     import { Button } from '#lib/components/ui/button/index.js';
     import { Card, CardContent, CardHeader, CardTitle } from '#lib/components/ui/card/index.js';
@@ -21,6 +21,7 @@
     // Shown once, then forgotten: the server keeps only its hash.
     let token = $state('');
     let busy = $state(false);
+    let tokenElement = $state<HTMLElement>();
     // Changed at once on a click, and put back if the server refuses it.
     let write = $derived(mcpToken.write);
 
@@ -33,6 +34,18 @@
             toasts.add(m['admin.token_failed']());
         } finally {
             busy = false;
+        }
+    }
+
+    // The clipboard needs a secure context: over plain HTTP on the LAN it is missing, and the token
+    // is selected instead, for the user to copy it by hand.
+    async function copyToken() {
+        try {
+            await navigator.clipboard.writeText(token);
+            toasts.add(m['admin.token_copied'](), 'success');
+        } catch {
+            if (tokenElement) getSelection()?.selectAllChildren(tokenElement);
+            toasts.add(m['admin.token_selected'](), 'warning');
         }
     }
 
@@ -92,9 +105,19 @@
         </div>
         {#if token}
             <p class="text-sm font-medium">{m['admin.mcp_token_shown_once']()}</p>
-            <code class="block select-all break-all rounded bg-muted p-2 text-xs">{token}</code>
+            <div class="flex items-start gap-2">
+                <code
+                    bind:this={tokenElement}
+                    class="block flex-1 select-all break-all rounded bg-muted p-2 text-xs"
+                    >{token}</code
+                >
+                <Button variant="outline" size="sm" onclick={copyToken}>
+                    <Copy class="h-4 w-4" />
+                    {m['admin.copy_token']()}
+                </Button>
+            </div>
         {:else}
-            <p class="font-medium">
+            <p class="text-sm font-medium">
                 {mcpToken.hasToken ? m['admin.mcp_token_exists']() : m['admin.mcp_token_missing']()}
             </p>
         {/if}

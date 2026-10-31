@@ -10,7 +10,7 @@ import {
 } from '#lib/server/db/schema.js';
 import type { Tx } from '#lib/server/db/connection.js';
 import { listBottlesWithoutDefinitions } from '#lib/server/features/bottles/service.js';
-import { tidyWinePhotos } from '#lib/server/features/images/service.js';
+import { followMainPhotoChange } from '#lib/server/features/images/service.js';
 import { createLookupCrud } from '#lib/server/features/shared/lookup-crud.js';
 import { ConflictError, NotFoundError } from '#lib/server/http/errors.js';
 import { namedSchema } from '#lib/shared/schemas/reference.js';
@@ -105,14 +105,12 @@ function changeDefinition(id: string, data: Partial<WineDefinitionInput>, tx: Tx
     return wine;
 }
 
-/**
- * Replaces every field of the wine. Its other photos stay: a main photo removed gives way to the
- * next one, and one of them made the main photo leaves them.
- */
+/** Replaces every field of the wine; its photos follow a change of its main one. */
 export const replaceDefinition = (id: string, data: WineDefinitionInput) =>
     db.transaction((tx) => {
+        const formerMainId = getDefinition(id, tx)?.imageId ?? null;
         changeDefinition(id, data, tx);
-        tidyWinePhotos(tx);
+        followMainPhotoChange(id, formerMainId, tx);
         return getDefinition(id, tx)!;
     });
 

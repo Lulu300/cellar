@@ -126,7 +126,8 @@ export function tidyWinePhotos(tx: Tx): void {
         .set({
             imageId: sql`(${photosOfWine(tx)
                 .orderBy(asc(winePhotos.createdAt), sql`${winePhotos}.rowid`)
-                .limit(1)})`
+                .limit(1)})`,
+            updatedAt: new Date()
         })
         .where(and(isNull(wineDefinitions.imageId), exists(photosOfWine(tx))))
         .run();

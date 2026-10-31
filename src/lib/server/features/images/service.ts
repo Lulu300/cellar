@@ -42,8 +42,6 @@ import {
     winesUsingImages
 } from './repository';
 
-export { tidyWinePhotos } from './repository';
-
 /** The URL of each image, for the wine pages. */
 export function listImageUrls() {
     return listImages().map((image) => ({ id: image.id, url: imageUrl(image) }));
@@ -251,6 +249,19 @@ function mainPhotoOf(definitionId: string, tx: Tx = db): string | null {
     return imageId;
 }
 
+/**
+ * Keeps the photos of a wine whose fields were all replaced, its main photo included: a main photo
+ * replaced stays among the others, as « Make it the main photo » keeps it, so that no photo leaves
+ * the wine unasked; a main photo removed gives way to the next one.
+ */
+export function followMainPhotoChange(definitionId: string, formerMainId: string | null, tx: Tx) {
+    const mainId = mainPhotoId(definitionId, tx);
+    if (formerMainId && mainId && mainId !== formerMainId) {
+        addOtherPhoto(definitionId, formerMainId, tx);
+    }
+    tidyWinePhotos(tx);
+}
+
 /** The photos of a wine, its main one first, then the others from the oldest. */
 export function listWinePhotos(definitionId: string) {
     const mainId = mainPhotoOf(definitionId);
@@ -262,7 +273,8 @@ export function listWinePhotos(definitionId: string) {
 
 /** Saves a photo of the wine: its main one when it has none yet. */
 export async function addWinePhoto(definitionId: string, file: File) {
-    // Checked first, so that a photo of an unknown wine leaves no file behind
+    // Checked first, so that a photo of an unknown wine leaves no file behind. A wine deleted while
+    // its photo uploads leaves the image in Admin › Images, where it can be deleted: too rare to undo.
     mainPhotoOf(definitionId);
     const { imageId } = await uploadImage(file);
     db.transaction((tx) => {

@@ -611,10 +611,12 @@ Replaces every field of a wine.
 - **Response:** `200` with the wine as saved, as [`POST /api/definitions`](#post-apidefinitions)
   answers it.
 - **Errors:** `404 not_found` when the wine does not exist.
-- **Photos:** a new `imageId` replaces the main photo, whose image stays among the images (see
-  [`GET /api/admin/images`](#get-apiadminimages)); the wine's other photos stay. One of them given
-  as `imageId` leaves the others. When the wine has other photos, a `null` (or missing) `imageId`
-  makes the oldest of them the main photo, so the answer gives its id.
+- **Photos:** a new `imageId` becomes the main photo, and the main photo before it stays among the
+  other photos of the wine, as with
+  [`PUT /api/definitions/{id}/main-photo`](#put-apidefinitionsidmain-photo). A `null` (or missing)
+  `imageId` removes the main photo from the wine; when the wine has other photos, the oldest of
+  them becomes the main photo, so the answer gives its id. The image of a photo removed stays among
+  the images (see [`GET /api/admin/images`](#get-apiadminimages)).
 
 ### `DELETE /api/definitions/{id}`
 

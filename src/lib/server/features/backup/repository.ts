@@ -20,6 +20,7 @@ import {
     appellationsWithRegion,
     regionsWithCountry
 } from '#lib/server/features/geography/repository.js';
+import { tidyWinePhotos } from '#lib/server/features/images/repository.js';
 import { EXPORT_TABLE_NAMES, EXPORT_TABLES, type ExportTableName } from './export';
 
 /**
@@ -67,6 +68,9 @@ export function replaceCellar(tables: TableRows[]): number {
             inserted += rows.length;
             console.log(`Imported ${rows.length} records into ${name}`);
         }
+        // An export written by hand may give a wine other photos without a main one, or its main
+        // photo among its others, which the wine page would show twice.
+        tidyWinePhotos(tx);
         return inserted;
     });
 }

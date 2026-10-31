@@ -28,6 +28,7 @@ import {
     wineTypes
 } from '#lib/server/db/schema.js';
 import { backupTimestamp } from '#lib/server/features/backup/archive.js';
+import { listWinePhotos } from '#lib/server/features/images/service.js';
 import { storageOverview } from '#lib/server/features/storage/service.js';
 import { DATA_DIR, IMAGES_DIR, IMAGES_URL_PATH } from '#lib/server/paths.js';
 import { fakeEvent } from '../../../../test/event';
@@ -288,6 +289,25 @@ describe('POST /api/admin/import-json', () => {
         expect(await db.select({ imageId: wineDefinitions.imageId }).from(wineDefinitions)).toEqual(
             [{ imageId: 'label' }]
         );
+    });
+
+    it('gives a wine of a hand-made export its main photo once, among its photos', async () => {
+        const data = JSON.parse(JSON.stringify(await snapshot()));
+        // The main photo repeated among the others
+        data.winePhotos.push({ ...data.winePhotos[0], id: 'again', imageId: 'label' });
+
+        expect((await importZip(craftedZip(data))).status).toBe(200);
+
+        expect(listWinePhotos('margaux').map(({ imageId }) => imageId)).toEqual(['label', 'back']);
+    });
+
+    it('gives a wine of a hand-made export that has photos but no main one its first photo', async () => {
+        const data = JSON.parse(JSON.stringify(await snapshot()));
+        data.wineDefinitions[0].imageId = null;
+
+        expect((await importZip(craftedZip(data))).status).toBe(200);
+
+        expect(listWinePhotos('margaux')).toMatchObject([{ imageId: 'back', main: true }]);
     });
 
     it('keeps the order of the cases', async () => {

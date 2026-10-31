@@ -205,7 +205,7 @@ describe('DELETE /api/definitions/[id]/photos/[imageId]', () => {
 });
 
 describe('the other photos of a wine', () => {
-    it('stay when the wine is saved with another main photo, which leaves them', async () => {
+    it('stay when the wine is saved with another main photo, the former one among them', async () => {
         const first = await addedPhoto('first');
         const second = await addedPhoto('second');
         const third = await addedPhoto('third');
@@ -222,12 +222,12 @@ describe('the other photos of a wine', () => {
 
         expect(response.status).toBe(200);
         expect((await response.json()).imageId).toBe(third);
+        // As « Make it the main photo » does: no photo leaves the wine unasked.
         expect(await photos()).toEqual([
             { imageId: third, main: true },
-            { imageId: second, main: false }
+            { imageId: second, main: false },
+            { imageId: first, main: false }
         ]);
-        // Replaced, as before wines had several photos: the image stays, for Admin › Images.
-        expect(await db.select().from(wineImages).where(eq(wineImages.id, first))).toHaveLength(1);
     });
 
     it('give a wine saved without its main photo the next one', async () => {

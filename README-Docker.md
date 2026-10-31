@@ -205,10 +205,11 @@ Cellar can be installed on the home screen of a phone, with its own icon, and th
 screen, without the browser's address bar. Nothing is stored for offline use: the app still needs
 the server.
 
-- **Android (Chrome):** open Cellar, then the menu **⋮** › **Install app**. Chrome only offers
-  this over HTTPS: serve Cellar [behind a reverse proxy](#behind-a-reverse-proxy), and set
-  `ORIGIN` to that `https://` URL. At an address such as `http://192.168.1.20:3005`,
-  **⋮** › **Add to Home screen** still adds a shortcut, which opens Cellar in a browser tab.
+- **Android (Chrome):** open Cellar, then the menu **⋮** › **Add to Home screen** › **Install**
+  (**⋮** › **Install app** in older versions). Chrome only offers to install it over HTTPS: serve
+  Cellar [behind a reverse proxy](#behind-a-reverse-proxy), and set `ORIGIN` to that `https://`
+  URL. At an address such as `http://192.168.1.20:3005`, **⋮** › **Add to Home screen** still
+  creates a shortcut, which opens Cellar in a browser tab.
 - **iPhone and iPad (Safari):** open Cellar, then **Share** › **Add to Home Screen**.
 - **Computer (Chrome, Edge):** the install button at the end of the address bar, over HTTPS too.
 

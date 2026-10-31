@@ -4,7 +4,7 @@
 import { readFileSync, writeFileSync, existsSync } from 'node:fs';
 import { join, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { meta, states, phases, tasks, decisions } from './tasks.mjs';
+import { meta, states, versions, phases, tasks, decisions } from './tasks.mjs';
 import { loadAudit } from './audit.mjs';
 
 const here = dirname(fileURLToPath(import.meta.url));
@@ -12,6 +12,7 @@ const status = JSON.parse(readFileSync(join(here, 'status.json'), 'utf8'));
 
 // Contrôles de cohérence
 const ids = new Set(tasks.map((t) => t.id));
+for (const p of phases) if (!versions.some((v) => v.id === p.version)) throw new Error(`${p.id} : version ${p.version} inconnue`);
 for (const t of tasks) {
 	for (const d of t.deps) if (!ids.has(d)) throw new Error(`${t.id} dépend de ${d}, inconnu`);
 	if (!phases.some((p) => p.id === t.phase)) throw new Error(`${t.id} : phase ${t.phase} inconnue`);
@@ -61,7 +62,7 @@ for (const [ref, list] of Object.entries(citedStates)) {
 // HTML, avec l'onglet de l'audit d'avant 1.0 quand ses fichiers sont là
 const html = readFileSync(join(here, 'template.html'), 'utf8').replace(
 	'/*__DATA__*/null',
-	() => JSON.stringify({ meta, states, phases, tasks, decisions, audit, status: pageStatus }).replace(/</g, '\\u003c')
+	() => JSON.stringify({ meta, states, versions, phases, tasks, decisions, audit, status: pageStatus }).replace(/</g, '\\u003c')
 );
 writeFileSync(join(here, 'roadmap.html'), html);
 
@@ -91,15 +92,15 @@ for (const d of decisions) L.push(`- **${d.topic}** : ${d.choice}`);
 L.push('');
 L.push('## Vue d’ensemble');
 L.push('');
-L.push('| Phase | Objectif | Tâches | Faites |');
-L.push('|---|---|---|---|');
+L.push('| Version | Phase | Objectif | Tâches | Faites |');
+L.push('|---|---|---|---|---|');
 for (const p of phases) {
 	const phaseIds = tasks.filter((t) => t.phase === p.id).map((t) => t.id);
-	L.push(`| ${p.id} · ${p.title} | ${p.goal} | ${phaseIds.join(', ')} | ${phaseIds.filter((id) => stateOf(id) === 'done').length} / ${phaseIds.length} |`);
+	L.push(`| ${p.version} | ${p.id} · ${p.title} | ${p.goal} | ${phaseIds.join(', ')} | ${phaseIds.filter((id) => stateOf(id) === 'done').length} / ${phaseIds.length} |`);
 }
 L.push('');
 for (const p of phases) {
-	L.push(`## ${p.id} · ${p.title}`);
+	L.push(`## ${p.id} · ${p.title} (${p.version})`);
 	L.push('');
 	L.push(p.goal);
 	L.push('');

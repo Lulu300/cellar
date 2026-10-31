@@ -7,7 +7,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Spectral:wght@500;600;700&family=Public+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap">
 <style>
-/* Layout : en-tête avec progression globale, puis phases empilées (lignes de tâches) ; panneau de détail latéral (bas d'écran sur mobile). */
+/* Layout : en-tête avec la progression de la version en cours, puis les versions à venir et leurs phases (lignes de tâches), les décisions et l'historique repliés ; panneau de détail latéral (bas d'écran sur mobile). */
 :root {
 	--bg: #f6f4f5;
 	--surface: #ffffff;
@@ -84,11 +84,27 @@ h1 { font-size: clamp(30px, 5vw, 44px); line-height: 1.1; margin-top: 6px; }
 .filters .lab { font-size: 12px; color: var(--muted); margin-right: 2px; }
 .search { flex: 1 1 200px; min-width: 0; max-width: 320px; border: 1px solid var(--line); background: var(--surface); border-radius: 8px; padding: 6px 10px; font: inherit; color: var(--fg); }
 
+/* Versions : chacune regroupe ses phases ; les versions publiées sont repliées dans l'historique. */
+.version { margin-top: 44px; }
+.version-head { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; gap: 4px 14px; align-items: baseline; border-bottom: 2px solid var(--accent); padding-bottom: 12px; }
+.version-id { font-family: var(--f-display); font-size: 30px; font-weight: 700; line-height: 1.1; }
+.version-head h2 { font-size: 22px; color: var(--muted); }
+.version-goal { grid-column: 1 / -1; color: var(--muted); font-size: 14.5px; max-width: 70ch; margin: 0; }
+.version-head .bar { grid-column: 1 / -1; }
+details.history, details.decisions { margin-top: 44px; border: 1px solid var(--line); border-radius: 10px; background: var(--surface); }
+details.history > summary, details.decisions > summary { cursor: pointer; padding: 14px 18px; display: flex; flex-wrap: wrap; gap: 4px 12px; align-items: baseline; }
+details.history > summary h2, details.decisions > summary h2 { font-size: 20px; display: inline; }
+details.history > summary .phase-count, details.decisions > summary .phase-count { margin-left: auto; }
+details.history[open] > summary, details.decisions[open] > summary { border-bottom: 1px solid var(--line); }
+.history-body { padding: 0 18px 24px; }
+.history-body .version { margin-top: 28px; }
+.history-body .version-head { border-bottom-color: var(--line); }
+
 /* Phases */
-.phase { margin-top: 36px; }
+.phase { margin-top: 32px; }
 .phase-head { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; gap: 4px 14px; align-items: baseline; }
 .phase-id { font-family: var(--f-mono); font-size: 13px; color: var(--accent); font-weight: 500; }
-.phase-head h2 { font-size: 24px; }
+.phase-head h3 { font-size: 22px; }
 .phase-count { font-size: 13px; color: var(--muted); font-variant-numeric: tabular-nums; }
 .phase-goal { grid-column: 2 / -1; color: var(--muted); font-size: 14px; max-width: 70ch; }
 .bar { grid-column: 2 / -1; height: 6px; background: var(--surface-2); border-radius: 3px; overflow: hidden; display: flex; margin-top: 6px; }
@@ -139,9 +155,7 @@ h1 { font-size: clamp(30px, 5vw, 44px); line-height: 1.1; margin-top: 6px; }
 @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .btn { color: #1f1a1d; } }
 .copyarea { width: 100%; min-height: 120px; font-family: var(--f-mono); font-size: 12px; border: 1px solid var(--line); border-radius: 8px; padding: 8px; background: var(--surface); color: var(--fg); }
 
-.decisions { margin-top: 28px; border: 1px solid var(--line); border-radius: 10px; background: var(--surface); padding: 16px 18px; }
-.decisions h2 { font-size: 18px; }
-.decisions dl { margin: 10px 0 0; display: grid; grid-template-columns: minmax(0, 220px) minmax(0, 1fr); gap: 8px 16px; font-size: 14px; }
+.decisions dl { margin: 0; padding: 14px 18px 18px; display: grid; grid-template-columns: minmax(0, 220px) minmax(0, 1fr); gap: 8px 16px; font-size: 14px; }
 .decisions dt { font-weight: 600; }
 .decisions dd { margin: 0; color: var(--muted); }
 @media (max-width: 640px) { .decisions dl { grid-template-columns: 1fr; gap: 2px; } .decisions dd { margin-bottom: 8px; } }
@@ -235,17 +249,17 @@ footer { margin-top: 48px; color: var(--muted); font-size: 13px; border-top: 1px
 <div class="wrap">
 	<nav class="tabs" id="tabs" role="tablist" aria-label="Vues">
 		<button role="tab" data-tab="roadmap" aria-selected="true">Feuille de route</button>
-		<button role="tab" data-tab="audit" aria-selected="false">Audit d’avant 1.0</button>
+		<button role="tab" data-tab="audit" aria-selected="false">Archive : audit d’avant 1.0</button>
 	</nav>
 
 	<div id="view-roadmap">
 	<header class="top">
 		<div>
-			<div class="eyebrow">Refactoring · audit du <span id="date"></span></div>
+			<div class="eyebrow">Feuille de route · par version</div>
 			<h1>Feuille de route Cellar</h1>
-			<p class="lede">Les tâches issues de la revue du code, puis de l’audit d’avant 1.0 (P7), regroupées par phase dans l’ordre conseillé. Cliquez sur une tâche pour voir son contexte, ses fichiers, son critère d’acceptation et son statut.</p>
+			<p class="lede">Les versions à venir, chacune avec ses phases et ses tâches dans l’ordre conseillé. Tout ce qui a mené à la 1.0.0 est replié dans l’historique, en bas de page ; l’audit d’avant 1.0 reste dans son onglet. Cliquez sur une tâche pour voir son contexte, ses fichiers, son critère d’acceptation et son statut.</p>
 		</div>
-		<div class="ring" aria-label="Avancement global">
+		<div class="ring" aria-label="Avancement de la version en cours">
 			<svg viewBox="0 0 36 36" aria-hidden="true">
 				<circle cx="18" cy="18" r="15.9" fill="none" stroke="var(--surface-2)" stroke-width="3.2"></circle>
 				<circle id="ringFill" cx="18" cy="18" r="15.9" fill="none" stroke="var(--done)" stroke-width="3.2" stroke-linecap="round" stroke-dasharray="0 100"></circle>
@@ -260,9 +274,9 @@ footer { margin-top: 48px; color: var(--muted); font-size: 13px; border-top: 1px
 		<span id="sevChips" style="display:contents"></span>
 		<input id="q" class="search" type="search" placeholder="Rechercher (ID, titre, fichier)" aria-label="Rechercher une tâche">
 	</div>
-	<section class="decisions" aria-labelledby="h-dec"><h2 id="h-dec">Décisions prises</h2><dl id="decisions"></dl></section>
-
-	<main id="phases"></main>
+	<main id="versions"></main>
+	<details class="decisions" id="decisionsBox"><summary><h2>Décisions prises</h2><span class="phase-count" id="decisionsCount"></span></summary><dl id="decisions"></dl></details>
+	<details class="history" id="history"></details>
 	</div>
 
 	<div id="view-audit" hidden>
@@ -362,12 +376,14 @@ function matches(t) {
 }
 
 function renderHeader() {
-	const c = counts(DATA.tasks);
-	const total = DATA.tasks.length;
-	const pct = Math.round((c.done / total) * 100);
+	// L'anneau suit la version en cours ; les pastilles comptent toutes les tâches.
+	const inVersion = currentVersion ? versionTasks(currentVersion) : DATA.tasks;
+	const done = counts(inVersion).done;
+	const pct = inVersion.length ? Math.round((done / inVersion.length) * 100) : 100;
 	$('#pct').textContent = pct + ' %';
-	$('#pctSub').textContent = c.done + ' / ' + total + ' faites';
+	$('#pctSub').textContent = done + ' / ' + inVersion.length + (currentVersion ? ' · ' + currentVersion.id : ' faites');
 	$('#ringFill').setAttribute('stroke-dasharray', pct + ' 100');
+	const c = counts(DATA.tasks);
 	const ready = DATA.tasks.filter(isReady).length;
 	const chips = STATES.map(s => ({ key: s.key, label: s.label, n: c[s.key], color: 'var(--' + s.key + ')' }));
 	chips.push({ key: 'ready', label: 'Prêtes à démarrer', n: ready, color: 'var(--accent)' });
@@ -380,37 +396,79 @@ function renderHeader() {
 	}).join('');
 }
 
-function renderPhases() {
-	$('#phases').innerHTML = DATA.phases.map(p => {
-		const all = DATA.tasks.filter(t => t.phase === p.id);
-		const shown = all.filter(matches);
-		const c = counts(all);
-		const w = k => (c[k] / all.length * 100) + '%';
-		const rows = shown.map(t => {
-			const s = st(t.id);
-			const waiting = s === 'todo' && !isReady(t) ? t.deps.filter(d => st(d) !== 'done') : [];
-			const hint = s === 'todo'
-				? (waiting.length ? `<span class="waiting">attend ${waiting.join(', ')}</span>` : `<span class="ready">prête</span>`)
-				: '';
-			const note = status[t.id] && status[t.id].note ? `<span>Note : ${esc(status[t.id].note.slice(0, 60))}${status[t.id].note.length > 60 ? '…' : ''}</span>` : '';
-			return `<button class="row ${s === 'done' ? 'is-done' : ''}" data-open="${t.id}" aria-current="${openId === t.id}">
-				<span class="tid">${t.id}</span>
-				<span class="ttl"><span>${md(t.title)}</span><span class="sub"><span class="sev sev-${t.sev}">${sevLabel[t.sev]}</span>${hint}${note}</span></span>
-				<span class="size" title="Effort estimé">${t.size}</span>
-				<span class="pill st-${s}">${stateLabel[s]}</span>
-			</button>`;
-		}).join('');
-		return `<section class="phase" aria-labelledby="h-${p.id}">
-			<div class="phase-head">
-				<span class="phase-id">${p.id}</span>
-				<h2 id="h-${p.id}">${esc(p.title)}</h2>
-				<span class="phase-count">${c.done} / ${all.length}</span>
-				<p class="phase-goal">${md(p.goal)}</p>
-				<div class="bar" aria-hidden="true"><span style="width:${w('done')};background:var(--done)"></span><span style="width:${w('doing')};background:var(--doing)"></span><span style="width:${w('blocked')};background:var(--blocked)"></span></div>
-			</div>
-			<div class="list">${rows || '<div class="empty">Aucune tâche de cette phase ne correspond aux filtres.</div>'}</div>
-		</section>`;
+const phaseTasks = p => DATA.tasks.filter(t => t.phase === p.id);
+const versionTasks = v => DATA.phases.filter(p => p.version === v.id).flatMap(phaseTasks);
+const currentVersion = DATA.versions.find(v => !v.released);
+const filtering = () => Boolean(filterState || filterSev || query);
+const longDate = d => new Date(d).toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' });
+let historyOpen = false; // ouvert par l'utilisateur ; un filtre l'ouvre aussi quand il y trouve des tâches
+
+function progressBar(list) {
+	const c = counts(list);
+	const w = k => (list.length ? c[k] / list.length * 100 : 0) + '%';
+	return `<div class="bar" aria-hidden="true"><span style="width:${w('done')};background:var(--done)"></span><span style="width:${w('doing')};background:var(--doing)"></span><span style="width:${w('blocked')};background:var(--blocked)"></span></div>`;
+}
+
+// Pendant un filtre, une phase ou une version sans tâche correspondante disparaît.
+function phaseSection(p) {
+	const all = phaseTasks(p);
+	const shown = all.filter(matches);
+	if (!shown.length) return '';
+	const rows = shown.map(t => {
+		const s = st(t.id);
+		const waiting = s === 'todo' && !isReady(t) ? t.deps.filter(d => st(d) !== 'done') : [];
+		const hint = s === 'todo'
+			? (waiting.length ? `<span class="waiting">attend ${waiting.join(', ')}</span>` : `<span class="ready">prête</span>`)
+			: '';
+		const note = status[t.id] && status[t.id].note ? `<span>Note : ${esc(status[t.id].note.slice(0, 60))}${status[t.id].note.length > 60 ? '…' : ''}</span>` : '';
+		return `<button class="row ${s === 'done' ? 'is-done' : ''}" data-open="${t.id}" aria-current="${openId === t.id}">
+			<span class="tid">${t.id}</span>
+			<span class="ttl"><span>${md(t.title)}</span><span class="sub"><span class="sev sev-${t.sev}">${sevLabel[t.sev]}</span>${hint}${note}</span></span>
+			<span class="size" title="Effort estimé">${t.size}</span>
+			<span class="pill st-${s}">${stateLabel[s]}</span>
+		</button>`;
 	}).join('');
+	return `<section class="phase" aria-labelledby="h-${p.id}">
+		<div class="phase-head">
+			<span class="phase-id">${p.id}</span>
+			<h3 id="h-${p.id}">${esc(p.title)}</h3>
+			<span class="phase-count">${counts(all).done} / ${all.length}</span>
+			<p class="phase-goal">${md(p.goal)}</p>
+			${progressBar(all)}
+		</div>
+		<div class="list">${rows}</div>
+	</section>`;
+}
+
+function versionSection(v) {
+	const phases = DATA.phases.filter(p => p.version === v.id).map(phaseSection).join('');
+	if (!phases) return '';
+	const all = versionTasks(v);
+	const when = v.released ? 'publiée le ' + longDate(v.released) : v === currentVersion ? 'en cours' : 'à venir';
+	return `<section class="version" aria-labelledby="v-${v.id}">
+		<div class="version-head">
+			<span class="version-id">${v.id}</span>
+			<h2 id="v-${v.id}">${esc(v.title)}</h2>
+			<span class="phase-count">${when} · ${counts(all).done} / ${all.length}</span>
+			<p class="version-goal">${md(v.goal)}</p>
+			${progressBar(all)}
+		</div>
+		${phases}
+	</section>`;
+}
+
+function renderVersions() {
+	const upcoming = DATA.versions.filter(v => !v.released);
+	const released = DATA.versions.filter(v => v.released).reverse();
+	$('#versions').innerHTML = upcoming.map(versionSection).join('') || '<div class="empty">Aucune tâche à venir ne correspond aux filtres.</div>';
+	const history = $('#history');
+	history.hidden = !released.length;
+	if (!released.length) return;
+	const past = released.map(versionSection).join('');
+	const pastTasks = released.flatMap(versionTasks);
+	history.open = historyOpen || (filtering() && Boolean(past));
+	history.innerHTML = `<summary><h2>Historique : jusqu’à la ${released[0].id}</h2><span class="phase-count">${counts(pastTasks).done} / ${pastTasks.length} faites</span></summary>
+		<div class="history-body">${past || '<div class="empty">Aucune tâche de l’historique ne correspond aux filtres.</div>'}</div>`;
 }
 
 function taskMarkdown(t) {
@@ -701,7 +759,7 @@ function renderAuditPanel(it) {
 		</div>`;
 }
 
-function render() { renderHeader(); renderPhases(); renderAudit(); renderPanel(); }
+function render() { renderHeader(); renderVersions(); renderAudit(); renderPanel(); }
 
 function open(id) {
 	if (id && auditItems[id] && currentTab !== 'audit') showTab('audit');
@@ -713,6 +771,8 @@ function open(id) {
 }
 
 document.addEventListener('click', e => {
+	// Le clic précède l'ouverture ou la fermeture : l'état voulu est l'inverse de l'état actuel.
+	if (e.target.closest('#history > summary')) { historyOpen = !$('#history').open; return; }
 	const o = e.target.closest('[data-open]');
 	if (o) { e.preventDefault(); open(o.dataset.open); return; }
 	const tb = e.target.closest('[data-tab]');
@@ -745,7 +805,7 @@ document.addEventListener('click', e => {
 	}
 });
 document.addEventListener('keydown', e => { if (e.key === 'Escape' && openId) open(null); });
-$('#q').addEventListener('input', e => { query = e.target.value.trim().toLowerCase(); renderPhases(); });
+$('#q').addEventListener('input', e => { query = e.target.value.trim().toLowerCase(); renderVersions(); });
 $('#fq').addEventListener('input', e => { fQuery = e.target.value.trim().toLowerCase(); renderFindings(); });
 $('#tq').addEventListener('input', e => { tQuery = e.target.value.trim().toLowerCase(); renderTrace(); });
 document.addEventListener('toggle', e => {
@@ -761,9 +821,9 @@ function fromHash() {
 }
 window.addEventListener('hashchange', fromHash);
 
-$('#date').textContent = new Date(DATA.meta.date).toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' });
 $('#commit').textContent = DATA.meta.baseCommit;
 $('#decisions').innerHTML = (DATA.decisions || []).map(d => `<dt>${esc(d.topic)}</dt><dd>${md(d.choice)}</dd>`).join('');
+$('#decisionsCount').textContent = (DATA.decisions || []).length + ' décisions';
 if (AUDIT) {
 	$('#aLede').innerHTML = AUDIT.synthese.intro;
 	renderTraceStatic(); renderTrace(); renderDeroulement();

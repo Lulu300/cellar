@@ -131,25 +131,25 @@ Revue du code du 2026-10-08, commit `556c7bb`. Ce fichier est la version pour le
 
 ## Vue d’ensemble
 
-| Phase | Objectif | Tâches | Faites |
-|---|---|---|---|
-| P0 · Sécurité urgente | Fermer les accès non authentifiés et les failles exploitables avant toute autre chose. Tant que le serveur ne contrôle pas l'accès, le reste a peu de valeur. | SEC-01, SEC-02, SEC-03, SEC-04, SEC-05, SEC-06, SEC-07, SEC-08, REL-01 | 9 / 9 |
-| P1 · Filets de sécurité | Mettre en place tests, lint, vérification i18n et une CI bloquante, et assainir les dépendances. Aucun refactoring avant que ce filet existe. | QA-01, QA-02, QA-03, QA-04, DEP-01, DEP-02, SEC-09, SEC-10 | 8 / 8 |
-| P2 · Bugs fonctionnels | Corriger les bugs confirmés visibles par l’utilisateur. Corrections ciblées, peut avancer en parallèle de P1. | BUG-01, BUG-02, BUG-03, BUG-04, BUG-05, BUG-06, BUG-07, BUG-08, BUG-09, DOC-01, BUG-10, BUG-11, BUG-12 | 13 / 13 |
-| P3 · Mise à niveau du socle | Passer à SvelteKit 3, Vite 8 et TypeScript 6, et aux versions majeures des bibliothèques serveur, avant les gros refactorings pour ne pas réécrire deux fois. | DEP-03, DEP-04, DEP-05, DOC-02 | 4 / 4 |
-| P4 · Fondations données | Une seule connexion SQLite, des transactions, des contraintes en base, des sauvegardes et restaurations fiables. | DATA-01, DATA-02, DATA-03, DATA-04, DATA-05, DATA-06, DATA-07, REL-02 | 8 / 8 |
-| P5 · Couche serveur et API | Routes minces : validation zod, puis service de domaine, puis réponse. Supprimer la duplication des CRUD et découper l'import CSV. | API-01, API-02, API-03, API-04, API-05, API-06 | 6 / 6 |
-| P6 · Frontend | Chargement des données côté serveur, Svelte 5 partout, composants découpés par fonctionnalité, admin en vraies routes. | UI-01, UI-02, UI-03, UI-04, UI-05, UI-06, UI-07, UI-08, UI-09, UI-10 | 10 / 10 |
-| P7 · Corrections d’avant 1.0 | Corriger ce que l’audit d’avant 1.0 (`reviews/audit-pre-1.0/`) juge bloquant : aucune donnée perdue ou faussée sans message, des notes de version justes, un numéro de version fiable pour develop et un contrat d’API figé. Publiée en 0.9.0. | REL-03, BUG-13, BUG-14, BUG-15, DATA-08, DATA-09, BUG-16, API-07, REL-04 | 9 / 9 |
-| P8 · Suites de P7 | Tâches ouvertes par le mainteneur pendant P7 et P8 : la note de consommation, les vins jumeaux à l’import et la longueur des textes. Prévue pour 0.10.0. | BUG-17, BUG-18, DATA-10 | 3 / 3 |
-| P9 · Restes de l’audit déjà décidés | Les tâches T1 à T16 de l’audit d’avant 1.0 qui portent une décision déjà prise, avec les points que le mainteneur y a rattachés le 2026-10-23. Prévue pour 0.11.0. Lots, chacun mergé avant le suivant ; les tâches d’un lot ne partagent aucun fichier, hors de `en.json`, `fr.json`, `docs/API.md`, `.gitignore` et du résumé 0.11.0 de `releases.json`, où chacune ajoute ses lignes et où le second merge résout le conflit en gardant les deux côtés : 1. DATA-11, UI-13 (déplacement de la base et dialogue de statut partagé, qui restructurent les fichiers des autres) ; 2. QA-05, DATA-12, DATA-13, BUG-19 ; 3. API-08, BUG-20, UI-11, REL-05 ; 4. UI-12, UI-14 ; 5. API-09 (routes de presque tous les domaines) ; 6. UI-15 (clés i18n de presque tous les composants). Terminée le 2026-10-28 (develop bf183d64), publiée en 0.11.0 le 2026-10-29. | DATA-11, UI-13, QA-05, DATA-12, DATA-13, BUG-19, API-08, BUG-20, UI-11, REL-05, UI-12, UI-14, API-09, UI-15 | 14 / 14 |
-| P10 · Fin de l’audit | Le reste de l’audit d’avant 1.0 : thème, accessibilité, seeding, documentation, dépendances, lint et tests. Prévue pour 0.12.0. DEP-06 applique la convention de logs déjà décidée (« Petits choix ») mais attend P10 : passer `no-console` en erreur touche presque tous les composants, que P9 réécrit d’abord. Lots, mêmes règles qu’en P9 (résumé 0.12.0) : 1. DEP-06, DATA-14 (DEP-06 change les règles de lint de tout le code) ; 2. UI-16, DOC-03 ; 3. UI-17 ; 4. UI-18 (couleurs et sélecteurs de presque tous les composants). Terminée le 2026-10-29 (develop f14a795f), publiée en 0.12.0 le 2026-10-29. | DEP-06, DATA-14, UI-16, DOC-03, UI-17, UI-18 | 6 / 6 |
-| P11 · Rangement des composants | Deux petites corrections trouvées en P10, puis le rangement des composants par domaine, à la toute fin, comme le veut la décision « Architecture (revue 7) ». Lots : 1. UI-20, BUG-21 ; 2. UI-19, seule, qui déplace presque tous les composants. Prévue pour la 1.0.0, après la vérification de P12. Terminée le 2026-10-29 (develop 70d9e148), publiée en 1.0.0 le 2026-10-30. | UI-20, BUG-21, UI-19 | 3 / 3 |
-| P12 · Vérification d’avant 1.0 | Une revue complète en lecture seule après P11, comme l’audit d’avant 1.0 puis sa vérification : tout ce que l’audit demandait est fait, et le nettoyage n’a pas créé de nouveaux problèmes. Le mainteneur juge chaque constat : à corriger avant la 1.0 (tâches ajoutées ici) ou acceptable en l’état. Puis la 1.0.0, avec R2 de l’audit au tag : dépôt et image publics, protection de `main`. Revue faite le 2026-10-30 (QA-06). Lots des corrections, chacun mergé avant le suivant, résumé 1.0.0 : 1. SEC-12, API-12, BUG-22, BUG-23 ; 2. UI-21, UI-22, DEP-07 ; 3. DOC-04 (documentation d’après les deux premiers lots) ; 4. UI-23 ; puis REL-06, la publication, avec le mainteneur. Terminée le 2026-10-30 (develop 89d2c4c1), publiée en 1.0.0 le 2026-10-30. Lots 1 à 4 faits le 2026-10-30, puis la 1.0.0 publiée le même jour (tag v1.0.0 sur 8ad43dff) ; depuis le lot 2, le dépôt public repart d’un nouveau commit racine (décision « Nouveau départ à la 1.0 (REL-06) »). | QA-06, SEC-12, API-12, BUG-22, BUG-23, UI-21, UI-22, DEP-07, DOC-04, UI-23, REL-06 | 11 / 11 |
-| P13 · Finitions et installation | Pour la 1.1.0, juste après la 1.0.0 : ce que voit d’abord un nouveau visiteur (installation dans le README, liens vers la doc de l’API), l’app installable sur le téléphone (PWA), et les finitions notées pendant P12 (décision « Versions après la 1.0 »). Lots, chacun mergé avant le suivant, résumé 1.1.0 : 1. DOC-05, UI-27, SEC-13, BUG-24 ; 2. UI-24, UI-25, API-13 ; 3. UI-26, DEP-08 ; puis REL-07. | DOC-05, UI-27, SEC-13, BUG-24, UI-24, UI-25, API-13, UI-26, DEP-08, REL-07 | 0 / 10 |
-| P14 · Serveur MCP | Pour la 1.2.0, enchaînée juste après la 1.1.0 : un serveur MCP intégré à Cellar, pour les assistants d’IA du réseau local (décision « Serveur MCP (P14) »), et la description OpenAPI de l’API, tirée des mêmes schémas zod. Lots : 1. SEC-11, API-14 ; 2. API-10 ; 3. API-11 ; puis la release. | SEC-11, API-14, API-10, API-11 | 0 / 4 |
+| Version | Phase | Objectif | Tâches | Faites |
+|---|---|---|---|---|
+| 1.0.0 | P0 · Sécurité urgente | Fermer les accès non authentifiés et les failles exploitables avant toute autre chose. Tant que le serveur ne contrôle pas l'accès, le reste a peu de valeur. | SEC-01, SEC-02, SEC-03, SEC-04, SEC-05, SEC-06, SEC-07, SEC-08, REL-01 | 9 / 9 |
+| 1.0.0 | P1 · Filets de sécurité | Mettre en place tests, lint, vérification i18n et une CI bloquante, et assainir les dépendances. Aucun refactoring avant que ce filet existe. | QA-01, QA-02, QA-03, QA-04, DEP-01, DEP-02, SEC-09, SEC-10 | 8 / 8 |
+| 1.0.0 | P2 · Bugs fonctionnels | Corriger les bugs confirmés visibles par l’utilisateur. Corrections ciblées, peut avancer en parallèle de P1. | BUG-01, BUG-02, BUG-03, BUG-04, BUG-05, BUG-06, BUG-07, BUG-08, BUG-09, DOC-01, BUG-10, BUG-11, BUG-12 | 13 / 13 |
+| 1.0.0 | P3 · Mise à niveau du socle | Passer à SvelteKit 3, Vite 8 et TypeScript 6, et aux versions majeures des bibliothèques serveur, avant les gros refactorings pour ne pas réécrire deux fois. | DEP-03, DEP-04, DEP-05, DOC-02 | 4 / 4 |
+| 1.0.0 | P4 · Fondations données | Une seule connexion SQLite, des transactions, des contraintes en base, des sauvegardes et restaurations fiables. | DATA-01, DATA-02, DATA-03, DATA-04, DATA-05, DATA-06, DATA-07, REL-02 | 8 / 8 |
+| 1.0.0 | P5 · Couche serveur et API | Routes minces : validation zod, puis service de domaine, puis réponse. Supprimer la duplication des CRUD et découper l'import CSV. | API-01, API-02, API-03, API-04, API-05, API-06 | 6 / 6 |
+| 1.0.0 | P6 · Frontend | Chargement des données côté serveur, Svelte 5 partout, composants découpés par fonctionnalité, admin en vraies routes. | UI-01, UI-02, UI-03, UI-04, UI-05, UI-06, UI-07, UI-08, UI-09, UI-10 | 10 / 10 |
+| 1.0.0 | P7 · Corrections d’avant 1.0 | Corriger ce que l’audit d’avant 1.0 (`reviews/audit-pre-1.0/`) juge bloquant : aucune donnée perdue ou faussée sans message, des notes de version justes, un numéro de version fiable pour develop et un contrat d’API figé. Publiée en 0.9.0. | REL-03, BUG-13, BUG-14, BUG-15, DATA-08, DATA-09, BUG-16, API-07, REL-04 | 9 / 9 |
+| 1.0.0 | P8 · Suites de P7 | Tâches ouvertes par le mainteneur pendant P7 et P8 : la note de consommation, les vins jumeaux à l’import et la longueur des textes. Prévue pour 0.10.0. | BUG-17, BUG-18, DATA-10 | 3 / 3 |
+| 1.0.0 | P9 · Restes de l’audit déjà décidés | Les tâches T1 à T16 de l’audit d’avant 1.0 qui portent une décision déjà prise, avec les points que le mainteneur y a rattachés le 2026-10-23. Prévue pour 0.11.0. Lots, chacun mergé avant le suivant ; les tâches d’un lot ne partagent aucun fichier, hors de `en.json`, `fr.json`, `docs/API.md`, `.gitignore` et du résumé 0.11.0 de `releases.json`, où chacune ajoute ses lignes et où le second merge résout le conflit en gardant les deux côtés : 1. DATA-11, UI-13 (déplacement de la base et dialogue de statut partagé, qui restructurent les fichiers des autres) ; 2. QA-05, DATA-12, DATA-13, BUG-19 ; 3. API-08, BUG-20, UI-11, REL-05 ; 4. UI-12, UI-14 ; 5. API-09 (routes de presque tous les domaines) ; 6. UI-15 (clés i18n de presque tous les composants). Terminée le 2026-10-28 (develop bf183d64), publiée en 0.11.0 le 2026-10-29. | DATA-11, UI-13, QA-05, DATA-12, DATA-13, BUG-19, API-08, BUG-20, UI-11, REL-05, UI-12, UI-14, API-09, UI-15 | 14 / 14 |
+| 1.0.0 | P10 · Fin de l’audit | Le reste de l’audit d’avant 1.0 : thème, accessibilité, seeding, documentation, dépendances, lint et tests. Prévue pour 0.12.0. DEP-06 applique la convention de logs déjà décidée (« Petits choix ») mais attend P10 : passer `no-console` en erreur touche presque tous les composants, que P9 réécrit d’abord. Lots, mêmes règles qu’en P9 (résumé 0.12.0) : 1. DEP-06, DATA-14 (DEP-06 change les règles de lint de tout le code) ; 2. UI-16, DOC-03 ; 3. UI-17 ; 4. UI-18 (couleurs et sélecteurs de presque tous les composants). Terminée le 2026-10-29 (develop f14a795f), publiée en 0.12.0 le 2026-10-29. | DEP-06, DATA-14, UI-16, DOC-03, UI-17, UI-18 | 6 / 6 |
+| 1.0.0 | P11 · Rangement des composants | Deux petites corrections trouvées en P10, puis le rangement des composants par domaine, à la toute fin, comme le veut la décision « Architecture (revue 7) ». Lots : 1. UI-20, BUG-21 ; 2. UI-19, seule, qui déplace presque tous les composants. Prévue pour la 1.0.0, après la vérification de P12. Terminée le 2026-10-29 (develop 70d9e148), publiée en 1.0.0 le 2026-10-30. | UI-20, BUG-21, UI-19 | 3 / 3 |
+| 1.0.0 | P12 · Vérification d’avant 1.0 | Une revue complète en lecture seule après P11, comme l’audit d’avant 1.0 puis sa vérification : tout ce que l’audit demandait est fait, et le nettoyage n’a pas créé de nouveaux problèmes. Le mainteneur juge chaque constat : à corriger avant la 1.0 (tâches ajoutées ici) ou acceptable en l’état. Puis la 1.0.0, avec R2 de l’audit au tag : dépôt et image publics, protection de `main`. Revue faite le 2026-10-30 (QA-06). Lots des corrections, chacun mergé avant le suivant, résumé 1.0.0 : 1. SEC-12, API-12, BUG-22, BUG-23 ; 2. UI-21, UI-22, DEP-07 ; 3. DOC-04 (documentation d’après les deux premiers lots) ; 4. UI-23 ; puis REL-06, la publication, avec le mainteneur. Terminée le 2026-10-30 (develop 89d2c4c1), publiée en 1.0.0 le 2026-10-30. Lots 1 à 4 faits le 2026-10-30, puis la 1.0.0 publiée le même jour (tag v1.0.0 sur 8ad43dff) ; depuis le lot 2, le dépôt public repart d’un nouveau commit racine (décision « Nouveau départ à la 1.0 (REL-06) »). | QA-06, SEC-12, API-12, BUG-22, BUG-23, UI-21, UI-22, DEP-07, DOC-04, UI-23, REL-06 | 11 / 11 |
+| 1.1.0 | P13 · Finitions et installation | Pour la 1.1.0, juste après la 1.0.0 : ce que voit d’abord un nouveau visiteur (installation dans le README, liens vers la doc de l’API), l’app installable sur le téléphone (PWA), et les finitions notées pendant P12 (décision « Versions après la 1.0 »). Lots, chacun mergé avant le suivant, résumé 1.1.0 : 1. DOC-05, UI-27, SEC-13, BUG-24 ; 2. UI-24, UI-25, API-13 ; 3. UI-26, DEP-08 ; puis REL-07. | DOC-05, UI-27, SEC-13, BUG-24, UI-24, UI-25, API-13, UI-26, DEP-08, REL-07 | 0 / 10 |
+| 1.2.0 | P14 · Serveur MCP | Pour la 1.2.0, enchaînée juste après la 1.1.0 : un serveur MCP intégré à Cellar, pour les assistants d’IA du réseau local (décision « Serveur MCP (P14) »), et la description OpenAPI de l’API, tirée des mêmes schémas zod. Lots : 1. SEC-11, API-14 ; 2. API-10 ; 3. API-11 ; puis la release. | SEC-11, API-14, API-10, API-11 | 0 / 4 |
 
-## P0 · Sécurité urgente
+## P0 · Sécurité urgente (1.0.0)
 
 Fermer les accès non authentifiés et les failles exploitables avant toute autre chose. Tant que le serveur ne contrôle pas l'accès, le reste a peu de valeur.
 
@@ -350,7 +350,7 @@ Sévérité **majeur** · effort **M** · statut **Fait**
 
 **Sources** : Décision du 2026-10-08 (versions et releases)
 
-## P1 · Filets de sécurité
+## P1 · Filets de sécurité (1.0.0)
 
 Mettre en place tests, lint, vérification i18n et une CI bloquante, et assainir les dépendances. Aucun refactoring avant que ce filet existe.
 
@@ -524,7 +524,7 @@ Sévérité **mineur** · effort **XS** · dépend de QA-04 · statut **Fait**
 
 **Sources** : Décision du 2026-10-10
 
-## P2 · Bugs fonctionnels
+## P2 · Bugs fonctionnels (1.0.0)
 
 Corriger les bugs confirmés visibles par l’utilisateur. Corrections ciblées, peut avancer en parallèle de P1.
 
@@ -792,7 +792,7 @@ Sévérité **mineur** · effort **XS** · dépend de BUG-02 · statut **Fait**
 
 **Sources** : Trouvé pendant BUG-02 (2026-10-11)
 
-## P3 · Mise à niveau du socle
+## P3 · Mise à niveau du socle (1.0.0)
 
 Passer à SvelteKit 3, Vite 8 et TypeScript 6, et aux versions majeures des bibliothèques serveur, avant les gros refactorings pour ne pas réécrire deux fois.
 
@@ -891,7 +891,7 @@ Sévérité **mineur** · effort **XS** · dépend de DOC-01 · statut **Fait**
 
 **Sources** : Trouvé pendant DOC-01 (2026-10-11)
 
-## P4 · Fondations données
+## P4 · Fondations données (1.0.0)
 
 Une seule connexion SQLite, des transactions, des contraintes en base, des sauvegardes et restaurations fiables.
 
@@ -1094,7 +1094,7 @@ Sévérité **évolution** · effort **M** · dépend de REL-01, DATA-02 · stat
 
 **Sources** : Décision du 2026-10-08 (versions et releases)
 
-## P5 · Couche serveur et API
+## P5 · Couche serveur et API (1.0.0)
 
 Routes minces : validation zod, puis service de domaine, puis réponse. Supprimer la duplication des CRUD et découper l'import CSV.
 
@@ -1249,7 +1249,7 @@ Sévérité **mineur** · effort **S** · dépend de API-02 · statut **Fait**
 
 **Sources** : review-2-public-api.md#M6, review-2-public-api.md#Mineur
 
-## P6 · Frontend
+## P6 · Frontend (1.0.0)
 
 Chargement des données côté serveur, Svelte 5 partout, composants découpés par fonctionnalité, admin en vraies routes.
 
@@ -1523,7 +1523,7 @@ Sévérité **mineur** · effort **M** · dépend de UI-02 · statut **Fait**
 
 **Sources** : review-4-admin-frontend.md#m7, review-5-core-ui.md#Mineur, review-6-feature-pages.md#Mineur
 
-## P7 · Corrections d’avant 1.0
+## P7 · Corrections d’avant 1.0 (1.0.0)
 
 Corriger ce que l’audit d’avant 1.0 (`reviews/audit-pre-1.0/`) juge bloquant : aucune donnée perdue ou faussée sans message, des notes de version justes, un numéro de version fiable pour develop et un contrat d’API figé. Publiée en 0.9.0.
 
@@ -1744,7 +1744,7 @@ Sévérité **mineur** · effort **XS** · statut **Fait**
 
 **Sources** : audit-pre-1.0/axe-7-infra.md#m21, audit-pre-1.0/axe-6-pages.md#m2, audit-pre-1.0/synthese.md#R3
 
-## P8 · Suites de P7
+## P8 · Suites de P7 (1.0.0)
 
 Tâches ouvertes par le mainteneur pendant P7 et P8 : la note de consommation, les vins jumeaux à l’import et la longueur des textes. Prévue pour 0.10.0.
 
@@ -1811,7 +1811,7 @@ Sévérité **mineur** · effort **S** · statut **Fait**
 
 **Sources** : Décision « Longueur des textes (DATA-10) », Tâche BUG-17
 
-## P9 · Restes de l’audit déjà décidés
+## P9 · Restes de l’audit déjà décidés (1.0.0)
 
 Les tâches T1 à T16 de l’audit d’avant 1.0 qui portent une décision déjà prise, avec les points que le mainteneur y a rattachés le 2026-10-23. Prévue pour 0.11.0. Lots, chacun mergé avant le suivant ; les tâches d’un lot ne partagent aucun fichier, hors de `en.json`, `fr.json`, `docs/API.md`, `.gitignore` et du résumé 0.11.0 de `releases.json`, où chacune ajoute ses lignes et où le second merge résout le conflit en gardant les deux côtés : 1. DATA-11, UI-13 (déplacement de la base et dialogue de statut partagé, qui restructurent les fichiers des autres) ; 2. QA-05, DATA-12, DATA-13, BUG-19 ; 3. API-08, BUG-20, UI-11, REL-05 ; 4. UI-12, UI-14 ; 5. API-09 (routes de presque tous les domaines) ; 6. UI-15 (clés i18n de presque tous les composants). Terminée le 2026-10-28 (develop bf183d64), publiée en 0.11.0 le 2026-10-29.
 
@@ -2210,7 +2210,7 @@ Sévérité **mineur** · effort **L** · dépend de API-09 · statut **Fait**
 
 **Sources** : T11 de l’audit (audit-pre-1.0/synthese.md#T11), audit-pre-1.0/axe-5-interface.md#m16–m19, UI-10/Trouvé-1b, Trouvé-2f, Reste-5–9, Reste-13, UI-02/Reste-1, audit-pre-1.0/axe-4-front-admin.md#m2, Trouvé pendant BUG-14 (3), Décisions « Petits choix (audit d’avant 1.0) », « Accessibilité et langue (UI-10) », « Messages d’erreur (P7) »
 
-## P10 · Fin de l’audit
+## P10 · Fin de l’audit (1.0.0)
 
 Le reste de l’audit d’avant 1.0 : thème, accessibilité, seeding, documentation, dépendances, lint et tests. Prévue pour 0.12.0. DEP-06 applique la convention de logs déjà décidée (« Petits choix ») mais attend P10 : passer `no-console` en erreur touche presque tous les composants, que P9 réécrit d’abord. Lots, mêmes règles qu’en P9 (résumé 0.12.0) : 1. DEP-06, DATA-14 (DEP-06 change les règles de lint de tout le code) ; 2. UI-16, DOC-03 ; 3. UI-17 ; 4. UI-18 (couleurs et sélecteurs de presque tous les composants). Terminée le 2026-10-29 (develop f14a795f), publiée en 0.12.0 le 2026-10-29.
 
@@ -2365,7 +2365,7 @@ Sévérité **mineur** · effort **M** · dépend de UI-17 · statut **Fait**
 
 **Sources** : T16 de l’audit (audit-pre-1.0/synthese.md#T16), audit-pre-1.0/axe-7-infra.md#R7-m8b, R7-m8c
 
-## P11 · Rangement des composants
+## P11 · Rangement des composants (1.0.0)
 
 Deux petites corrections trouvées en P10, puis le rangement des composants par domaine, à la toute fin, comme le veut la décision « Architecture (revue 7) ». Lots : 1. UI-20, BUG-21 ; 2. UI-19, seule, qui déplace presque tous les composants. Prévue pour la 1.0.0, après la vérification de P12. Terminée le 2026-10-29 (develop 70d9e148), publiée en 1.0.0 le 2026-10-30.
 
@@ -2435,7 +2435,7 @@ Sévérité **évolution** · effort **L** · dépend de UI-18, UI-14, QA-05, UI
 
 **Sources** : T16 de l’audit (audit-pre-1.0/synthese.md#T16), audit-pre-1.0/axe-7-infra.md#R7-Archi-3, R7-FdR-8, R7-m8a, Trouvé pendant BUG-14 (4), Décision « Architecture (revue 7) »
 
-## P12 · Vérification d’avant 1.0
+## P12 · Vérification d’avant 1.0 (1.0.0)
 
 Une revue complète en lecture seule après P11, comme l’audit d’avant 1.0 puis sa vérification : tout ce que l’audit demandait est fait, et le nettoyage n’a pas créé de nouveaux problèmes. Le mainteneur juge chaque constat : à corriger avant la 1.0 (tâches ajoutées ici) ou acceptable en l’état. Puis la 1.0.0, avec R2 de l’audit au tag : dépôt et image publics, protection de `main`. Revue faite le 2026-10-30 (QA-06). Lots des corrections, chacun mergé avant le suivant, résumé 1.0.0 : 1. SEC-12, API-12, BUG-22, BUG-23 ; 2. UI-21, UI-22, DEP-07 ; 3. DOC-04 (documentation d’après les deux premiers lots) ; 4. UI-23 ; puis REL-06, la publication, avec le mainteneur. Terminée le 2026-10-30 (develop 89d2c4c1), publiée en 1.0.0 le 2026-10-30. Lots 1 à 4 faits le 2026-10-30, puis la 1.0.0 publiée le même jour (tag v1.0.0 sur 8ad43dff) ; depuis le lot 2, le dépôt public repart d’un nouveau commit racine (décision « Nouveau départ à la 1.0 (REL-06) »).
 
@@ -2685,7 +2685,7 @@ Sévérité **évolution** · effort **S** · dépend de DOC-04, UI-23 · statut
 
 **Sources** : Décisions « Visibilité (REL-01) », « Protection des branches (QA-04) », audit-pre-1.0/synthese.md#R2
 
-## P13 · Finitions et installation
+## P13 · Finitions et installation (1.1.0)
 
 Pour la 1.1.0, juste après la 1.0.0 : ce que voit d’abord un nouveau visiteur (installation dans le README, liens vers la doc de l’API), l’app installable sur le téléphone (PWA), et les finitions notées pendant P12 (décision « Versions après la 1.0 »). Lots, chacun mergé avant le suivant, résumé 1.1.0 : 1. DOC-05, UI-27, SEC-13, BUG-24 ; 2. UI-24, UI-25, API-13 ; 3. UI-26, DEP-08 ; puis REL-07.
 
@@ -2866,7 +2866,7 @@ Sévérité **évolution** · effort **S** · dépend de DOC-05, UI-27, SEC-13, 
 
 **Sources** : Décision « Versions après la 1.0 »
 
-## P14 · Serveur MCP
+## P14 · Serveur MCP (1.2.0)
 
 Pour la 1.2.0, enchaînée juste après la 1.1.0 : un serveur MCP intégré à Cellar, pour les assistants d’IA du réseau local (décision « Serveur MCP (P14) »), et la description OpenAPI de l’API, tirée des mêmes schémas zod. Lots : 1. SEC-11, API-14 ; 2. API-10 ; 3. API-11 ; puis la release.
 

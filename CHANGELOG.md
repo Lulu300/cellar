@@ -4,6 +4,82 @@
 
 Upgrade actions are also collected in [UPGRADING.md](UPGRADING.md).
 
+## 1.2.0
+
+1.2.0 adds an MCP server to Cellar, so that an AI assistant on your network can read your cellar and, if you allow it, update it, and publishes an OpenAPI description of the API.
+
+The MCP server has its own access token, made in Admin › Settings › MCP access: Cellar shows it once, keeps only its hash, and can replace or revoke it. The token is read-only unless you tick "Allow changes". It opens the MCP server only, never the pages, the API or the admin, and a restore keeps the token of your instance.
+
+The HTTP API now has an OpenAPI 3.1 description, [docs/openapi.json](https://github.com/Lulu300/cellar/blob/main/docs/openapi.json), for tools that generate a client, test the API or show it: every route, its parameters, the fields its request body takes with their limits, and the error format. [docs/API.md](https://github.com/Lulu300/cellar/blob/main/docs/API.md) remains the full reference, with the fields of the answers.
+
+Cellar also serves, at `/api/openapi.json`, the OpenAPI description of the version it runs, without a session like the other reads, so a tool can read the description that matches your server.
+
+An AI assistant on your network can now read your cellar through the MCP server at `/mcp`: it finds wines, shows a wine with its bottles and where they are, finds a bottle by its barcode, and gives the statistics, the wines to buy again and the free space in storage. [README-Docker.md](https://github.com/Lulu300/cellar/blob/main/README-Docker.md#ai-assistants-mcp) shows how to set up Claude Code, a desktop app or a local-model client with the address and the token. It works on your local network or through a VPN only, not from an assistant that calls from the internet.
+
+When you tick "Allow changes", the assistant can also update your cellar, as you would in the app: add a wine and its bottles, mark bottles drunk with the day and a note, move bottles to another case, and change the notes of bottles and the rating of a wine. It checks each change with the same rules as the app and never reaches the admin: backups, restore, wipe, imports and the access code stay in the app. With a read-only token, every change is refused with a message saying where to allow it, and during a restore or an import a change is refused until it ends.
+
+Serving Cellar over HTTPS behind a reverse proxy is easier: [docs/reverse-proxy.md](https://github.com/Lulu300/cellar/blob/main/docs/reverse-proxy.md) gives configurations to copy for nginx, SWAG, Caddy and Traefik, each tested in front of Cellar, with the upload size that a restore or an import needs, the time limits, and what the MCP server at `/mcp` needs from the proxy. It also says what to set in Nginx Proxy Manager and the Synology reverse proxy.
+
+A restore, a ZIP import or a batch of images that takes more than 5 minutes to upload, over slow Wi-Fi or a VPN, no longer fails with `408`: Cellar now gives an upload 30 minutes to arrive, enough for 500 MB at 0.3 MB/s. Behind a reverse proxy, the proxy's own time limits apply too: the Traefik example of [docs/reverse-proxy.md](https://github.com/Lulu300/cellar/blob/main/docs/reverse-proxy.md) gives Traefik 40 minutes, and nginx, SWAG and Caddy set no overall time limit on an upload.
+
+### Upgrade actions
+
+None.
+
+### Changes
+
+#### Features
+
+- **mcp:** Check the MCP access token in the hooks (ea6f143)
+- **admin:** Create, restrict and revoke the MCP token in Admin › Settings (f481108)
+- **admin:** Copy the new MCP token with one click, and size its state as the card's text (d5ba0ce)
+- **api:** Describe the API in OpenAPI 3.1 (12f9b6d)
+- **api:** Describe the MCP token routes and the MCP token in OpenAPI (ce160a2)
+- **api:** Serve the OpenAPI description at GET /api/openapi.json (cb6203a)
+- **mcp:** Serve the MCP server at /mcp with its read tools (74461bd)
+- **mcp:** Keep the MCP reads going during a restore, an import or a wipe (aa0de4f)
+- **mcp:** Add the write tools (6bc94b3)
+
+#### Bug fixes
+
+- **mcp:** Say that a restore keeps the MCP token, and apply the review's nits (092fde7)
+- **api:** Give z.toJSONSchema the limits of the UTF-16 length check (8800e00)
+- **api:** Keep a stricter zod maximum, and say a case suffix is trimmed at its end (8fb8ad1)
+- **mcp:** Refuse unknown arguments of the write tools, and name the case caseId (ab1e46f)
+- **mcp:** Give the date format first, and restore TZ after the test (970563f)
+- **server:** Give an upload 30 minutes to arrive instead of 5 (adcd0de)
+
+#### Refactoring
+
+- **server:** Share the helpers of stored tokens and instance settings (0521f6b)
+- **api:** Move the request schemas of the routes into one module (d9696cf)
+- **barcode:** Move the search of a bottle by its barcode to shared (0c26170)
+- **mcp:** One availability check, and the write gate comment on its condition (acae6e0)
+- **write-gate:** Run any write under the gate with runAsWrite (b0fcc40)
+
+#### Documentation
+
+- Link the OpenAPI description of the API (a668887)
+- **agents:** Say what the OpenAPI test does not see, and map request-schemas.ts (f2d4595)
+- **api:** Place the OpenAPI route with the public reads and name it in the description (5607676)
+- **mcp:** Describe the MCP tools and how to set up an assistant (293b708)
+- **mcp:** List every protocol revision served, and the fields of get_wine (315b3a8)
+- **agents:** Keep the API docs and the MCP server in step with each change (ded341e)
+- **mcp:** Describe the write tools and what allowing changes does (22d7dff)
+- **proxy:** Give nginx, SWAG, Caddy and Traefik configurations to copy (510dcbf)
+- **releases:** Add the reverse proxy examples to the 1.2.0 summary (a9a4228)
+- **proxy:** Give the real time limits, and Caddy's limit in MiB (3d74044)
+- **proxy:** Keep Traefik's read timeout above Cellar's own 5 minutes (997080d)
+- **proxy:** Give Cellar's new 30-minute upload limit (3de903b)
+- Name the upload time limit in server.js and the README (29c6386)
+- **agents:** Name the upload time limit of server.js (55f7536)
+
+#### Other changes
+
+- **mcp:** Check the errors that the SDK reports for the token (c509bd8)
+- **mcp:** Check that a write tool keeps the token out of the logs (d94e082)
+- **server:** Fail if the upload time limit is turned off (f63994e)
+
 ## 1.1.0
 
 1.1.0 makes Cellar easier to install and use: install steps in the README, a link to the API documentation, an app you can install on your phone, and fixes found after 1.0.0.

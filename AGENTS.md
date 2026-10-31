@@ -18,7 +18,7 @@ Use pnpm 10 (`npx -y pnpm@10 …` if it is not installed) and Node 24. `packageM
 - `pnpm build`: build the production server, then `node server.js` starts it.
 - `pnpm i18n:check`: compare the message keys used in `src/` with both locale files. It fails on a missing, duplicate, single-locale or unused key, and on a key it cannot read: write `m['key']` with the key spelled out, never built from a template. It also fails on a value that is not text (a nested object or a number in a locale file), on a plural made by hand, on the same text under two keys (`SAME_TEXT_ALLOWED` in `scripts/check-i18n.mjs` lists the exceptions), on a text with `...` instead of …, in either locale, on a French text with `'` or `"` instead of ’ and « », and on text written in a component, including three dots shown between tags, in a text attribute or in a literal the page shows, and the text of `alert`, `confirm` and `prompt`.
 - `pnpm knip`: list the unused files, exports and dependencies (`knip.config.ts`). It fails on any finding.
-- `pnpm openapi`: write `docs/openapi.json` again, the OpenAPI description of the API that `src/lib/server/openapi.ts` makes from the zod schemas, after changing a route or a request schema; `pnpm test` fails while the file is out of date. A new route needs its entry in `operations`.
+- `pnpm openapi`: write `docs/openapi.json` again, the OpenAPI description of the API that `src/lib/server/openapi.ts` makes from the zod schemas, after changing a request schema; `pnpm test` fails while the file is out of date. A new route needs its entry in `operations`, and so does a route that changes the schema it parses, its success status or the media type of its answer: no test sees those.
 - `pnpm db:generate`: create a migration in `drizzle/` after a change to `src/lib/server/db/schema.ts`. Migrations run automatically when the server starts, which stops if one fails. Never edit a committed migration.
 
 ## Map
@@ -30,7 +30,7 @@ Use pnpm 10 (`npx -y pnpm@10 …` if it is not installed) and Node 24. `packageM
 - `src/lib/server/`: server-only code. Put new server code here.
   - `features/<domain>/{repository,service}.ts`: data access and business rules. Routes call a feature's modules, never its repository, and never reach the database themselves (`db/`, drizzle-orm, better-sqlite3; type imports aside); a lint rule enforces it.
   - `db/`: the schema, the connection, the migrations and the seeding.
-  - `http/`: request parsing (`parseBody`, `parseFormData`), `apiHandler` and the API errors.
+  - `http/`: request parsing (`parseBody`, `parseFormData`), `apiHandler`, the API errors, and the request bodies that no form shares (`request-schemas.ts`: a `+server.ts` exports only its methods).
 - `src/lib/shared/schemas/`: the zod schemas of the API, shared with the forms.
 - `src/lib/components/`: UI components, in folders, never at its root.
   - Domain folders: `wines/`, `bottles/`, `storage/`, `barcode/`, `statistics/`, `preferences/`, `admin/`. A component used by several domains goes where its main use is, or to `forms/` or `layout/` when it is generic.

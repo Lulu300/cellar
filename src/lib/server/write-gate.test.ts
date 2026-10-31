@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { holdWrites, runWrite } from './write-gate';
+import { holdWrites, runAsWrite, runWrite } from './write-gate';
 
 /** A promise and the function that resolves it. */
 function deferred<T>() {
@@ -51,5 +51,39 @@ describe('holdWrites', () => {
         ).rejects.toThrow('restore failed');
 
         expect((await runWrite(async () => new Response('write'))).status).toBe(200);
+    });
+});
+
+describe('runAsWrite', () => {
+    it('runs a write, which a hold waits for, and is refused while the writes are held', async () => {
+        const write = deferred<string>();
+        const writing = runAsWrite(() => write.promise);
+        const steps: string[] = [];
+
+        const holding = holdWrites(async () => {
+            steps.push('task');
+            await expect(runAsWrite(() => 'late write')).rejects.toMatchObject({
+                status: 503,
+                code: 'writes_held'
+            });
+        });
+        await Promise.resolve();
+        expect(steps).toEqual([]);
+
+        write.resolve('written');
+        expect(await writing).toBe('written');
+        await holding;
+        expect(steps).toEqual(['task']);
+        expect(await runAsWrite(() => 'next write')).toBe('next write');
+    });
+
+    it('ends its write when it fails, so that a hold does not wait for it', async () => {
+        await expect(
+            runAsWrite(() => {
+                throw new Error('write failed');
+            })
+        ).rejects.toThrow('write failed');
+
+        expect(await holdWrites(async () => 'held')).toBe('held');
     });
 });

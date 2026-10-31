@@ -20,16 +20,24 @@ function writesHeldError(): ApiError {
     );
 }
 
-/** Runs the handling of a request that may write, unless a restore, an import or a wipe holds them. */
-export async function runWrite(handle: () => Promise<Response>): Promise<Response> {
-    if (held) return apiErrorResponse(writesHeldError());
+/**
+ * Runs `write`, unless a restore, an import or a wipe holds the writes: then throws the 503
+ * `writes_held`. A hold waits for it to end.
+ */
+export async function runAsWrite<T>(write: () => T | Promise<T>): Promise<T> {
+    if (held) throw writesHeldError();
     writesUnderWay += 1;
     try {
-        return await handle();
+        return await write();
     } finally {
         writesUnderWay -= 1;
         if (writesUnderWay === 0) onIdle?.();
     }
+}
+
+/** Runs the handling of a request that may write, or answers the 503 while the writes are held. */
+export async function runWrite(handle: () => Promise<Response>): Promise<Response> {
+    return held ? apiErrorResponse(writesHeldError()) : runAsWrite(handle);
 }
 
 /**

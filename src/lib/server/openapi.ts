@@ -33,6 +33,7 @@ import {
 import { namedSchema } from '#lib/shared/schemas/reference.js';
 import { containerSchema, newContainerSchema } from '#lib/shared/schemas/storage.js';
 import { wineDefinitionSchema } from '#lib/shared/schemas/wine.js';
+import { wishSchema } from '#lib/shared/schemas/wish.js';
 
 /**
  * The OpenAPI 3.1 description of the API under /api, for tools: its request bodies come from the
@@ -54,6 +55,7 @@ const tags = {
     bottles: ['Bottles', 'bottles'],
     references: ['Reference tables', 'reference-tables'],
     statistics: ['Statistics and shortage', 'statistics-and-shortage'],
+    wishlist: ['Wishlist', 'wishlist'],
     images: ['Images', 'images'],
     storage: ['Storage', 'storage'],
     barcodes: ['Barcodes and labels', 'barcodes-and-labels'],
@@ -258,6 +260,29 @@ const operations: Record<string, Operation> = {
         tag: 'statistics',
         summary: 'The wines below their minimum stock',
         answers: ok
+    },
+
+    'GET /api/wishes': {
+        tag: 'wishlist',
+        summary: 'The wishes, the newest first, with their wine or photo',
+        answers: ok
+    },
+    'POST /api/wishes': {
+        tag: 'wishlist',
+        summary: 'Adds a wine of the cellar or a text to the wishlist',
+        body: json(wishSchema),
+        answers: created
+    },
+    'PUT /api/wishes/[id]': {
+        tag: 'wishlist',
+        summary: 'Replaces every field of a wish, such as the wine a text wish became',
+        body: json(wishSchema),
+        answers: ok
+    },
+    'DELETE /api/wishes/[id]': {
+        tag: 'wishlist',
+        summary: 'Removes a wish, and its photo when no wine uses it',
+        answers: noContent
     },
 
     'GET /api/images': { tag: 'images', summary: 'The id and URL of each image', answers: ok },
@@ -522,7 +547,7 @@ const operations: Record<string, Operation> = {
 
     'GET /api/admin/images': {
         tag: 'adminImages',
-        summary: 'The images, with their sizes and the wines that use them',
+        summary: 'The images, with their sizes and the wines and wishes that use them',
         answers: ok
     },
     'PUT /api/admin/images': {

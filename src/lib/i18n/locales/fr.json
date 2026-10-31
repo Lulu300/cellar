@@ -14,6 +14,7 @@
   "errors.duplicate_region": "Ce pays a déjà une région de ce nom.",
   "errors.duplicate_appellation": "Cette région a déjà une appellation de ce nom.",
   "errors.duplicate_barcode": "Ce code-barres est déjà attribué à une autre bouteille.",
+  "errors.duplicate_wish": "Ce vin est déjà sur votre liste d’envies.",
   "errors.barcode_for_one_bottle": "Un code-barres manuel ne peut aller que sur une bouteille : ajoutez les bouteilles une à une, ou laissez le code-barres vide.",
   "errors.notes_too_long": "La note ne tient pas à la suite des notes de {bottles, plural, one {# bouteille} other {# bouteilles}} : les notes font {maximum, plural, other {# caractères}} au plus. Raccourcissez la note, ou commencez par raccourcir {bottles, plural, one {les notes de cette bouteille} other {les notes de ces bouteilles}}.",
   "errors.case_holds_bottles": "La case {caseName} contient encore {bottles, plural, one {# bouteille en cave : déplacez-la} other {# bouteilles en cave : déplacez-les}} d’abord.",

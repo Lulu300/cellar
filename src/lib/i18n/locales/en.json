@@ -14,6 +14,7 @@
   "errors.duplicate_region": "This country already has a region with this name.",
   "errors.duplicate_appellation": "This region already has an appellation with this name.",
   "errors.duplicate_barcode": "This barcode is already assigned to another bottle.",
+  "errors.duplicate_wish": "This wine is already on your wishlist.",
   "errors.barcode_for_one_bottle": "A manual barcode can only go on one bottle: add the bottles one by one, or leave the barcode empty.",
   "errors.notes_too_long": "The note does not fit after the notes of {bottles, plural, one {# bottle} other {# bottles}}: notes hold {maximum, plural, other {# characters}} at most. Shorten the note, or {bottles, plural, one {the notes of this bottle} other {the notes of these bottles}} first.",
   "errors.case_holds_bottles": "The case {caseName} still holds {bottles, plural, one {# bottle in the cellar: move it} other {# bottles in the cellar: move them}} first.",

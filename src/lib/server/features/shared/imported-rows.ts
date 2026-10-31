@@ -19,6 +19,7 @@ import { appellationSchema, regionSchema } from '#lib/shared/schemas/geography.j
 import { namedSchema, wineColorSchema, wineTypeSchema } from '#lib/shared/schemas/reference.js';
 import { caseCapacitySchema, caseName, casePosition } from '#lib/shared/schemas/storage.js';
 import { GRAPE_MAX_LENGTH, wineDefinitionSchema } from '#lib/shared/schemas/wine.js';
+import { wishSchema } from '#lib/shared/schemas/wish.js';
 
 /**
  * The columns of a row of each table that an import takes, with the rules of the API: any other
@@ -49,7 +50,8 @@ const ROW_SCHEMAS = {
         .transform((image) => ({ ...image, path: IMAGES_URL_PATH })),
     wineDefinitions: wineDefinitionSchema,
     wineBottles: bottleSchema,
-    winePhotos: z.object({ definitionId: id, imageId: id })
+    winePhotos: z.object({ definitionId: id, imageId: id }),
+    wishes: wishSchema
 } satisfies Record<ExportTableName, z.ZodType>;
 
 export type ImportedRow = Record<string, unknown>;

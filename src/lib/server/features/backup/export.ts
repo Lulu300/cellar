@@ -13,7 +13,8 @@ import {
     wineFormats,
     wineImages,
     winePhotos,
-    wineTypes
+    wineTypes,
+    wishes
 } from '#lib/server/db/schema.js';
 import { writeZipWithImages } from '#lib/server/features/backup/archive.js';
 
@@ -36,7 +37,8 @@ export const EXPORT_TABLES = {
     wineImages,
     wineDefinitions,
     wineBottles,
-    winePhotos
+    winePhotos,
+    wishes
 };
 
 export type ExportTableName = keyof typeof EXPORT_TABLES;

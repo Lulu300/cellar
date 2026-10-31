@@ -1,7 +1,13 @@
 import { and, asc, eq, exists, inArray, isNull, sql } from 'drizzle-orm';
 import type { Tx } from '#lib/server/db/connection.js';
 import { db } from '#lib/server/db/index.js';
-import { wineDefinitions, wineImages, winePhotos, type WineImage } from '#lib/server/db/schema.js';
+import {
+    wineDefinitions,
+    wineImages,
+    winePhotos,
+    wishes,
+    type WineImage
+} from '#lib/server/db/schema.js';
 import { IMAGES_URL_PATH } from '#lib/server/paths.js';
 
 export function listImages(): WineImage[] {
@@ -63,6 +69,15 @@ export function winesUsingImages(imageIds: string[], tx: Tx = db) {
         .where(inArray(winePhotos.imageId, imageIds))
         .all();
     return [...asMain, ...asOther];
+}
+
+/** The wishes whose photo is one of these images, each named by its text. */
+export function wishesUsingImages(imageIds: string[], tx: Tx = db) {
+    return tx
+        .select({ id: wishes.id, name: wishes.text, imageId: wishes.imageId })
+        .from(wishes)
+        .where(inArray(wishes.imageId, imageIds))
+        .all();
 }
 
 export function deleteImageRows(imageIds: string[], tx: Tx): void {

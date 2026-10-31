@@ -1,7 +1,10 @@
 import type { ExportTableName } from '#lib/server/features/backup/export.js';
 
-/** The other photos of a wine travel only in backups and JSON exports: a CSV file names one image per wine. */
-export type TableName = Exclude<ExportTableName, 'winePhotos'>;
+/**
+ * The other photos of a wine travel only in backups and JSON exports: a CSV file names one image
+ * per wine. So does the wishlist, whose photos a CSV file cannot carry.
+ */
+export type TableName = Exclude<ExportTableName, 'winePhotos' | 'wishes'>;
 
 /** An id column that a CSV file fills with the name of the row it refers to. */
 interface Reference {

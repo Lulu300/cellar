@@ -283,6 +283,10 @@ request needs one.
 | PUT    | `/api/wine-types/{id}`                   | yes                      |
 | GET    | `/api/wines`                             | no                       |
 | GET    | `/api/wines/{id}/locations`              | no                       |
+| GET    | `/api/wishes`                            | no                       |
+| POST   | `/api/wishes`                            | yes                      |
+| DELETE | `/api/wishes/{id}`                       | yes                      |
+| PUT    | `/api/wishes/{id}`                       | yes                      |
 
 ## Session and access code
 
@@ -688,7 +692,8 @@ Makes one of the photos of a wine its main photo. The main photo before it stays
 
 ### `DELETE /api/definitions/{id}/photos/{imageId}`
 
-Removes a photo from a wine, and deletes the image, row and file, when no other wine uses it. When
+Removes a photo from a wine, and deletes the image, row and file, when no other wine and no wish
+uses it. When
 it was the main photo, the oldest of the others becomes the main one.
 
 - **Session:** required.
@@ -1156,6 +1161,122 @@ first, then by name.
   }
 ]
 ```
+
+## Wishlist
+
+The wishlist of the Purchases page: wines to buy. A wish is either a wine of the cellar, at most
+once, or a text, the name of a wine not in the cellar yet, with a photo of its label if wanted.
+Both take an optional quantity and note. A text wish whose wine is created becomes a wish for that
+wine ([`PUT /api/wishes/{id}`](#put-apiwishesid)), with the same quantity and note; the photo of
+the wish usually becomes the wine's main photo. Nothing leaves the wishlist by itself, not even
+when bottles of the wine are added: the app asks the user. A wish leaves only with
+[`DELETE /api/wishes/{id}`](#delete-apiwishesid), or with its wine when the wine is deleted.
+
+#### Wish fields
+
+The body of [`POST /api/wishes`](#post-apiwishes) and [`PUT /api/wishes/{id}`](#put-apiwishesid):
+
+- `definitionId`: the id of a wine; or
+- `text`: string of 500 characters at most, trimmed: the name of a wine not in the cellar.
+
+  One of the two, not both.
+
+- `imageId`: the id of an image, from [`POST /api/upload/image`](#post-apiuploadimage), for a text
+  wish only: a wish for a wine shows that wine's photos.
+- `quantity`: integer from 1 to 10000, or `null`: how many bottles to buy.
+- `note`: string of 5,000 characters at most, or `null`.
+
+An empty string counts as `null`.
+
+### `GET /api/wishes`
+
+Lists the wishes, the newest first.
+
+- **Session:** not needed.
+- **Body:** none.
+- **Response:** `200` with an array of wishes. Each has `id`, `text`, `imageId` and `imageUrl` (the
+  photo of a text wish, where it is served, `null` when none), `quantity`, `note`, `createdAt`,
+  `updatedAt`, and `wine`: `null` for a text wish, else `{ "id", "name", "producer", "color",
+"type", "appellation", "region", "country", "imageUrl", "inCellar" }`, where `imageUrl` is the
+  wine's main photo (`null` when none) and `inCellar` counts its `available` bottles.
+- **Errors:** none besides the common ones.
+
+```json
+[
+  {
+    "id": "5c2e…",
+    "text": "Clos Rougeard 2017",
+    "imageId": "9a0e…",
+    "imageUrl": "/uploads/wines/wine-5b1c….jpg",
+    "quantity": 2,
+    "note": "Seen at the wine fair",
+    "wine": null,
+    "createdAt": "2026-10-31T18:02:11.000Z",
+    "updatedAt": "2026-10-31T18:02:11.000Z"
+  },
+  {
+    "id": "e81d…",
+    "text": null,
+    "imageId": null,
+    "imageUrl": null,
+    "quantity": 6,
+    "note": null,
+    "wine": {
+      "id": "c1f4…",
+      "name": "Château Margaux",
+      "producer": "Château Margaux",
+      "color": "Red",
+      "type": "Still",
+      "appellation": "Margaux",
+      "region": "Bordeaux",
+      "country": "France",
+      "imageUrl": null,
+      "inCellar": 1
+    },
+    "createdAt": "2026-10-30T09:40:00.000Z",
+    "updatedAt": "2026-10-30T09:40:00.000Z"
+  }
+]
+```
+
+### `POST /api/wishes`
+
+Adds a wish.
+
+- **Session:** required.
+- **Body:** JSON, the [wish fields](#wish-fields).
+- **Response:** `201` with the wish, as [`GET /api/wishes`](#get-apiwishes) lists it.
+- **Errors:** `409 duplicate_wish`, with `details: { "wishId" }`, when the wine is on the wishlist
+  already; `409 missing_reference` when the wine or the image does not exist.
+
+```json
+{ "text": "Clos Rougeard 2017", "imageId": "9a0e…", "quantity": 2, "note": "Seen at the wine fair" }
+```
+
+### `PUT /api/wishes/{id}`
+
+Replaces every field of a wish. A text wish whose wine was created takes its `definitionId`, in
+place of its `text` and `imageId`. The photo that the wish no longer has is deleted, unless a wine
+uses it, such as the wine created with it as its main photo, or another wish.
+
+- **Session:** required.
+- **Body:** JSON, the [wish fields](#wish-fields).
+- **Response:** `200` with the wish, as [`GET /api/wishes`](#get-apiwishes) lists it.
+- **Errors:** `404 not_found` for an unknown wish; `409 duplicate_wish` when another wish has the
+  wine; `409 missing_reference` when the wine or the image does not exist.
+
+```json
+{ "definitionId": "c1f4…", "quantity": 2, "note": "Seen at the wine fair" }
+```
+
+### `DELETE /api/wishes/{id}`
+
+Removes a wish from the wishlist, and deletes its photo unless a wine or another wish uses it.
+
+- **Session:** required.
+- **Body:** none.
+- **Response:** `204`, without a body.
+- **Errors:** `404 not_found` for an unknown wish.
 
 ## Images
 
@@ -2087,8 +2208,8 @@ pre-import export.
   `data` object with the rows of all 13 tables of an export (`countries`, `regions`, `appellations`,
   `wineClassifications`, `wineTypes`, `wineColors`, `wineFormats`, `origins`, `storageContainers`,
   `storageCases`, `wineImages`, `wineDefinitions`, `wineBottles`), and of `winePhotos`, the other
-  photos of the wines, which exports of versions before 1.3.0 lack; its images in `images/` are
-  copied too.
+  photos of the wines, and `wishes`, the wishlist, which exports of versions before 1.3.0 lack; its
+  images in `images/` are copied too.
 - **Response:** `200` with:
   - `success: true` and an English `message`.
   - `recordCount`: the number of rows imported.
@@ -2444,7 +2565,7 @@ The CSV files have one file per table, named after it. The table names are `coun
 `appellations`, `wineClassifications`, `wineTypes`, `wineColors`, `wineFormats`, `origins`,
 `storageContainers`, `storageCases`, `wineImages`, `wineDefinitions` and `wineBottles`. The first
 line holds the column names. A wine names only its main photo, in `imageName`: its other photos go
-only in backups and exports. A file gives no ids: a row refers to another by its name (the
+only in backups and exports, as does the wishlist. A file gives no ids: a row refers to another by its name (the
 `countryName` of a region, the `wineName` of a bottle…).
 
 ### `POST /api/admin/export-csv`
@@ -2701,16 +2822,17 @@ calls.
 
 ### `GET /api/admin/images`
 
-Lists every wine image with the size and date of its file, and the wines that use it, newest file
-first.
+Lists every wine image with the size and date of its file, and the wines and wishes that use it,
+newest file first.
 
 - **Session:** required.
 - **Body:** none.
 - **Response:** `200` with `images` and `count`. Each image has `id`, `filename`, `path` (the URL
   folder, `/uploads/wines/`), `url` (where the image is served), `size` (bytes, `0` when the file is
   missing), `lastModified` (the date of the file, or of the row when the file is missing),
-  `createdAt`, `updatedAt`, and `wines`, the wines that use it, as their main photo or another,
-  each `{ "id", "name", "producer" }` (empty when none does).
+  `createdAt`, `updatedAt`, `wines`, the wines that use it, as their main photo or another, each
+  `{ "id", "name", "producer" }`, and `wishes`, the wishes whose photo it is, each `{ "id", "name" }`
+  with the text of the wish as its name. Both are empty when nothing uses the image.
 - **Errors:** none besides the common ones.
 
 ```json
@@ -2725,7 +2847,8 @@ first.
       "url": "/uploads/wines/wine-5b1c….jpg",
       "createdAt": "2026-10-12T18:22:05.000Z",
       "updatedAt": "2026-10-12T18:22:05.000Z",
-      "wines": [{ "id": "c1f4…", "name": "Château Margaux", "producer": "Château Margaux" }]
+      "wines": [{ "id": "c1f4…", "name": "Château Margaux", "producer": "Château Margaux" }],
+      "wishes": []
     }
   ],
   "count": 1
@@ -2744,8 +2867,8 @@ Renames an image and its file, both or neither. The wines that use it keep it.
     `.webp` (any case). The extension sets the type the image is served with; the content is not
     converted.
 - **Response:** `200` with the image as [`GET /api/admin/images`](#get-apiadminimages) lists it,
-  under its new name, with the wines that use it in `wines`. They need no change: a wine refers to
-  its image by id.
+  under its new name, with the wines and wishes that use it in `wines` and `wishes`. They need no
+  change: they refer to the image by id.
 - **Errors:** `422 invalid_file_name`, with `details: { "kind": "image" }`, for a name that breaks
   these rules; `404 not_found` when the image does not exist, or its file is missing;
   `409 duplicate_name` when an image, this one included, or another file in the image folder, has
@@ -2765,7 +2888,8 @@ Renames an image and its file, both or neither. The wines that use it keep it.
   "url": "/uploads/wines/margaux-2015.jpg",
   "createdAt": "2026-10-12T18:22:05.000Z",
   "updatedAt": "2026-10-17T15:06:10.000Z",
-  "wines": [{ "id": "c1f4…", "name": "Château Margaux", "producer": "Château Margaux" }]
+  "wines": [{ "id": "c1f4…", "name": "Château Margaux", "producer": "Château Margaux" }],
+  "wishes": []
 }
 ```
 
@@ -2777,12 +2901,13 @@ Deletes images, rows and files.
 - **Body:** JSON:
   - `imageIds`: array of non-empty strings, at least one, required. Ids that match no image are
     ignored.
-  - `force`: boolean, default `false`. With `true`, images that wines use are removed from those
-    wines, then deleted. A wine that loses its main photo takes the oldest of its others.
+  - `force`: boolean, default `false`. With `true`, images that wines or wishes use are removed from
+    them, then deleted. A wine that loses its main photo takes the oldest of its others; a wish
+    stays, without a photo.
 - **Response:** `204`, without a body.
-- **Errors:** `409 in_use` without `force` when wines use some of the images: nothing is deleted,
-  and `details.inUse` lists each such image as
-  `{ "id", "filename", "wines": [{ "id", "name", "producer" }] }`.
+- **Errors:** `409 in_use` without `force` when wines or wishes use some of the images: nothing is
+  deleted, and `details.inUse` lists each such image as
+  `{ "id", "filename", "wines": [{ "id", "name", "producer" }], "wishes": [{ "id", "name" }] }`.
 
 ```json
 { "imageIds": ["9a0e…", "4d7f…"], "force": true }

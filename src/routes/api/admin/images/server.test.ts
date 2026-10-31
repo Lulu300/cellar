@@ -127,7 +127,8 @@ describe('PUT /api/admin/images', () => {
             lastModified: expect.any(String),
             createdAt: expect.any(String),
             updatedAt: expect.any(String),
-            wines: [{ id: wineId, name: 'Château Margaux', producer: null }]
+            wines: [{ id: wineId, name: 'Château Margaux', producer: null }],
+            wishes: []
         });
         expect(imageFileExists('first')).toBe(false);
         expect(existsSync(path.join(IMAGES_DIR, 'margaux label.jpg'))).toBe(true);
@@ -250,7 +251,8 @@ describe('DELETE /api/admin/images', () => {
             {
                 id: 'second',
                 filename: 'second.jpg',
-                wines: [{ id: wineId, name: 'Château Margaux', producer: null }]
+                wines: [{ id: wineId, name: 'Château Margaux', producer: null }],
+                wishes: []
             }
         ]);
         expect(await imageIds()).toEqual(['first', 'second', 'third']);

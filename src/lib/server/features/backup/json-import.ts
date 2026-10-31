@@ -30,6 +30,9 @@ function invalidExport(problem: string, reason: string, values: Record<string, u
     });
 }
 
+/** The tables that exports made before 1.3.0 lack, which their import leaves empty. */
+const ADDED_IN_1_3: ExportTableName[] = ['winePhotos', 'wishes'];
+
 /** The rows of an export that the database refuses, by the rule they break. */
 const REFUSED_ROWS: Record<string, string> = {
     duplicate_region: 'in regions, a country has two regions of the same name',
@@ -117,9 +120,10 @@ function exportRow(table: ExportTableName, value: unknown, index: number): Impor
 function exportTables(data: Record<string, unknown>): TableRows[] {
     // The import empties every table: one that the file lacks would stay empty. The automatic
     // exports made by older versions lack five tables, and those of the cron route lacked
-    // wineImages too. Exports older than winePhotos lack it, as their wines had one image only.
+    // wineImages too. Exports older than 1.3.0 lack winePhotos, as their wines had one image only,
+    // and wishes, as they had no wishlist.
     const missing = EXPORT_TABLE_NAMES.filter(
-        (name) => name !== 'winePhotos' && !Array.isArray(data[name])
+        (name) => !ADDED_IN_1_3.includes(name) && !Array.isArray(data[name])
     );
     if (missing.length > 0) {
         throw invalidExport('incomplete', `It lacks ${missing.join(', ')}.`, {

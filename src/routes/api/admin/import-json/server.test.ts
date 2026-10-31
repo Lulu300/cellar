@@ -25,7 +25,8 @@ import {
     wineFormats,
     wineImages,
     winePhotos,
-    wineTypes
+    wineTypes,
+    wishes
 } from '#lib/server/db/schema.js';
 import { backupTimestamp } from '#lib/server/features/backup/archive.js';
 import { listWinePhotos } from '#lib/server/features/images/service.js';
@@ -54,7 +55,8 @@ const TABLES = {
     wineImages,
     wineDefinitions,
     wineBottles,
-    winePhotos
+    winePhotos,
+    wishes
 };
 
 async function snapshot() {
@@ -98,6 +100,18 @@ beforeEach(async () => {
     await db
         .insert(winePhotos)
         .values({ id: 'photo', definitionId, imageId: 'back', createdAt: now });
+    // The wishlist: the wine, and a text with the photo of its label
+    await db.insert(wineImages).values({
+        id: 'wish-label',
+        filename: 'wish-label.jpg',
+        path: IMAGES_URL_PATH,
+        ...timestamps
+    });
+    writeFileSync(path.join(IMAGES_DIR, 'wish-label.jpg'), jpegBytes('wish label bytes'));
+    await db.insert(wishes).values([
+        { id: 'again', definitionId, quantity: 6, note: 'For the cellar', ...timestamps },
+        { id: 'idea', text: 'Clos Rougeard', imageId: 'wish-label', ...timestamps }
+    ]);
     await db.insert(storageContainers).values({ id: 'rack', name: 'Rack', ...timestamps });
     await db
         .insert(storageCases)
@@ -269,6 +283,9 @@ describe('POST /api/admin/import-json', () => {
         expect(response.status).toBe(200);
         expect(await snapshot()).toEqual(exported);
         expect(readFileSync(path.join(IMAGES_DIR, 'label.jpg'))).toEqual(jpegBytes('label bytes'));
+        expect(readFileSync(path.join(IMAGES_DIR, 'wish-label.jpg'))).toEqual(
+            jpegBytes('wish label bytes')
+        );
         // To the millisecond, so that two imports in the same minute keep both backups.
         expect(dataFiles()).toEqual([
             expect.stringMatching(
@@ -279,13 +296,15 @@ describe('POST /api/admin/import-json', () => {
         expect((await response.json()).backup).toBe(dataFiles()[0]);
     });
 
-    it('imports an export made before wines had other photos', async () => {
+    it('imports an export made before wines had other photos and a wishlist', async () => {
         const data = JSON.parse(JSON.stringify(await snapshot()));
         delete data.winePhotos;
+        delete data.wishes;
 
         expect((await importZip(craftedZip(data))).status).toBe(200);
 
         expect(await db.select().from(winePhotos)).toEqual([]);
+        expect(await db.select().from(wishes)).toEqual([]);
         expect(await db.select({ imageId: wineDefinitions.imageId }).from(wineDefinitions)).toEqual(
             [{ imageId: 'label' }]
         );

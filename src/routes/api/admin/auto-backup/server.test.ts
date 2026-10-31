@@ -54,7 +54,8 @@ describe('POST /api/admin/auto-backup', () => {
             'wineImages',
             'wineDefinitions',
             'wineBottles',
-            'winePhotos'
+            'winePhotos',
+            'wishes'
         ]);
     });
 });

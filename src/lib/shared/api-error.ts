@@ -14,6 +14,7 @@ export const API_ERROR_CODES = [
     'duplicate_region',
     'duplicate_appellation',
     'duplicate_barcode',
+    'duplicate_wish',
     'barcode_for_one_bottle',
     'notes_too_long',
     'case_holds_bottles',

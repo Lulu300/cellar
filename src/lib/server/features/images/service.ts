@@ -39,7 +39,8 @@ import {
     renameImageRow,
     setMainPhoto,
     tidyWinePhotos,
-    winesUsingImages
+    winesUsingImages,
+    wishesUsingImages
 } from './repository';
 
 /** The URL of each image, for the wine pages. */
@@ -88,29 +89,34 @@ export async function readImageFile(name: string | null) {
     };
 }
 
-/** The wines that use each of these images, by image id. */
-function winesByImage(imageIds: string[], tx: Tx = db) {
-    const byImage = new Map<string, { id: string; name: string; producer: string | null }[]>();
-    for (const { imageId, ...wine } of winesUsingImages(imageIds, tx)) {
-        if (!imageId) continue;
-        byImage.set(imageId, [...(byImage.get(imageId) ?? []), wine]);
-    }
-    return byImage;
+/** The wines and the wishes that use each of these images: what `users(imageId)` gives. */
+function usersOf(imageIds: string[], tx: Tx = db) {
+    const wines = Map.groupBy(winesUsingImages(imageIds, tx), (wine) => wine.imageId);
+    const wishes = Map.groupBy(wishesUsingImages(imageIds, tx), (wish) => wish.imageId);
+    return (imageId: string) => ({
+        wines: (wines.get(imageId) ?? []).map(({ id, name, producer }) => ({ id, name, producer })),
+        // A wish with a photo always has a text (wishes_wine_or_text_check).
+        wishes: (wishes.get(imageId) ?? []).map(({ id, name }) => ({ id, name: name ?? '' }))
+    });
 }
 
-/** The image as GET /api/admin/images lists it, with the wines of `wines` that use it. */
-async function listedImage(image: WineImage, wines: ReturnType<typeof winesByImage>) {
-    return { ...(await withFileStats(image)), wines: wines.get(image.id) ?? [] };
+type ImageUsers = ReturnType<ReturnType<typeof usersOf>>;
+
+const isUsed = ({ wines, wishes }: ImageUsers) => wines.length + wishes.length > 0;
+
+/** The image as GET /api/admin/images lists it, with the wines and the wishes that use it. */
+async function listedImage(image: WineImage, users: (imageId: string) => ImageUsers) {
+    return { ...(await withFileStats(image)), ...users(image.id) };
 }
 
 /**
- * Every image with the size and date of its file, and the wines that use it, newest first. The
- * stored names are random, so the wines are what tells most images apart.
+ * Every image with the size and date of its file, and the wines and wishes that use it, newest
+ * first. The stored names are random, so the wines and wishes are what tells most images apart.
  */
 export async function listImagesWithStats() {
     const images = listImages();
-    const wines = winesByImage(images.map((image) => image.id));
-    const listed = await Promise.all(images.map((image) => listedImage(image, wines)));
+    const users = usersOf(images.map((image) => image.id));
+    const listed = await Promise.all(images.map((image) => listedImage(image, users)));
     return listed.sort(
         (a, b) => new Date(b.lastModified).getTime() - new Date(a.lastModified).getTime()
     );
@@ -158,36 +164,32 @@ export async function renameImage(imageId: string, newFilename: string) {
         return row;
     });
 
-    return listedImage(updated, winesByImage([imageId]));
+    return listedImage(updated, usersOf([imageId]));
 }
 
 /**
- * Deletes images. Without `force`, images that wines use are refused with a ConflictError that
- * lists those wines, so that the user can confirm; with it, they are removed from those wines
- * first, a wine that loses its main photo taking its next one. Ids that match no image are
- * ignored: another tab may have deleted them already.
+ * Deletes images. Without `force`, images that wines or wishes use are refused with a
+ * ConflictError that lists them, so that the user can confirm; with it, they are removed from
+ * those wines and wishes first, a wine that loses its main photo taking its next one. Ids that
+ * match no image are ignored: another tab may have deleted them already.
  */
 export async function deleteImages(imageIds: string[], force: boolean): Promise<void> {
     // One transaction: no wine can take one of these images between the check and the
     // deletion, and no wine keeps pointing to a deleted image or loses its image for nothing.
     const deletedImages = db.transaction((tx) => {
         const images = getImages(imageIds, tx);
-        const wines = winesByImage(imageIds, tx);
+        const users = usersOf(imageIds, tx);
         const inUse = images
-            .map((image) => ({
-                id: image.id,
-                filename: image.filename,
-                wines: wines.get(image.id) ?? []
-            }))
-            .filter((image) => image.wines.length > 0);
+            .map((image) => ({ id: image.id, filename: image.filename, ...users(image.id) }))
+            .filter(isUsed);
         // Decided on images that exist: a reference to a missing image, left by data older than
         // the foreign key, would otherwise refuse the deletion with nothing to show.
         if (inUse.length > 0 && !force) {
-            throw new ConflictError('in_use', 'Images are used by wines', { inUse });
+            throw new ConflictError('in_use', 'Images are used by wines or wishes', { inUse });
         }
 
-        // The foreign keys remove them from the wines that use them (ON DELETE SET NULL for a
-        // main photo, CASCADE for the others).
+        // The foreign keys remove them from the wines and wishes that use them (ON DELETE SET
+        // NULL for a main photo and a wish, CASCADE for the other photos of a wine).
         deleteImageRows(imageIds, tx);
         tidyWinePhotos(tx);
         return images;
@@ -196,11 +198,25 @@ export async function deleteImages(imageIds: string[], force: boolean): Promise<
 }
 
 /**
+ * Deletes the rows of those of these images that no wine and no wish uses any more, and returns
+ * them, for removeImageFiles to remove their files once the transaction is over.
+ */
+export function dropUnusedImages(imageIds: string[], tx: Tx): WineImage[] {
+    const users = usersOf(imageIds, tx);
+    const unused = getImages(imageIds, tx).filter((image) => !isUsed(users(image.id)));
+    deleteImageRows(
+        unused.map((image) => image.id),
+        tx
+    );
+    return unused;
+}
+
+/**
  * Removes the files of images whose rows are gone. Files go last, as they cannot be restored:
  * once the rows are gone the images are deleted for the app, so a file that cannot be removed is
  * only logged. A stored name that is not a plain file name cannot designate one of our files.
  */
-async function removeImageFiles(images: WineImage[]): Promise<void> {
+export async function removeImageFiles(images: WineImage[]): Promise<void> {
     for (const image of images) {
         const filePath = resolveInDir(IMAGES_DIR, image.filename);
         if (filePath) {
@@ -297,18 +313,15 @@ export function chooseMainPhoto(definitionId: string, imageId: string) {
 }
 
 /**
- * Removes a photo from the wine, and deletes the image when no other wine uses it. A main photo
- * removed gives way to the next one.
+ * Removes a photo from the wine, and deletes the image when no other wine and no wish uses it. A
+ * main photo removed gives way to the next one.
  */
 export async function removeWinePhoto(definitionId: string, imageId: string): Promise<void> {
     const deleted = db.transaction((tx) => {
         if (mainPhotoOf(definitionId, tx) === imageId) setMainPhoto(definitionId, null, tx);
         else if (!removeOtherPhoto(definitionId, imageId, tx)) throw photoNotFound();
         tidyWinePhotos(tx);
-        if (winesUsingImages([imageId], tx).length > 0) return [];
-        const images = getImages([imageId], tx);
-        deleteImageRows([imageId], tx);
-        return images;
+        return dropUnusedImages([imageId], tx);
     });
     await removeImageFiles(deleted);
 }

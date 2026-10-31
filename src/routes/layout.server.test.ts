@@ -2,7 +2,7 @@ import type { RequestEvent } from '@sveltejs/kit';
 import { beforeEach, describe, expect, it } from 'vitest';
 import { ACCESS_CODE_KEY, hashAccessCode } from '#lib/server/access-code.js';
 import { db } from '#lib/server/db/index.js';
-import { appSettings } from '#lib/server/db/schema.js';
+import { appSettings, wineDefinitions, wishes } from '#lib/server/db/schema.js';
 import { setAppSetting } from '#lib/server/features/settings/repository.js';
 import { BottleAvailability } from '#lib/shared/bottle-availability.js';
 import { fakeEvent } from '../test/event';
@@ -17,6 +17,8 @@ const loadLayout = (session: { tokenHash: string; expiresAt: Date } | null) =>
         authenticated: boolean;
         accessCodeSet: boolean;
         outOfCellarCount: number;
+        wishCount: number;
+        wishedWines: Record<string, string>;
     }>;
 
 beforeEach(() => {
@@ -51,5 +53,20 @@ describe('the root layout load', () => {
         ]);
 
         expect(await loadLayout(null)).toMatchObject({ outOfCellarCount: 2 });
+    });
+
+    it('counts the wishes, for the menu, and gives the wish of each wine on the wishlist', async () => {
+        // The wine of the test above, when it ran first
+        const wine = db.select().from(wineDefinitions).get()?.id ?? (await insertWineDefinition());
+        const now = new Date();
+        await db.insert(wishes).values([
+            { id: 'again', definitionId: wine, createdAt: now, updatedAt: now },
+            { id: 'idea', text: 'Clos Rougeard', createdAt: now, updatedAt: now }
+        ]);
+
+        expect(await loadLayout(null)).toMatchObject({
+            wishCount: 2,
+            wishedWines: { [wine]: 'again' }
+        });
     });
 });

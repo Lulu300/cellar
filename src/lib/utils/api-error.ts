@@ -32,6 +32,7 @@ const MESSAGES: Record<ApiErrorCode, ErrorMessage> = {
     duplicate_region: m['errors.duplicate_region'],
     duplicate_appellation: m['errors.duplicate_appellation'],
     duplicate_barcode: m['errors.duplicate_barcode'],
+    duplicate_wish: m['errors.duplicate_wish'],
     barcode_for_one_bottle: m['errors.barcode_for_one_bottle'],
     notes_too_long: m['errors.notes_too_long'],
     case_holds_bottles: m['errors.case_holds_bottles'],

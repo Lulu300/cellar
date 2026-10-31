@@ -39,6 +39,8 @@
     let dialog = $state<'save' | 'update' | 'manage' | null>(null);
     let name = $state('');
     let description = $state('');
+    // Greyed while the preset is sent, so that a double click saves it once.
+    let saving = $state(false);
 
     const presetLabel = (preset: LabelPreset) =>
         `${preset.name} - ${preset.description || m['barcode.no_description']()}`;
@@ -56,8 +58,10 @@
     }
 
     async function savePreset() {
+        if (saving) return;
         const body = { ...options.layout, name: name.trim(), description: description.trim() };
         const updating = dialog === 'update' && selected;
+        saving = true;
         try {
             const response = updating
                 ? await sendJson('PUT', `/api/admin/label-presets/${selected.id}`, body)
@@ -82,6 +86,8 @@
                 updating ? m['toast.error_updating_preset']() : m['toast.error_saving_preset'](),
                 'error'
             );
+        } finally {
+            saving = false;
         }
     }
 
@@ -218,10 +224,12 @@
                 <Button type="button" variant="outline" onclick={() => (dialog = null)}>
                     {m['common.cancel']()}
                 </Button>
-                <Button type="submit" disabled={!name.trim()}>
-                    {dialog === 'update'
-                        ? m['barcode.update_preset']()
-                        : m['barcode.save_new_preset']()}
+                <Button type="submit" disabled={!name.trim() || saving}>
+                    {#if dialog === 'update'}
+                        {saving ? m['common.updating']() : m['barcode.update_preset']()}
+                    {:else}
+                        {saving ? m['forms.saving']() : m['barcode.save_new_preset']()}
+                    {/if}
                 </Button>
             </div>
         </form>

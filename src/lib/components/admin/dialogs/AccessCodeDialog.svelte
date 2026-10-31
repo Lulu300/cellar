@@ -20,6 +20,8 @@
     let newAccessCode = $state('');
     let confirmAccessCode = $state('');
     let accessCodeError = $state('');
+    // Greyed while the change runs, so that a double click sends it once.
+    let changing = $state(false);
     // The button is greyed until the three fields hold something: a line by it says why.
     const fieldsMissing = $derived(
         !currentAccessCode.trim() || !newAccessCode.trim() || !confirmAccessCode.trim()
@@ -34,6 +36,7 @@
     }
 
     async function changeAccessCode() {
+        if (changing) return;
         accessCodeError = '';
         // Trimmed like the code typed at login, which must match the new one.
         const currentCode = currentAccessCode.trim();
@@ -49,7 +52,9 @@
             return;
         }
 
+        changing = true;
         const result = await auth.changeAccessCode(currentCode, newCode);
+        changing = false;
 
         if (result.success) {
             toasts.add(m['toast.access_code_changed'](), 'success');
@@ -137,10 +142,10 @@
                 </Button>
                 <Button
                     onclick={changeAccessCode}
-                    disabled={fieldsMissing}
+                    disabled={fieldsMissing || changing}
                     aria-describedby={fieldsMissing ? 'access-code-fields-missing' : undefined}
                 >
-                    {m['admin.change_access_code']()}
+                    {changing ? m['common.updating']() : m['admin.change_access_code']()}
                 </Button>
             </div>
         </div>

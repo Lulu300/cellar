@@ -164,7 +164,7 @@ export const phases = [
 		id: 'P16',
 		version: '1.4.0',
 		title: 'Couleurs et plan de la cave',
-		goal: 'Pour la 1.4.0 : les couleurs des vins, puis le plan de la cave, qui s’appuie dessus. Ordre : FEAT-03 ; FEAT-04 ; puis REL-10.'
+		goal: 'Pour la 1.4.0 : les couleurs des vins, puis le plan de la cave, qui s’appuie dessus. Ordre : FEAT-03 ; FEAT-04 ; DEP-10 ; puis REL-10.'
 	},
 	{
 		id: 'P17',
@@ -2450,7 +2450,8 @@ export const tasks = [
 		todo: [
 			'Comme DEP-07 et DEP-08 : correctifs publiés depuis au moins 7 jours, une mise à jour par commit, portes à chaque fois ; revoir l’alerte minimatch (readdir-glob ou archiver acceptent-ils minimatch 11 ?) ; `pnpm audit --prod` vide ou chaque alerte justifiée.',
 			'Trouvé pendant DEP-08 : `ci.yml` tourne sur `ubuntu-latest`, qui passe à Ubuntu 26, alors que `release.yml` fixe `ubuntu-24.04`.',
-			'Lot 3 de P15, juste avant la release.'
+			'Lot 3 de P15, juste avant la release.',
+			'Choix du mainteneur (2026-11-01) : publier la 1.3.0 sans attendre ; DEP-09 ne prend que ce qui est éligible le jour même, le reste passe à DEP-10 (P16).'
 		],
 		done: 'Chaque dépendance, action et image de base est à son dernier correctif publié depuis au moins 7 jours, ou l’écart est justifié ; `pnpm audit --prod` vide ou chaque alerte justifiée.',
 		deps: ['DEP-08'], src: ['Trouvé pendant DEP-08', 'Décision « Alerte minimatch (DEP-08) »']
@@ -2494,6 +2495,17 @@ export const tasks = [
 		deps: ['FEAT-03'], src: ['Décision « Plan de la cave (FEAT-04) »']
 	},
 	{
+		id: 'DEP-10', phase: 'P16', size: 'S', sev: 'mineur',
+		title: 'Revue des dépendances d’avant la 1.4.0',
+		why: 'Ce que DEP-09 n’a pas pu prendre, la 1.3.0 étant publiée avant que les correctifs soient éligibles (choix du mainteneur) : node 24.22.2, SvelteKit, adapter-node, Paraglide, minimatch 11 et la suite.',
+		where: ['package.json', 'pnpm-lock.yaml', '.github/workflows/', 'Dockerfile'],
+		todo: [
+			'Comme DEP-08 et DEP-09 : correctifs publiés depuis au moins 7 jours, une mise à jour par commit, portes à chaque fois ; l’alerte minimatch revue ; `pnpm audit --prod` vide ou chaque alerte justifiée. En fin de P16, juste avant REL-10.'
+		],
+		done: 'Chaque dépendance, action et image de base est à son dernier correctif publié depuis au moins 7 jours, ou l’écart est justifié.',
+		deps: ['DEP-09'], src: ['Trouvé pendant DEP-09']
+	},
+	{
 		id: 'REL-10', phase: 'P16', size: 'S', sev: 'evolution',
 		title: 'Publication de la 1.4.0',
 		why: 'La 1.4.0 apporte aux utilisateurs ce que sa phase a livré.',
@@ -2502,7 +2514,7 @@ export const tasks = [
 			'Résumé 1.4.0 complété à chaque tâche ; banc depuis la version précédente ; release selon RELEASING.md, avec le mainteneur.'
 		],
 		done: 'v1.4.0 est publiée sur `main` et son image se télécharge sans connexion ; develop passe à la rc suivante.',
-		deps: ['FEAT-03', 'FEAT-04'], src: ['Décision « Versions après la 1.0 »']
+		deps: ['FEAT-03', 'FEAT-04', 'DEP-10'], src: ['Décision « Versions après la 1.0 »']
 	},
 	// ───────── P17 À boire et dégustation
 	{

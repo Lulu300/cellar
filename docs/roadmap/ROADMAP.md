@@ -164,7 +164,7 @@ Revue du code du 2026-10-08, commit `556c7bb`. Ce fichier est la version pour le
 | 1.1.0 | P13 · Finitions et installation | Pour la 1.1.0, juste après la 1.0.0 : ce que voit d’abord un nouveau visiteur (installation dans le README, liens vers la doc de l’API), l’app installable sur le téléphone (PWA), et les finitions notées pendant P12 (décision « Versions après la 1.0 »). Lots, chacun mergé avant le suivant, résumé 1.1.0 (lots 1 à 3 faits le 2026-10-31, publiée en 1.1.0 le même jour) : 1. DOC-05, UI-27, SEC-13, BUG-24 ; 2. UI-24, UI-25, API-13 ; 3. UI-26, UI-29, DEP-08 ; UI-30 ; puis REL-07. | DOC-05, UI-27, SEC-13, BUG-24, UI-24, UI-25, API-13, UI-26, UI-29, UI-30, DEP-08, REL-07 | 12 / 12 |
 | 1.2.0 | P14 · Serveur MCP | Pour la 1.2.0, enchaînée juste après la 1.1.0 : un serveur MCP intégré à Cellar, pour les assistants d’IA du réseau local (décision « Serveur MCP (P14) »), et la description OpenAPI de l’API, tirée des mêmes schémas zod. Lots : 1. SEC-11, API-14 (faits le 2026-10-31) ; 2. API-10, API-15 (faits le 2026-10-31) ; 3. API-11, DOC-06 (faits le 2026-10-31) ; BUG-25 ; puis REL-08. Publiée en 1.2.0 le 2026-10-31. | SEC-11, API-14, API-10, API-11, API-15, DOC-06, BUG-25, REL-08 | 8 / 8 |
 | 1.3.0 | P15 · Navigation, photos et achats | Pour la 1.3.0 (décision « Versions de 1.3.0 à 1.7.0 ») : le menu par sections d’abord, parce que les pages qui suivent s’y rangent, puis les photos d’étiquette et la page Achats, dont les envies réutilisent l’envoi de photo. Lots, chacun mergé avant le suivant, résumé 1.3.0 : 1. UI-28 et FEAT-01 en parallèle (faits le 2026-10-31) (le menu et les photos ne touchent pas les mêmes fichiers) ; 2. FEAT-02, qui a besoin des deux (fait le 2026-11-01) ; 3. DEP-09 ; puis REL-09. Si la phase traîne, la page Achats peut partir d’abord avec des envies en texte seul. | UI-28, FEAT-01, FEAT-02, DEP-09, REL-09 | 3 / 5 |
-| 1.4.0 | P16 · Couleurs et plan de la cave | Pour la 1.4.0 : les couleurs des vins, puis le plan de la cave, qui s’appuie dessus. Ordre : FEAT-03 ; FEAT-04 ; puis REL-10. | FEAT-03, FEAT-04, REL-10 | 0 / 3 |
+| 1.4.0 | P16 · Couleurs et plan de la cave | Pour la 1.4.0 : les couleurs des vins, puis le plan de la cave, qui s’appuie dessus. Ordre : FEAT-03 ; FEAT-04 ; DEP-10 ; puis REL-10. | FEAT-03, FEAT-04, DEP-10, REL-10 | 0 / 4 |
 | 1.5.0 | P17 · À boire et dégustation | Pour la 1.5.0 : la vie d’une bouteille jusqu’à ce qu’on la boive. Les deux tâches ajoutent leur repère et leur fiche à la liste d’une case du plan (FEAT-04). Ordre : FEAT-05 et FEAT-06 ; puis REL-11. | FEAT-05, FEAT-06, REL-11 | 0 / 3 |
 | 1.6.0 | P18 · Producteurs et revue de l’import | Pour la 1.6.0 : les producteurs d’abord, parce que la revue de l’import doit savoir relier ou créer un producteur. Ordre : FEAT-07 ; FEAT-08 ; puis REL-12. | FEAT-07, FEAT-08, REL-12 | 0 / 3 |
 | 1.7.0 | P19 · Notifications | Pour la 1.7.0 : les notifications, qui utilisent « À boire » (FEAT-05), le statut hors cave et la vérification des mises à jour. Ordre : FEAT-09 ; puis REL-13. | FEAT-09, REL-13 | 0 / 2 |
@@ -3228,6 +3228,7 @@ Sévérité **mineur** · effort **S** · dépend de DEP-08 · statut **À faire
 - Comme DEP-07 et DEP-08 : correctifs publiés depuis au moins 7 jours, une mise à jour par commit, portes à chaque fois ; revoir l’alerte minimatch (readdir-glob ou archiver acceptent-ils minimatch 11 ?) ; `pnpm audit --prod` vide ou chaque alerte justifiée.
 - Trouvé pendant DEP-08 : `ci.yml` tourne sur `ubuntu-latest`, qui passe à Ubuntu 26, alors que `release.yml` fixe `ubuntu-24.04`.
 - Lot 3 de P15, juste avant la release.
+- Choix du mainteneur (2026-11-01) : publier la 1.3.0 sans attendre ; DEP-09 ne prend que ce qui est éligible le jour même, le reste passe à DEP-10 (P16).
 
 **Critère d’acceptation** : Chaque dépendance, action et image de base est à son dernier correctif publié depuis au moins 7 jours, ou l’écart est justifié ; `pnpm audit --prod` vide ou chaque alerte justifiée.
 
@@ -3251,7 +3252,7 @@ Sévérité **évolution** · effort **S** · dépend de UI-28, FEAT-01, FEAT-02
 
 ## P16 · Couleurs et plan de la cave (1.4.0)
 
-Pour la 1.4.0 : les couleurs des vins, puis le plan de la cave, qui s’appuie dessus. Ordre : FEAT-03 ; FEAT-04 ; puis REL-10.
+Pour la 1.4.0 : les couleurs des vins, puis le plan de la cave, qui s’appuie dessus. Ordre : FEAT-03 ; FEAT-04 ; DEP-10 ; puis REL-10.
 
 ### FEAT-03 · Une vraie couleur pour chaque couleur de vin
 
@@ -3289,9 +3290,25 @@ Sévérité **évolution** · effort **M** · dépend de FEAT-03 · statut **À 
 
 **Sources** : Décision « Plan de la cave (FEAT-04) »
 
+### DEP-10 · Revue des dépendances d’avant la 1.4.0
+
+Sévérité **mineur** · effort **S** · dépend de DEP-09 · statut **À faire**
+
+**Problème** : Ce que DEP-09 n’a pas pu prendre, la 1.3.0 étant publiée avant que les correctifs soient éligibles (choix du mainteneur) : node 24.22.2, SvelteKit, adapter-node, Paraglide, minimatch 11 et la suite.
+
+**Fichiers** : `package.json`, `pnpm-lock.yaml`, `.github/workflows/`, `Dockerfile`
+
+**À faire**
+
+- Comme DEP-08 et DEP-09 : correctifs publiés depuis au moins 7 jours, une mise à jour par commit, portes à chaque fois ; l’alerte minimatch revue ; `pnpm audit --prod` vide ou chaque alerte justifiée. En fin de P16, juste avant REL-10.
+
+**Critère d’acceptation** : Chaque dépendance, action et image de base est à son dernier correctif publié depuis au moins 7 jours, ou l’écart est justifié.
+
+**Sources** : Trouvé pendant DEP-09
+
 ### REL-10 · Publication de la 1.4.0
 
-Sévérité **évolution** · effort **S** · dépend de FEAT-03, FEAT-04 · statut **À faire**
+Sévérité **évolution** · effort **S** · dépend de FEAT-03, FEAT-04, DEP-10 · statut **À faire**
 
 **Problème** : La 1.4.0 apporte aux utilisateurs ce que sa phase a livré.
 

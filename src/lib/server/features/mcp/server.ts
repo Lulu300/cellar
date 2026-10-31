@@ -105,7 +105,7 @@ const bottleIds = bulkBottleChangesSchema.shape.ids.describe(
 );
 
 /** A day of a write tool. */
-const dateParam = (what: string) => optionalDate.describe(`${what}, as YYYY-MM-DD.`);
+const dateParam = (what: string) => optionalDate.describe(`YYYY-MM-DD: ${what}.`);
 
 /**
  * What the token of the request allows, which serveMcp hands to the server of the request:
@@ -305,7 +305,7 @@ function createServer({ authInfo }: McpRequestContext): McpServer {
                     purchasePrice: bottleSchema.shape.purchasePrice.describe(
                         'The price of one bottle, in the currency of the owner.'
                     ),
-                    purchaseDate: dateParam('The day they were bought'),
+                    purchaseDate: dateParam('the day they were bought'),
                     caseId: optionalId.describe('The id of their case, from get_free_space.'),
                     barcode: bottleSchema.shape.barcode.describe(
                         'The barcode of their label, for a single bottle: left out, Cellar numbers them when its automatic barcodes are on.'
@@ -327,7 +327,7 @@ function createServer({ authInfo }: McpRequestContext): McpServer {
             inputSchema: z.strictObject({
                 bottleIds,
                 date: dateParam(
-                    "The day they were drunk, on the owner's calendar: left out, today on the server's clock, often in UTC"
+                    "the day they were drunk, on the owner's calendar; left out, today on the server's clock, often in UTC"
                 ),
                 note: longText.describe('A note to add after the notes of each bottle.')
             }),

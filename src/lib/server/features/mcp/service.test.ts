@@ -366,8 +366,7 @@ describe('markDrunk', () => {
     });
 
     it("takes today on the server's calendar when no day is given", async () => {
-        const zone = process.env.TZ;
-        process.env.TZ = 'Europe/Paris';
+        vi.stubEnv('TZ', 'Europe/Paris');
         vi.useFakeTimers({ toFake: ['Date'] });
         // Half past midnight in Paris, still the day before in UTC.
         vi.setSystemTime(new Date('2026-10-30T23:30:00Z'));
@@ -379,7 +378,7 @@ describe('markDrunk', () => {
             ]);
         } finally {
             vi.useRealTimers();
-            process.env.TZ = zone;
+            vi.unstubAllEnvs();
         }
     });
 

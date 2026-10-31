@@ -27,6 +27,8 @@ const ROUTES_HOLDING_WRITES = new Set([
     '/api/admin/import-json',
     '/api/admin/wipe-database'
 ]);
+// The MCP server reads with a POST too: its reads go on during those, like the GETs of the API. A
+// write tool of the MCP server must go through the write gate itself, for the time of its write.
 
 // Runs before the server listens. The database opens first, so exitUnlessDirsWritable() stops the
 // process when a data folder is not writable. Not during the build, which runs init when it
@@ -118,7 +120,11 @@ async function handleRequest(
         : await authenticate(event);
     if (unauthenticated && !isCronBackupRequest(event)) return unauthenticated;
 
-    if (SAFE_METHODS.has(event.request.method) || ROUTES_HOLDING_WRITES.has(event.route.id ?? '')) {
+    if (
+        SAFE_METHODS.has(event.request.method) ||
+        ROUTES_HOLDING_WRITES.has(event.route.id ?? '') ||
+        isMcpRequest(event)
+    ) {
         return resolve(event);
     }
     return runWrite(() => resolve(event));

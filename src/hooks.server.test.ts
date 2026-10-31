@@ -281,6 +281,22 @@ describe('handle', () => {
             );
         });
 
+        it('goes on reading while a restore holds the writes, like the GETs of the API', async () => {
+            // Every message to the MCP server is a POST, its reads included.
+            const bearer = { authorization: `Bearer ${createMcpToken()}` };
+            const cookies = fakeCookies();
+            await createSession(cookies, new URL('http://localhost'));
+            let release = () => {};
+            const restore = holdWrites(() => new Promise<void>((resolve) => (release = resolve)));
+            try {
+                expect((await callMcp('POST', bearer)).status).toBe(200);
+                expect((await request('POST', '/api/bottles', {}, cookies)).status).toBe(503);
+            } finally {
+                release();
+                await restore;
+            }
+        });
+
         it('never writes the token to the logs', async () => {
             const logs = (['log', 'info', 'warn', 'error', 'debug'] as const).map((level) =>
                 vi.spyOn(console, level).mockImplementation(() => {})

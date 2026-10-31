@@ -1,7 +1,7 @@
 [
   {
     "version": "1.3.0",
-    "summary": "1.3.0 reorganises the menu into sections, lets you take and crop several photos of a wine, and adds a wishlist next to the wines to buy again.\n\nA wine can now have several photos. The wine list shows its main photo; the wine page shows them all, adds one, makes another the main photo or deletes one. On a phone, « Take a photo » opens the camera, and « Choose a file » picks an image, on a computer too. Before a photo is sent, a preview turns and crops it; it is then shrunk to about 1,600 pixels on its longest side and sent as JPEG, without its metadata, such as the position where it was taken. Images already stored stay as they are, each the main photo of its wines. Backups and data exports keep every photo; the CSV files still name only the main photo of a wine. Scripts find the new photo routes in docs/API.md.",
+    "summary": "1.3.0 reorganises the menu into sections, lets you take and crop several photos of a wine, and adds a wishlist next to the wines to buy again.\n\nA wine can now have several photos. The wine list shows its main photo; the wine page shows them all, adds one, makes another the main photo or deletes one. On a phone, \"Take a photo\" opens the camera, and \"Choose a file\" picks an image, on a computer too. Before a photo is sent, a preview turns and crops it; it is then shrunk to about 1,600 pixels on its longest side and sent as JPEG, without its metadata, such as the position where it was taken. Images already stored stay as they are, each the main photo of its wines. Backups and data exports keep every photo; the CSV files still name only the main photo of a wine. Scripts find the new photo routes in docs/API.md.",
     "mandatoryStop": false,
     "actions": []
   },

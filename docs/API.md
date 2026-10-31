@@ -2448,6 +2448,10 @@ The tools that read:
 - `get_wine_shortage`: no parameters; the wines below their target quantity, the largest shortage
   first, with `id`, `name`, `producer`, `color`, `type`, `appellation`, `region`, `country`,
   `targetQuantity`, `inCellar`, `missing` and `averagePrice`.
+- `get_wishlist`: no parameters; the [wishlist](#wishlist), the newest first: each wish has `id`,
+  `quantity`, `note`, and either `text` (a wine not in the cellar yet) or `wine` (`id`, `name`,
+  `producer`, `color`, `type`, `appellation`, `region`, `country`, and `inCellar`, its bottles in
+  the cellar). Photos are left out.
 - `get_free_space`: no parameters; `{ "capacity", "bottles", "free", "containers" }`: each container
   by the name the storage page shows, with its totals and its `cases` (`id`, `name`, `capacity`,
   `bottles`, `free`). A case holds its capacity in bottles in the cellar; one that holds more has
@@ -2483,6 +2487,20 @@ one is not dropped; each one writes all or nothing.
   - **Answer:** an array of the bottles created, each with `id`, `wineId`, `availability`,
     `vintage`, `format`, `caseId`, `barcode`, `consumedDate` and `notes`.
   - **Refusals:** those of `POST /api/bottles`, such as a case without room for them all.
+  - Its description asks the assistant, when the wine is on the wishlist, to ask the user whether
+    to remove it with `remove_wish`, as the app asks after the last bottle saved.
+- `add_wish`: adds a wish to the [wishlist](#wishlist), as [`POST /api/wishes`](#post-apiwishes)
+  does, without a photo.
+  - **Parameters:** `wineId`: string (from `search_wines`), or `text`: string of 500 characters at
+    most, one of the two; `quantity`: integer 1-10,000, optional; `note`: string, optional, at most
+    5,000 characters.
+  - **Answer:** the wish, as `get_wishlist` gives it.
+  - **Refusals:** a wine already on the wishlist, or an unknown one.
+- `remove_wish`: removes a wish from the wishlist, as
+  [`DELETE /api/wishes/{id}`](#delete-apiwishesid) does.
+  - **Parameters:** `wishId`: string, required, from `get_wishlist`.
+  - **Answer:** `{ "removed": "<wishId>" }`.
+  - **Refusals:** an unknown wish.
 - `mark_bottles_drunk`: marks bottles `consumed`, as the status dialog of the app does: they leave
   their case.
   - **Parameters:** `bottleIds`: array of 1-10,000 bottle ids, required; `date`: `YYYY-MM-DD`,

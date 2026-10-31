@@ -18,11 +18,13 @@ import {
 } from '#lib/server/features/catalog/service.js';
 import { appellationHandlers } from '#lib/server/features/geography/service.js';
 import { storageOverview } from '#lib/server/features/storage/service.js';
+import { createWish, listWishes, removeWish } from '#lib/server/features/wishlist/service.js';
 import { findBarcodeMatches } from '#lib/shared/barcode.js';
 import { BottleAvailability } from '#lib/shared/bottle-availability.js';
 import type { BottleWithDefinitionDTO, WineGroupDTO } from '#lib/shared/dto.js';
 import type { BottleInput } from '#lib/shared/schemas/bottle.js';
 import type { WineDefinitionInput } from '#lib/shared/schemas/wine.js';
+import type { WishInput } from '#lib/shared/schemas/wish.js';
 import { containerLabel } from '#lib/shared/storage.js';
 import { compareText } from '#lib/utils/compare.js';
 import { today } from '#lib/utils/format.js';
@@ -351,4 +353,38 @@ export function changeBottleNotes(
 export function rateWine(id: string, rating: number | null) {
     rateDefinition(id, rating);
     return wineSummary(getDefinitionDetails(id));
+}
+
+/** A wish without its photo, which an assistant cannot see. */
+function wishSummary({ id, text, quantity, note, wine }: ReturnType<typeof listWishes>[number]) {
+    return {
+        id,
+        text,
+        quantity,
+        note,
+        wine: wine && {
+            id: wine.id,
+            name: wine.name,
+            producer: wine.producer,
+            color: wine.color,
+            type: wine.type,
+            appellation: wine.appellation,
+            region: wine.region,
+            country: wine.country,
+            inCellar: wine.inCellar
+        }
+    };
+}
+
+/** The wishes, the newest first: a wine of the cellar, or the name of a wine not in it yet. */
+export const wishlist = () => listWishes().map(wishSummary);
+
+/** Adds a wine of the cellar, or a text, to the wishlist, and answers the wish as wishlist does. */
+export const addWish = (wish: Omit<WishInput, 'imageId'>) =>
+    wishSummary(createWish({ ...wish, imageId: null }));
+
+/** Removes a wish from the wishlist. */
+export async function removeWishById(id: string) {
+    await removeWish(id);
+    return { removed: id };
 }

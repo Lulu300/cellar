@@ -26,6 +26,7 @@ import {
     optionalId
 } from '#lib/shared/schemas/common.js';
 import { rating, wineDefinitionSchema } from '#lib/shared/schemas/wine.js';
+import { wishSchema } from '#lib/shared/schemas/wish.js';
 import {
     addBottles,
     addWine,
@@ -36,11 +37,14 @@ import {
     markDrunk,
     MAX_APPELLATIONS,
     moveBottles,
+    addWish,
     rateWine,
+    removeWishById,
     searchAppellations,
     searchWines,
     wineShortages,
-    wineWithBottles
+    wineWithBottles,
+    wishlist
 } from './service';
 import { assertMcpWrite, ReadOnlyTokenError, type McpAccess } from './token';
 
@@ -209,6 +213,17 @@ function createServer({ authInfo }: McpRequestContext): McpServer {
     );
 
     server.registerTool(
+        'get_wishlist',
+        {
+            title: 'Wishlist',
+            description:
+                'The wines the owner wants to buy, the newest first: each wish is a wine of the cellar (wine, with its bottles in the cellar, inCellar) or the name of a wine not in it yet (text), with how many bottles to buy (quantity) and a note. get_wine_shortage lists the wines below their target quantity, which are another reason to buy.',
+            annotations: READ_ONLY
+        },
+        () => answer('get_wishlist', wishlist)
+    );
+
+    server.registerTool(
         'get_free_space',
         {
             title: 'Free space in storage',
@@ -287,7 +302,7 @@ function createServer({ authInfo }: McpRequestContext): McpServer {
         {
             title: 'Add bottles',
             description:
-                'Adds bottles of a wine to the cellar, all alike, each with its own id and, when Cellar numbers them, its own barcode. All or none: a case without room for them adds none.',
+                'Adds bottles of a wine to the cellar, all alike, each with its own id and, when Cellar numbers them, its own barcode. All or none: a case without room for them adds none. When the wine is on the wishlist (get_wishlist), ask the owner whether to remove it with remove_wish.',
             inputSchema: z
                 .object({
                     wineId: id.describe('The id of the wine, from search_wines or add_wine.'),
@@ -316,6 +331,49 @@ function createServer({ authInfo }: McpRequestContext): McpServer {
             annotations: ADDS
         },
         (bottles) => answerWrite('add_bottles', access, () => addBottles(bottles))
+    );
+
+    server.registerTool(
+        'add_wish',
+        {
+            title: 'Add to the wishlist',
+            description:
+                'Adds a wine to buy to the wishlist: a wine of the cellar by its id, at most once, or the name of a wine not in the cellar yet as text. Answers the wish as get_wishlist does.',
+            inputSchema: z
+                .strictObject({
+                    wineId: optionalId.describe(
+                        'The id of a wine of the cellar, from search_wines. Give it or text.'
+                    ),
+                    text: wishSchema.shape.text.describe(
+                        'The name of a wine not in the cellar yet, as the owner would write it. Give it or wineId.'
+                    ),
+                    quantity: wishSchema.shape.quantity.describe('How many bottles to buy.'),
+                    note: wishSchema.shape.note.describe(
+                        'A note: where to buy it, for which occasion…'
+                    )
+                })
+                .refine(
+                    ({ wineId, text }) => (wineId === null) !== (text === null),
+                    'Give wineId or text, not both'
+                ),
+            annotations: ADDS
+        },
+        ({ wineId, ...wish }) =>
+            answerWrite('add_wish', access, () => addWish({ ...wish, definitionId: wineId }))
+    );
+
+    server.registerTool(
+        'remove_wish',
+        {
+            title: 'Remove from the wishlist',
+            description:
+                'Removes a wish from the wishlist, such as a wine just bought: ask the owner first, as the app does.',
+            inputSchema: z.strictObject({
+                wishId: id.describe('The id of the wish, from get_wishlist.')
+            }),
+            annotations: changes(true)
+        },
+        ({ wishId }) => answerWrite('remove_wish', access, () => removeWishById(wishId))
     );
 
     server.registerTool(

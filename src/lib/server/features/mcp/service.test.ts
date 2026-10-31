@@ -8,7 +8,8 @@ import {
     storageCases,
     storageContainers,
     wineBottles,
-    wineDefinitions
+    wineDefinitions,
+    wishes
 } from '#lib/server/db/schema.js';
 import { listBottlesWithDefinitions } from '#lib/server/features/bottles/service.js';
 import { getDefinitionDetails } from '#lib/server/features/catalog/service.js';
@@ -24,11 +25,14 @@ import {
     freeSpace,
     markDrunk,
     moveBottles,
+    addWish,
     rateWine,
+    removeWishById,
     searchAppellations,
     searchWines,
     wineShortages,
-    wineWithBottles
+    wineWithBottles,
+    wishlist
 } from './service';
 
 let margaux: string;
@@ -440,5 +444,54 @@ describe('rateWine', () => {
 
     it('refuses an unknown wine', () => {
         expect(() => rateWine('nothing', 4)).toThrow(NotFoundError);
+    });
+});
+
+describe('the wishlist', () => {
+    beforeEach(() => {
+        db.delete(wishes).run();
+    });
+
+    it('lists the wines and the texts to buy, the newest first, without photos', async () => {
+        await insertBottles(margaux, [{ availability: 'available' }, { availability: 'consumed' }]);
+        const wine = addWish({ definitionId: margaux, text: null, quantity: 6, note: null });
+        const text = addWish({
+            definitionId: null,
+            text: 'Clos Rougeard',
+            quantity: null,
+            note: 'Saumur'
+        });
+
+        expect(wishlist()).toEqual([
+            { id: text.id, text: 'Clos Rougeard', quantity: null, note: 'Saumur', wine: null },
+            {
+                id: wine.id,
+                text: null,
+                quantity: 6,
+                note: null,
+                wine: {
+                    id: margaux,
+                    name: 'Château Margaux',
+                    producer: null,
+                    color: 'Red',
+                    type: 'Still',
+                    appellation: 'Margaux',
+                    region: 'Bordeaux',
+                    country: 'France',
+                    inCellar: 1
+                }
+            }
+        ]);
+    });
+
+    it('refuses a wine twice, and removes a wish', async () => {
+        const wish = addWish({ definitionId: margaux, text: null, quantity: null, note: null });
+
+        expect(() =>
+            addWish({ definitionId: margaux, text: null, quantity: 2, note: null })
+        ).toThrow('This wine is already on the wishlist');
+        expect(await removeWishById(wish.id)).toEqual({ removed: wish.id });
+        expect(wishlist()).toEqual([]);
+        await expect(removeWishById(wish.id)).rejects.toThrow('Wish not found');
     });
 });

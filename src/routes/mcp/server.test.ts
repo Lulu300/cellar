@@ -3,7 +3,9 @@ import { beforeAll, describe, expect, it, vi } from 'vitest';
 import { listBottlesWithDefinitions } from '#lib/server/features/bottles/service.js';
 import type { McpAccess } from '#lib/server/features/mcp/token.js';
 import { createContainer, storageOverview } from '#lib/server/features/storage/service.js';
+import { createWish } from '#lib/server/features/wishlist/service.js';
 import { holdWrites } from '#lib/server/write-gate.js';
+import { wishSchema } from '#lib/shared/schemas/wish.js';
 import { fakeEvent } from '../../test/event';
 import { insertBottles, insertWineDefinition } from '../../test/wine';
 import { POST } from './+server';
@@ -107,11 +109,14 @@ describe('POST /mcp', () => {
             ['find_bottle_by_barcode', true],
             ['get_statistics', true],
             ['get_wine_shortage', true],
+            ['get_wishlist', true],
             ['get_free_space', true],
             ['list_choices', true],
             ['search_appellations', true],
             ['add_wine', false],
             ['add_bottles', false],
+            ['add_wish', false],
+            ['remove_wish', false],
             ['mark_bottles_drunk', false],
             ['move_bottles', false],
             ['update_bottle_notes', false],
@@ -200,13 +205,15 @@ describe('POST /mcp', () => {
     });
 
     describe('write tools', () => {
-        /** One call of each write tool, on the bottle `bottle` and the case `caseId`. */
-        const writes = (bottle: string, caseId: string): [string, object][] => [
+        /** One call of each write tool, on the bottle `bottle`, the case `caseId` and the wish `wish`. */
+        const writes = (bottle: string, caseId: string, wish: string): [string, object][] => [
             [
                 'add_wine',
                 { name: 'Pavillon Rouge', appellationId: 'mgx', typeId: 'still', colorId: 'red' }
             ],
             ['add_bottles', { wineId: margaux, formatId: 'bottle', quantity: 2, vintage: 2020 }],
+            ['add_wish', { text: 'Clos Rougeard', quantity: 2, note: 'For the wedding' }],
+            ['remove_wish', { wishId: wish }],
             ['mark_bottles_drunk', { bottleIds: [bottle], note: 'With friends' }],
             ['move_bottles', { bottleIds: [bottle], caseId }],
             ['update_bottle_notes', { bottleIds: [bottle], addedNote: 'Corked' }],
@@ -223,7 +230,7 @@ describe('POST /mcp', () => {
         it('refuses each one to a read-only token, saying where to allow it, and writes nothing', async () => {
             const before = listBottlesWithDefinitions();
 
-            for (const [name, args] of writes('none', 'none')) {
+            for (const [name, args] of writes('none', 'none', 'none')) {
                 expect(textOf(await modernCall(name, args)), name).toEqual([
                     true,
                     'This MCP token is read-only: changes can be allowed in Cellar, under Admin › Settings › MCP access.'
@@ -238,7 +245,8 @@ describe('POST /mcp', () => {
             const { cases } = createContainer({ name: 'Shelf', cases: ['1'], caseCapacities: [6] });
             const [bottle] = listBottlesWithDefinitions(margaux);
 
-            for (const [name, args] of writes(bottle.id, cases[0].id)) {
+            const wish = createWish(wishSchema.parse({ text: 'Bought already' }));
+            for (const [name, args] of writes(bottle.id, cases[0].id, wish.id)) {
                 const { result } = await modernCall(name, args, WRITE);
                 expect(result.isError, `${name}: ${result.content[0].text}`).toBeUndefined();
             }
@@ -257,6 +265,15 @@ describe('POST /mcp', () => {
                 storageCaseId: null,
                 notes: 'With friends\nCorked'
             });
+            const { result } = await modernCall('get_wishlist', {});
+            expect(JSON.parse(result.content[0].text)).toEqual([
+                {
+                    id: expect.any(String),
+                    text: 'Clos Rougeard',
+                    quantity: 2,
+                    note: 'For the wedding'
+                }
+            ]);
         });
 
         it('says why the cellar refuses a write, without logging it', async () => {
@@ -284,7 +301,10 @@ describe('POST /mcp', () => {
                 ['mark_bottles_drunk', { bottleIds: [] }],
                 ['mark_bottles_drunk', { bottleIds: ['a'], date: 'yesterday' }],
                 ['update_bottle_notes', { bottleIds: ['a'] }],
-                ['add_wine', { name: ' ', appellationId: 'mgx', typeId: 'still', colorId: 'red' }]
+                ['add_wine', { name: ' ', appellationId: 'mgx', typeId: 'still', colorId: 'red' }],
+                ['add_wish', { wineId: margaux, text: 'Margaux' }],
+                ['add_wish', { quantity: 2 }],
+                ['add_wish', { text: 'Clos Rougeard', quantity: 0 }]
             ] as const) {
                 const { result } = await modernCall(name, args, WRITE);
                 expect(result.isError, `${name} ${JSON.stringify(args)}`).toBe(true);

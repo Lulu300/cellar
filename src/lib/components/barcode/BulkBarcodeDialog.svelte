@@ -286,7 +286,7 @@
                      its top, and a screen reader hears its result. -->
                 <p
                     id={summaryId}
-                    class="text-sm text-muted-foreground"
+                    class="text-sm text-muted-foreground focus:outline-none"
                     tabindex="-1"
                     {@attach (summary) => summary.focus()}
                 >

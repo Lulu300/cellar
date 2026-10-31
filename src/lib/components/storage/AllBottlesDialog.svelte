@@ -117,8 +117,27 @@
     }
 </script>
 
+<!-- Stretched, because a pagination sizes itself on its container (`@container`) and has no width
+     of its own in the row of the footer. -->
+{#snippet pagination()}
+    <div class="w-full">
+        <Pagination
+            page={shownPage}
+            {perPage}
+            total={sortedBottles.length}
+            onPageChange={(next) => (page = next)}
+        />
+    </div>
+{/snippet}
+
 <Dialog bind:open>
-    <ScrollingDialogContent title={m['common.all_bottles']()} class="max-w-6xl sm:max-w-6xl">
+    <!-- The pagination stays in view under the list, which scrolls. Passed only when there is more
+         than one page, as the footer would otherwise draw its border above nothing. -->
+    <ScrollingDialogContent
+        title={m['common.all_bottles']()}
+        class="max-w-6xl sm:max-w-6xl"
+        footer={!loading && !failed && sortedBottles.length > perPage ? pagination : undefined}
+    >
         <!-- Filters -->
         <div class="mb-4 space-y-4">
             <div class="flex gap-4 items-end flex-wrap">
@@ -221,34 +240,26 @@
                 <p class="text-destructive">{m['storage.failed_to_load_bottles']()}</p>
             </div>
         {:else}
-            <div class="space-y-4">
-                <BottleTable
-                    bottles={pageOfBottles}
-                    columns={[
-                        'definition',
-                        'location',
-                        'availability',
-                        'vintage',
-                        'format',
-                        'purchaseDate',
-                        'origin',
-                        'purchasePrice',
-                        'barcode',
-                        'notes'
-                    ]}
-                    {sort}
-                    onSort={(next) => (sort = next)}
-                    emptyMessage={m['storage.no_bottles_found']()}
-                    onEdit={editBottle}
-                    linkWine
-                />
-                <Pagination
-                    page={shownPage}
-                    {perPage}
-                    total={sortedBottles.length}
-                    onPageChange={(next) => (page = next)}
-                />
-            </div>
+            <BottleTable
+                bottles={pageOfBottles}
+                columns={[
+                    'definition',
+                    'location',
+                    'availability',
+                    'vintage',
+                    'format',
+                    'purchaseDate',
+                    'origin',
+                    'purchasePrice',
+                    'barcode',
+                    'notes'
+                ]}
+                {sort}
+                onSort={(next) => (sort = next)}
+                emptyMessage={m['storage.no_bottles_found']()}
+                onEdit={editBottle}
+                linkWine
+            />
         {/if}
     </ScrollingDialogContent>
 </Dialog>

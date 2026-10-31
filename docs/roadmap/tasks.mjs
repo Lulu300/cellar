@@ -27,6 +27,7 @@ export const versions = [
 	{
 		id: '1.1.0',
 		title: 'Finitions et installation',
+		released: '2026-10-31',
 		goal: 'Ce que voit d’abord un nouveau visiteur (installation dans le README, doc de l’API), l’app installable sur le téléphone et les finitions notées pendant P12.'
 	},
 	{
@@ -144,7 +145,7 @@ export const phases = [
 		id: 'P13',
 		version: '1.1.0',
 		title: 'Finitions et installation',
-		goal: 'Pour la 1.1.0, juste après la 1.0.0 : ce que voit d’abord un nouveau visiteur (installation dans le README, liens vers la doc de l’API), l’app installable sur le téléphone (PWA), et les finitions notées pendant P12 (décision « Versions après la 1.0 »). Lots, chacun mergé avant le suivant, résumé 1.1.0 (lots 1 à 3 faits le 2026-10-31) : 1. DOC-05, UI-27, SEC-13, BUG-24 ; 2. UI-24, UI-25, API-13 ; 3. UI-26, UI-29, DEP-08 ; UI-30 ; puis REL-07.'
+		goal: 'Pour la 1.1.0, juste après la 1.0.0 : ce que voit d’abord un nouveau visiteur (installation dans le README, liens vers la doc de l’API), l’app installable sur le téléphone (PWA), et les finitions notées pendant P12 (décision « Versions après la 1.0 »). Lots, chacun mergé avant le suivant, résumé 1.1.0 (lots 1 à 3 faits le 2026-10-31, publiée en 1.1.0 le même jour) : 1. DOC-05, UI-27, SEC-13, BUG-24 ; 2. UI-24, UI-25, API-13 ; 3. UI-26, UI-29, DEP-08 ; UI-30 ; puis REL-07.'
 	},
 	{
 		id: 'P14',
@@ -2241,7 +2242,9 @@ export const tasks = [
 		why: 'Trouvé pendant UI-26 : dans le dialogue « Toutes les bouteilles » de la page Stockage, la pagination suit la liste et disparaît quand on la fait défiler.',
 		where: ['src/lib/components/storage/AllBottlesDialog.svelte', 'src/lib/components/layout/ScrollingDialogContent.svelte'],
 		todo: [
-			'La pagination passe dans le pied du dialogue (`footer` de `ScrollingDialogContent`), toujours visible ; accord du mainteneur le 2026-10-31, juste avant la release si c’est rapide.'
+			'La pagination passe dans le pied du dialogue (`footer` de `ScrollingDialogContent`), toujours visible ; accord du mainteneur le 2026-10-31, juste avant la release si c’est rapide.',
+			'Fait en P13 (2026-10-31, 3383927e..06a8e887) : la pagination passe dans le pied du dialogue, seulement quand la liste a plus d’une page, et reste visible pendant qu’on fait défiler la liste, à 375 × 667 comme sur ordinateur.',
+			'Trouvé pendant UI-30 : après un changement de page, la liste garde sa position de défilement, et l’on peut arriver au milieu de la nouvelle page.'
 		],
 		done: 'À 375 × 667 et sur ordinateur, la pagination reste visible pendant qu’on fait défiler la liste, et change bien de page ; captures avant et après.',
 		deps: ['UI-26'], src: ['Trouvé pendant UI-26']
@@ -2266,7 +2269,8 @@ export const tasks = [
 		why: 'La 1.1.0 apporte aux utilisateurs l’installation dans le README, l’app installable sur le téléphone et les finitions de P13.',
 		where: ['releases.json', 'CHANGELOG.md', 'UPGRADING.md'],
 		todo: [
-			'Résumé 1.1.0 complété à chaque tâche ; banc de la 1.0.0 vers la 1.1.0 ; release selon RELEASING.md, avec le mainteneur.'
+			'Résumé 1.1.0 complété à chaque tâche ; banc de la 1.0.0 vers la 1.1.0 ; release selon RELEASING.md, avec le mainteneur.',
+			'Fait en P13 (2026-10-31, 76220e38) : banc local de la 1.0.0 vers la 1.1.0 à 176 sur 176 (désormais depuis la 1.0.0 seulement, à la demande du mainteneur) ; CI 41214006197 verte ; `main` avancée sur 76220e38, tag v1.1.0, release 41214334798 verte ; `docker pull ghcr.io/lulu300/cellar:1.1.0` sans connexion (tags `1.1.0`, `1.1`, `latest`, amd64 et arm64). develop passe à 1.2.0-rc.0.'
 		],
 		done: 'v1.1.0 est publiée sur `main` et son image se télécharge sans connexion ; develop passe à 1.2.0-rc.0.',
 		deps: ['DOC-05', 'UI-27', 'SEC-13', 'BUG-24', 'UI-24', 'UI-25', 'API-13', 'UI-26', 'UI-29', 'DEP-08', 'UI-30'], src: ['Décision « Versions après la 1.0 »']

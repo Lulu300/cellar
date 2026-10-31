@@ -96,5 +96,7 @@ describe('server.js', () => {
         });
 
         expect(statusLine).toBe('HTTP/1.1 200 OK');
+        // 0 would turn the limit off: a client could hold a connection forever.
+        expect(server.requestTimeout).toBeGreaterThan(0);
     });
 });

@@ -518,7 +518,7 @@ Restoring a backup from the admin page refuses one made by a newer version of Ce
 version older than a mandatory stop that this version passed: the message names the version to
 restore it with. A restore keeps what belongs to this installation rather than to the data: the
 access code, the automatic backup settings and the cron token, so that automatic backups go on as
-before, and for each barcode prefix the higher last number given, so that new labels never repeat
+before, the MCP token and its write option, so that the assistant keeps its access, and for each barcode prefix the higher last number given, so that new labels never repeat
 a number printed since the backup. The upgrade actions of this installation stay too, and those of
 the versions between the backup's and this one are added to them, marked "may already be done",
 since some concern the data, such as labels to print again: tick the ones you have already taken.

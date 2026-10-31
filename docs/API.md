@@ -1937,8 +1937,8 @@ included, is first saved in a pre-restore backup.
   - `imagesCopyFailed`: `true` when the database was restored but its images could not be copied;
     the pre-restore backup still holds the former images.
   - `backup`: the name of the pre-restore backup, `cellar-backup-pre-restore-<timestamp>.zip`.
-- What stays as it was: the access code, the automatic backup settings and the backup token, and
-  the upgrade actions. The upgrade actions of the versions between the backup's and this one are
+- What stays as it was: the access code, the automatic backup settings and the backup token, the
+  MCP token and its write option, and the upgrade actions. The upgrade actions of the versions between the backup's and this one are
   added to the list, with `mayBeDone: true`, unless it holds them already. Every session but the
   caller's ends.
 - Each barcode prefix keeps the higher of its last numbers given, that of the backup and that of

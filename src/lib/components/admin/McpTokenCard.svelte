@@ -15,7 +15,7 @@
     let { mcpToken }: { mcpToken: McpTokenDTO } = $props();
 
     const TOKEN_ROUTE = '/api/admin/mcp-token';
-    // url.origin honours ORIGIN: the address the assistant reaches Cellar at, as the browser does.
+    // The address this page was opened at, which an assistant on the same network reaches too.
     const mcpUrl = $derived(new URL('/mcp', page.url.origin).href);
 
     // Shown once, then forgotten: the server keeps only its hash.
@@ -30,8 +30,8 @@
         try {
             token = (await request<NewTokenDTO>(TOKEN_ROUTE, { method: 'POST' })).token;
             await invalidateAll();
-        } catch {
-            toasts.add(m['admin.token_failed']());
+        } catch (failure) {
+            toasts.add(errorMessage(failure));
         } finally {
             busy = false;
         }

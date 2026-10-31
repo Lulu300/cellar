@@ -11,8 +11,8 @@ import { getStoredAccessCode, putBackAccessCode } from '#lib/server/access-code.
 import { csvLine } from '#lib/server/csv.js';
 import { getLastBarcodeNumbers } from '#lib/server/features/barcode/repository.js';
 import { putBackLastBarcodeNumbers } from '#lib/server/features/barcode/service.js';
-import { putBackMcpSettings, storedMcpSettings } from '#lib/server/features/mcp/token.js';
-import { setAppSettings } from '#lib/server/features/settings/repository.js';
+import { storedMcpSettings } from '#lib/server/features/mcp/token.js';
+import { putBackAppSettings, setAppSettings } from '#lib/server/features/settings/repository.js';
 import type { ZipSource } from '#lib/server/http/body.js';
 import {
     ConflictError,
@@ -269,8 +269,8 @@ class PreRestoreBackupError extends Error {}
 
 /**
  * Replaces the database and the images with those of the backup `source`, after saving the current
- * ones in a pre-restore backup. The access code, the automatic backup settings and the cron token,
- * the upgrade state and the barcode counters belong to the instance and stay, the upgrade actions of
+ * ones in a pre-restore backup. The access code, the automatic backup settings, the cron and MCP
+ * tokens, the upgrade state and the barcode counters belong to the instance and stay, the upgrade actions of
  * the backup's version added; `session`, the admin's, is the only one left.
  */
 export async function restoreBackup(source: ZipSource, session: Session) {
@@ -321,7 +321,7 @@ export async function restoreBackup(source: ZipSource, session: Session) {
                 await putBackAccessCode(staged, accessCodeHash);
                 putBackBackupSettings(staged, backupSettings);
                 putBackBackupToken(staged, backupTokenHash);
-                putBackMcpSettings(staged, mcpSettings);
+                putBackAppSettings(mcpSettings, staged);
                 putBackUpgradeState(staged, upgradeActions, backupActions);
                 putBackLastBarcodeNumbers(staged, lastBarcodeNumbers);
             });

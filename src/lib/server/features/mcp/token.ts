@@ -1,11 +1,9 @@
 import type { RequestEvent } from '@sveltejs/kit';
-import type { Tx } from '#lib/server/db/connection.js';
 import { createStoredToken, sendsStoredToken } from '#lib/server/bearer-token.js';
 import {
     deleteAppSetting,
     getAppSetting,
     getStoredAppSettings,
-    putBackAppSettings,
     setAppSetting,
     type StoredAppSettings
 } from '#lib/server/features/settings/repository.js';
@@ -81,15 +79,11 @@ export function assertMcpWrite(access: McpAccess): void {
     }
 }
 
-/** The MCP settings as stored, for putBackMcpSettings. */
+/**
+ * The MCP token and its write option as stored, for a restore to put back with putBackAppSettings:
+ * like the cron token, they belong to the instance, not to the data. The assistant keeps its access
+ * after a restore, and a backup cannot bring back an older token.
+ */
 export function storedMcpSettings(): StoredAppSettings {
     return getStoredAppSettings([TOKEN_HASH_KEY, WRITE_KEY]);
-}
-
-/**
- * Like the cron token, the MCP token and its write option belong to the instance, not to the data:
- * the assistant keeps its access after a restore, and a backup cannot bring back an older token.
- */
-export function putBackMcpSettings(staged: Tx, stored: StoredAppSettings): void {
-    putBackAppSettings(stored, staged);
 }

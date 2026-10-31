@@ -1,5 +1,18 @@
 import { describe, expect, it } from 'vitest';
-import { assertMcpWrite } from './token';
+import { fakeEvent } from '../../../../test/event';
+import { assertMcpWrite, isMcpRequest } from './token';
+
+describe('isMcpRequest', () => {
+    it.each([
+        ['/mcp', true],
+        ['/mcp/[...rest]', true],
+        ['/mcpx', false],
+        ['/api/mcp', false],
+        [null, false]
+    ])('route %s: %s', (routeId, expected) => {
+        expect(isMcpRequest(fakeEvent({ routeId }))).toBe(expected);
+    });
+});
 
 describe('assertMcpWrite', () => {
     it('refuses a write tool to a read-only token, and says where to allow it', () => {

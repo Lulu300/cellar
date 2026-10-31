@@ -183,7 +183,7 @@ export type NewTokenDTO = { token: ReturnType<typeof createStoredToken> };
 /** GET /api/admin/backup-settings */
 export type BackupSettingsDTO = ReturnType<typeof getBackupSettingsView>;
 
-/** PUT /api/admin/mcp-token */
+/** PUT /api/admin/mcp-token, and the page data of Admin › Settings */
 export type McpTokenDTO = ReturnType<typeof getMcpTokenView>;
 
 /** GET /api/admin/barcode-settings */

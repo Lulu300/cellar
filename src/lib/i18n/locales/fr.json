@@ -1150,7 +1150,7 @@
   "wishlist.add_label": "Ajouter une envie",
   "wishlist.add_placeholder": "Nom d’un vin…",
   "wishlist.add_hint": "Choisissez un vin de votre cave ci-dessous, ou ajoutez le nom tel que vous l’avez tapé.",
-  "wishlist.in_cellar_already": "Vos vins",
+  "wishlist.your_wines": "Vos vins",
   "wishlist.on_the_list": "Déjà sur la liste",
   "wishlist.photo": "Photo de l’étiquette",
   "wishlist.photo_hint": "Pour un vin pas encore dans votre cave : elle devient la photo principale du vin quand vous le créez.",

@@ -1150,7 +1150,7 @@
   "wishlist.add_label": "Add a wish",
   "wishlist.add_placeholder": "Name of a wine…",
   "wishlist.add_hint": "Choose a wine of your cellar below, or add the name as you typed it.",
-  "wishlist.in_cellar_already": "Your wines",
+  "wishlist.your_wines": "Your wines",
   "wishlist.on_the_list": "On the list",
   "wishlist.photo": "Photo of the label",
   "wishlist.photo_hint": "For a wine not in your cellar yet: it becomes the main photo of the wine once you create it.",

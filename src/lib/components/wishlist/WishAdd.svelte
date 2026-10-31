@@ -101,7 +101,7 @@
         {#if suggestions.length > 0}
             <section aria-labelledby="{fieldId}-suggestions">
                 <h2 id="{fieldId}-suggestions" class="mb-1 text-sm font-medium">
-                    {m['wishlist.in_cellar_already']()}
+                    {m['wishlist.your_wines']()}
                 </h2>
                 <ul class="flex flex-col gap-1">
                     {#each suggestions as wine (wine.id)}

@@ -321,6 +321,8 @@ export function applyTheme(themeId: keyof typeof themes, isDarkMode: boolean) {
     for (const [name, value] of Object.entries(variables)) {
         root.style.setProperty(`--${name}`, value);
     }
+    // The browser bar, or the title bar of the installed app, takes the colour of the header.
+    document.querySelector('meta[name="theme-color"]')?.setAttribute('content', variables.card);
     try {
         localStorage.setItem(CACHE_KEY, JSON.stringify({ dark: isDarkMode, variables }));
     } catch {

@@ -10,7 +10,12 @@ function fakeBrowser(stored: Record<string, string>, systemIsDark = false) {
     const variables = new Map<string, string>();
     const classes = new Set<string>();
     const storage = new Map(Object.entries(stored));
+    const themeColor = { content: '#ffffff' };
     vi.stubGlobal('document', {
+        querySelector: (selector: string) =>
+            selector === 'meta[name="theme-color"]'
+                ? { setAttribute: (_: 'content', value: string) => (themeColor.content = value) }
+                : null,
         documentElement: {
             classList: {
                 toggle: (name: string, force: boolean) =>
@@ -28,7 +33,7 @@ function fakeBrowser(stored: Record<string, string>, systemIsDark = false) {
         setItem: (key: string, value: string) => storage.set(key, value)
     });
     vi.stubGlobal('matchMedia', () => ({ matches: systemIsDark }));
-    return { variables, classes, storage };
+    return { variables, classes, storage, themeColor };
 }
 
 const runInlineScript = () => new Function(inlineScript)();
@@ -81,6 +86,20 @@ describe('the theme before the app has loaded', () => {
 
         expect(reload.classes.has('dark')).toBe(false);
         expect(reload.variables.size).toBe(0);
+    });
+
+    it('colours the browser bar like the header, in the chosen mode', () => {
+        // The system is light, but the user chose the dark mode.
+        const app = fakeBrowser({ 'wine-cellar-theme-mode': 'dark' });
+        applyTheme('green', true);
+        expect(app.themeColor.content).toBe(themes.green.dark.card);
+
+        const reload = fakeBrowser(Object.fromEntries(app.storage));
+        runInlineScript();
+        expect(reload.themeColor.content).toBe(themes.green.dark.card);
+
+        applyTheme('green', false);
+        expect(reload.themeColor.content).toBe('oklch(1 0 0)');
     });
 
     it('still loads when the storage cannot be read', () => {

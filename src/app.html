@@ -5,6 +5,11 @@
         <meta name="viewport" content="width=device-width, initial-scale=1" />
         <link rel="icon" href="/favicon.ico" sizes="32x32" />
         <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+        <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+        <link rel="manifest" href="/manifest.webmanifest" />
+        <!-- The colour of the browser bar or of the installed app's title bar: the header's, set
+             by applyTheme for the mode chosen in the preferences, not only the system's. -->
+        <meta name="theme-color" content="#ffffff" />
         <script>
             // The app applies the theme once it has loaded: until then, a dark mode user would see
             // a white page. This applies the dark mode of the preferences (preferences.svelte.ts)
@@ -21,6 +26,9 @@
                     for (var name in cache.variables) {
                         root.style.setProperty('--' + name, cache.variables[name]);
                     }
+                    document
+                        .querySelector('meta[name="theme-color"]')
+                        .setAttribute('content', cache.variables.card);
                 }
             } catch (error) {
                 // Without storage, the app applies the theme once it has loaded.

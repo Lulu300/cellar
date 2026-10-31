@@ -2198,6 +2198,63 @@ or with the routes below. Only its hash is stored, and a restore keeps the token
 - A write sent with an `Origin` header other than Cellar's URL gets `403 cross_site_request`, as on
   the API (see [Origin check](#origin-check)).
 
+README-Docker says how to set up an assistant (see
+[AI assistants (MCP)](../README-Docker.md#ai-assistants-mcp)).
+
+### The MCP server
+
+- **Transport:** Streamable HTTP, at `$CELLAR/mcp`. Every message is a `POST`; there are no
+  sessions, so each request stands alone, and `GET` answers `405`. It serves the 2026-07-28
+  revision of the protocol and the 2025 ones (2025-03-26, 2025-06-18, 2025-11-25): the client picks.
+- **Answers:** a tool answers one text item that holds JSON. The fields that are empty are left out.
+  Prices are in the currency of the cellar, dates are `YYYY-MM-DD`. A bottle's `availability` is
+  `available` (in the cellar), `out_of_cellar` or `consumed`, and its `optimum` is the year it is at
+  its best.
+- **Errors:** a tool that cannot answer, for an unknown wine for example, answers `isError: true`
+  with the reason as its text. Arguments that the tool refuses get the same, with the reason.
+- **Restore, import, wipe:** the tools go on reading meanwhile, like the `GET` routes of this API.
+- Every tool only reads, and says so to the client (`readOnlyHint`).
+
+The tools:
+
+- `search_wines`: finds wines.
+  - **Parameters:** `query`: string, optional, at most 500 characters: words that the wine must all
+    hold, capitals and accents aside, in its name, producer, color, type, classification,
+    appellation, region, country or grapes; `inCellarOnly`: boolean, default `false`; `limit`:
+    integer from 1 to 200, default 50.
+  - **Answer:** `{ "total", "wines" }`: the wines found, by name, `total` counting them beyond
+    `limit`. Each wine has `id`, `name`, `producer`, `color`, `type`, `classification`,
+    `appellation`, `region`, `country`, `rating`, `grapes`, its bottles in the cellar (`inCellar`)
+    and out of it (`outOfCellar`), and the `vintages` of those in the cellar.
+- `get_wine`: a wine with its bottles.
+  - **Parameters:** `wineId`: string, required, as `search_wines` gives it.
+  - **Answer:** the wine as above, with `description`, `website` and `targetQuantity`, its bottles
+    still owned in `bottles` and those drunk in `consumed`. Each bottle has `id`, `availability`,
+    `vintage`, `optimum`, `format`, `location` (`container`, `case`), `barcode`, `origin`,
+    `purchasePrice`, `purchaseDate`, `currentValue`, `consumedDate` and `notes`.
+- `find_bottle_by_barcode`: the bottles of a barcode, whatever their availability.
+  - **Parameters:** `barcode`: string, required, 1 to 1000 characters.
+  - **Answer:** an array of bottles as in `get_wine`, each with its `wine` (`id`, `name`,
+    `producer`, `color`, `type`): the code as given, then in other capitals, then the codes that
+    end with it. `[]` when none has it.
+- `get_statistics`: no parameters; the answer of [`GET /api/statistics`](#get-apistatistics).
+- `get_wine_shortage`: no parameters; the wines below their target quantity, the largest shortage
+  first, with `id`, `name`, `producer`, `color`, `type`, `appellation`, `region`, `country`,
+  `targetQuantity`, `inCellar`, `missing` and `averagePrice`.
+- `get_free_space`: no parameters; `{ "capacity", "bottles", "free", "containers" }`: each container
+  by the name the storage page shows, with its totals and its `cases` (`name`, `capacity`,
+  `bottles`, `free`). A case holds its capacity in bottles in the cellar; one that holds more has
+  no room left.
+
+A call, as an assistant sends it with the 2025-06-18 revision:
+
+```bash
+curl -fsS -X POST "$CELLAR/mcp" \
+  -H "Authorization: Bearer <token>" -H "Content-Type: application/json" \
+  -H "Accept: application/json, text/event-stream" -H "MCP-Protocol-Version: 2025-06-18" \
+  -d '{"jsonrpc":"2.0","id":1,"method":"tools/call","params":{"name":"search_wines","arguments":{"query":"chablis"}}}'
+```
+
 ### `POST /api/admin/mcp-token`
 
 Creates the MCP token, which replaces the earlier one, and returns it. It is shown this once: only

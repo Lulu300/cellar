@@ -660,6 +660,49 @@ Your own scripts can read and change the cellar through the HTTP API that the ap
 [docs/API.md](docs/API.md) describes each route, and how a script logs in with the access code,
 which `Origin` header it sends, the error format and the size limits.
 
+## AI assistants (MCP)
+
+An AI assistant can read your cellar through Cellar's MCP server: « what goes with a roast chicken
+tonight? », « how many Burgundies are left? ». It finds wines, shows a wine with its bottles and
+where they are, finds a bottle by its barcode, and gives the statistics, the wines to buy again and
+the free space in storage. [docs/API.md](docs/API.md#mcp-access) lists the tools.
+
+1. In Cellar, open Admin › Settings › MCP access and create the token. Copy it: it is shown once.
+   It is read-only unless you allow changes there.
+2. Give the assistant the address `http://<NAS-IP>:3005/mcp` (your `ORIGIN` followed by `/mcp`) and
+   the header `Authorization: Bearer <token>`.
+
+With Claude Code:
+
+```bash
+claude mcp add --transport http cellar http://192.168.1.20:3005/mcp \
+  --header "Authorization: Bearer <token>"
+```
+
+A desktop app or a local-model client that takes a JSON file for its MCP servers usually reads this
+form; the name of each field depends on the app (`type` may be `streamable-http`, for example), so
+check its documentation:
+
+```json
+{
+  "mcpServers": {
+    "cellar": {
+      "type": "http",
+      "url": "http://192.168.1.20:3005/mcp",
+      "headers": { "Authorization": "Bearer <token>" }
+    }
+  }
+}
+```
+
+The server speaks Streamable HTTP, without sessions, in the 2025 revisions of the protocol and the
+2026-07-28 one. An app that only starts local (stdio) servers needs a bridge to HTTP.
+
+**Limit: local network or VPN only.** Cellar is meant for your home network, and so is its MCP
+server: an assistant that runs on your network (a local model, a command-line tool, a desktop app)
+reaches it, but an assistant that calls from the internet does not. Do not publish Cellar on the
+internet to get there; use a VPN to your network instead.
+
 ## Health check
 
 The container includes a health check that requests the home page every 30 seconds. You can check

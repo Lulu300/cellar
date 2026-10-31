@@ -25,7 +25,7 @@ Use pnpm 10 (`npx -y pnpm@10 …` if it is not installed) and Node 24. `packageM
 
 - `vite.config.ts`: Vite and SvelteKit configuration (there is no `svelte.config.js`).
 - `server.js`: starts the built app, applies the `ORIGIN` variable, which adapter-node no longer reads, and sends the headers that forbid framing on every answer.
-- `src/routes/`: pages, and the API under `src/routes/api/` (admin endpoints in `api/admin/`).
+- `src/routes/`: pages, the API under `src/routes/api/` (admin endpoints in `api/admin/`), and the MCP server at `src/routes/mcp/` (its tools in `src/lib/server/features/mcp/`).
 - `src/hooks.server.ts`: CSRF check, migrations, backup scheduler.
 - `src/lib/server/`: server-only code. Put new server code here.
   - `features/<domain>/{repository,service}.ts`: data access and business rules. Routes call a feature's modules, never its repository, and never reach the database themselves (`db/`, drizzle-orm, better-sqlite3; type imports aside); a lint rule enforces it.

@@ -149,7 +149,7 @@ function createServer(): McpServer {
 
 /**
  * Answers the requests to /mcp, without sessions: a new server for each request, which serves the
- * 2026-07-28 revision of the protocol and the 2025 ones. Errors of the protocol, such as a
- * malformed request, are the client's; they are logged with DEBUG=mcp only.
+ * 2026-07-28 revision of the protocol and the earlier ones. The SDK reports some of the requests it
+ * refuses, such as a malformed one: they are the client's errors, logged with DEBUG=mcp only.
  */
 export const mcpHandler = createMcpHandler(createServer, { onerror: debugLogger('mcp') });

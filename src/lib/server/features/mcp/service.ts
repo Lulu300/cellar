@@ -63,8 +63,11 @@ function bottleSummary(bottle: Bottle) {
     };
 }
 
-const countOf = (bottles: { availability: string }[], availability: BottleAvailability) =>
-    bottles.filter((bottle) => bottle.availability === availability).length;
+/** Whether a bottle has this availability. */
+const isIn =
+    (availability: BottleAvailability) =>
+    (bottle: { availability: string }): boolean =>
+        bottle.availability === availability;
 
 /** Lowercase and without accents: « cotes du rhone » finds « Côtes du Rhône ». */
 const searchable = (text: string) =>
@@ -88,13 +91,11 @@ export function searchWines({ query = '', inCellarOnly, limit }: WineSearch) {
     const words = searchable(query).split(/\s+/).filter(Boolean);
     const found = listWines({ ownedOnly: true })
         .map(({ definition, bottles }) => {
-            const inCellar = bottles.filter(
-                (bottle) => bottle.availability === BottleAvailability.AVAILABLE
-            );
+            const inCellar = bottles.filter(isIn(BottleAvailability.AVAILABLE));
             return {
                 ...wineSummary(definition),
                 inCellar: inCellar.length,
-                outOfCellar: countOf(bottles, BottleAvailability.OUT_OF_CELLAR),
+                outOfCellar: bottles.filter(isIn(BottleAvailability.OUT_OF_CELLAR)).length,
                 vintages: [...new Set(inCellar.map((bottle) => bottle.vintage))].sort(
                     (a, b) => (a ?? Infinity) - (b ?? Infinity)
                 )
@@ -128,8 +129,7 @@ export function searchWines({ query = '', inCellarOnly, limit }: WineSearch) {
 export function wineWithBottles(id: string) {
     const wine = getDefinitionDetails(id);
     const bottles = listBottlesWithDefinitions(id).map(bottleSummary);
-    const consumed = (bottle: { availability: string }) =>
-        bottle.availability === BottleAvailability.CONSUMED;
+    const consumed = isIn(BottleAvailability.CONSUMED);
     return {
         ...wineSummary(wine),
         description: wine.description,

@@ -19,7 +19,8 @@
 
 <Dialog bind:open>
     <DialogContent class="max-w-md">
-        <DialogHeader>
+        <!-- Padded at the end, so that a long title wraps before the close cross of the corner. -->
+        <DialogHeader class="pe-6">
             <DialogTitle class="flex items-center gap-2">
                 <CircleAlert class="h-5 w-5 text-destructive" />
                 {m['admin.complete_database_wipe']()}

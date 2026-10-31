@@ -32,7 +32,8 @@
 
 <Dialog bind:open>
     <DialogContent class="max-w-md">
-        <DialogHeader>
+        <!-- Padded at the end, so that a long title wraps before the close cross of the corner. -->
+        <DialogHeader class="pe-6">
             <DialogTitle class="flex items-center gap-2">
                 <Key class="h-5 w-5" />
                 {m['admin.imported_bottle_barcodes']()}

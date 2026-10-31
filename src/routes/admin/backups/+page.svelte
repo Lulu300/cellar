@@ -148,7 +148,6 @@
                     );
                 }
                 await savePreviousData(result.backup);
-                await invalidateAll();
             } catch (error) {
                 const values = { error: errorMessage(error) };
                 toasts.add(
@@ -170,7 +169,6 @@
                 showWipe = false;
                 toasts.add(m['toast.database_wiped'](), 'success', 8000);
                 await savePreviousData(result.backup);
-                await invalidateAll();
             } catch (error) {
                 toasts.add(m['toast.failed_to_wipe_database']({ error: errorMessage(error) }));
             }

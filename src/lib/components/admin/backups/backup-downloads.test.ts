@@ -5,6 +5,9 @@ import { toasts } from '#lib/stores/toast.svelte.js';
 import { fakeLink } from '../../../../test/link';
 import { downloadBackup, savePreviousData } from './backup-downloads';
 
+const invalidateAll = vi.hoisted(() => vi.fn(() => Promise.resolve()));
+vi.mock('$app/navigation', () => ({ invalidateAll }));
+
 const filename = 'cellar-backup-pre-restore-2026-10-30.zip';
 const url = `/api/admin/download-backup?filename=${filename}`;
 const backup = { filename } as BackupFileDTO;
@@ -45,8 +48,12 @@ const notFound = () =>
         { status: 404 }
     );
 
+const failed = () =>
+    Response.json({ error: { code: 'internal_error', message: 'Disk error' } }, { status: 500 });
+
 beforeEach(() => {
     toasts.items = [];
+    invalidateAll.mockClear();
 });
 
 afterEach(() => {
@@ -65,11 +72,12 @@ describe('savePreviousData', () => {
         expect(shownToasts()).toEqual([
             { type: 'success', message: m['toast.previous_data_downloaded']({ filename }) }
         ]);
+        expect(invalidateAll).toHaveBeenCalled();
     });
 
     it('says where to find the backup when the browser cannot download it', async () => {
         fakeLink();
-        answer(notFound());
+        answer(failed());
 
         await savePreviousData(filename);
 
@@ -78,13 +86,29 @@ describe('savePreviousData', () => {
                 type: 'error',
                 message: m['toast.previous_data_not_downloaded']({
                     filename,
-                    error: m['errors.not_found']()
+                    error: m['errors.internal_error']()
                 })
             }
         ]);
+        expect(invalidateAll).toHaveBeenCalled();
     });
 
-    it('says where to find the backup when the session expired, which the login dialog does not', async () => {
+    // Rather than both that it no longer exists and that it stays in the list.
+    it('says only that the backup was deleted when it is gone, and shows the new list', async () => {
+        fakeLink();
+        answer(notFound());
+
+        await savePreviousData(filename);
+
+        expect(shownToasts()).toEqual([
+            { type: 'error', message: m['toast.previous_data_gone']({ filename }) }
+        ]);
+        expect(invalidateAll).toHaveBeenCalled();
+    });
+
+    // The page's load would send it to /wines?login, which reopens the login dialog without the
+    // notice of the expired session; logging in again reloads it.
+    it('says where to find the backup when the session expired, and leaves the page as it is', async () => {
         fakeLink();
         answer(
             Response.json(
@@ -101,6 +125,7 @@ describe('savePreviousData', () => {
                 message: m['toast.previous_data_not_downloaded_session_expired']({ filename })
             }
         ]);
+        expect(invalidateAll).not.toHaveBeenCalled();
     });
 });
 
@@ -121,7 +146,7 @@ describe('downloadBackup', () => {
 
     it('says why a backup of the list cannot be downloaded', async () => {
         fakeLink();
-        answer(notFound());
+        answer(failed());
 
         await downloadBackup(backup);
 
@@ -130,9 +155,22 @@ describe('downloadBackup', () => {
                 type: 'error',
                 message: m['toast.backup_download_failed']({
                     filename,
-                    error: m['errors.not_found']()
+                    error: m['errors.internal_error']()
                 })
             }
         ]);
+        expect(invalidateAll).not.toHaveBeenCalled();
+    });
+
+    it('says that a backup deleted since the list was shown is gone, and shows the new list', async () => {
+        fakeLink();
+        answer(notFound());
+
+        await downloadBackup(backup);
+
+        expect(shownToasts()).toEqual([
+            { type: 'error', message: m['toast.backup_download_gone']({ filename }) }
+        ]);
+        expect(invalidateAll).toHaveBeenCalled();
     });
 });

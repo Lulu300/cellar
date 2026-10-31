@@ -1,7 +1,8 @@
 // Checks that the built app (`pnpm build` first) applies ORIGIN through server.js: a write from
 // ORIGIN passes the CSRF checks (401: no session), a write from any other origin gets 403, even
 // with forged origin headers. Without server.js, adapter-node ignores ORIGIN and refuses both.
-// Also checks that / answers 200, as the healthcheck of the Docker image expects.
+// Also checks that / answers 200, as the healthcheck of the Docker image expects, and that a page
+// and a static file carry the headers that forbid framing, which server.js sets.
 //
 // Runs the app on data in a temporary folder, so that it never opens the developer's database.
 // Usage: node scripts/check-origin.mjs [port]
@@ -88,13 +89,13 @@ const cases = [
 let failures = 0;
 /**
  * @param {string} name
- * @param {number} status
- * @param {number} expected
+ * @param {number | string | null} actual A status or a header value
+ * @param {number | string} expected
  */
-function report(name, status, expected) {
-    const ok = status === expected;
+function report(name, actual, expected) {
+    const ok = actual === expected;
     if (!ok) failures++;
-    console.log(`${ok ? 'ok  ' : 'FAIL'} ${name}: ${status} (expected ${expected})`);
+    console.log(`${ok ? 'ok  ' : 'FAIL'} ${name}: ${actual} (expected ${expected})`);
 }
 
 try {
@@ -102,6 +103,15 @@ try {
     // Not followed: a redirect would make the container unhealthy.
     const home = await fetch(`${origin}/`, { redirect: 'manual' });
     report('GET /', home.status, 200);
+    for (const response of [home, await fetch(`${origin}/robots.txt`)]) {
+        const { pathname } = new URL(response.url);
+        report(
+            `frame-ancestors on ${pathname}`,
+            response.headers.get('content-security-policy'),
+            "frame-ancestors 'none'"
+        );
+        report(`X-Frame-Options on ${pathname}`, response.headers.get('x-frame-options'), 'DENY');
+    }
     for (const { name, from, json, headers, expected } of cases) {
         const response = await fetch(`${origin}/api/bottles`, {
             method: 'POST',

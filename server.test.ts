@@ -10,7 +10,7 @@ const stubBuild = `
 import http from 'node:http';
 export const server = http.createServer((req, res) => {
     if (req.url === '/robots.txt') {
-        // A static file: adapter-node (sirv) passes its headers to writeHead.
+        // A static file: adapter-node's static handler passes its headers to writeHead.
         res.writeHead(200, { 'Content-Type': 'text/plain' }).end('User-agent: *');
     } else if (req.url === '/api/bottles') {
         // SvelteKit's own CSRF answer, written by setResponse: setHeader, then writeHead.

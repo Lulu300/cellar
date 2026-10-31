@@ -4,6 +4,124 @@
 
 Upgrade actions are also collected in [UPGRADING.md](UPGRADING.md).
 
+## 1.1.0
+
+1.1.0 makes Cellar easier to install and use: install steps in the README, a link to the API documentation, an app you can install on your phone, and fixes found after 1.0.0.
+
+The README now gives the installation steps, with a compose file to copy. The README and the admin page link to the API documentation.
+
+Cellar installs on the home screen of a phone or a computer, with its new logo, a wine glass, and opens full screen like an app: on Android and on a computer, the browser offers to install it when Cellar is served over HTTPS; on an iPhone or iPad, use Share › Add to Home Screen. [Install on a phone](https://github.com/Lulu300/cellar/blob/main/README-Docker.md#install-on-a-phone) gives the steps. The glass also replaces the icon of the browser tab and of the header, and the browser bar takes the color of the header, in light and dark mode.
+
+Every answer of the server, the static files such as the icons and the error pages included, now forbids other sites to show Cellar in a frame. In 1.0.0, only the pages, the API and the images did.
+
+The backup messages are clearer: a backup or an export named "auto" is refused with a message saying that this name is kept for automatic backups and exports; downloading a backup deleted in the meantime says so and updates the list; and when the session expires while the backup of the previous data downloads, the login dialog keeps saying why it opened.
+
+Names, producers, label preset descriptions, grape varieties and case suffixes are now measured like notes and descriptions, in the units that the forms count: an emoji counts as two characters, so 250 emoji fill the 500 characters of a name. The API, the forms and the CSV import now accept or refuse such a text the same way. A name that 1.0.0 accepted with many emoji can be too long now: your data keeps it, and exports, backups and restores keep it whole, but you have to shorten it before you can save the wine, container, label preset, country, region or other reference that holds it again. Importing an export cuts such a name to its limit, as it already cuts notes and descriptions that are too long; the CSV import lists its row as invalid in the report.
+
+The admin pages name each action once, from its button to its dialog and its message: the two "Edit" buttons of the settings now say what they change, Full Backup and Full Export keep their names in their dialogs and messages, an export of the backup list is no longer called a backup, the filters have their own "Clear Filters" button, the selected images are exported with "Export Selected", and on most phones the long titles of the admin dialogs no longer run under their close button.
+
+A greyed button now says why: the login, the access code change, the label presets and the name of a new item added from a list show what is missing under the field or by the button. In the statistics, a tap on a bar shows its whole name and its number of bottles under the chart, so a name cut under its bar can be read on a phone too.
+
+On a phone, the last long dialogs now keep their title and their buttons in view and scroll in between: the bottles of a wine, all the bottles of the storage page, the label presets, the bulk entry of barcodes, and the wipe and restore confirmations, which no longer run off a narrow screen in French. These dialogs and the long dialogs of the admin pages now fit in the height that the address bar of the phone leaves.
+
+More greyed buttons now say why: adding or editing a country, region or other reference of the admin, renaming an image and the CSV import show what is missing, and the session timeout says which values it accepts. Changing the access code and saving a label preset show that they are under way, and a double click no longer sends them twice. When a list such as the country of a wine is filled from its appellation, the Cancel button of a new item typed in it stays usable.
+
+The dependencies were reviewed again before this release. No package of the Docker image had a newer fix published by 24 October, so the image keeps the packages and the Node.js 24.22.1 of 1.0.0. The dependency audit lists one moderate advisory, in minimatch, which comes with the library that writes ZIP files: Cellar never uses the part of that library that runs minimatch, and the fix, in minimatch 11.0.1, is too recent and that library does not accept it yet.
+
+In all the bottles of the storage page, the page numbers now stay in view under the list while it scrolls, so you no longer have to scroll to the end of the list to change page.
+
+### Upgrade actions
+
+None.
+
+### Changes
+
+#### Features
+
+- **admin:** Link the API documentation from the admin header (87675c6)
+- **ui:** Show the Cellar glass as favicon and in the header (4531ed0)
+- **pwa:** Make Cellar installable on a phone (9d0cd68)
+- **pwa:** Name the home screen icon Cellar on iOS too (e5ea7b3)
+
+#### Bug fixes
+
+- **security:** Send the frame headers on every answer of the server (1c66d6f)
+- **backups:** Say that "auto" is kept for automatic backups (b813d1d)
+- **backups:** One message for a backup gone before its download, and keep the login notice (d4f6ae2)
+- **api:** Count names in UTF-16 units, as notes and the forms do (380ea24)
+- **backups:** Keep case names whole in the JSON import (8352d34)
+- **imports:** Take case names up to 550 UTF-16 units (ef6e5fc)
+- **dialogs:** Keep a long title clear of the close cross (fe5d5f8)
+- **admin:** Give each admin action one name, from its button to its toast (0daa423)
+- **admin:** Keep the titles of three more dialogs clear of the close cross (b5673fc)
+- **statistics:** Read a cut name in full with a tap (8732437)
+- **forms:** Say why a button is greyed, before any click (71116da)
+- **statistics:** Keep each bar label on one line, cut by an ellipsis (758eabf)
+- **forms:** No missing-name line in a disabled list (6c0ebdf)
+- **statistics:** Keep a count with its unit in the line under a chart (aba37e8)
+- **statistics:** Show the vintages of the chart as two digits (4ff030c)
+- **dialogs:** Give the last hand-made dialogs the shared scrolling layout (748f536)
+- **admin:** Order the headings of the import dialogs (721fd42)
+- **barcode:** Open the bulk review at its top, with one scroll on a phone (27f57ba)
+- **layout:** Let a scrolling box take the focus while its controls are disabled (263adc1)
+- **layout:** Show the error of a scrolling dialog without buttons too (4c8cddc)
+- **barcode:** No focus ring on the summary of the bulk review (d411e52)
+- **admin:** Say why the admin dialogs grey their buttons (7d75f01)
+- **barcode:** Point the greyed Check of the bulk entry to its code count (f656769)
+- **forms:** Keep Cancel of a new list item usable in a disabled list (b010247)
+- Send an access code change and a label preset once on a double click (5796d3e)
+- **admin:** Grey the session timeout out of its range too, and say why (f6a7f49)
+- **storage:** Keep the pagination of all bottles in the dialog footer (84438ed)
+
+#### Refactoring
+
+- **admin:** Name the CSV export function after its button (fe3525c)
+- **admin:** Share the minimum session timeout with the API too (ce7beaf)
+
+#### Documentation
+
+- **release:** Say what 1.1.0 brings now that the MCP moves to 1.2.0 (a25c165)
+- **api:** Name the real path of the barcode settings (82231d5)
+- **readme:** Add the installation steps and link the API documentation (2b64884)
+- **release:** Say what DOC-05 brings in 1.1.0 (02a95f0)
+- **readme:** Point to the chown without sudo (7fb21bc)
+- **docker:** Say which lines of the update diff a README install can ignore (3161fec)
+- Explain how to install Cellar on a phone (ff7efc7)
+- Follow Chrome's current install menu on Android (abe7196)
+- Say that static files and errors forbid framing too (52853a6)
+- Say that server.js sends the frame headers (4885e69)
+- **release:** Say what BUG-24 brings in 1.1.0 (1ae87f0)
+- **api:** Say that text lengths count UTF-16 units (d0c40da)
+- **release:** Say what API-13 changes in 1.1.0 (9ac5784)
+- Name every text that API-13 measures, and keep case names whole (61a4099)
+- Say how long a case name may be in the imports (4f4b22a)
+- **release:** Say what UI-24 brings in 1.1.0 (a49741f)
+- **release:** Say which dialog titles UI-24 keeps clear of the cross (faa7924)
+- **release:** Say most phones, as two French titles still overflow at 320 px (0bc1e59)
+- **release:** Say what UI-25 brings in 1.1.0 (4740fb8)
+- **release:** Name the new item of a list more plainly (ce758e6)
+- **release:** Note the dialogs that fit a phone screen (e49e281)
+- **release:** Say what UI-29 brings in 1.1.0 (fe2ac80)
+- **release:** Describe the session timeout reason plainly (ee658a5)
+- **release:** Say which dependency fixes 1.1.0 takes (565145b)
+- **release:** Say that the 1.1.0 image keeps the packages of 1.0.0 (52c6fe0)
+- **release:** Say what UI-30 brings in 1.1.0 (13e57a5)
+- **dialog:** Say that the footer of a scrolling dialog may hold a pagination (ae42444)
+- **release:** Name all the bottles of the storage page as the 1.1.0 summary does (06a8e88)
+
+#### Build and CI
+
+- **deps:** Update kysely to 0.28.18 (e8d7d70)
+- Update docker/login-action to 4.7.0 (5f774f8)
+
+#### Other changes
+
+- Say why in old-version comments without quoting a 0.x version (de01251)
+- Check the frame headers of the built app in CI (9f1f147)
+- **e2e:** Keep the login notice when the session ends during a wipe (19fa8f2)
+- **schemas:** Measure a label preset description in UTF-16 units (e944752)
+- The whole name of a cut bar, and the reason of a greyed preset update (501da13)
+
 ## 1.0.0
 
 1.0.0 is the first public release of Cellar, a self-hosted manager for a home wine cellar. It runs as a Docker container, for example on a NAS, and is meant for a home network or a VPN: do not expose it directly to the Internet.

@@ -10,6 +10,7 @@
     "e2e/**/*.ts",
     "vite.config.ts",
     "vite.config.test.ts",
+    "server.test.ts",
     "knip.config.ts",
     "playwright.config.ts",
     "drizzle.config.ts"

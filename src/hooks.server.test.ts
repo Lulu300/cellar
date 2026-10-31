@@ -260,62 +260,6 @@ describe('handle', () => {
         expect(image.headers.has('vary')).toBe(false);
     });
 
-    it('forbids every other site to frame a page, the API, an image or an error', async () => {
-        const answer = (method: string, path: string, routeId: string | null, response: Response) =>
-            handle({
-                event: fakeEvent({
-                    method,
-                    path,
-                    routeId,
-                    headers: { origin: 'http://localhost:4527' }
-                }),
-                resolve: async () => response
-            });
-        const html = { headers: { 'content-type': 'text/html' } };
-        const responses = {
-            page: await answer('GET', '/admin/backups', '/admin/backups', new Response('', html)),
-            api: await answer('GET', '/api/wines', '/api/wines', Response.json([])),
-            image: await answer(
-                'GET',
-                '/uploads/wines/label.jpg',
-                '/uploads/[...path]',
-                new Response('jpeg', { headers: { 'content-type': 'image/jpeg' } })
-            ),
-            notFound: await answer(
-                'GET',
-                '/nope',
-                null,
-                new Response('', { ...html, status: 404 })
-            ),
-            crossSite: await answer('POST', '/api/bottles', '/api/bottles', new Response('done')),
-            unauthenticated: await handle({
-                event: fakeEvent({ method: 'POST', path: '/api/bottles', routeId: '/api/bottles' }),
-                resolve: async () => new Response('done')
-            })
-        };
-
-        expect(responses.crossSite.status).toBe(403);
-        expect(responses.unauthenticated.status).toBe(401);
-        for (const response of Object.values(responses)) {
-            expect(response.headers.get('content-security-policy')).toBe("frame-ancestors 'none'");
-            expect(response.headers.get('x-frame-options')).toBe('DENY');
-        }
-    });
-
-    it('keeps the policy that a response sets, next to the one against framing', async () => {
-        const page = await handle({
-            event: fakeEvent({ method: 'GET', path: '/wines', routeId: '/wines' }),
-            resolve: async () =>
-                new Response('', {
-                    headers: { 'content-security-policy': "script-src 'self'" }
-                })
-        });
-
-        expect(page.headers.get('content-security-policy')).toBe(
-            "script-src 'self', frame-ancestors 'none'"
-        );
-    });
-
     it('answers an unknown API path and an unserved method in the error format of the API', async () => {
         const cookies = fakeCookies();
         await createSession(cookies, new URL('http://localhost'));

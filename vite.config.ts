@@ -65,7 +65,12 @@ export default defineConfig({
         alias: [{ find: /^zxing-wasm\/reader\/zxing_reader\.wasm/, replacement: zxingReaderWasm }]
     },
     test: {
-        include: ['src/**/*.test.ts', 'scripts/**/*.test.ts', 'vite.config.test.ts'],
+        include: [
+            'src/**/*.test.ts',
+            'scripts/**/*.test.ts',
+            'vite.config.test.ts',
+            'server.test.ts'
+        ],
         setupFiles: ['src/test/setup.ts'],
         // The server code logs a lot; show it only for the tests that fail.
         silent: 'passed-only'

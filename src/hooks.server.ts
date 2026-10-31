@@ -82,12 +82,6 @@ export const handle: Handle = async ({ event, resolve }) => {
     // in every language and for every visitor, and the browser keeps it for a year: with that
     // header, it would download every image again after a login or a change of language.
     if (event.url.pathname.startsWith('/uploads/')) response.headers.delete('Vary');
-    // No other site may show Cellar in a frame: a page of another app on the same NAS would get
-    // the admin with its session, and could hide it under a decoy to make the user click "Wipe
-    // All Data". Cellar never frames itself. X-Frame-Options is for older browsers. The policy is
-    // appended, so that one a response sets itself stays in force too.
-    response.headers.append('Content-Security-Policy', "frame-ancestors 'none'");
-    response.headers.set('X-Frame-Options', 'DENY');
     return response;
 };
 

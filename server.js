@@ -42,6 +42,18 @@ if (origin) {
 
 const { server } = await import('./build/index.js');
 
+// No other site may show Cellar in a frame: a page of another app on the same NAS would get the
+// admin with its session, and could hide it under a decoy to make the user click "Wipe All Data".
+// Cellar never frames itself. X-Frame-Options is for older browsers. Set here rather than in
+// hooks.server.ts, so that every answer carries both headers: the static files that adapter-node
+// serves before SvelteKit, SvelteKit's own 403 and its error pages, and adapter-node's 400 too.
+// A response that sets its own Content-Security-Policy replaces this one: it must keep
+// frame-ancestors 'none'.
+server.prependListener('request', (_req, res) => {
+    res.setHeader('Content-Security-Policy', "frame-ancestors 'none'");
+    res.setHeader('X-Frame-Options', 'DENY');
+});
+
 if (origin) {
     const protocol = origin.protocol.slice(0, -1);
     // Prepended, so it runs before adapter-node's own request listener.

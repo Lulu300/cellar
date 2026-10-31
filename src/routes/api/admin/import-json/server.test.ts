@@ -496,6 +496,25 @@ describe('POST /api/admin/import-json', () => {
         });
     });
 
+    // A case is named after its container and its suffix, which a cut would drop: a case of a
+    // container of 500 characters is refused, as before API-13.
+    it('refuses a case name too long rather than cut its suffix, and changes nothing', async () => {
+        const before = await snapshot();
+        const data = JSON.parse(JSON.stringify(before));
+        data.storageContainers[0].name = 'y'.repeat(500);
+        data.storageCases[0].name = `${'y'.repeat(500)}1`;
+
+        const response = await importZip(craftedZip(data));
+
+        expect(response.status).toBe(422);
+        expect((await response.json()).error.details).toMatchObject({
+            problem: 'invalid_row',
+            table: 'storageCases',
+            problems: [{ code: 'invalid', column: 'name' }]
+        });
+        expect(await snapshot()).toEqual(before);
+    });
+
     // Two names alike in their first 500 UTF-16 units become one once cut: the database refuses
     // the second, as two rows of the same name (API-13).
     it.each([

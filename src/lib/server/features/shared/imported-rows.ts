@@ -180,9 +180,11 @@ const NAME_COLUMNS = ['name', 'type', 'color', 'producer'];
  * `row` of an export with its names, its producer and its grape varieties cut to their limit.
  * Versions before 1.1.0 counted an emoji in them as one character, so a cellar may hold longer ones,
  * which would refuse the whole import (API-13). The CSV import does not cut them: it finds rows by
- * their names, and a name cut would not match at the next import of the same file.
+ * their names, and a name cut would not match at the next import of the same file. A case keeps its
+ * name: it is that of its container followed by its suffix, which a cut would drop.
  */
 export function withNamesCut(table: ExportTableName, row: ImportedRow): ImportedRow {
+    if (table === 'storageCases') return row;
     const result = { ...row };
     for (const column of NAME_COLUMNS) {
         const text = result[column];

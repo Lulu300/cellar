@@ -18,6 +18,7 @@ Use pnpm 10 (`npx -y pnpm@10 …` if it is not installed) and Node 24. `packageM
 - `pnpm build`: build the production server, then `node server.js` starts it.
 - `pnpm i18n:check`: compare the message keys used in `src/` with both locale files. It fails on a missing, duplicate, single-locale or unused key, and on a key it cannot read: write `m['key']` with the key spelled out, never built from a template. It also fails on a value that is not text (a nested object or a number in a locale file), on a plural made by hand, on the same text under two keys (`SAME_TEXT_ALLOWED` in `scripts/check-i18n.mjs` lists the exceptions), on a text with `...` instead of …, in either locale, on a French text with `'` or `"` instead of ’ and « », and on text written in a component, including three dots shown between tags, in a text attribute or in a literal the page shows, and the text of `alert`, `confirm` and `prompt`.
 - `pnpm knip`: list the unused files, exports and dependencies (`knip.config.ts`). It fails on any finding.
+- `pnpm openapi`: write `docs/openapi.json` again, the OpenAPI description of the API that `src/lib/server/openapi.ts` makes from the zod schemas, after changing a route or a request schema; `pnpm test` fails while the file is out of date. A new route needs its entry in `operations`.
 - `pnpm db:generate`: create a migration in `drizzle/` after a change to `src/lib/server/db/schema.ts`. Migrations run automatically when the server starts, which stops if one fails. Never edit a committed migration.
 
 ## Map

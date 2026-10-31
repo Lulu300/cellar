@@ -5,6 +5,12 @@ Cellar. The pages of the app load their data on the server, then their forms and
 change data through this API; the wine and bottle forms post to the form actions of `/wines`
 instead, which are not part of this API. Some routes serve no page: they are here for scripts.
 
+[openapi.json](openapi.json) describes the same routes in OpenAPI 3.1, for tools that generate a
+client, test an API or show it: each route and method, its session rule, its parameters and the
+schema of its request body, made from the schemas that the server checks the body with, and the
+error format. The fields of the answers are only described here. A test,
+`src/lib/server/openapi.test.ts`, fails when the file no longer matches the code.
+
 A change that requires your scripts to change is described in the release notes of its version; some
 are also shown as an upgrade action in the Admin page.
 

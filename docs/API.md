@@ -1993,10 +1993,13 @@ pre-import export.
   version, is cut to 5,000 characters, as the upgrade cuts those of the database. A name, a wine
   type or colour, or a producer over 500 characters and a grape variety over 100, which versions
   before 1.1.0 took because they counted an emoji as one character, is cut to its limit, never in
-  the middle of an emoji; a case name is not cut, as it ends with the case's suffix. Two names that
-  become the same once cut answer `422 export_refused`, as any two rows of the same name do. A
-  negative purchase price or current value is removed and written into the bottle's notes, as the
-  upgrade of an older database does. While the import runs, other writes get `503 writes_held`.
+  the middle of an emoji. Two names that become the same once cut answer `422 export_refused`, as
+  any two rows of the same name do. A case name is never cut, as it ends with the case's suffix: it
+  is its container's name followed by its suffix, so it may have 550 characters. A case of a
+  container of more than 275 emoji, which 1.0.0 took, refuses the import (`422 invalid_export`,
+  `invalid_row`): restore a backup zip instead, which keeps it whole. A negative purchase price or
+  current value is removed and written into the bottle's notes, as the upgrade of an older database
+  does. While the import runs, other writes get `503 writes_held`.
 - **Errors:**
   - `422 invalid_export` when the file is not an export this version can import. `details` has
     `problem` (`unreadable`, `incomplete` with `tables`, the missing ones as one comma-separated
@@ -2207,8 +2210,9 @@ descriptions become LF, and a note or a description of more than 5,000 character
 an older version may hold, is cut to 5,000 characters. A name, a producer or a grape variety over
 its limit, which versions before 1.1.0 took because they counted an emoji as one character, is not
 cut: its row is reported, as `invalid`, because a cut name would not match the next import of the
-same file. A negative purchase price or current value, which an older version may have stored, is
-removed and written into the bottle's notes.
+same file. A case name may have 550 characters: its container's name followed by its suffix. A
+negative purchase price or current value, which an older version may have stored, is removed and
+written into the bottle's notes.
 
 Names are compared without their case. A region is named within its country, an appellation within
 its region, and a case within its container: a file that gives the parent next to the name, as the

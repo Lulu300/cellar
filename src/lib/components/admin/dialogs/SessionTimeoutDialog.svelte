@@ -15,7 +15,8 @@
     import { errorMessage, request } from '#lib/api/client.js';
     import {
         isValidSessionTimeout,
-        MAX_SESSION_TIMEOUT_HOURS
+        MAX_SESSION_TIMEOUT_HOURS,
+        MIN_SESSION_TIMEOUT_HOURS
     } from '#lib/shared/session-timeout.js';
 
     let { open = $bindable(false), hours }: { open: boolean; hours: number } = $props();
@@ -75,7 +76,7 @@
                                 id="session-timeout"
                                 type="number"
                                 bind:value={newHours}
-                                min="1"
+                                min={MIN_SESSION_TIMEOUT_HOURS}
                                 max={MAX_SESSION_TIMEOUT_HOURS}
                                 placeholder={m['placeholders.session_timeout_example']()}
                                 class="w-full"
@@ -84,7 +85,7 @@
                             {#if hoursInvalid}
                                 <p id={hoursInvalidId} class="text-xs text-muted-foreground">
                                     {m['form_errors.whole_number_between']({
-                                        min: 1,
+                                        min: MIN_SESSION_TIMEOUT_HOURS,
                                         max: MAX_SESSION_TIMEOUT_HOURS
                                     })}
                                 </p>

@@ -36,6 +36,9 @@
 
     const iconButton =
         'relative z-10 text-muted-foreground hover:text-foreground transition-colors rounded p-1 sm:p-1.5 min-h-[28px] sm:min-h-[32px] min-w-[28px] sm:min-w-[32px] flex items-center justify-center';
+    // The buttons beside the number of bottles
+    const smallIconButton =
+        'relative z-10 text-muted-foreground hover:text-foreground transition-colors rounded p-1 text-xs h-5 w-5 flex items-center justify-center';
 </script>
 
 <!-- The link of the title covers the whole card (its ::after); the buttons sit above it,
@@ -47,7 +50,7 @@
                 {#if showImage}
                     <div class="relative mb-4 flex-shrink-0">
                         {#if auth.isAuthenticated}
-                            <WishButton wineId={wine.id} onPhoto />
+                            <WishButton wineId={wine.id} overlay />
                         {/if}
                         {#if imageUrl}
                             <img
@@ -134,7 +137,7 @@
                                 </button>
                                 {#if auth.isAuthenticated}
                                     <button
-                                        class="relative z-10 text-muted-foreground hover:text-foreground transition-colors rounded p-1 text-xs h-5 w-5 flex items-center justify-center"
+                                        class={smallIconButton}
                                         onclick={() => onAddBottle(wine)}
                                         title={m['wines.add_bottle_of_wine']()}
                                         aria-label={m['wines.add_bottle_of_wine']()}
@@ -146,7 +149,7 @@
                                     {#if !showImage}
                                         <WishButton
                                             wineId={wine.id}
-                                            class="relative z-10 flex h-5 w-5 items-center justify-center rounded p-1 text-muted-foreground transition-colors hover:text-foreground"
+                                            class={smallIconButton}
                                             iconClass="h-3 w-3"
                                         />
                                     {/if}

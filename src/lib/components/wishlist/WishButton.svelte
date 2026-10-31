@@ -10,14 +10,15 @@
 
     /**
      * The heart of a wine, on its card and its page: a press puts the wine on the wishlist, and
-     * another takes it off. `onPhoto` lays it over a photo, as a white heart on a dark disc.
+     * another takes it off. `overlay` lays it over a photo, as a white heart on a dark disc that
+     * stays readable over any photo, in every theme; `class` styles it otherwise.
      */
     let {
         wineId,
         class: className = '',
         iconClass = 'h-4 w-4',
-        onPhoto = false
-    }: { wineId: string; class?: string; iconClass?: string; onPhoto?: boolean } = $props();
+        overlay = false
+    }: { wineId: string; class?: string; iconClass?: string; overlay?: boolean } = $props();
 
     // Loaded by the root layout, and reloaded after each change
     const wishId = $derived<string | undefined>(page.data.wishedWines?.[wineId]);
@@ -41,10 +42,9 @@
     }
 </script>
 
-<!-- A fixed dark disc with a white heart stays readable over any photo, in every theme. -->
 <button
     type="button"
-    class={onPhoto
+    class={overlay
         ? 'absolute top-2 right-2 z-10 flex h-9 w-9 items-center justify-center rounded-full bg-black/60 text-white shadow-md ring-1 ring-white/40 transition-colors hover:bg-black/75'
         : className}
     aria-pressed={!!wishId}
@@ -55,7 +55,7 @@
 >
     <Heart
         class="{iconClass} {wishId
-            ? onPhoto
+            ? overlay
                 ? 'fill-current'
                 : 'fill-current text-primary-text'
             : ''}"

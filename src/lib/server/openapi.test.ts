@@ -41,6 +41,7 @@ describe('the OpenAPI description', () => {
         expect(described.toSorted()).toEqual(inCode.toSorted());
     });
 
+    // openapi.ts asks requiresSession itself: the session half guards the event it builds for it.
     it('asks for a session where the server does, and for the cron token where it opens', () => {
         const token = createBackupToken();
         for (const { method, routeId } of apiRoutes) {

@@ -21,9 +21,10 @@ export function maxLength(max: number) {
         });
     });
     // A custom check says nothing to z.toJSONSchema, which reads the maximum that zod's own checks
-    // leave in the bag of their schema: the OpenAPI description gives the limit this way.
-    check._zod.onattach.push((schema) => {
-        schema._zod.bag.maximum = max;
+    // leave in the bag of their schema: the OpenAPI description gives the limit this way. The bag
+    // is zod's internals: openapi.test.ts fails if an upgrade of zod stops reading it.
+    check._zod.onattach.push(({ _zod: { bag } }) => {
+        bag.maximum = typeof bag.maximum === 'number' ? Math.min(bag.maximum, max) : max;
     });
     return check;
 }

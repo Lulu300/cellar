@@ -394,6 +394,9 @@
                         bars={recentVintages.map(({ vintage, count }) => ({
                             key: vintage,
                             name: String(vintage),
+                            // Unlike a name, a year cut by "…" says nothing ("2…" under every
+                            // bar of a phone): two digits always fit, and read at a glance.
+                            short: `’${String(vintage).slice(-2)}`,
                             count
                         }))}
                     />

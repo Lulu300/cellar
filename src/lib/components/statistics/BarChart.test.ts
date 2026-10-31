@@ -38,4 +38,16 @@ describe('BarChart', () => {
             /class="[^"]*\btruncate\b[^"]*"[^>]*>Domaine des Coteaux Imaginaires</
         );
     });
+
+    it('shows the short label of a bar under it, and its whole name under the chart', () => {
+        useLocale('en');
+
+        const { body } = render(BarChart, {
+            props: { bars: [{ key: 2017, name: '2017', short: '’17', count: 4 }] }
+        });
+
+        expect(body).toMatch(/class="[^"]*\btruncate\b[^"]*"[^>]*>’17</);
+        expect(body).toContain('aria-label="2017: 4 bottles"');
+        expect(body).toMatch(/<p[^>]*>\s*2017:\s*<span[^>]*>4 bottles<\/span>/);
+    });
 });

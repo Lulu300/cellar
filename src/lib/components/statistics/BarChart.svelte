@@ -7,6 +7,8 @@
         /** Unique among the bars. */
         key: string | number;
         name: string;
+        /** Shown under the bar instead of `name`, which the line under the chart still gives. */
+        short?: string;
         /** A second line under the name, such as the country of a region whose name is shared. */
         detail?: string;
         /** Available bottles. */
@@ -56,7 +58,7 @@
                  aligned whatever their names. -->
             <span class="h-8 w-full text-center text-xs leading-tight">
                 <span class="block truncate font-medium group-aria-pressed:underline"
-                    >{bar.name}</span
+                    >{bar.short ?? bar.name}</span
                 >
                 {#if bar.detail}
                     <span class="block truncate text-muted-foreground">{bar.detail}</span>

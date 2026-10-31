@@ -14,20 +14,24 @@ export async function logIn(page: Page) {
     const { exists } = await response.json();
 
     await page.goto('/wines?login');
-    if (exists) {
-        const dialog = page.getByRole('dialog', { name: 'Access Code Required' });
-        await dialog.getByLabel('Access Code', { exact: true }).fill(ACCESS_CODE);
-        await dialog.getByRole('button', { name: 'Login' }).click();
-    } else {
-        // Set by playwright.config.ts from the server logs.
-        const setupToken = process.env.SETUP_TOKEN;
-        if (!setupToken) throw new Error('No SETUP_TOKEN');
-        const dialog = page.getByRole('dialog', { name: 'Choose an Access Code' });
-        await dialog.getByLabel('New Access Code').fill(ACCESS_CODE);
-        await dialog.getByLabel('Confirm Access Code').fill(ACCESS_CODE);
-        await dialog.getByLabel('Setup token').fill(setupToken);
-        await dialog.getByRole('button', { name: 'Save' }).click();
-    }
+    if (exists) return logInAgain(page);
+
+    // Set by playwright.config.ts from the server logs.
+    const setupToken = process.env.SETUP_TOKEN;
+    if (!setupToken) throw new Error('No SETUP_TOKEN');
+    const dialog = page.getByRole('dialog', { name: 'Choose an Access Code' });
+    await dialog.getByLabel('New Access Code').fill(ACCESS_CODE);
+    await dialog.getByLabel('Confirm Access Code').fill(ACCESS_CODE);
+    await dialog.getByLabel('Setup token').fill(setupToken);
+    await dialog.getByRole('button', { name: 'Save' }).click();
+    await expect(page.getByRole('button', { name: 'Logout' })).toBeVisible();
+}
+
+/** Logs in with the login dialog already open, as after a session that ended. */
+export async function logInAgain(page: Page) {
+    const dialog = page.getByRole('dialog', { name: 'Access Code Required' });
+    await dialog.getByLabel('Access Code', { exact: true }).fill(ACCESS_CODE);
+    await dialog.getByRole('button', { name: 'Login' }).click();
     await expect(page.getByRole('button', { name: 'Logout' })).toBeVisible();
 }
 

@@ -1,5 +1,5 @@
 import { expect, test } from '@playwright/test';
-import { addWine, logIn } from './helpers.js';
+import { addWine, logIn, logInAgain } from './helpers.js';
 
 test('back up, wipe the cellar, then restore the backup from the list', async ({ page }) => {
     await logIn(page);
@@ -64,10 +64,35 @@ test('back up, wipe the cellar, then restore the backup from the list', async ({
     if (viewport) await page.setViewportSize(viewport);
     await csvExportDialog.getByRole('button', { name: 'Cancel' }).click();
 
+    // The session ends, as by a logout in another tab, while the browser downloads the backup that
+    // the wipe made first: the login dialog opens over the page and keeps saying why (BUG-24).
+    await page.route(
+        '**/api/admin/download-backup?filename=cellar-backup-pre-reset-*',
+        async (route) => {
+            await page.request.delete('/api/session', {
+                headers: { Origin: new URL(page.url()).origin }
+            });
+            await route.continue();
+        },
+        { times: 1 }
+    );
     await page.getByRole('button', { name: 'Wipe All Data' }).click();
     const wipeDialog = page.getByRole('dialog', { name: 'Complete Database Wipe' });
     await wipeDialog.getByRole('button', { name: 'Wipe All Data' }).click();
     await expect(wipeDialog).toBeHidden();
+    await expect(
+        page.getByText(/could not download it because your session has expired/)
+    ).toBeVisible();
+    // Once the wipe has done all it does, which once included reloading the page: that left it for
+    // /wines?login, and the dialog without its notice.
+    await expect(page.getByRole('button', { name: 'Full Backup', exact: true })).toBeEnabled();
+    await expect(page).toHaveURL(/\/admin\/backups$/);
+    await expect(
+        page
+            .getByRole('dialog', { name: 'Access Code Required' })
+            .getByText('Your session has expired. Please log in again.')
+    ).toBeVisible();
+    await logInAgain(page);
     await page.getByRole('link', { name: 'My Wines' }).click();
     await expect(page.getByText('0 wines (0 bottles in all)')).toBeVisible();
 

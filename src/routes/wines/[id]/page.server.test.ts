@@ -52,11 +52,13 @@ describe('the load of /wines/[id]', () => {
 
         expect(data.wineDefinition.name).toBe('Château Margaux');
         expect(data.bottles.map((bottle) => bottle.id).sort()).toEqual([...ownBottles].sort());
-        expect(data.imageUrl).toBeUndefined();
+        expect(data.photos).toEqual([]);
     });
 
-    it('sends the URL of its image only', () => {
-        expect(loadWine('angelus').imageUrl).toBe('/uploads/wines/angelus.jpg');
+    it('sends the URLs of its photos only', () => {
+        expect(loadWine('angelus').photos).toEqual([
+            { imageId: 'label', url: '/uploads/wines/angelus.jpg', main: true }
+        ]);
     });
 
     it('answers 404 for an unknown wine', () => {

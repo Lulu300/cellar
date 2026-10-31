@@ -49,12 +49,6 @@ export function listImageUrls() {
     return listImages().map((image) => ({ id: image.id, url: imageUrl(image) }));
 }
 
-/** The URL of one image, or undefined when there is no such image. */
-export function imageUrlOf(id: string): string | undefined {
-    const image = getImage(id);
-    return image && imageUrl(image);
-}
-
 /** The URL of each image by its id, for the load functions of the pages that show wines. */
 export function imageUrlsById(): Map<string, string> {
     return new Map(listImageUrls().map(({ id, url }) => [id, url]));

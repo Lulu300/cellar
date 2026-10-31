@@ -5,17 +5,17 @@
     import { Button } from '#lib/components/ui/button/index.js';
     import { Input } from '#lib/components/ui/input/index.js';
     import type { AdminImagesDTO, Jsonified } from '#lib/shared/dto.js';
-    import { MAX_WINE_IMAGE_BYTES } from '#lib/shared/images.js';
     import { toasts } from '#lib/stores/toast.svelte.js';
     import { formatFileSize } from '#lib/utils/format.js';
     import { matchesImageSearch } from '#lib/utils/image-search.js';
     import FormField from './FormField.svelte';
+    import PhotoCapture from './PhotoCapture.svelte';
 
     type ExistingImage = Jsonified<AdminImagesDTO>['images'][number];
 
     /**
-     * The image of a wine: one already stored, whose id the form sends, or a new file, which the
-     * dialog uploads when it saves.
+     * The main photo of a wine: an image already stored, whose id the form sends, or a new photo,
+     * which the dialog uploads when it saves.
      */
     let {
         imageId = $bindable(''),
@@ -23,13 +23,9 @@
         previewUrl = $bindable('')
     }: { imageId?: string; file?: File | null; previewUrl?: string } = $props();
 
-    let fileInput = $state<HTMLInputElement>();
     let browsing = $state(false);
     let images = $state<ExistingImage[] | null>(null);
     let query = $state('');
-
-    // "20 MB", "20 Mo"
-    const maxSize = formatFileSize(MAX_WINE_IMAGE_BYTES);
 
     const shownImages = $derived(
         (images ?? []).filter((image) => matchesImageSearch(image, query))
@@ -43,23 +39,15 @@
         };
     });
 
-    function chooseFile(event: Event) {
-        const chosen = (event.currentTarget as HTMLInputElement).files?.[0];
-        if (!chosen) return;
-        if (!chosen.type.startsWith('image/')) {
-            toasts.add(m['toast.please_select_image_file'](), 'error');
-        } else if (chosen.size > MAX_WINE_IMAGE_BYTES) {
-            toasts.add(m['toast.image_file_too_large']({ size: maxSize }), 'error');
-        } else {
-            file = chosen;
-            previewUrl = URL.createObjectURL(chosen);
-        }
+    function takePhoto(photo: File) {
+        remove();
+        file = photo;
+        previewUrl = URL.createObjectURL(photo);
     }
 
     function remove() {
         file = null;
         imageId = previewUrl = '';
-        if (fileInput) fileInput.value = '';
     }
 
     async function toggleBrowsing() {
@@ -82,7 +70,7 @@
     }
 </script>
 
-<FormField label={m['forms.wine_image']()} hint={m['wine_form.image_hint']({ size: maxSize })}>
+<FormField label={m['common.main_photo']()} hint={m['wine_form.image_hint']()}>
     <input type="hidden" name="imageId" value={imageId} />
     {#if previewUrl}
         <div class="flex items-start gap-4">
@@ -115,16 +103,7 @@
     {/if}
 
     <div class="flex flex-wrap items-center gap-2">
-        <input
-            bind:this={fileInput}
-            type="file"
-            accept="image/jpeg,image/png,image/webp,image/gif"
-            class="hidden"
-            onchange={chooseFile}
-        />
-        <Button type="button" variant="outline" onclick={() => fileInput?.click()}>
-            {previewUrl ? m['forms.change_image']() : m['forms.upload_new']()}
-        </Button>
+        <PhotoCapture onPhoto={takePhoto} />
         <Button type="button" variant="outline" onclick={toggleBrowsing}>
             <Image class="mr-2 h-4 w-4" />
             {m['forms.browse_existing']()}

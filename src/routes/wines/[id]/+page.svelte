@@ -13,6 +13,7 @@
     import { Badge } from '#lib/components/ui/badge/index.js';
     import WineBottleDialog from '#lib/components/bottles/WineBottleDialog.svelte';
     import WineDefinitionDialog from '#lib/components/wines/WineDefinitionDialog.svelte';
+    import WinePhotos from '#lib/components/wines/WinePhotos.svelte';
     import BarcodeDialog from '#lib/components/barcode/BarcodeDialog.svelte';
     import BottleCard from '#lib/components/bottles/BottleCard.svelte';
     import BottleStatusDialog from '#lib/components/bottles/BottleStatusDialog.svelte';
@@ -27,7 +28,7 @@
 
     let { data }: { data: PageData } = $props();
 
-    const { wineDefinition, bottles, imageUrl } = $derived(data);
+    const { wineDefinition, bottles, photos } = $derived(data);
 
     // The bottles below are replaced, never mutated: raw state does not proxy the objects of `data`.
 
@@ -260,33 +261,11 @@
                         {/if}
                     </div>
                     <div class="flex justify-center">
-                        {#if imageUrl}
-                            <img
-                                src={imageUrl}
-                                alt={wineDefinition.name}
-                                class="w-48 h-64 object-cover rounded"
-                            />
-                        {:else}
-                            <div
-                                class="w-48 h-64 bg-muted rounded flex items-center justify-center"
-                            >
-                                <div class="text-center text-muted-foreground">
-                                    <svg
-                                        class="w-12 h-12 mx-auto mb-3"
-                                        fill="currentColor"
-                                        viewBox="0 0 20 20"
-                                        xmlns="http://www.w3.org/2000/svg"
-                                    >
-                                        <path
-                                            d="M3 4a1 1 0 011-1h12a1 1 0 011 1v2a1 1 0 01-1 1H4a1 1 0 01-1-1V4zM3 10a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H4a1 1 0 01-1-1v-6zM14 9a1 1 0 00-1 1v6a1 1 0 001 1h2a1 1 0 001-1v-6a1 1 0 00-1-1h-2z"
-                                        />
-                                    </svg>
-                                    <span class="text-sm"
-                                        >{m['wine_details.no_image_available']()}</span
-                                    >
-                                </div>
-                            </div>
-                        {/if}
+                        <WinePhotos
+                            wineId={wineDefinition.id}
+                            wineName={wineDefinition.name}
+                            {photos}
+                        />
                     </div>
                 </div>
             </CardContent>
@@ -393,11 +372,11 @@
     </div>
 </div>
 
-<!-- Edit Wine Definition Dialog: saving reloads the image URL too, for a new image -->
+<!-- Edit Wine Definition Dialog: saving reloads the photos too, for a new main one -->
 <WineDefinitionDialog
     bind:open={showEditDefinitionDialog}
     editDefinition={wineDefinition}
-    {imageUrl}
+    imageUrl={photos.find((photo) => photo.main)?.url}
     onSaved={() => invalidate(CELLAR)}
 />
 

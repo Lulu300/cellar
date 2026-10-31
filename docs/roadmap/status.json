@@ -55,6 +55,7 @@
   "DEP-05": {"state":"done","note":"33eca12..1b22a99 : barcode-detector 3.2.2 (zxing-wasm 3.1.3 servi par l'app), 534/534 étiquettes du banc BUG-08 (fond noir + bordure) en natif, sans natif et WebKit ; EAN/UPC/Code 39/Data Matrix lus. iPhone réel non testé.","updatedAt":"2026-10-11"},
   "DEP-06": {"state":"done","note":"40cc8d47..ae17dccb","updatedAt":"2026-10-29T11:56:55.362Z"},
   "DEP-07": {"state":"done","note":"e0dd937e..9ea78102","updatedAt":"2026-10-30T18:22:51.210Z"},
+  "DEP-08": {"state":"done","note":"77c47838..52c6fe0d","updatedAt":"2026-10-31T14:31:39.106Z"},
   "DOC-01": {"state":"done","note":"b5f8b4b..b290ea3 sur develop (code 9b1a3c5..b7b32b7), CI verte (run 38142810975) : README.md réécrit (plus rien du modèle sv) : présentation (réseau local ou VPN), lien « Docker installation » vers README-Docker.md#quick-start, UPGRADING/CHANGELOG, fonctionnalités vérifiées dans le code (caméra : HTTPS ou localhost), section développement (Node 24, pnpm 10, cinq contrôles, jeton d’installation), renvois vers AGENTS.md et RELEASING.md. Liens et ancres vérifiés. Incohérences de README-Docker.md notées comme constats.","updatedAt":"2026-10-11"},
   "DOC-02": {"state":"done","note":"79b8cd0..1506ad1 (README-Docker.md vérifié contre le code, procédure archive de release testée)","updatedAt":"2026-10-11"},
   "DOC-03": {"state":"done","note":"ef9b9b87..8afaf04a","updatedAt":"2026-10-29T13:30:02.248Z"},

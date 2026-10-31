@@ -282,14 +282,22 @@
             </div>
         {:else}
             <div class="space-y-4">
-                <p id={summaryId} class="text-sm text-muted-foreground">
+                <!-- Focused when the check ends, where the Check button was: the step starts at
+                     its top, and a screen reader hears its result. -->
+                <p
+                    id={summaryId}
+                    class="text-sm text-muted-foreground"
+                    tabindex="-1"
+                    {@attach (summary) => summary.focus()}
+                >
                     {m['bulk.summary']({ found: foundCount, issues: issueCount })}
                 </p>
 
-                <!-- Its own scroll, so that a long list leaves the action in view on a desktop. -->
+                <!-- Its own scroll on a desktop, so that a long list leaves the action in view; a
+                     phone keeps a single scroll, the dialog's. -->
                 <ScrollRegion
                     labelledby={summaryId}
-                    class="max-h-60 p-0 rounded-md border divide-y"
+                    class="sm:max-h-60 p-0 rounded-md border divide-y"
                 >
                     {#each rows as row (row.index)}
                         <div

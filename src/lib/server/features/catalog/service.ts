@@ -8,7 +8,9 @@ import {
     wineFormats,
     wineTypes
 } from '#lib/server/db/schema.js';
+import type { Tx } from '#lib/server/db/connection.js';
 import { listBottlesWithoutDefinitions } from '#lib/server/features/bottles/service.js';
+import { tidyWinePhotos } from '#lib/server/features/images/service.js';
 import { createLookupCrud } from '#lib/server/features/shared/lookup-crud.js';
 import { ConflictError, NotFoundError } from '#lib/server/http/errors.js';
 import { namedSchema } from '#lib/shared/schemas/reference.js';
@@ -17,6 +19,7 @@ import {
     countBottlesOf,
     deleteBottlesOf,
     deleteDefinition,
+    getDefinition,
     getDefinitionWithLocation,
     insertDefinition,
     listDefinitionsWithLocation,
@@ -96,14 +99,22 @@ export function getDefinitionDetails(id: string) {
 export const createDefinition = (data: WineDefinitionInput) => insertDefinition(data);
 
 /** Changes the fields of `data` on the wine. Throws a NotFoundError for an unknown wine. */
-function changeDefinition(id: string, data: Partial<WineDefinitionInput>) {
-    const wine = updateDefinition(id, data);
+function changeDefinition(id: string, data: Partial<WineDefinitionInput>, tx: Tx = db) {
+    const wine = updateDefinition(id, data, tx);
     if (!wine) throw wineNotFound();
     return wine;
 }
 
+/**
+ * Replaces every field of the wine. Its other photos stay: a main photo removed gives way to the
+ * next one, and one of them made the main photo leaves them.
+ */
 export const replaceDefinition = (id: string, data: WineDefinitionInput) =>
-    changeDefinition(id, data);
+    db.transaction((tx) => {
+        changeDefinition(id, data, tx);
+        tidyWinePhotos(tx);
+        return getDefinition(id, tx)!;
+    });
 
 /** Gives the wine `rating`, or none with null, and leaves its other fields as they are. */
 export const rateDefinition = (id: string, rating: WineDefinitionInput['rating']) =>

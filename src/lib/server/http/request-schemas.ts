@@ -1,12 +1,13 @@
 import { z } from 'zod';
 import { MAX_ACCESS_CODE_LENGTH } from '#lib/server/access-code.js';
-import { EXPORT_TABLES, type ExportTableName } from '#lib/server/features/backup/export.js';
 import { BACKUP_MODES, INTERVAL_HOURS, KEEP_COUNT } from '#lib/server/features/backup/scheduler.js';
+import { TABLES, type TableName } from '#lib/server/features/csv-import/tables.js';
 import { MAX_SETUP_TOKEN_LENGTH } from '#lib/server/setup-token.js';
 import {
     MAX_SESSION_TIMEOUT_HOURS,
     MIN_SESSION_TIMEOUT_HOURS
 } from '#lib/shared/session-timeout.js';
+import { id } from '#lib/shared/schemas/common.js';
 import { MIN_ACCESS_CODE_LENGTH } from '#lib/utils/access-code.js';
 
 // The bodies of the routes that no form shares, here rather than in their route so that the
@@ -59,7 +60,7 @@ export const csvExportRequest = z.object({
             z
                 .string()
                 .refine(
-                    (table): table is ExportTableName => Object.hasOwn(EXPORT_TABLES, table),
+                    (table): table is TableName => Object.hasOwn(TABLES, table),
                     'Unknown table'
                 )
         )
@@ -67,6 +68,8 @@ export const csvExportRequest = z.object({
     customName: z.string().optional(),
     delimiter: z.string().min(1).max(5).default(',')
 });
+
+export const mainPhotoRequest = z.object({ imageId: id });
 
 export const imageRenameRequest = z.object({
     imageId: z.string().min(1),

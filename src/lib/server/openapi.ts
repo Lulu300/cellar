@@ -12,6 +12,7 @@ import {
     imagesDeleteRequest,
     imagesDownloadRequest,
     loginRequest,
+    mainPhotoRequest,
     mcpTokenRequest,
     settingsRequest,
     upgradeTickRequest
@@ -91,6 +92,9 @@ const form = (shape: z.ZodRawShape) => ({ 'multipart/form-data': z.object(shape)
 
 /** A backup of the server's list, by its name, or a zip sent as the raw body. */
 const zipSource = { ...json(backupFileRequest), 'application/zip': z.file() };
+
+/** The form of a route that uploads one wine image. */
+const imageForm = form({ image: z.file() });
 
 const ok = { 200: 'application/json' } as const;
 const created = { 201: 'application/json' } as const;
@@ -181,6 +185,28 @@ const operations: Record<string, Operation> = {
         summary: 'Deletes a wine that has no bottles',
         answers: noContent
     },
+    'GET /api/definitions/[id]/photos': {
+        tag: 'wines',
+        summary: 'The photos of a wine, its main one first',
+        answers: ok
+    },
+    'POST /api/definitions/[id]/photos': {
+        tag: 'wines',
+        summary: 'Uploads a photo of a wine, its main one when it has none',
+        body: imageForm,
+        answers: created
+    },
+    'DELETE /api/definitions/[id]/photos/[imageId]': {
+        tag: 'wines',
+        summary: 'Removes a photo from a wine, and deletes its image when no other wine uses it',
+        answers: noContent
+    },
+    'PUT /api/definitions/[id]/main-photo': {
+        tag: 'wines',
+        summary: 'Makes one of the photos of a wine its main one',
+        body: json(mainPhotoRequest),
+        answers: ok
+    },
 
     'GET /api/bottles': { tag: 'bottles', summary: 'The bottles, with their wine', answers: ok },
     'POST /api/bottles': {
@@ -238,7 +264,7 @@ const operations: Record<string, Operation> = {
     'POST /api/upload/image': {
         tag: 'images',
         summary: 'Saves the image of a wine',
-        body: form({ image: z.file() }),
+        body: imageForm,
         answers: created
     },
 

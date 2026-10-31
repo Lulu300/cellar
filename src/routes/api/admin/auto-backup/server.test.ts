@@ -53,7 +53,8 @@ describe('POST /api/admin/auto-backup', () => {
             'storageCases',
             'wineImages',
             'wineDefinitions',
-            'wineBottles'
+            'wineBottles',
+            'winePhotos'
         ]);
     });
 });

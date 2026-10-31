@@ -23,6 +23,7 @@ import { exportCsvFiles } from '../../../../test/csv-export';
 import { fakeEvent } from '../../../../test/event';
 import { POST as importCsv } from '../../../../routes/api/admin/import-csv/+server';
 import { POST as postBottles } from '../../../../routes/api/bottles/+server';
+import { TABLES } from './tables';
 
 const timestamps = { createdAt: new Date('2024-01-01T00:00:00Z'), updatedAt: new Date() };
 
@@ -133,7 +134,7 @@ beforeEach(() => {
         .run();
 });
 
-const exportAll = () => exportCsvFiles(EXPORT_TABLE_NAMES);
+const exportAll = () => exportCsvFiles(Object.keys(TABLES));
 
 /** The contents of the files, by table: an export leaves out the ids and the timestamps. */
 async function contents(files: File[]): Promise<Record<string, string>> {

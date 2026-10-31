@@ -170,115 +170,119 @@ Every route and method of the API. A test, `src/routes/api/api-doc.test.ts`, che
 against the routes of the code and the session rule of the server. "Session" says whether the
 request needs one.
 
-| Method | Path                               | Session                  |
-| ------ | ---------------------------------- | ------------------------ |
-| GET    | `/api/access-code`                 | no                       |
-| POST   | `/api/access-code`                 | no                       |
-| PUT    | `/api/access-code`                 | yes                      |
-| POST   | `/api/admin/auto-backup`           | yes, or the backup token |
-| GET    | `/api/admin/backup-settings`       | yes                      |
-| PUT    | `/api/admin/backup-settings`       | yes                      |
-| POST   | `/api/admin/backup-token`          | yes                      |
-| GET    | `/api/admin/barcode-settings`      | yes                      |
-| PUT    | `/api/admin/barcode-settings`      | yes                      |
-| POST   | `/api/admin/create-backup`         | yes                      |
-| POST   | `/api/admin/create-export`         | yes                      |
-| DELETE | `/api/admin/delete-backup`         | yes                      |
-| GET    | `/api/admin/download-backup`       | yes                      |
-| POST   | `/api/admin/download-images`       | yes                      |
-| POST   | `/api/admin/export-csv`            | yes                      |
-| DELETE | `/api/admin/images`                | yes                      |
-| GET    | `/api/admin/images`                | yes                      |
-| PUT    | `/api/admin/images`                | yes                      |
-| POST   | `/api/admin/import-csv`            | yes                      |
-| POST   | `/api/admin/import-images-zip`     | yes                      |
-| POST   | `/api/admin/import-json`           | yes                      |
-| GET    | `/api/admin/label-presets`         | yes                      |
-| POST   | `/api/admin/label-presets`         | yes                      |
-| DELETE | `/api/admin/label-presets/{id}`    | yes                      |
-| GET    | `/api/admin/label-presets/{id}`    | yes                      |
-| PUT    | `/api/admin/label-presets/{id}`    | yes                      |
-| GET    | `/api/admin/list-backups`          | yes                      |
-| DELETE | `/api/admin/mcp-token`             | yes                      |
-| POST   | `/api/admin/mcp-token`             | yes                      |
-| PUT    | `/api/admin/mcp-token`             | yes                      |
-| GET    | `/api/admin/next-barcode`          | yes                      |
-| POST   | `/api/admin/restore`               | yes                      |
-| PUT    | `/api/admin/upgrade-actions`       | yes                      |
-| POST   | `/api/admin/upload-image`          | yes                      |
-| GET    | `/api/admin/wine-bottles`          | yes                      |
-| DELETE | `/api/admin/wine-bottles/{id}`     | yes                      |
-| GET    | `/api/admin/wine-definitions`      | yes                      |
-| DELETE | `/api/admin/wine-definitions/{id}` | yes                      |
-| POST   | `/api/admin/wipe-database`         | yes                      |
-| GET    | `/api/appellations`                | no                       |
-| POST   | `/api/appellations`                | yes                      |
-| DELETE | `/api/appellations/{id}`           | yes                      |
-| PUT    | `/api/appellations/{id}`           | yes                      |
-| POST   | `/api/barcode/csv`                 | yes                      |
-| GET    | `/api/barcode/export-all`          | no                       |
-| GET    | `/api/barcode/export-manual`       | no                       |
-| POST   | `/api/barcode/pdf-labels`          | yes                      |
-| GET    | `/api/barcode/stats`               | no                       |
-| GET    | `/api/barcode/stats-manual`        | no                       |
-| GET    | `/api/bottles`                     | no                       |
-| PATCH  | `/api/bottles`                     | yes                      |
-| POST   | `/api/bottles`                     | yes                      |
-| DELETE | `/api/bottles/{id}`                | yes                      |
-| PATCH  | `/api/bottles/{id}`                | yes                      |
-| GET    | `/api/bottles/non-consumed`        | no                       |
-| GET    | `/api/countries`                   | no                       |
-| POST   | `/api/countries`                   | yes                      |
-| DELETE | `/api/countries/{id}`              | yes                      |
-| PUT    | `/api/countries/{id}`              | yes                      |
-| GET    | `/api/definitions`                 | no                       |
-| POST   | `/api/definitions`                 | yes                      |
-| DELETE | `/api/definitions/{id}`            | yes                      |
-| GET    | `/api/definitions/{id}`            | no                       |
-| PUT    | `/api/definitions/{id}`            | yes                      |
-| GET    | `/api/images`                      | no                       |
-| GET    | `/api/openapi.json`                | no                       |
-| GET    | `/api/origins`                     | no                       |
-| POST   | `/api/origins`                     | yes                      |
-| DELETE | `/api/origins/{id}`                | yes                      |
-| PUT    | `/api/origins/{id}`                | yes                      |
-| GET    | `/api/regions`                     | no                       |
-| POST   | `/api/regions`                     | yes                      |
-| DELETE | `/api/regions/{id}`                | yes                      |
-| PUT    | `/api/regions/{id}`                | yes                      |
-| DELETE | `/api/session`                     | yes                      |
-| GET    | `/api/session`                     | no                       |
-| GET    | `/api/settings`                    | no                       |
-| PUT    | `/api/settings`                    | yes                      |
-| GET    | `/api/statistics`                  | no                       |
-| GET    | `/api/storage-cases`               | no                       |
-| DELETE | `/api/storage-cases/{id}`          | yes                      |
-| GET    | `/api/storage-cases/{id}/capacity` | no                       |
-| GET    | `/api/storage-containers`          | no                       |
-| POST   | `/api/storage-containers`          | yes                      |
-| DELETE | `/api/storage-containers/{id}`     | yes                      |
-| PUT    | `/api/storage-containers/{id}`     | yes                      |
-| GET    | `/api/storage-occupancy`           | no                       |
-| POST   | `/api/upload/image`                | yes                      |
-| GET    | `/api/wine-classifications`        | no                       |
-| POST   | `/api/wine-classifications`        | yes                      |
-| DELETE | `/api/wine-classifications/{id}`   | yes                      |
-| PUT    | `/api/wine-classifications/{id}`   | yes                      |
-| GET    | `/api/wine-colors`                 | no                       |
-| POST   | `/api/wine-colors`                 | yes                      |
-| DELETE | `/api/wine-colors/{id}`            | yes                      |
-| PUT    | `/api/wine-colors/{id}`            | yes                      |
-| GET    | `/api/wine-formats`                | no                       |
-| POST   | `/api/wine-formats`                | yes                      |
-| DELETE | `/api/wine-formats/{id}`           | yes                      |
-| PUT    | `/api/wine-formats/{id}`           | yes                      |
-| GET    | `/api/wine-shortage`               | no                       |
-| GET    | `/api/wine-types`                  | no                       |
-| POST   | `/api/wine-types`                  | yes                      |
-| DELETE | `/api/wine-types/{id}`             | yes                      |
-| PUT    | `/api/wine-types/{id}`             | yes                      |
-| GET    | `/api/wines`                       | no                       |
-| GET    | `/api/wines/{id}/locations`        | no                       |
+| Method | Path                                     | Session                  |
+| ------ | ---------------------------------------- | ------------------------ |
+| GET    | `/api/access-code`                       | no                       |
+| POST   | `/api/access-code`                       | no                       |
+| PUT    | `/api/access-code`                       | yes                      |
+| POST   | `/api/admin/auto-backup`                 | yes, or the backup token |
+| GET    | `/api/admin/backup-settings`             | yes                      |
+| PUT    | `/api/admin/backup-settings`             | yes                      |
+| POST   | `/api/admin/backup-token`                | yes                      |
+| GET    | `/api/admin/barcode-settings`            | yes                      |
+| PUT    | `/api/admin/barcode-settings`            | yes                      |
+| POST   | `/api/admin/create-backup`               | yes                      |
+| POST   | `/api/admin/create-export`               | yes                      |
+| DELETE | `/api/admin/delete-backup`               | yes                      |
+| GET    | `/api/admin/download-backup`             | yes                      |
+| POST   | `/api/admin/download-images`             | yes                      |
+| POST   | `/api/admin/export-csv`                  | yes                      |
+| DELETE | `/api/admin/images`                      | yes                      |
+| GET    | `/api/admin/images`                      | yes                      |
+| PUT    | `/api/admin/images`                      | yes                      |
+| POST   | `/api/admin/import-csv`                  | yes                      |
+| POST   | `/api/admin/import-images-zip`           | yes                      |
+| POST   | `/api/admin/import-json`                 | yes                      |
+| GET    | `/api/admin/label-presets`               | yes                      |
+| POST   | `/api/admin/label-presets`               | yes                      |
+| DELETE | `/api/admin/label-presets/{id}`          | yes                      |
+| GET    | `/api/admin/label-presets/{id}`          | yes                      |
+| PUT    | `/api/admin/label-presets/{id}`          | yes                      |
+| GET    | `/api/admin/list-backups`                | yes                      |
+| DELETE | `/api/admin/mcp-token`                   | yes                      |
+| POST   | `/api/admin/mcp-token`                   | yes                      |
+| PUT    | `/api/admin/mcp-token`                   | yes                      |
+| GET    | `/api/admin/next-barcode`                | yes                      |
+| POST   | `/api/admin/restore`                     | yes                      |
+| PUT    | `/api/admin/upgrade-actions`             | yes                      |
+| POST   | `/api/admin/upload-image`                | yes                      |
+| GET    | `/api/admin/wine-bottles`                | yes                      |
+| DELETE | `/api/admin/wine-bottles/{id}`           | yes                      |
+| GET    | `/api/admin/wine-definitions`            | yes                      |
+| DELETE | `/api/admin/wine-definitions/{id}`       | yes                      |
+| POST   | `/api/admin/wipe-database`               | yes                      |
+| GET    | `/api/appellations`                      | no                       |
+| POST   | `/api/appellations`                      | yes                      |
+| DELETE | `/api/appellations/{id}`                 | yes                      |
+| PUT    | `/api/appellations/{id}`                 | yes                      |
+| POST   | `/api/barcode/csv`                       | yes                      |
+| GET    | `/api/barcode/export-all`                | no                       |
+| GET    | `/api/barcode/export-manual`             | no                       |
+| POST   | `/api/barcode/pdf-labels`                | yes                      |
+| GET    | `/api/barcode/stats`                     | no                       |
+| GET    | `/api/barcode/stats-manual`              | no                       |
+| GET    | `/api/bottles`                           | no                       |
+| PATCH  | `/api/bottles`                           | yes                      |
+| POST   | `/api/bottles`                           | yes                      |
+| DELETE | `/api/bottles/{id}`                      | yes                      |
+| PATCH  | `/api/bottles/{id}`                      | yes                      |
+| GET    | `/api/bottles/non-consumed`              | no                       |
+| GET    | `/api/countries`                         | no                       |
+| POST   | `/api/countries`                         | yes                      |
+| DELETE | `/api/countries/{id}`                    | yes                      |
+| PUT    | `/api/countries/{id}`                    | yes                      |
+| GET    | `/api/definitions`                       | no                       |
+| POST   | `/api/definitions`                       | yes                      |
+| DELETE | `/api/definitions/{id}`                  | yes                      |
+| GET    | `/api/definitions/{id}`                  | no                       |
+| PUT    | `/api/definitions/{id}`                  | yes                      |
+| PUT    | `/api/definitions/{id}/main-photo`       | yes                      |
+| GET    | `/api/definitions/{id}/photos`           | no                       |
+| POST   | `/api/definitions/{id}/photos`           | yes                      |
+| DELETE | `/api/definitions/{id}/photos/{imageId}` | yes                      |
+| GET    | `/api/images`                            | no                       |
+| GET    | `/api/openapi.json`                      | no                       |
+| GET    | `/api/origins`                           | no                       |
+| POST   | `/api/origins`                           | yes                      |
+| DELETE | `/api/origins/{id}`                      | yes                      |
+| PUT    | `/api/origins/{id}`                      | yes                      |
+| GET    | `/api/regions`                           | no                       |
+| POST   | `/api/regions`                           | yes                      |
+| DELETE | `/api/regions/{id}`                      | yes                      |
+| PUT    | `/api/regions/{id}`                      | yes                      |
+| DELETE | `/api/session`                           | yes                      |
+| GET    | `/api/session`                           | no                       |
+| GET    | `/api/settings`                          | no                       |
+| PUT    | `/api/settings`                          | yes                      |
+| GET    | `/api/statistics`                        | no                       |
+| GET    | `/api/storage-cases`                     | no                       |
+| DELETE | `/api/storage-cases/{id}`                | yes                      |
+| GET    | `/api/storage-cases/{id}/capacity`       | no                       |
+| GET    | `/api/storage-containers`                | no                       |
+| POST   | `/api/storage-containers`                | yes                      |
+| DELETE | `/api/storage-containers/{id}`           | yes                      |
+| PUT    | `/api/storage-containers/{id}`           | yes                      |
+| GET    | `/api/storage-occupancy`                 | no                       |
+| POST   | `/api/upload/image`                      | yes                      |
+| GET    | `/api/wine-classifications`              | no                       |
+| POST   | `/api/wine-classifications`              | yes                      |
+| DELETE | `/api/wine-classifications/{id}`         | yes                      |
+| PUT    | `/api/wine-classifications/{id}`         | yes                      |
+| GET    | `/api/wine-colors`                       | no                       |
+| POST   | `/api/wine-colors`                       | yes                      |
+| DELETE | `/api/wine-colors/{id}`                  | yes                      |
+| PUT    | `/api/wine-colors/{id}`                  | yes                      |
+| GET    | `/api/wine-formats`                      | no                       |
+| POST   | `/api/wine-formats`                      | yes                      |
+| DELETE | `/api/wine-formats/{id}`                 | yes                      |
+| PUT    | `/api/wine-formats/{id}`                 | yes                      |
+| GET    | `/api/wine-shortage`                     | no                       |
+| GET    | `/api/wine-types`                        | no                       |
+| POST   | `/api/wine-types`                        | yes                      |
+| DELETE | `/api/wine-types/{id}`                   | yes                      |
+| PUT    | `/api/wine-types/{id}`                   | yes                      |
+| GET    | `/api/wines`                             | no                       |
+| GET    | `/api/wines/{id}/locations`              | no                       |
 
 ## Session and access code
 
@@ -420,7 +424,9 @@ such as `id` or `createdAt`, are ignored.
 - `description`: string, optional, at most 5,000 characters, counted as UTF-16 units like
   JavaScript's `.length` (an emoji counts two); line breaks are stored as LF, so a CRLF counts as
   one character.
-- `imageId`: id of an image (see [`POST /api/upload/image`](#post-apiuploadimage)), optional.
+- `imageId`: id of an image (see [`POST /api/upload/image`](#post-apiuploadimage)), optional: the
+  wine's main photo, which the wine list shows. A wine may have other photos, which
+  [its photo routes](#wine-photos) handle.
 - `grapeVarieties`: array of strings, optional (leave it out or send `[]`; `null` answers `422`), at
   most 50 items of 1-100 characters each.
 - `targetQuantity`: integer 0-10,000, optional: the number of bottles to keep in the cellar (see
@@ -605,6 +611,10 @@ Replaces every field of a wine.
 - **Response:** `200` with the wine as saved, as [`POST /api/definitions`](#post-apidefinitions)
   answers it.
 - **Errors:** `404 not_found` when the wine does not exist.
+- **Photos:** a new `imageId` replaces the main photo, whose image stays among the images (see
+  [`GET /api/admin/images`](#get-apiadminimages)); the wine's other photos stay. One of them given
+  as `imageId` leaves the others. When the wine has other photos, a `null` (or missing) `imageId`
+  makes the oldest of them the main photo, so the answer gives its id.
 
 ### `DELETE /api/definitions/{id}`
 
@@ -617,6 +627,73 @@ Deletes a wine that has no bottles.
   exist, consumed ones included, with `details.bottleCount`, their number.
   [`DELETE /api/admin/wine-definitions/{id}`](#delete-apiadminwine-definitionsid) deletes a wine
   with its bottles when given `?cascade=true`.
+
+#### Wine photos
+
+A wine has a main photo, its `imageId`, and may have others, shown only on its page. A wine that has
+photos always has a main one, and an image may be a photo of several wines. The app shrinks a photo
+before sending it (about 1,600 pixels on its longest side, as JPEG, without its metadata); a script
+may send any image these routes take, which is stored as sent.
+
+### `GET /api/definitions/{id}/photos`
+
+Lists the photos of a wine.
+
+- **Session:** not needed.
+- **Body:** none.
+- **Response:** `200` with `{ "photos": [{ "imageId", "url", "main" }] }`: the main photo first
+  (`main: true`), then the others from the oldest. `url` is as in
+  [`GET /api/images`](#get-apiimages). A wine without photos has `photos: []`.
+- **Errors:** `404 not_found` when the wine does not exist.
+
+```json
+{
+  "photos": [
+    { "imageId": "8d0e6f0a-…", "url": "/uploads/wines/wine-2b7c41d2-….jpg", "main": true },
+    { "imageId": "f3a91c55-…", "url": "/uploads/wines/wine-90d1e4a7-….jpg", "main": false }
+  ]
+}
+```
+
+### `POST /api/definitions/{id}/photos`
+
+Uploads a photo of a wine. It becomes the main photo when the wine has none, and comes after the
+others otherwise.
+
+- **Session:** required.
+- **Body:** a `multipart/form-data` form with the field `image`, as
+  [`POST /api/upload/image`](#post-apiuploadimage) takes it, with the same limits.
+- **Response:** `201` with the photos of the wine, as
+  [`GET /api/definitions/{id}/photos`](#get-apidefinitionsidphotos) lists them.
+- **Errors:** `404 not_found` when the wine does not exist, before the file is stored; the errors
+  of [`POST /api/upload/image`](#post-apiuploadimage).
+
+```bash
+curl -fsS -b cookies.txt -H "Origin: $CELLAR" -F image=@back-label.jpg \
+  "$CELLAR/api/definitions/margaux/photos"
+```
+
+### `PUT /api/definitions/{id}/main-photo`
+
+Makes one of the photos of a wine its main photo. The main photo before it stays among the others.
+
+- **Session:** required.
+- **Body:** JSON `{ "imageId" }`: the id of one of the wine's photos.
+- **Response:** `200` with the photos of the wine, as
+  [`GET /api/definitions/{id}/photos`](#get-apidefinitionsidphotos) lists them.
+- **Errors:** `404 not_found` when the wine does not exist, or when the image is not one of its
+  photos; `422 invalid_body` without an `imageId`.
+
+### `DELETE /api/definitions/{id}/photos/{imageId}`
+
+Removes a photo from a wine, and deletes the image, row and file, when no other wine uses it. When
+it was the main photo, the oldest of the others becomes the main one.
+
+- **Session:** required.
+- **Body:** none. Send the `Origin` header.
+- **Response:** `204` with no body.
+- **Errors:** `404 not_found` when the wine does not exist, or when the image is not one of its
+  photos.
 
 ## Bottles
 
@@ -2007,7 +2084,8 @@ pre-import export.
   [The zip of a restore or an import](#the-zip-of-a-restore-or-an-import). Its JSON file must have a
   `data` object with the rows of all 13 tables of an export (`countries`, `regions`, `appellations`,
   `wineClassifications`, `wineTypes`, `wineColors`, `wineFormats`, `origins`, `storageContainers`,
-  `storageCases`, `wineImages`, `wineDefinitions`, `wineBottles`); its images in `images/` are
+  `storageCases`, `wineImages`, `wineDefinitions`, `wineBottles`), and of `winePhotos`, the other
+  photos of the wines, which exports of versions before 1.3.0 lack; its images in `images/` are
   copied too.
 - **Response:** `200` with:
   - `success: true` and an English `message`.
@@ -2363,7 +2441,8 @@ Revokes the MCP token: `/mcp` refuses every request until a new one is created.
 The CSV files have one file per table, named after it. The table names are `countries`, `regions`,
 `appellations`, `wineClassifications`, `wineTypes`, `wineColors`, `wineFormats`, `origins`,
 `storageContainers`, `storageCases`, `wineImages`, `wineDefinitions` and `wineBottles`. The first
-line holds the column names. A file gives no ids: a row refers to another by its name (the
+line holds the column names. A wine names only its main photo, in `imageName`: its other photos go
+only in backups and exports. A file gives no ids: a row refers to another by its name (the
 `countryName` of a region, the `wineName` of a bottle…).
 
 ### `POST /api/admin/export-csv`
@@ -2628,8 +2707,8 @@ first.
 - **Response:** `200` with `images` and `count`. Each image has `id`, `filename`, `path` (the URL
   folder, `/uploads/wines/`), `url` (where the image is served), `size` (bytes, `0` when the file is
   missing), `lastModified` (the date of the file, or of the row when the file is missing),
-  `createdAt`, `updatedAt`, and `wines`, the wines that use it, each `{ "id", "name", "producer" }`
-  (empty when none does).
+  `createdAt`, `updatedAt`, and `wines`, the wines that use it, as their main photo or another,
+  each `{ "id", "name", "producer" }` (empty when none does).
 - **Errors:** none besides the common ones.
 
 ```json
@@ -2697,7 +2776,7 @@ Deletes images, rows and files.
   - `imageIds`: array of non-empty strings, at least one, required. Ids that match no image are
     ignored.
   - `force`: boolean, default `false`. With `true`, images that wines use are removed from those
-    wines, then deleted.
+    wines, then deleted. A wine that loses its main photo takes the oldest of its others.
 - **Response:** `204`, without a body.
 - **Errors:** `409 in_use` without `force` when wines use some of the images: nothing is deleted,
   and `details.inUse` lists each such image as

@@ -25,6 +25,7 @@ import {
 import { extractZip, InvalidZipError, MAX_ZIP_UPLOAD_BYTES } from '#lib/server/zip.js';
 import { MAX_WINE_IMAGE_BYTES } from '#lib/shared/images.js';
 import {
+    addOtherPhoto,
     deleteImageRows,
     getImage,
     getImages,
@@ -32,9 +33,16 @@ import {
     imageFilenames,
     insertImage,
     listImages,
+    mainPhotoId,
+    otherPhotos,
+    removeOtherPhoto,
     renameImageRow,
+    setMainPhoto,
+    tidyWinePhotos,
     winesUsingImages
 } from './repository';
+
+export { tidyWinePhotos } from './repository';
 
 /** The URL of each image, for the wine pages. */
 export function listImageUrls() {
@@ -164,7 +172,8 @@ export async function renameImage(imageId: string, newFilename: string) {
 /**
  * Deletes images. Without `force`, images that wines use are refused with a ConflictError that
  * lists those wines, so that the user can confirm; with it, they are removed from those wines
- * first. Ids that match no image are ignored: another tab may have deleted them already.
+ * first, a wine that loses its main photo taking its next one. Ids that match no image are
+ * ignored: another tab may have deleted them already.
  */
 export async function deleteImages(imageIds: string[], force: boolean): Promise<void> {
     // One transaction: no wine can take one of these images between the check and the
@@ -185,15 +194,22 @@ export async function deleteImages(imageIds: string[], force: boolean): Promise<
             throw new ConflictError('in_use', 'Images are used by wines', { inUse });
         }
 
-        // The foreign key (ON DELETE SET NULL) removes them from the wines that use them.
+        // The foreign keys remove them from the wines that use them (ON DELETE SET NULL for a
+        // main photo, CASCADE for the others).
         deleteImageRows(imageIds, tx);
+        tidyWinePhotos(tx);
         return images;
     });
+    await removeImageFiles(deletedImages);
+}
 
-    // Files go last, as they cannot be restored. Once the rows are gone the images are deleted
-    // for the app, so a file that cannot be removed is only logged. A stored name that is not a
-    // plain file name cannot designate one of our files.
-    for (const image of deletedImages) {
+/**
+ * Removes the files of images whose rows are gone. Files go last, as they cannot be restored:
+ * once the rows are gone the images are deleted for the app, so a file that cannot be removed is
+ * only logged. A stored name that is not a plain file name cannot designate one of our files.
+ */
+async function removeImageFiles(images: WineImage[]): Promise<void> {
+    for (const image of images) {
         const filePath = resolveInDir(IMAGES_DIR, image.filename);
         if (filePath) {
             await rm(filePath, { force: true }).catch((error) =>
@@ -213,7 +229,7 @@ async function saveImage(bytes: Buffer) {
     return { image: insertImage(filename), type: imageType };
 }
 
-/** Saves the image of the wine form. */
+/** Saves the image of the wine form, or of a wine's photos. */
 export async function uploadImage(file: File) {
     const saved = await saveImage(Buffer.from(await file.arrayBuffer()));
     if (!saved) {
@@ -229,6 +245,66 @@ export async function uploadImage(file: File) {
         size: file.size,
         type: saved.type.mimeType
     };
+}
+
+const wineNotFound = () => new NotFoundError('Wine definition not found');
+const photoNotFound = () => new NotFoundError('This image is not a photo of this wine');
+
+/** The id of the main photo of the wine, or a NotFoundError when there is no such wine. */
+function mainPhotoOf(definitionId: string, tx: Tx = db): string | null {
+    const imageId = mainPhotoId(definitionId, tx);
+    if (imageId === undefined) throw wineNotFound();
+    return imageId;
+}
+
+/** The photos of a wine, its main one first, then the others from the oldest. */
+export function listWinePhotos(definitionId: string) {
+    const mainId = mainPhotoOf(definitionId);
+    const main = mainId ? getImage(mainId) : undefined;
+    return [main, ...otherPhotos(definitionId)]
+        .filter((image) => image !== undefined)
+        .map((image) => ({ imageId: image.id, url: imageUrl(image), main: image === main }));
+}
+
+/** Saves a photo of the wine: its main one when it has none yet. */
+export async function addWinePhoto(definitionId: string, file: File) {
+    // Checked first, so that a photo of an unknown wine leaves no file behind
+    mainPhotoOf(definitionId);
+    const { imageId } = await uploadImage(file);
+    db.transaction((tx) => {
+        addOtherPhoto(definitionId, imageId, tx);
+        tidyWinePhotos(tx);
+    });
+    return listWinePhotos(definitionId);
+}
+
+/** Makes one of the photos of the wine its main one; the main one before stays among the others. */
+export function chooseMainPhoto(definitionId: string, imageId: string) {
+    db.transaction((tx) => {
+        const mainId = mainPhotoOf(definitionId, tx);
+        if (mainId === imageId) return;
+        if (!removeOtherPhoto(definitionId, imageId, tx)) throw photoNotFound();
+        if (mainId) addOtherPhoto(definitionId, mainId, tx);
+        setMainPhoto(definitionId, imageId, tx);
+    });
+    return listWinePhotos(definitionId);
+}
+
+/**
+ * Removes a photo from the wine, and deletes the image when no other wine uses it. A main photo
+ * removed gives way to the next one.
+ */
+export async function removeWinePhoto(definitionId: string, imageId: string): Promise<void> {
+    const deleted = db.transaction((tx) => {
+        if (mainPhotoOf(definitionId, tx) === imageId) setMainPhoto(definitionId, null, tx);
+        else if (!removeOtherPhoto(definitionId, imageId, tx)) throw photoNotFound();
+        tidyWinePhotos(tx);
+        if (winesUsingImages([imageId], tx).length > 0) return [];
+        const images = getImages([imageId], tx);
+        deleteImageRows([imageId], tx);
+        return images;
+    });
+    await removeImageFiles(deleted);
 }
 
 /** Saves the images that the admin page uploads, each on its own: one that fails is reported. */

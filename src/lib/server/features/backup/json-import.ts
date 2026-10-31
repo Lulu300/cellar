@@ -117,14 +117,16 @@ function exportRow(table: ExportTableName, value: unknown, index: number): Impor
 function exportTables(data: Record<string, unknown>): TableRows[] {
     // The import empties every table: one that the file lacks would stay empty. The automatic
     // exports made by older versions lack five tables, and those of the cron route lacked
-    // wineImages too.
-    const missing = EXPORT_TABLE_NAMES.filter((name) => !Array.isArray(data[name]));
+    // wineImages too. Exports older than winePhotos lack it, as their wines had one image only.
+    const missing = EXPORT_TABLE_NAMES.filter(
+        (name) => name !== 'winePhotos' && !Array.isArray(data[name])
+    );
     if (missing.length > 0) {
         throw invalidExport('incomplete', `It lacks ${missing.join(', ')}.`, {
             tables: missing.join(', ')
         });
     }
-    const rows = (name: ExportTableName) => data[name] as unknown[];
+    const rows = (name: ExportTableName) => (data[name] ?? []) as unknown[];
     // The app never used the parent of a container; the database refuses one that is missing.
     const containerIds = new Set(rows('storageContainers').map((row) => (row as ImportedRow)?.id));
     return EXPORT_TABLE_NAMES.map((name) => ({

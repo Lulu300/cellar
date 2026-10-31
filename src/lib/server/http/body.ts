@@ -2,7 +2,8 @@ import { text as streamText } from 'node:stream/consumers';
 import { z } from 'zod';
 import { backupFileRequest } from '#lib/server/features/backup/files.js';
 import type { ApiErrorIssue } from '#lib/shared/api-error.js';
-import { ApiError, tooLargeError, ValidationError } from './errors.js';
+import { MAX_WINE_IMAGE_BYTES } from '#lib/shared/images.js';
+import { ApiError, invalidField, tooLargeError, ValidationError } from './errors.js';
 
 /**
  * The largest JSON body that a route reads, far above what any of them needs: past it, a request
@@ -111,6 +112,14 @@ export async function parseFormData(request: Request, maxBytes: number): Promise
         if (isBodyTooLarge(error)) throw tooLargeError();
         throw new ApiError(400, 'malformed_body', 'The request body is not a valid form');
     }
+}
+
+/** The file of a form that uploads one wine image, in its field `image`. */
+export async function parseImageForm(request: Request): Promise<File> {
+    const image = (await parseFormData(request, MAX_WINE_IMAGE_BYTES)).get('image');
+    if (!(image instanceof File)) throw invalidField('image', 'No image file provided');
+    if (image.size > MAX_WINE_IMAGE_BYTES) throw tooLargeError();
+    return image;
 }
 
 /** Where a restore or an import reads its zip: a backup that the server has, or an upload. */

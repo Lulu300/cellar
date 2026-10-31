@@ -67,13 +67,17 @@ export function insertDefinition(data: WineDefinitionInput): WineDefinition {
 }
 
 /** Changes the fields of `data` on the wine; undefined when there is no such wine. */
-export function updateDefinition(id: string, data: Partial<WineDefinitionInput>) {
-    return db
+export function updateDefinition(id: string, data: Partial<WineDefinitionInput>, tx: Tx = db) {
+    return tx
         .update(wineDefinitions)
         .set({ ...data, updatedAt: new Date() })
         .where(eq(wineDefinitions.id, id))
         .returning()
         .get();
+}
+
+export function getDefinition(id: string, tx: Tx = db): WineDefinition | undefined {
+    return tx.select().from(wineDefinitions).where(eq(wineDefinitions.id, id)).get();
 }
 
 /** Returns whether there was such a wine. */

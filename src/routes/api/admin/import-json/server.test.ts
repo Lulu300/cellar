@@ -24,6 +24,7 @@ import {
     wineDefinitions,
     wineFormats,
     wineImages,
+    winePhotos,
     wineTypes
 } from '#lib/server/db/schema.js';
 import { backupTimestamp } from '#lib/server/features/backup/archive.js';
@@ -51,7 +52,8 @@ const TABLES = {
     storageCases,
     wineImages,
     wineDefinitions,
-    wineBottles
+    wineBottles,
+    winePhotos
 };
 
 async function snapshot() {
@@ -84,6 +86,17 @@ beforeEach(async () => {
         .update(wineDefinitions)
         .set({ imageId: 'label' })
         .where(eq(wineDefinitions.id, definitionId));
+    // Another photo of the wine
+    await db.insert(wineImages).values({
+        id: 'back',
+        filename: 'back.jpg',
+        path: IMAGES_URL_PATH,
+        ...timestamps
+    });
+    writeFileSync(path.join(IMAGES_DIR, 'back.jpg'), jpegBytes('back label bytes'));
+    await db
+        .insert(winePhotos)
+        .values({ id: 'photo', definitionId, imageId: 'back', createdAt: now });
     await db.insert(storageContainers).values({ id: 'rack', name: 'Rack', ...timestamps });
     await db
         .insert(storageCases)
@@ -263,6 +276,18 @@ describe('POST /api/admin/import-json', () => {
         ]);
         // Its bare name, which the admin dialogs pass to download-backup.
         expect((await response.json()).backup).toBe(dataFiles()[0]);
+    });
+
+    it('imports an export made before wines had other photos', async () => {
+        const data = JSON.parse(JSON.stringify(await snapshot()));
+        delete data.winePhotos;
+
+        expect((await importZip(craftedZip(data))).status).toBe(200);
+
+        expect(await db.select().from(winePhotos)).toEqual([]);
+        expect(await db.select({ imageId: wineDefinitions.imageId }).from(wineDefinitions)).toEqual(
+            [{ imageId: 'label' }]
+        );
     });
 
     it('keeps the order of the cases', async () => {

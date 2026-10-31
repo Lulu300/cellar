@@ -8,6 +8,7 @@ import { setLastBarcodeNumber } from '#lib/server/features/barcode/repository.js
 import { BACKUP_SETTING_KEYS, getBackupSettings } from '#lib/server/features/backup/scheduler.js';
 import { setAppSettings } from '#lib/server/features/settings/repository.js';
 import { createBackupToken, getBackupTokenHash } from '#lib/server/features/backup/token.js';
+import { createMcpToken, storedMcpSettings } from '#lib/server/features/mcp/token.js';
 import { createSession, keepOnlySession } from '#lib/server/session.js';
 import { fakeCookies } from '../../../../test/event';
 import { backupZip, restore } from '../../../../test/restore';
@@ -21,7 +22,10 @@ vi.mock('#lib/server/session.js', async (importOriginal) => {
 const now = new Date();
 const timestamps = { createdAt: now, updatedAt: now };
 
-/** Fills a backup with a session of its day, a cron token, its backup settings and the last barcode numbers it gave. */
+/**
+ * Fills a backup with a session of its day, a cron token, an MCP token that may write, its backup
+ * settings and the last barcode numbers it gave.
+ */
 function fillBackup(backup: Db): void {
     backup
         .insert(sessions)
@@ -38,6 +42,8 @@ function fillBackup(backup: Db): void {
         [BACKUP_SETTING_KEYS.keepCount]: '3',
         [BACKUP_SETTING_KEYS.lastBackup]: '2020-01-01T00:00:00.000Z',
         auto_backup_token_hash: 'hash of an older cron token',
+        mcp_token_hash: 'hash of an older MCP token',
+        mcp_write_allowed: 'true',
         'barcode_last_number:CV': '12',
         'barcode_last_number:LOW': '60',
         'barcode_last_number:OLD': '90'
@@ -53,6 +59,7 @@ function fillBackup(backup: Db): void {
 describe('POST /api/admin/restore and the settings of the instance', () => {
     let admin: Session;
     let instanceTokenHash: string | undefined;
+    let instanceMcpSettings: ReturnType<typeof storedMcpSettings>;
     const instanceBackupSettings = {
         [BACKUP_SETTING_KEYS.enabled]: 'true',
         [BACKUP_SETTING_KEYS.mode]: 'internal',
@@ -67,6 +74,9 @@ describe('POST /api/admin/restore and the settings of the instance', () => {
         admin = await createSession(fakeCookies(), new URL('http://localhost'));
         createBackupToken();
         instanceTokenHash = getBackupTokenHash();
+        // Read-only: the backup's MCP token may write.
+        createMcpToken();
+        instanceMcpSettings = storedMcpSettings();
         setAppSettings(instanceBackupSettings);
         // Given in the live cellar since the backup was taken, or before it for LOW.
         for (const [prefix, number] of Object.entries({ CV: 40, LOW: 5, LIVE: 7 })) {
@@ -103,6 +113,14 @@ describe('POST /api/admin/restore and the settings of the instance', () => {
 
     it('keeps the cron token of the instance', () => {
         expect(getBackupTokenHash()).toBe(instanceTokenHash);
+    });
+
+    it('keeps the MCP token of the instance, read-only as it was', () => {
+        expect(storedMcpSettings()).toEqual(instanceMcpSettings);
+        expect(instanceMcpSettings).toEqual({
+            mcp_token_hash: expect.any(String),
+            mcp_write_allowed: undefined
+        });
     });
 
     it('keeps the automatic backup settings of the instance, its internal mode included', () => {

@@ -8,6 +8,11 @@ import { appSettings } from '#lib/server/db/schema.js';
 import { getAppSetting, setAppSetting } from '#lib/server/features/settings/repository.js';
 import { reschedule } from '#lib/server/features/backup/scheduler.js';
 import { createBackupToken } from '#lib/server/features/backup/token.js';
+import {
+    createMcpToken,
+    revokeMcpToken,
+    setMcpWriteAllowed
+} from '#lib/server/features/mcp/token.js';
 import { DATA_DIR } from '#lib/server/paths.js';
 import { APP_VERSION_KEY, UPGRADE_ACTIONS_KEY } from '#lib/server/upgrade.js';
 import { holdWrites } from '#lib/server/write-gate.js';
@@ -167,6 +172,127 @@ describe('handle', () => {
         // Replaced: the old token no longer works.
         createBackupToken();
         expect((await request('POST', '/api/admin/auto-backup', bearer)).status).toBe(401);
+    });
+
+    describe('the MCP server', () => {
+        /** Sends a request to /mcp, and returns the answer and what the route received, if it ran. */
+        async function callMcp(
+            method: string,
+            headers: Record<string, string> = {},
+            cookies = fakeCookies()
+        ) {
+            const event = fakeEvent({ method, path: '/mcp', routeId: '/mcp', headers, cookies });
+            let reached: App.Locals | undefined;
+            const response = await handle({
+                event,
+                resolve: async (event) => {
+                    reached = { ...event.locals };
+                    return new Response('done');
+                }
+            });
+            return { status: response.status, response, reached };
+        }
+
+        afterEach(() => {
+            revokeMcpToken();
+            setMcpWriteAllowed(false);
+        });
+
+        it('opens to its token only, whatever the method', async () => {
+            const bearer = { authorization: `Bearer ${createMcpToken()}` };
+
+            for (const method of ['GET', 'POST', 'DELETE']) {
+                expect((await callMcp(method, bearer)).status, method).toBe(200);
+                const refused = await callMcp(method);
+                expect(refused.status, method).toBe(401);
+                expect(refused.reached).toBeUndefined();
+                expect(refused.response.headers.get('www-authenticate')).toBe('Bearer');
+                expect(await refused.response.json()).toEqual({
+                    error: { code: 'unauthenticated', message: 'A valid MCP token is required' }
+                });
+                expect((await callMcp(method, { authorization: 'Bearer wrong' })).status).toBe(401);
+            }
+            // The scheme is case-insensitive (RFC 9110); the token is not.
+            expect(
+                (await callMcp('POST', { authorization: bearer.authorization.toLowerCase() }))
+                    .status
+            ).toBe(401);
+            expect(
+                (
+                    await callMcp('POST', {
+                        authorization: bearer.authorization.replace('Bearer', 'bearer')
+                    })
+                ).status
+            ).toBe(200);
+        });
+
+        it('refuses a session without the token, and hides the session from the route', async () => {
+            const cookies = fakeCookies();
+            await createSession(cookies, new URL('http://localhost'));
+            expect((await callMcp('POST', {}, cookies)).status).toBe(401);
+
+            const bearer = { authorization: `Bearer ${createMcpToken()}` };
+            const { reached } = await callMcp('POST', bearer, cookies);
+            expect(reached?.session).toBeNull();
+        });
+
+        it('refuses the token once revoked, or replaced by a new one', async () => {
+            const first = { authorization: `Bearer ${createMcpToken()}` };
+            const second = { authorization: `Bearer ${createMcpToken()}` };
+            expect((await callMcp('POST', first)).status).toBe(401);
+            expect((await callMcp('POST', second)).status).toBe(200);
+
+            revokeMcpToken();
+            expect((await callMcp('POST', second)).status).toBe(401);
+        });
+
+        it('tells the route whether the token may write: not until the admin allows it', async () => {
+            const bearer = { authorization: `Bearer ${createMcpToken()}` };
+            expect((await callMcp('POST', bearer)).reached?.mcpAccess).toEqual({ write: false });
+
+            setMcpWriteAllowed(true);
+            expect((await callMcp('POST', bearer)).reached?.mcpAccess).toEqual({ write: true });
+
+            setMcpWriteAllowed(false);
+            expect((await callMcp('POST', bearer)).reached?.mcpAccess).toEqual({ write: false });
+        });
+
+        it('opens nothing else with its token, and does not open to the backup token', async () => {
+            const bearer = { authorization: `Bearer ${createMcpToken()}` };
+            setMcpWriteAllowed(true);
+
+            expect((await request('POST', '/api/bottles', bearer)).status).toBe(401);
+            expect((await request('PATCH', '/api/bottles/[id]', bearer)).status).toBe(401);
+            expect((await request('GET', '/api/admin/list-backups', bearer)).status).toBe(401);
+            expect((await request('POST', '/api/admin/mcp-token', bearer)).status).toBe(401);
+            expect((await request('POST', '/api/admin/auto-backup', bearer)).status).toBe(401);
+
+            const backup = { authorization: `Bearer ${createBackupToken()}` };
+            expect((await callMcp('POST', backup)).status).toBe(401);
+        });
+
+        it('keeps the origin check: a web page cannot use the token through a browser', async () => {
+            const bearer = { authorization: `Bearer ${createMcpToken()}` };
+            const crossSite = { ...bearer, origin: 'http://evil.example' };
+
+            expect((await callMcp('POST', crossSite)).status).toBe(403);
+            expect((await callMcp('POST', { ...bearer, origin: 'http://localhost' })).status).toBe(
+                200
+            );
+        });
+
+        it('never writes the token to the logs', async () => {
+            const logs = (['log', 'info', 'warn', 'error', 'debug'] as const).map((level) =>
+                vi.spyOn(console, level).mockImplementation(() => {})
+            );
+            const token = createMcpToken();
+
+            await callMcp('POST', { authorization: `Bearer ${token}` });
+            revokeMcpToken();
+            await callMcp('POST', { authorization: `Bearer ${token}` });
+
+            for (const log of logs) expect(JSON.stringify(log.mock.calls)).not.toContain(token);
+        });
     });
 
     it('hands the route the body of the request untouched, never a copy', async () => {

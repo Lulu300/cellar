@@ -5,6 +5,7 @@ import { prepareDatabase } from '#lib/server/db/index.js';
 import { removeLeftoverFiles } from '#lib/server/features/backup/leftovers.js';
 import { reschedule } from '#lib/server/features/backup/scheduler.js';
 import { isCronBackupRequest } from '#lib/server/features/backup/token.js';
+import { authenticateMcp, isMcpRequest } from '#lib/server/features/mcp/token.js';
 import { rejectCrossOriginRequest, SAFE_METHODS } from '#lib/server/csrf.js';
 import { MethodNotAllowedError, NotFoundError } from '#lib/server/http/errors.js';
 import { apiErrorResponse } from '#lib/server/http/handler.js';
@@ -111,7 +112,10 @@ async function handleRequest(
     const forbidden = rejectCrossOriginRequest(event);
     if (forbidden) return forbidden;
 
-    const unauthenticated = await authenticate(event);
+    // The MCP server has its own token, which opens nothing else; a session does not open it.
+    const unauthenticated = isMcpRequest(event)
+        ? authenticateMcp(event)
+        : await authenticate(event);
     if (unauthenticated && !isCronBackupRequest(event)) return unauthenticated;
 
     if (SAFE_METHODS.has(event.request.method) || ROUTES_HOLDING_WRITES.has(event.route.id ?? '')) {

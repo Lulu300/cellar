@@ -166,6 +166,25 @@ describe('FormAction', () => {
         expect(wine.errors).toEqual({ description: tooLong });
     });
 
+    // The form counts UTF-16 units, as the API and the imports do: an emoji is two (API-13).
+    it('takes a wine name of 500 UTF-16 units with emoji, and says that 501 is too long', async () => {
+        const wine = new FormAction({
+            read: wineFromForm,
+            schema: () => wineDefinitionSchema,
+            onSaved: vi.fn()
+        });
+        const fields = { appellationId: 'a', typeId: 't', colorId: 'c' };
+
+        const atLimit = await submit(wine, { ...fields, name: '🍷'.repeat(250) });
+        const under = await submit(wine, { ...fields, name: `a${'🍷'.repeat(249)}` });
+        const over = await submit(wine, { ...fields, name: `${'🍷'.repeat(250)}a` });
+
+        expect(atLimit.cancel).not.toHaveBeenCalled();
+        expect(under.cancel).not.toHaveBeenCalled();
+        expect(over.cancel).toHaveBeenCalled();
+        expect(wine.errors).toEqual({ name: m['form_errors.too_long']({ maximum: '500' }) });
+    });
+
     it('checks the form once prepared, as the action receives it', async () => {
         const { action } = bottleAction({
             schema: () => bottleChangesSchema,

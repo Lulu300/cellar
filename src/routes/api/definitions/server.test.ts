@@ -43,7 +43,21 @@ describe('POST /api/definitions', () => {
         expect((await response.json()).description).toBe(description);
     });
 
+    // A name counts UTF-16 units too, as the forms and the imports count it (API-13).
     it.each([
+        ['a name of 250 emoji', { name: '🍷'.repeat(250) }],
+        ['a name of a letter and 249 emoji', { name: `a${'🍷'.repeat(249)}` }],
+        ['a producer of 250 emoji', { producer: '🍷'.repeat(250) }]
+    ])('creates a wine with %s, 500 UTF-16 units at most', async (_, fields) => {
+        const response = await post({ ...wine, ...fields });
+
+        expect(response.status).toBe(201);
+        expect(await response.json()).toMatchObject(fields);
+    });
+
+    it.each([
+        ['a name of 250 emoji and a letter', { name: `${'🍷'.repeat(250)}a` }],
+        ['a producer of 250 emoji and a letter', { producer: `${'🍷'.repeat(250)}a` }],
         ['a rating out of 1 to 5', { rating: 7 }],
         ['no appellation', { appellationId: undefined }],
         ['a type given by name', { typeId: undefined, type: 'Sparkling' }],

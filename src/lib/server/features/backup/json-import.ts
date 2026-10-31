@@ -5,7 +5,11 @@ import { extractZip, InvalidZipError } from '#lib/server/zip.js';
 import { OperationFailedError, ValidationError, type ApiError } from '#lib/server/http/errors.js';
 import { holdWrites } from '#lib/server/write-gate.js';
 import { brokenRule, isConstraintRefusal, isForeignKeyRefusal } from '#lib/server/db-errors.js';
-import { importedRow, type ImportedRow } from '#lib/server/features/shared/imported-rows.js';
+import {
+    importedRow,
+    withNamesCut,
+    type ImportedRow
+} from '#lib/server/features/shared/imported-rows.js';
 import { DATA_DIR } from '#lib/server/paths.js';
 import { backupTimestamp } from './archive';
 import { createExportZip, EXPORT_TABLE_NAMES, EXPORT_TABLES, type ExportTableName } from './export';
@@ -89,7 +93,7 @@ async function readExport(zipPath: string, extractDir: string) {
  */
 function exportRow(table: ExportTableName, value: unknown, index: number): ImportedRow {
     const row = (typeof value === 'object' && value !== null ? value : {}) as ImportedRow;
-    const checked = importedRow(table, row);
+    const checked = importedRow(table, withNamesCut(table, row));
     if ('problem' in checked) {
         throw invalidExport('invalid_row', `row ${index + 1} of ${table}: ${checked.problem}.`, {
             table,

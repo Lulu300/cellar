@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { bottleChangesSchema, bottleFromForm, bottleSchema, newBottlesSchema } from './bottle';
+import { newContainerSchema } from './storage';
 import { wineDefinitionSchema, wineFromForm } from './wine';
 
 const bottle = { definitionId: 'margaux', formatId: 'bottle' };
@@ -81,6 +82,52 @@ describe('wineDefinitionSchema', () => {
 
         expect(parsed).not.toHaveProperty('id');
         expect(parsed).not.toHaveProperty('createdAt');
+    });
+});
+
+// A wine emoji is two UTF-16 units, the measure of the forms and the imports (API-13).
+const emoji = (units: number) => '🍷'.repeat(units / 2);
+
+describe('the length of a text', () => {
+    const wine = { name: 'Margaux', appellationId: 'mgx', typeId: 'still', colorId: 'red' };
+    const container = { name: 'Rack', cases: ['A'] };
+    const lengths = [
+        [
+            'a wine name',
+            500,
+            (text: string) => wineDefinitionSchema.safeParse({ ...wine, name: text })
+        ],
+        [
+            'a producer',
+            500,
+            (text: string) => wineDefinitionSchema.safeParse({ ...wine, producer: text })
+        ],
+        [
+            'a grape variety',
+            100,
+            (text: string) => wineDefinitionSchema.safeParse({ ...wine, grapeVarieties: [text] })
+        ],
+        [
+            'a container name',
+            500,
+            (text: string) => newContainerSchema.safeParse({ ...container, name: text })
+        ],
+        [
+            'a case suffix',
+            50,
+            (text: string) => newContainerSchema.safeParse({ ...container, cases: [text] })
+        ]
+    ] as const;
+
+    it.each(lengths)('takes %s of emoji up to its %i UTF-16 units', (_, max, parse) => {
+        expect(parse(emoji(max)).success).toBe(true);
+        expect(parse(`a${emoji(max - 2)}`).success).toBe(true);
+    });
+
+    it.each(lengths)('refuses %s one unit over its %i, as too long', (_, max, parse) => {
+        expect(parse(`${emoji(max)}a`).error?.issues).toMatchObject([
+            { code: 'too_big', origin: 'string', maximum: max }
+        ]);
     });
 });
 

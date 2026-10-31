@@ -464,6 +464,64 @@ describe('POST /api/admin/import-json', () => {
         expect(bottle.notes).toBe('a'.repeat(4_999));
     });
 
+    // Versions before 1.1.0 counted an emoji as one character in a name, a producer or a grape
+    // variety: refused now, such a value would refuse the whole import (API-13).
+    it('cuts a name, a producer or a grape variety that an earlier version took, never in an emoji', async () => {
+        const data = JSON.parse(JSON.stringify(await snapshot()));
+        const emoji = (count: number) => '🍷'.repeat(count);
+        data.countries[0].name = `${emoji(250)}a`;
+        data.wineTypes[0].type = `a${emoji(250)}`;
+        // Measured once trimmed, as the API measures it.
+        data.wineColors[0].color = ` ${emoji(250)} `;
+        Object.assign(data.wineDefinitions[0], {
+            name: emoji(250),
+            producer: `${emoji(250)}b`,
+            grapeVarieties: [`${emoji(50)}g`, 'Merlot']
+        });
+
+        const response = await importZip(craftedZip(data));
+
+        expect(response.status).toBe(200);
+        const [country] = await db.select().from(countries);
+        const [type] = await db.select().from(wineTypes);
+        const [color] = await db.select().from(wineColors);
+        const [wine] = await db.select().from(wineDefinitions);
+        expect(country.name).toBe(emoji(250));
+        expect(type.type).toBe(`a${emoji(249)}`);
+        expect(color.color).toBe(emoji(250));
+        expect(wine).toMatchObject({
+            name: emoji(250),
+            producer: emoji(250),
+            grapeVarieties: [emoji(50), 'Merlot']
+        });
+    });
+
+    // Two names alike in their first 500 UTF-16 units become one once cut: the database refuses
+    // the second, as two rows of the same name (API-13).
+    it.each([
+        ['duplicate_container', 'storageContainers'],
+        ['other', 'countries']
+    ])(
+        'answers 422 %s, and changes nothing, for two %s that the cut makes alike',
+        async (rule, table) => {
+            const before = await snapshot();
+            const data = JSON.parse(JSON.stringify(before));
+            const [row] = data[table];
+            const prefix = '🍷'.repeat(250);
+            row.name = `${prefix}A`;
+            data[table].push({ ...row, id: 'twin', name: `${prefix}B` });
+
+            const response = await importZip(craftedZip(data));
+
+            expect(response.status).toBe(422);
+            expect((await response.json()).error).toMatchObject({
+                code: 'export_refused',
+                details: { rule }
+            });
+            expect(await snapshot()).toEqual(before);
+        }
+    );
+
     it('refuses a row that breaks a rule of the API, before changing anything', async () => {
         const before = await snapshot();
         const data = JSON.parse(JSON.stringify(before));

@@ -4,6 +4,7 @@ import { db } from '#lib/server/db/index.js';
 import { wineBottles, wineDefinitions } from '#lib/server/db/schema.js';
 import { fakeEvent } from '../../../../test/event';
 import { insertWineDefinition } from '../../../../test/wine';
+import { PATCH as patchBottle } from '../../bottles/[id]/+server';
 import { DELETE, GET, PUT } from './+server';
 
 const remove = (id: string) =>
@@ -94,6 +95,39 @@ describe('PUT /api/definitions/[id]', () => {
         expect(
             await db.select().from(wineDefinitions).where(eq(wineDefinitions.id, wine.id))
         ).toEqual([wine]);
+    });
+
+    // Versions before 1.1.0 counted an emoji as one character in a name: 250 emoji and a letter
+    // were 251 characters for them, and are 501 UTF-16 units now (API-13).
+    it('answers 422 for a stored name over the limit until it is shortened, and edits its bottles', async () => {
+        const timestamps = { createdAt: new Date(), updatedAt: new Date() };
+        const [{ appellationId, typeId, colorId }] = await db.select().from(wineDefinitions);
+        const wine = { name: `${'🍷'.repeat(250)}a`, appellationId, typeId, colorId };
+        await db.insert(wineDefinitions).values({ id: 'legacy', ...wine, ...timestamps });
+        await db.insert(wineBottles).values({
+            id: 'legacy-bottle',
+            definitionId: 'legacy',
+            formatId: 'bottle',
+            ...timestamps
+        });
+
+        const kept = await put('legacy', { ...wine, rating: 4 });
+        const bottle = await patchBottle(
+            fakeEvent<Parameters<typeof patchBottle>[0]>({
+                method: 'PATCH',
+                path: '/api/bottles/legacy-bottle',
+                routeId: '/api/bottles/[id]',
+                params: { id: 'legacy-bottle' },
+                body: { vintage: 2015 }
+            })
+        );
+        const shortened = await put('legacy', { ...wine, name: '🍷'.repeat(250), rating: 4 });
+
+        expect(kept.status).toBe(422);
+        expect((await kept.json()).error.details).toMatchObject([{ path: 'name' }]);
+        expect(bottle.status).toBe(200);
+        expect(shortened.status).toBe(200);
+        expect(await shortened.json()).toMatchObject({ name: '🍷'.repeat(250), rating: 4 });
     });
 });
 

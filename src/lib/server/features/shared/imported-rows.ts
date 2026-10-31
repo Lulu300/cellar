@@ -12,12 +12,13 @@ import {
     id,
     LONG_TEXT_MAX_LENGTH,
     name,
+    NAME_MAX_LENGTH,
     optionalId
 } from '#lib/shared/schemas/common.js';
 import { appellationSchema, regionSchema } from '#lib/shared/schemas/geography.js';
 import { namedSchema, wineColorSchema, wineTypeSchema } from '#lib/shared/schemas/reference.js';
 import { caseCapacitySchema, casePosition } from '#lib/shared/schemas/storage.js';
-import { wineDefinitionSchema } from '#lib/shared/schemas/wine.js';
+import { GRAPE_MAX_LENGTH, wineDefinitionSchema } from '#lib/shared/schemas/wine.js';
 
 /**
  * The columns of a row of each table that an import takes, with the rules of the API: any other
@@ -155,6 +156,12 @@ function repairedBottle(row: ImportedRow): ImportedRow {
     return bottle;
 }
 
+/** The first `max` characters of `text`, without half an emoji at the end. */
+function cut(text: string, max: number): string {
+    const kept = text.slice(0, max);
+    return /[\uD800-\uDBFF]$/.test(kept) ? kept.slice(0, -1) : kept;
+}
+
 /**
  * `row` with the text of `column` cut to LONG_TEXT_MAX_LENGTH characters, as migration 0011 cut the
  * notes and descriptions stored before that limit (DATA-10): with LF line breaks, which the forms
@@ -163,10 +170,30 @@ function repairedBottle(row: ImportedRow): ImportedRow {
 function withLongTextCut(row: ImportedRow, column: string): ImportedRow {
     const text = row[column];
     if (typeof text !== 'string') return row;
-    let cut = asLongText(text).slice(0, LONG_TEXT_MAX_LENGTH);
-    // A cut between the two halves of an emoji would leave half of it.
-    if (/[\uD800-\uDBFF]$/.test(cut)) cut = cut.slice(0, -1);
-    return { ...row, [column]: cut };
+    return { ...row, [column]: cut(asLongText(text), LONG_TEXT_MAX_LENGTH) };
+}
+
+/** The columns that hold the name of a row, or the producer of a wine. */
+const NAME_COLUMNS = ['name', 'type', 'color', 'producer'];
+
+/**
+ * `row` of an export with its names, its producer and its grape varieties cut to their limit.
+ * Versions before 1.1.0 counted an emoji in them as one character, so a cellar may hold longer ones,
+ * which would refuse the whole import (API-13). The CSV import does not cut them: it finds rows by
+ * their names, and a name cut would not match at the next import of the same file.
+ */
+export function withNamesCut(table: ExportTableName, row: ImportedRow): ImportedRow {
+    const result = { ...row };
+    for (const column of NAME_COLUMNS) {
+        const text = result[column];
+        if (typeof text === 'string') result[column] = cut(text.trim(), NAME_MAX_LENGTH);
+    }
+    if (table === 'wineDefinitions') {
+        result.grapeVarieties = grapeList(result.grapeVarieties).map((grape) =>
+            cut(grape, GRAPE_MAX_LENGTH)
+        );
+    }
+    return result;
 }
 
 /**

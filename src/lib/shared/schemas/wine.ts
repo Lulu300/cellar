@@ -1,6 +1,14 @@
 import { z } from 'zod';
 import { INVALID_WEBSITE_ERROR, isValidOptionalWebsite } from '#lib/utils/url.js';
-import { id, longText, name, optionalId, optionalText } from './common.js';
+import {
+    id,
+    longText,
+    maxLength,
+    name,
+    NAME_MAX_LENGTH,
+    optionalId,
+    optionalText
+} from './common.js';
 import { formList, formNumbers, formTexts } from './form.js';
 
 /** An http(s) URL, or null when left empty. */
@@ -12,10 +20,13 @@ const website = z
     .refine(isValidOptionalWebsite, INVALID_WEBSITE_ERROR)
     .transform((url) => url || null);
 
+/** The most characters of a grape variety. */
+export const GRAPE_MAX_LENGTH = 100;
+
 /** A wine (its definition): every reference is an id. */
 export const wineDefinitionSchema = z.object({
     name,
-    producer: optionalText(500),
+    producer: optionalText(NAME_MAX_LENGTH),
     appellationId: id,
     typeId: id,
     colorId: id,
@@ -30,7 +41,10 @@ export const wineDefinitionSchema = z.object({
     website,
     description: longText,
     imageId: optionalId,
-    grapeVarieties: z.array(z.string().trim().min(1).max(100)).max(50).default([]),
+    grapeVarieties: z
+        .array(z.string().trim().min(1).check(maxLength(GRAPE_MAX_LENGTH)))
+        .max(50)
+        .default([]),
     targetQuantity: z
         .int()
         .min(0)

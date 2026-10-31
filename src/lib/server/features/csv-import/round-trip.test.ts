@@ -280,6 +280,37 @@ describe('CSV export then import', () => {
         );
     });
 
+    // A name counts UTF-16 units too, as the API and the forms count it (API-13). Versions before
+    // 1.1.0 counted an emoji as one character: the name of 501 units is one they could store.
+    it('puts back a wine name of 500 UTF-16 units with emoji, and reports one of 501', async () => {
+        const names = {
+            'red-gc': '🍷'.repeat(250),
+            red: `a${'🍷'.repeat(249)}`,
+            white: `${'🍷'.repeat(250)}a`
+        };
+        for (const [id, name] of Object.entries(names)) {
+            db.update(wineDefinitions).set({ name }).where(eq(wineDefinitions.id, id)).run();
+        }
+        const files = await exportAll();
+        emptyCellar();
+
+        const { results } = await importAll(files);
+
+        // The export writes the stored name whole.
+        expect((await contents(files))['cellar-export-wineDefinitions']).toContain(names.white);
+        expect(problemsOf(results, 'wineDefinitions')).toEqual([
+            [{ code: 'invalid', column: 'name' }]
+        ]);
+        expect(
+            db
+                .select()
+                .from(wineDefinitions)
+                .all()
+                .map((wine) => wine.name)
+                .sort()
+        ).toEqual([names['red-gc'], names.red].sort());
+    });
+
     it('adds nothing from its next export once barcodes were given to the bottles without one', async () => {
         const files = await exportAll();
         emptyCellar();

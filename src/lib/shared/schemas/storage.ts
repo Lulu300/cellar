@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { name } from './common.js';
+import { maxLength, name } from './common.js';
 
 /**
  * The suffix of each case, appended to the container's name: "A" and "1" make case "A1". Only its
@@ -11,7 +11,7 @@ const caseSuffixes = z
         z
             .string()
             .overwrite((suffix) => suffix.trimEnd())
-            .max(50)
+            .check(maxLength(50))
     )
     .max(500);
 

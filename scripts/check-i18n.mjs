@@ -58,8 +58,6 @@ const FRENCH_TYPOGRAPHY = new RegExp(`['"]|${THREE_DOTS.source}`);
  * Any other text has one key, in `common.*` when several pages share it.
  */
 const SAME_TEXT_ALLOWED = [
-    // The name of the barcode page in the menu, and the barcode of a bottle
-    ['common.barcode', 'navigation.barcode'],
     // The examples of two fields, which happen to be the same wine
     ['placeholders.producer_example', 'placeholders.wine_name_example']
 ];

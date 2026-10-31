@@ -14,7 +14,7 @@ const SESSION_COOKIE = 'cellar_session';
 export const SESSION_TIMEOUT_KEY = 'session_timeout_hours';
 const DEFAULT_SESSION_TIMEOUT_HOURS = 24;
 
-/** How a random token is stored: a session's, or the cron job's (backup/token.ts). */
+/** How a random token is stored: a session's, or a program's (bearer-token.ts). */
 export function hashToken(token: string): string {
     return createHash('sha256').update(token).digest('hex');
 }

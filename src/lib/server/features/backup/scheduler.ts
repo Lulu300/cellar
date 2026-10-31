@@ -1,8 +1,10 @@
 import type { Tx } from '#lib/server/db/connection.js';
 import {
     getAppSetting,
-    putBackAppSetting,
-    setAppSetting
+    getStoredAppSettings,
+    putBackAppSettings,
+    setAppSetting,
+    type StoredAppSettings
 } from '#lib/server/features/settings/repository.js';
 import { createExportZip } from '#lib/server/features/backup/export.js';
 import { DATA_DIR } from '#lib/server/paths.js';
@@ -55,21 +57,17 @@ export function getBackupSettings(): BackupSettings {
     };
 }
 
-type StoredBackupSettings = Record<string, string | undefined>;
-
 /** The stored values of the settings, as they are, for putBackBackupSettings. */
-export function storedBackupSettings(): StoredBackupSettings {
-    return Object.fromEntries(
-        Object.values(BACKUP_SETTING_KEYS).map((key) => [key, getAppSetting(key)?.value])
-    );
+export function storedBackupSettings(): StoredAppSettings {
+    return getStoredAppSettings(Object.values(BACKUP_SETTING_KEYS));
 }
 
 /**
  * Like the cron token, the settings belong to the instance, not to the data: after a restore,
  * automatic backups go on as before it, whatever mode the backup was taken in.
  */
-export function putBackBackupSettings(staged: Tx, stored: StoredBackupSettings): void {
-    for (const [key, value] of Object.entries(stored)) putBackAppSetting(key, value, staged);
+export function putBackBackupSettings(staged: Tx, stored: StoredAppSettings): void {
+    putBackAppSettings(stored, staged);
 }
 
 /**

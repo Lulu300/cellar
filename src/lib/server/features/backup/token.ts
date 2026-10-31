@@ -1,23 +1,14 @@
-import { randomBytes, timingSafeEqual } from 'node:crypto';
 import type { RequestEvent } from '@sveltejs/kit';
 import type { Tx } from '#lib/server/db/connection.js';
-import {
-    getAppSetting,
-    putBackAppSetting,
-    setAppSetting
-} from '#lib/server/features/settings/repository.js';
-import { hashToken } from '#lib/server/session.js';
+import { createStoredToken, sendsStoredToken } from '#lib/server/bearer-token.js';
+import { getAppSetting, putBackAppSetting } from '#lib/server/features/settings/repository.js';
 
-// Only its hash is stored, like a session token's: the token is random and long, so a plain
-// SHA-256 cannot be reversed, and a backup of the database does not reveal it.
 const TOKEN_HASH_KEY = 'auto_backup_token_hash';
 const CRON_BACKUP_ROUTE = '/api/admin/auto-backup';
 
 /** Creates the token of the cron job, replacing any earlier one, and returns it: it is shown once. */
 export function createBackupToken(): string {
-    const token = randomBytes(32).toString('base64url');
-    setAppSetting(TOKEN_HASH_KEY, hashToken(token));
-    return token;
+    return createStoredToken(TOKEN_HASH_KEY);
 }
 
 export function getBackupTokenHash(database?: Tx): string | undefined {
@@ -29,15 +20,11 @@ export function getBackupTokenHash(database?: Tx): string | undefined {
  * `Authorization: Bearer <token>`. The token opens nothing else.
  */
 export function isCronBackupRequest({ request, route }: RequestEvent): boolean {
-    if (request.method !== 'POST' || route.id !== CRON_BACKUP_ROUTE) return false;
-
-    const token = /^Bearer (\S+)$/i.exec(request.headers.get('authorization') ?? '')?.[1];
-    const storedHash = getBackupTokenHash();
-    if (!token || !storedHash) return false;
-
-    const expected = Buffer.from(storedHash);
-    const actual = Buffer.from(hashToken(token));
-    return actual.length === expected.length && timingSafeEqual(actual, expected);
+    return (
+        request.method === 'POST' &&
+        route.id === CRON_BACKUP_ROUTE &&
+        sendsStoredToken(request, TOKEN_HASH_KEY)
+    );
 }
 
 /**

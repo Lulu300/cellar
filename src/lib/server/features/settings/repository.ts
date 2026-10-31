@@ -38,13 +38,29 @@ export function insertAppSettingIfMissing(key: string, value: string, tx: Tx = d
     return inserted.length > 0;
 }
 
+export function deleteAppSetting(key: string, tx: Tx = db): void {
+    tx.delete(appSettings).where(eq(appSettings.key, key)).run();
+}
+
 /**
  * Sets the setting to `value`, or removes it when `value` is undefined: for a restore to put back,
  * in its staged copy, the settings that belong to the instance rather than to the backup.
  */
 export function putBackAppSetting(key: string, value: string | undefined, tx: Tx): void {
-    if (value === undefined) tx.delete(appSettings).where(eq(appSettings.key, key)).run();
+    if (value === undefined) deleteAppSetting(key, tx);
     else setAppSetting(key, value, tx);
+}
+
+/** The values of settings as they are stored, a missing one as undefined, for putBackAppSettings. */
+export type StoredAppSettings = Record<string, string | undefined>;
+
+export function getStoredAppSettings(keys: readonly string[]): StoredAppSettings {
+    return Object.fromEntries(keys.map((key) => [key, getAppSetting(key)?.value]));
+}
+
+/** putBackAppSetting for each of the settings that getStoredAppSettings read. */
+export function putBackAppSettings(stored: StoredAppSettings, tx: Tx): void {
+    for (const [key, value] of Object.entries(stored)) putBackAppSetting(key, value, tx);
 }
 
 /** Every setting whose key starts with `prefix`. */

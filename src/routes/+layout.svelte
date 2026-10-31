@@ -1,14 +1,14 @@
 <script lang="ts">
     import '../app.css';
-    import favicon from '#lib/assets/favicon.svg';
     import { Button } from '#lib/components/ui/button/index.js';
-    import { Wine, Lock, LogOut, Menu, X } from '@lucide/svelte';
+    import { Lock, LogOut, Menu, X } from '@lucide/svelte';
     import { onMount } from 'svelte';
     import { page } from '$app/state';
     import { afterNavigate, goto } from '$app/navigation';
     import { applyTheme } from '#lib/utils/theme-colors.js';
     import { preferences } from '#lib/stores/preferences.svelte.js';
     import ToastContainer from '#lib/components/layout/ToastContainer.svelte';
+    import CellarLogo from '#lib/components/layout/CellarLogo.svelte';
     import { asksForAccessCode } from '#lib/components/layout/session.js';
     import LoginDialog from '#lib/components/layout/LoginDialog.svelte';
     import ConfirmDialog from '#lib/components/layout/ConfirmDialog.svelte';
@@ -87,7 +87,6 @@
 </script>
 
 <svelte:head>
-    <link rel="icon" href={favicon} />
     <title>{pageTitle()}</title>
 </svelte:head>
 
@@ -125,7 +124,7 @@
                 <div
                     class="text-xl font-bold text-foreground flex items-center gap-2 whitespace-nowrap"
                 >
-                    <Wine class="h-6 w-6" aria-hidden="true" />
+                    <CellarLogo class="h-6 w-6" />
                     {m['navigation.wine_cellar']()}
                 </div>
                 <div class="flex items-center gap-2">

@@ -163,7 +163,7 @@ Revue du code du 2026-10-08, commit `556c7bb`. Ce fichier est la version pour le
 | 1.0.0 | P12 · Vérification d’avant 1.0 | Une revue complète en lecture seule après P11, comme l’audit d’avant 1.0 puis sa vérification : tout ce que l’audit demandait est fait, et le nettoyage n’a pas créé de nouveaux problèmes. Le mainteneur juge chaque constat : à corriger avant la 1.0 (tâches ajoutées ici) ou acceptable en l’état. Puis la 1.0.0, avec R2 de l’audit au tag : dépôt et image publics, protection de `main`. Revue faite le 2026-10-30 (QA-06). Lots des corrections, chacun mergé avant le suivant, résumé 1.0.0 : 1. SEC-12, API-12, BUG-22, BUG-23 ; 2. UI-21, UI-22, DEP-07 ; 3. DOC-04 (documentation d’après les deux premiers lots) ; 4. UI-23 ; puis REL-06, la publication, avec le mainteneur. Terminée le 2026-10-30 (develop 89d2c4c1), publiée en 1.0.0 le 2026-10-30. Lots 1 à 4 faits le 2026-10-30, puis la 1.0.0 publiée le même jour (tag v1.0.0 sur 8ad43dff) ; depuis le lot 2, le dépôt public repart d’un nouveau commit racine (décision « Nouveau départ à la 1.0 (REL-06) »). | QA-06, SEC-12, API-12, BUG-22, BUG-23, UI-21, UI-22, DEP-07, DOC-04, UI-23, REL-06 | 11 / 11 |
 | 1.1.0 | P13 · Finitions et installation | Pour la 1.1.0, juste après la 1.0.0 : ce que voit d’abord un nouveau visiteur (installation dans le README, liens vers la doc de l’API), l’app installable sur le téléphone (PWA), et les finitions notées pendant P12 (décision « Versions après la 1.0 »). Lots, chacun mergé avant le suivant, résumé 1.1.0 (lots 1 à 3 faits le 2026-10-31, publiée en 1.1.0 le même jour) : 1. DOC-05, UI-27, SEC-13, BUG-24 ; 2. UI-24, UI-25, API-13 ; 3. UI-26, UI-29, DEP-08 ; UI-30 ; puis REL-07. | DOC-05, UI-27, SEC-13, BUG-24, UI-24, UI-25, API-13, UI-26, UI-29, UI-30, DEP-08, REL-07 | 12 / 12 |
 | 1.2.0 | P14 · Serveur MCP | Pour la 1.2.0, enchaînée juste après la 1.1.0 : un serveur MCP intégré à Cellar, pour les assistants d’IA du réseau local (décision « Serveur MCP (P14) »), et la description OpenAPI de l’API, tirée des mêmes schémas zod. Lots : 1. SEC-11, API-14 (faits le 2026-10-31) ; 2. API-10, API-15 (faits le 2026-10-31) ; 3. API-11, DOC-06 (faits le 2026-10-31) ; BUG-25 ; puis REL-08. Publiée en 1.2.0 le 2026-10-31. | SEC-11, API-14, API-10, API-11, API-15, DOC-06, BUG-25, REL-08 | 8 / 8 |
-| 1.3.0 | P15 · Navigation, photos et achats | Pour la 1.3.0 (décision « Versions de 1.3.0 à 1.7.0 ») : le menu par sections d’abord, parce que les pages qui suivent s’y rangent, puis les photos d’étiquette et la page Achats, dont les envies réutilisent l’envoi de photo. Ordre : UI-28 ; FEAT-01 ; FEAT-02 ; puis REL-09. Les lots se fixent au début de la phase. Si la phase traîne, la page Achats peut partir d’abord avec des envies en texte seul. | UI-28, FEAT-01, FEAT-02, REL-09 | 0 / 4 |
+| 1.3.0 | P15 · Navigation, photos et achats | Pour la 1.3.0 (décision « Versions de 1.3.0 à 1.7.0 ») : le menu par sections d’abord, parce que les pages qui suivent s’y rangent, puis les photos d’étiquette et la page Achats, dont les envies réutilisent l’envoi de photo. Lots, chacun mergé avant le suivant, résumé 1.3.0 : 1. UI-28 et FEAT-01 en parallèle (le menu et les photos ne touchent pas les mêmes fichiers) ; 2. FEAT-02, qui a besoin des deux ; 3. DEP-09 ; puis REL-09. Si la phase traîne, la page Achats peut partir d’abord avec des envies en texte seul. | UI-28, FEAT-01, FEAT-02, DEP-09, REL-09 | 0 / 5 |
 | 1.4.0 | P16 · Couleurs et plan de la cave | Pour la 1.4.0 : les couleurs des vins, puis le plan de la cave, qui s’appuie dessus. Ordre : FEAT-03 ; FEAT-04 ; puis REL-10. | FEAT-03, FEAT-04, REL-10 | 0 / 3 |
 | 1.5.0 | P17 · À boire et dégustation | Pour la 1.5.0 : la vie d’une bouteille jusqu’à ce qu’on la boive. Les deux tâches ajoutent leur repère et leur fiche à la liste d’une case du plan (FEAT-04). Ordre : FEAT-05 et FEAT-06 ; puis REL-11. | FEAT-05, FEAT-06, REL-11 | 0 / 3 |
 | 1.6.0 | P18 · Producteurs et revue de l’import | Pour la 1.6.0 : les producteurs d’abord, parce que la revue de l’import doit savoir relier ou créer un producteur. Ordre : FEAT-07 ; FEAT-08 ; puis REL-12. | FEAT-07, FEAT-08, REL-12 | 0 / 3 |
@@ -3143,7 +3143,7 @@ Sévérité **évolution** · effort **S** · dépend de SEC-11, API-14, API-10,
 
 ## P15 · Navigation, photos et achats (1.3.0)
 
-Pour la 1.3.0 (décision « Versions de 1.3.0 à 1.7.0 ») : le menu par sections d’abord, parce que les pages qui suivent s’y rangent, puis les photos d’étiquette et la page Achats, dont les envies réutilisent l’envoi de photo. Ordre : UI-28 ; FEAT-01 ; FEAT-02 ; puis REL-09. Les lots se fixent au début de la phase. Si la phase traîne, la page Achats peut partir d’abord avec des envies en texte seul.
+Pour la 1.3.0 (décision « Versions de 1.3.0 à 1.7.0 ») : le menu par sections d’abord, parce que les pages qui suivent s’y rangent, puis les photos d’étiquette et la page Achats, dont les envies réutilisent l’envoi de photo. Lots, chacun mergé avant le suivant, résumé 1.3.0 : 1. UI-28 et FEAT-01 en parallèle (le menu et les photos ne touchent pas les mêmes fichiers) ; 2. FEAT-02, qui a besoin des deux ; 3. DEP-09 ; puis REL-09. Si la phase traîne, la page Achats peut partir d’abord avec des envies en texte seul.
 
 ### UI-28 · Menu par sections et barre d’onglets
 
@@ -3166,7 +3166,7 @@ Sévérité **évolution** · effort **M** · dépend de REL-08 · statut **À f
 
 ### FEAT-01 · Photos des vins : plusieurs photos, prises au téléphone, recadrées et allégées
 
-Sévérité **évolution** · effort **L** · dépend de UI-28 · statut **À faire**
+Sévérité **évolution** · effort **L** · dépend de REL-08 · statut **À faire**
 
 **Problème** : Un vin n’a qu’une image, envoyée telle quelle, jusqu’à 20 Mo, avec ses métadonnées (dont la position GPS) ; sur téléphone, rien n’invite à photographier l’étiquette.
 
@@ -3202,9 +3202,27 @@ Sévérité **évolution** · effort **L** · dépend de UI-28, FEAT-01 · statu
 
 **Sources** : Décision « Liste d’envies et achats (FEAT-02) »
 
+### DEP-09 · Revue des dépendances d’avant la 1.3.0
+
+Sévérité **mineur** · effort **S** · dépend de DEP-08 · statut **À faire**
+
+**Problème** : Écarts laissés par DEP-08 : correctifs devenus éligibles du 2026-11-01 au 2026-11-05 (svelte 5.57.3, typescript-eslint 8.72.1, paraglide 2.29.x, kit 3.1.1, adapter-node 6.0.1, plugin-icu1 1.3.5, pnpm 10.34.9), image node 24.22.2, alerte minimatch acceptée (décision « Alerte minimatch (DEP-08) »).
+
+**Fichiers** : `package.json`, `pnpm-lock.yaml`, `.github/workflows/`, `Dockerfile`
+
+**À faire**
+
+- Comme DEP-07 et DEP-08 : correctifs publiés depuis au moins 7 jours, une mise à jour par commit, portes à chaque fois ; revoir l’alerte minimatch (readdir-glob ou archiver acceptent-ils minimatch 11 ?) ; `pnpm audit --prod` vide ou chaque alerte justifiée.
+- Trouvé pendant DEP-08 : `ci.yml` tourne sur `ubuntu-latest`, qui passe à Ubuntu 26, alors que `release.yml` fixe `ubuntu-24.04`.
+- Lot 3 de P15, juste avant la release.
+
+**Critère d’acceptation** : Chaque dépendance, action et image de base est à son dernier correctif publié depuis au moins 7 jours, ou l’écart est justifié ; `pnpm audit --prod` vide ou chaque alerte justifiée.
+
+**Sources** : Trouvé pendant DEP-08, Décision « Alerte minimatch (DEP-08) »
+
 ### REL-09 · Publication de la 1.3.0
 
-Sévérité **évolution** · effort **S** · dépend de UI-28, FEAT-01, FEAT-02 · statut **À faire**
+Sévérité **évolution** · effort **S** · dépend de UI-28, FEAT-01, FEAT-02, DEP-09 · statut **À faire**
 
 **Problème** : La 1.3.0 apporte aux utilisateurs ce que sa phase a livré.
 

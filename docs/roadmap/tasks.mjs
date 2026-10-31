@@ -158,7 +158,7 @@ export const phases = [
 		id: 'P15',
 		version: '1.3.0',
 		title: 'Navigation, photos et achats',
-		goal: 'Pour la 1.3.0 (décision « Versions de 1.3.0 à 1.7.0 ») : le menu par sections d’abord, parce que les pages qui suivent s’y rangent, puis les photos d’étiquette et la page Achats, dont les envies réutilisent l’envoi de photo. Ordre : UI-28 ; FEAT-01 ; FEAT-02 ; puis REL-09. Les lots se fixent au début de la phase. Si la phase traîne, la page Achats peut partir d’abord avec des envies en texte seul.'
+		goal: 'Pour la 1.3.0 (décision « Versions de 1.3.0 à 1.7.0 ») : le menu par sections d’abord, parce que les pages qui suivent s’y rangent, puis les photos d’étiquette et la page Achats, dont les envies réutilisent l’envoi de photo. Lots, chacun mergé avant le suivant, résumé 1.3.0 : 1. UI-28 et FEAT-01 en parallèle (le menu et les photos ne touchent pas les mêmes fichiers) ; 2. FEAT-02, qui a besoin des deux ; 3. DEP-09 ; puis REL-09. Si la phase traîne, la page Achats peut partir d’abord avec des envies en texte seul.'
 	},
 	{
 		id: 'P16',
@@ -2419,7 +2419,7 @@ export const tasks = [
 			'Le même envoi servira aux photos des envies (FEAT-02) : un composant partagé.'
 		],
 		done: 'Sur un téléphone (Chromium en émulation, puis un vrai téléphone si possible), une photo prise est pivotée, recadrée, envoyée réduite et sans métadonnées GPS ; un vin garde plusieurs photos, la principale dans la liste ; une sauvegarde de la version précédente se restaure et se met à jour ; testé.',
-		deps: ['UI-28'], src: ['Décision « Photos des vins (FEAT-01) »']
+		deps: ['REL-08'], src: ['Décision « Photos des vins (FEAT-01) »']
 	},
 	{
 		id: 'FEAT-02', phase: 'P15', size: 'L', sev: 'evolution',
@@ -2436,6 +2436,19 @@ export const tasks = [
 		deps: ['UI-28', 'FEAT-01'], src: ['Décision « Liste d’envies et achats (FEAT-02) »']
 	},
 	{
+		id: 'DEP-09', phase: 'P15', size: 'S', sev: 'mineur',
+		title: 'Revue des dépendances d’avant la 1.3.0',
+		why: 'Écarts laissés par DEP-08 : correctifs devenus éligibles du 2026-11-01 au 2026-11-05 (svelte 5.57.3, typescript-eslint 8.72.1, paraglide 2.29.x, kit 3.1.1, adapter-node 6.0.1, plugin-icu1 1.3.5, pnpm 10.34.9), image node 24.22.2, alerte minimatch acceptée (décision « Alerte minimatch (DEP-08) »).',
+		where: ['package.json', 'pnpm-lock.yaml', '.github/workflows/', 'Dockerfile'],
+		todo: [
+			'Comme DEP-07 et DEP-08 : correctifs publiés depuis au moins 7 jours, une mise à jour par commit, portes à chaque fois ; revoir l’alerte minimatch (readdir-glob ou archiver acceptent-ils minimatch 11 ?) ; `pnpm audit --prod` vide ou chaque alerte justifiée.',
+			'Trouvé pendant DEP-08 : `ci.yml` tourne sur `ubuntu-latest`, qui passe à Ubuntu 26, alors que `release.yml` fixe `ubuntu-24.04`.',
+			'Lot 3 de P15, juste avant la release.'
+		],
+		done: 'Chaque dépendance, action et image de base est à son dernier correctif publié depuis au moins 7 jours, ou l’écart est justifié ; `pnpm audit --prod` vide ou chaque alerte justifiée.',
+		deps: ['DEP-08'], src: ['Trouvé pendant DEP-08', 'Décision « Alerte minimatch (DEP-08) »']
+	},
+	{
 		id: 'REL-09', phase: 'P15', size: 'S', sev: 'evolution',
 		title: 'Publication de la 1.3.0',
 		why: 'La 1.3.0 apporte aux utilisateurs ce que sa phase a livré.',
@@ -2444,7 +2457,7 @@ export const tasks = [
 			'Résumé 1.3.0 complété à chaque tâche ; banc depuis la version précédente ; release selon RELEASING.md, avec le mainteneur.'
 		],
 		done: 'v1.3.0 est publiée sur `main` et son image se télécharge sans connexion ; develop passe à la rc suivante.',
-		deps: ['UI-28', 'FEAT-01', 'FEAT-02'], src: ['Décision « Versions après la 1.0 »']
+		deps: ['UI-28', 'FEAT-01', 'FEAT-02', 'DEP-09'], src: ['Décision « Versions après la 1.0 »']
 	},
 	// ───────── P16 Couleurs et plan de la cave
 	{

@@ -55,6 +55,7 @@ Use pnpm 10 (`npx -y pnpm@10 …` if it is not installed) and Node 24. `packageM
 7. **English everywhere** except `docs/roadmap/`: identifiers, comments, docs and commits. User-facing text goes through i18n: add each key to both JSON files, after checking that it doesn't already exist. A text that several pages share has one key, in `common.*`.
 8. **Validate every input on the server.** Never render database values as HTML.
 9. **Logs.** Server code (`src/lib/server/`, `*.server.ts`, `+server.ts`) writes to the container's logs with `console`; detail that only helps debugging goes through `debugLogger` (`#lib/server/debug.js`), off unless `DEBUG` names it. Browser code never uses `console`, which lint refuses: it tells the user with a toast or a message on the page.
+10. **Keep the API docs and the MCP server in step with the code.** A change to what the API accepts or answers updates `docs/API.md` and the OpenAPI description (`pnpm openapi`) in the same branch. A change to what the MCP tools read or write, or a new feature an assistant could use through them, updates the tools in `src/lib/server/features/mcp/` and their docs in the same branch, or the report says why not.
 
 ## Tests
 

@@ -3,15 +3,12 @@
     import { Camera, ListChecks } from '@lucide/svelte';
     import BulkBarcodeDialog from '#lib/components/barcode/BulkBarcodeDialog.svelte';
     import QrScannerDialog from '#lib/components/barcode/QrScannerDialog.svelte';
-    import {
-        barcodedBottles,
-        searchBarcode,
-        type BarcodedBottle
-    } from '#lib/components/barcode/bulk-barcode.js';
+    import { barcodedBottles, type BarcodedBottle } from '#lib/components/barcode/bulk-barcode.js';
     import { Button } from '#lib/components/ui/button/index.js';
     import { Input } from '#lib/components/ui/input/index.js';
     import { Label } from '#lib/components/ui/label/index.js';
     import { m } from '#lib/paraglide/messages.js';
+    import { searchBarcode } from '#lib/shared/barcode.js';
     import type { WineGroupDTO } from '#lib/shared/dto.js';
     import { toasts } from '#lib/stores/toast.svelte.js';
 

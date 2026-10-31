@@ -9,6 +9,7 @@
     import ScrollingDialogContent from '#lib/components/layout/ScrollingDialogContent.svelte';
     import ScrollRegion from '#lib/components/layout/ScrollRegion.svelte';
     import { ArrowRightLeft, Camera, LogIn, LogOut, Wine } from '@lucide/svelte';
+    import { findBarcodeMatches } from '#lib/shared/barcode.js';
     import { BottleAvailability } from '#lib/shared/bottle-availability.js';
     import { auth } from '#lib/stores/auth.svelte.js';
     import { toasts } from '#lib/stores/toast.svelte.js';
@@ -27,7 +28,6 @@
     import {
         computeRows,
         currentCaseId,
-        findBarcodeMatches,
         locationChanges,
         type BarcodedBottle,
         type Line,

@@ -5,10 +5,13 @@ import {
     Code128EncodingError,
     code128Bars,
     code128ModuleWidth,
+    findBarcodeMatches,
+    findSameBarcode,
     formatBarcode,
     formatBarcodeRange,
     generateCODE128Pattern,
-    isValidBarcodePrefix
+    isValidBarcodePrefix,
+    searchBarcode
 } from './barcode';
 
 describe('formatBarcode', () => {
@@ -158,5 +161,50 @@ describe('code128Bars', () => {
         expect(
             bars.every((bar, i) => i === 0 || bar.start > bars[i - 1].start + bars[i - 1].width)
         ).toBe(true);
+    });
+});
+
+describe('findBarcodeMatches', () => {
+    const coded = (...barcodes: string[]) =>
+        barcodes.map((barcode, i) => ({ id: `b${i}`, barcode }));
+
+    it('finds the one bottle with the code as typed when another differs by its case only', () => {
+        const bottles = coded('CV00000001', 'cv00000001');
+
+        expect(findBarcodeMatches(bottles, 'CV00000001')).toEqual([bottles[0]]);
+        expect(findBarcodeMatches(bottles, 'cv00000001')).toEqual([bottles[1]]);
+    });
+
+    it('then finds the code in other capitals, then the codes that end with it', () => {
+        const bottles = coded('CV00000001', 'XX00000012', 'CV00000012');
+
+        expect(findBarcodeMatches(bottles, 'cv00000001')).toEqual([bottles[0]]);
+        expect(findBarcodeMatches(bottles, '012')).toEqual([bottles[1], bottles[2]]);
+        expect(findBarcodeMatches(bottles, 'Cv00000003')).toEqual([]);
+    });
+});
+
+describe('findSameBarcode', () => {
+    it('skips the bottles without a barcode', () => {
+        const bottles = [
+            { id: 'b0', barcode: null },
+            { id: 'b1', barcode: 'CV00000001' }
+        ];
+
+        expect(findSameBarcode(bottles, 'cv00000001')).toEqual([bottles[1]]);
+    });
+});
+
+describe('searchBarcode', () => {
+    const coded = (...barcodes: string[]) =>
+        barcodes.map((barcode, i) => ({ id: `b${i}`, barcode }));
+
+    it('finds the code as typed, then in other capitals, then the codes that contain it', () => {
+        const bottles = coded('CV0001', 'CV00012', 'XCV0001Z', 'cv0001');
+
+        expect(searchBarcode(bottles, 'CV0001')).toEqual([bottles[0]]);
+        expect(searchBarcode(bottles, 'Cv00012')).toEqual([bottles[1]]);
+        expect(searchBarcode(bottles, 'V000')).toEqual(bottles);
+        expect(searchBarcode(bottles, 'nothing')).toEqual([]);
     });
 });

@@ -27,44 +27,6 @@ export interface Row<B extends BulkBottle> extends Line<B> {
     locationIgnored: boolean;
 }
 
-/**
- * The bottles whose barcode is `code` as typed, capitals included; failing that, the bottles whose
- * barcode is `code` in other capitals. Two codes may differ only by their case (the prefixes `cv`
- * and `CV` are both allowed), and a scanned code then finds its one bottle. Each search adds its
- * own last fallback when this finds none.
- */
-export function findSameBarcode<B extends { barcode: string | null }>(
-    bottles: B[],
-    code: string
-): B[] {
-    const exact = bottles.filter((bottle) => bottle.barcode === code);
-    if (exact.length > 0) return exact;
-    const term = code.toLowerCase();
-    return bottles.filter((bottle) => bottle.barcode?.toLowerCase() === term);
-}
-
-/** findSameBarcode, else the bottles whose code, in any case, passes `fallback` for `code`. */
-function findSameBarcodeOr<B extends { barcode: string }>(
-    bottles: B[],
-    code: string,
-    fallback: (barcode: string, term: string) => boolean
-): B[] {
-    const same = findSameBarcode(bottles, code);
-    if (same.length > 0) return same;
-    const term = code.toLowerCase();
-    return bottles.filter((bottle) => fallback(bottle.barcode.toLowerCase(), term));
-}
-
-/** findSameBarcode, else the bottles whose code ends with `code`: typing the end is enough. */
-export function findBarcodeMatches<B extends { barcode: string }>(bottles: B[], code: string): B[] {
-    return findSameBarcodeOr(bottles, code, (barcode, term) => barcode.endsWith(term));
-}
-
-/** findSameBarcode, else the bottles whose code contains `code`: the search of the wine list. */
-export function searchBarcode<B extends { barcode: string }>(bottles: B[], code: string): B[] {
-    return findSameBarcodeOr(bottles, code, (barcode, term) => barcode.includes(term));
-}
-
 /** A bottle of the wine list that has a barcode, with its wine. */
 export type BarcodedBottle = ListedBottleDTO & {
     barcode: string;

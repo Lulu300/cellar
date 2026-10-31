@@ -1,13 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import {
-    barcodedBottles,
-    computeRows,
-    findBarcodeMatches,
-    findSameBarcode,
-    searchBarcode,
-    type BulkBottle,
-    type Line
-} from './bulk-barcode';
+import { barcodedBottles, computeRows, type BulkBottle, type Line } from './bulk-barcode';
 
 const bottle = (fields: Partial<BulkBottle> = {}): BulkBottle => ({
     id: 'b1',
@@ -54,51 +46,6 @@ describe('computeRows', () => {
         expect(computeRows([line(checked)], byId(), 'consumed', '')).toMatchObject([
             { state: 'found', bottle: checked, willChange: true }
         ]);
-    });
-});
-
-describe('findBarcodeMatches', () => {
-    const coded = (...barcodes: string[]) =>
-        barcodes.map((barcode, i) => ({ id: `b${i}`, barcode }));
-
-    it('finds the one bottle with the code as typed when another differs by its case only', () => {
-        const bottles = coded('CV00000001', 'cv00000001');
-
-        expect(findBarcodeMatches(bottles, 'CV00000001')).toEqual([bottles[0]]);
-        expect(findBarcodeMatches(bottles, 'cv00000001')).toEqual([bottles[1]]);
-    });
-
-    it('then finds the code in other capitals, then the codes that end with it', () => {
-        const bottles = coded('CV00000001', 'XX00000012', 'CV00000012');
-
-        expect(findBarcodeMatches(bottles, 'cv00000001')).toEqual([bottles[0]]);
-        expect(findBarcodeMatches(bottles, '012')).toEqual([bottles[1], bottles[2]]);
-        expect(findBarcodeMatches(bottles, 'Cv00000003')).toEqual([]);
-    });
-});
-
-describe('findSameBarcode', () => {
-    it('skips the bottles without a barcode', () => {
-        const bottles = [
-            { id: 'b0', barcode: null },
-            { id: 'b1', barcode: 'CV00000001' }
-        ];
-
-        expect(findSameBarcode(bottles, 'cv00000001')).toEqual([bottles[1]]);
-    });
-});
-
-describe('searchBarcode', () => {
-    const coded = (...barcodes: string[]) =>
-        barcodes.map((barcode, i) => ({ id: `b${i}`, barcode }));
-
-    it('finds the code as typed, then in other capitals, then the codes that contain it', () => {
-        const bottles = coded('CV0001', 'CV00012', 'XCV0001Z', 'cv0001');
-
-        expect(searchBarcode(bottles, 'CV0001')).toEqual([bottles[0]]);
-        expect(searchBarcode(bottles, 'Cv00012')).toEqual([bottles[1]]);
-        expect(searchBarcode(bottles, 'V000')).toEqual(bottles);
-        expect(searchBarcode(bottles, 'nothing')).toEqual([]);
     });
 });
 

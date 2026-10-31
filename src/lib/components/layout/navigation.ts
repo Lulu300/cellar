@@ -128,6 +128,9 @@ export function isInSection(pathname: string, section: NavSection): boolean {
     return section.items.some((item) => item.href && isCurrentSection(pathname, item.href));
 }
 
+/** The paths of the tab bar of the installed app; « More » lists the other pages. */
+export const TAB_BAR_PATHS = ['/wines', '/storage', '/out-of-cellar', '/purchases'];
+
 /** The sections without the pages at or under `hrefs`, and without the sections left empty. */
 export function withoutPages(sections: NavSection[], hrefs: string[]): NavSection[] {
     const kept = (item: NavItem) =>

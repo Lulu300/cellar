@@ -23,7 +23,7 @@
         onChange: (changes: Partial<WineListQuery>) => void;
         wineCount: number;
         bottleCount: number;
-        /** The bottles taken out of the cellar, which `bottleCount` includes; a link leads to them. */
+        /** All the bottles taken out of the cellar, whatever the filters, as the page it links to. */
         outOfCellarCount: number;
         showImages: boolean;
     } = $props();

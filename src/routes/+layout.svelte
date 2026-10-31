@@ -31,7 +31,7 @@
     $effect(() => applyTheme(preferences.theme, preferences.isDark));
 
     let loginDialog: LoginDialog;
-    // The phone menu, which lists the sections where the top bar does not fit or cannot be hovered
+    // The ☰ menu, which lists the sections where the top bar does not fit or a finger cannot hover it
     let menuOpen = $state(false);
     let menuButton = $state<HTMLButtonElement | null>(null);
 
@@ -116,7 +116,7 @@
                     {m['navigation.wine_cellar']()}
                 </div>
                 <div class="flex items-center gap-2">
-                    <!-- Where a pointer can hover it; touch screens get the menu below -->
+                    <!-- Where a mouse can hover it; touch screens get the ☰ menu, touch laptops both -->
                     <nav class="hidden md:pointer-fine:block" aria-label={m['navigation.menu']()}>
                         <ul class="flex items-center gap-0.5">
                             {#each sections as section (section.label)}
@@ -140,13 +140,14 @@
                         bind:ref={menuButton}
                         variant="ghost"
                         size="icon"
-                        class="relative md:pointer-fine:hidden standalone:max-md:hidden"
-                        aria-label={m['navigation.menu']()}
+                        class="relative md:pointer-fine:no-touch:hidden standalone:max-md:hidden"
                         aria-expanded={menuOpen}
                         aria-controls="navigation-menu"
                         onclick={() => (menuOpen = !menuOpen)}
                     >
                         {#if menuOpen}<X />{:else}<Menu />{/if}
+                        <!-- Named by its text rather than aria-label, which would hide the count -->
+                        <span class="sr-only">{m['navigation.menu']()}</span>
                         {#if shortage && !menuOpen}<NavCount count={shortage} badge />{/if}
                     </Button>
                 </div>
@@ -155,7 +156,7 @@
             {#if menuOpen}
                 <nav
                     id="navigation-menu"
-                    class="pt-2 md:pointer-fine:hidden standalone:max-md:hidden"
+                    class="pt-2 md:pointer-fine:no-touch:hidden standalone:max-md:hidden"
                     aria-label={m['navigation.menu']()}
                 >
                     <NavList

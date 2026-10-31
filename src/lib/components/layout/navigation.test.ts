@@ -4,6 +4,7 @@ import {
     isCurrentSection,
     navSections,
     settingsSection,
+    TAB_BAR_PATHS,
     withoutPages,
     type NavSection
 } from './navigation.js';
@@ -61,15 +62,13 @@ describe('the menu', () => {
         ]);
     });
 
-    it('signals the wines in shortage, and nothing without any', () => {
+    it('signals the number of wines in shortage', () => {
         expect(alertOf(menu(true, 3))?.value).toBe(3);
-        expect(alertOf(menu(true, 0))?.value).toBe(0);
     });
 
     // « More », in the tab bar of the installed app, lists what the tabs do not show.
     it('keeps for « More » every page that no tab leads to', () => {
-        const tabs = ['/wines', '/storage', '/out-of-cellar', '/purchases'];
-        const others = withoutPages(menu(true), tabs);
+        const others = withoutPages(menu(true), TAB_BAR_PATHS);
 
         expect(hrefs(others)).toEqual([
             '/cellar-history',

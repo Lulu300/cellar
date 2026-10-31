@@ -23,6 +23,9 @@
     // After Escape or a click, the menu stays closed while the pointer or the focus is still on
     // it, rather than opening again at once.
     let held = $state(false);
+    // Whether the menu was open before a press on the gear: the focus that the press gives opens
+    // it before the click comes.
+    let openBeforePress = false;
 
     const current = $derived(isInSection(page.url.pathname, section));
     const alert = $derived(alertOf([section]));
@@ -45,6 +48,13 @@
         if (event.key !== 'Escape' || !open) return;
         close();
         trigger?.focus();
+    }
+
+    // A tap toggles the gear's menu, which a finger cannot hover; a mouse or a key only opens it.
+    function onGearClick(event: MouseEvent) {
+        if ((event as PointerEvent).pointerType === 'touch' && openBeforePress) return close();
+        held = false;
+        open = true;
     }
 
     function onfocusout(event: FocusEvent) {
@@ -71,8 +81,8 @@
         bind:this={root}
         class="relative"
         role="presentation"
-        onpointerenter={(event) => event.pointerType === 'mouse' && show()}
-        onpointerleave={(event) => event.pointerType === 'mouse' && hide()}
+        onpointerenter={(event) => event.pointerType !== 'touch' && show()}
+        onpointerleave={(event) => event.pointerType !== 'touch' && hide()}
         onfocusin={show}
         {onfocusout}
         {onkeydown}
@@ -85,11 +95,9 @@
                 class="{triggerClasses} w-9 justify-center px-0"
                 aria-label={section.label}
                 aria-expanded={open}
-                aria-controls={menuId}
-                onclick={() => {
-                    held = false;
-                    show();
-                }}
+                aria-controls={open ? menuId : undefined}
+                onpointerdown={() => (openBeforePress = open)}
+                onclick={onGearClick}
             >
                 <Icon class="h-5 w-5" aria-hidden="true" />
             </button>
@@ -100,7 +108,7 @@
                 class={triggerClasses}
                 aria-current={current ? 'true' : undefined}
                 aria-expanded={open}
-                aria-controls={menuId}
+                aria-controls={open ? menuId : undefined}
                 onclick={close}
             >
                 {section.label}

@@ -1,13 +1,13 @@
 <script lang="ts">
-    import { page } from '$app/state';
     import { ShoppingCart } from '@lucide/svelte';
     import SectionTabs from '#lib/components/layout/SectionTabs.svelte';
     import { purchasesSection } from '#lib/components/layout/navigation.js';
+    import type { LayoutProps } from './$types';
 
-    let { children } = $props();
+    let { data, children }: LayoutProps = $props();
 
     // The root layout loads the counts that the tabs show, as the menu does.
-    const section = $derived(purchasesSection(page.data.shortageCount));
+    const section = $derived(purchasesSection(data.shortageCount));
 </script>
 
 <div class="container mx-auto py-8 max-w-none w-full px-4 lg:w-[90%] xl:w-[85%] 2xl:w-[80%]">

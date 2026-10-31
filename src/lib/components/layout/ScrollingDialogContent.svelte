@@ -69,14 +69,16 @@
     <ScrollRegion class="flex-1 min-h-0 -mx-1">
         {@render children()}
     </ScrollRegion>
-    {#if footer}
+    {#if footer || error}
         <div class="flex-shrink-0 space-y-2 border-t pt-4">
             {#if error}
                 <p class="text-sm text-destructive" role="alert">{error}</p>
             {/if}
-            <div class="flex flex-wrap justify-end gap-2">
-                {@render footer()}
-            </div>
+            {#if footer}
+                <div class="flex flex-wrap justify-end gap-2">
+                    {@render footer()}
+                </div>
+            {/if}
         </div>
     {/if}
 </DialogContent>

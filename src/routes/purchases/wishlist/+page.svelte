@@ -96,7 +96,9 @@
             </div>
             <div>
                 <h2 class="text-lg font-medium">{m['wishlist.empty']()}</h2>
-                <p class="mt-2 text-muted-foreground">{m['wishlist.empty_hint']()}</p>
+                {#if auth.isAuthenticated}
+                    <p class="mt-2 text-muted-foreground">{m['wishlist.empty_hint']()}</p>
+                {/if}
             </div>
         </CardContent>
     </Card>

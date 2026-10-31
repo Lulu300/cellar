@@ -693,8 +693,7 @@ Makes one of the photos of a wine its main photo. The main photo before it stays
 ### `DELETE /api/definitions/{id}/photos/{imageId}`
 
 Removes a photo from a wine, and deletes the image, row and file, when no other wine and no wish
-uses it. When
-it was the main photo, the oldest of the others becomes the main one.
+uses it. When it was the main photo, the oldest of the others becomes the main one.
 
 - **Session:** required.
 - **Body:** none. Send the `Origin` header.
@@ -1186,7 +1185,7 @@ The body of [`POST /api/wishes`](#post-apiwishes) and [`PUT /api/wishes/{id}`](#
 - `quantity`: integer from 1 to 10000, or `null`: how many bottles to buy.
 - `note`: string of 5,000 characters at most, or `null`.
 
-An empty string counts as `null`.
+For `definitionId`, `text`, `imageId` and `note`, an empty string counts as `null`.
 
 ### `GET /api/wishes`
 
@@ -1196,9 +1195,10 @@ Lists the wishes, the newest first.
 - **Body:** none.
 - **Response:** `200` with an array of wishes. Each has `id`, `text`, `imageId` and `imageUrl` (the
   photo of a text wish, where it is served, `null` when none), `quantity`, `note`, `createdAt`,
-  `updatedAt`, and `wine`: `null` for a text wish, else `{ "id", "name", "producer", "color",
-"type", "appellation", "region", "country", "imageUrl", "inCellar" }`, where `imageUrl` is the
-  wine's main photo (`null` when none) and `inCellar` counts its `available` bottles.
+  `updatedAt`, and `wine`: `null` for a text wish, else
+  `{ "id", "name", "producer", "color", "type", "appellation", "region", "country", "imageUrl", "inCellar" }`,
+  where `imageUrl` is the wine's main photo (`null` when none) and `inCellar` counts its
+  `available` bottles.
 - **Errors:** none besides the common ones.
 
 ```json
@@ -1274,7 +1274,7 @@ uses it, such as the wine created with it as its main photo, or another wish.
 Removes a wish from the wishlist, and deletes its photo unless a wine or another wish uses it.
 
 - **Session:** required.
-- **Body:** none.
+- **Body:** none. Send the `Origin` header.
 - **Response:** `204`, without a body.
 - **Errors:** `404 not_found` for an unknown wish.
 
@@ -2583,8 +2583,8 @@ The CSV files have one file per table, named after it. The table names are `coun
 `appellations`, `wineClassifications`, `wineTypes`, `wineColors`, `wineFormats`, `origins`,
 `storageContainers`, `storageCases`, `wineImages`, `wineDefinitions` and `wineBottles`. The first
 line holds the column names. A wine names only its main photo, in `imageName`: its other photos go
-only in backups and exports, as does the wishlist. A file gives no ids: a row refers to another by its name (the
-`countryName` of a region, the `wineName` of a bottle…).
+only in backups and exports, as does the wishlist. A file gives no ids: a row refers to another by
+its name (the `countryName` of a region, the `wineName` of a bottle…).
 
 ### `POST /api/admin/export-csv`
 

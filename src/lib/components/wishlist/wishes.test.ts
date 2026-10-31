@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { offerToRemoveBought } from './wishes';
+import { addsBottles, offerToRemoveBought } from './wishes';
 
 const { invalidate, confirm } = vi.hoisted(() => ({ invalidate: vi.fn(), confirm: vi.fn() }));
 vi.mock('$app/navigation', () => ({ invalidate }));
@@ -43,5 +43,14 @@ describe('offerToRemoveBought', () => {
 
         expect(confirm).not.toHaveBeenCalled();
         expect(deleted).toEqual([]);
+    });
+});
+
+// A bottle edited was bought before: only new bottles and copies may take a wine off the list.
+describe('addsBottles', () => {
+    it('counts a new bottle and a copy, never an edit', () => {
+        expect(addsBottles(false, false)).toBe(true);
+        expect(addsBottles(true, true)).toBe(true);
+        expect(addsBottles(true, false)).toBe(false);
     });
 });

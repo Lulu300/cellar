@@ -64,6 +64,9 @@ export async function removeWish(id: string): Promise<boolean> {
     return true;
 }
 
+/** Whether a save of the bottle dialog adds bottles: a new bottle or a copy, never an edit. */
+export const addsBottles = (editing: boolean, duplicate: boolean) => !editing || duplicate;
+
 /**
  * Offers to remove from the wishlist each of these wines that is on it, once bottles of them were
  * added: nothing leaves the list without the user's choice. `wishedWines` gives the wish of each

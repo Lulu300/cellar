@@ -10,7 +10,7 @@
     } from '#lib/components/ui/dialog/index.js';
     import type { BottleFormSource } from '#lib/components/forms/form-sources.js';
     import WineBottleForm from '#lib/components/forms/WineBottleForm.svelte';
-    import { offerToRemoveBought } from '#lib/components/wishlist/wishes.js';
+    import { addsBottles, offerToRemoveBought } from '#lib/components/wishlist/wishes.js';
     import type { BottleDTO } from '#lib/shared/dto.js';
 
     /** Adds bottles, of the wine `selectedDefinitionId` when given, duplicates `editBottle` or edits it. */
@@ -36,11 +36,13 @@
     let formKey = $state(0);
 
     // The wines of the bottles added since the dialog opened, by a save or a duplicate: once it
-    // closes, after the last save or a cancel, those on the wishlist are offered for removal.
+    // closes, after the last save or a cancel, those on the wishlist are offered for removal. A
+    // page left with the dialog open asks nothing: leaving a page cancels its questions
+    // (ConfirmDialog).
     let addedTo: string[] = [];
 
     function saved(bottles: BottleDTO[], addAnother: boolean) {
-        if (!editBottle || duplicateMode) {
+        if (addsBottles(!!editBottle, duplicateMode)) {
             addedTo.push(...bottles.map((bottle) => bottle.definitionId));
         }
         if (addAnother) formKey++;

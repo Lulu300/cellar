@@ -1,10 +1,11 @@
 import { describe, expect, it } from 'vitest';
 import { ImageSelection } from './image-selection.svelte';
 
-const image = (id: string, filename: string, wines: string[] = []) => ({
+const image = (id: string, filename: string, wines: string[] = [], wishes: string[] = []) => ({
     id,
     filename,
-    wines: wines.map((name) => ({ name }))
+    wines: wines.map((name) => ({ name })),
+    wishes: wishes.map((name) => ({ name }))
 });
 
 function selection() {
@@ -13,7 +14,8 @@ function selection() {
             image('margaux', 'Margaux.jpg'),
             image('latour', 'latour.jpg'),
             image('petrus', 'petrus-2010.png'),
-            image('random', 'wine-0f3c.jpg', ['Château Cheval Blanc'])
+            image('random', 'wine-0f3c.jpg', ['Château Cheval Blanc']),
+            image('wished', 'wine-7a21.jpg', [], ['Clos Rougeard 2017'])
         ]
     };
     return { data, images: new ImageSelection(() => data.images) };
@@ -26,7 +28,7 @@ describe('ImageSelection', () => {
 
         images.toggleAll();
 
-        expect(images.ids.toSorted()).toEqual(['latour', 'margaux', 'random']);
+        expect(images.ids.toSorted()).toEqual(['latour', 'margaux', 'random', 'wished']);
     });
 
     it('finds an image by the name of a wine that uses it', () => {
@@ -35,6 +37,14 @@ describe('ImageSelection', () => {
         images.search('cheval blanc');
 
         expect(images.visible.map((shown) => shown.id)).toEqual(['random']);
+    });
+
+    it('finds an image by the name of a wish that uses it', () => {
+        const { images } = selection();
+
+        images.search('rougeard');
+
+        expect(images.visible.map((shown) => shown.id)).toEqual(['wished']);
     });
 
     it('drops a selected image that the search hides, so that it cannot be deleted unseen', () => {
@@ -63,7 +73,7 @@ describe('ImageSelection', () => {
 
         data.images = data.images.filter((image) => image.id !== 'latour');
 
-        expect(images.ids.toSorted()).toEqual(['margaux', 'petrus', 'random']);
+        expect(images.ids.toSorted()).toEqual(['margaux', 'petrus', 'random', 'wished']);
         expect(images.allSelected).toBe(true);
     });
 });

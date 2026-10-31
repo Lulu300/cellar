@@ -2,14 +2,20 @@
 export interface SearchedImage {
     id: string;
     filename: string;
-    /** The wines that use the image: their names tell apart images whose names are random. */
+    /**
+     * The wines and the wishes that use the image: their names tell apart images whose names are
+     * random.
+     */
     wines: { name: string }[];
+    wishes: { name: string }[];
 }
 
-/** Whether the file name of `image`, or the name of a wine that uses it, holds `query`, ignoring case. */
+/**
+ * Whether the file name of `image`, or the name of a wine or a wish that uses it, holds `query`,
+ * ignoring case.
+ */
 export function matchesImageSearch(image: SearchedImage, query: string): boolean {
     const needle = query.trim().toLowerCase();
-    return [image.filename, ...image.wines.map((wine) => wine.name)].some((name) =>
-        name.toLowerCase().includes(needle)
-    );
+    const users = [...image.wines, ...image.wishes].map((user) => user.name);
+    return [image.filename, ...users].some((name) => name.toLowerCase().includes(needle));
 }

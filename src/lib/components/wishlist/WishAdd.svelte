@@ -48,27 +48,29 @@
             .slice(0, MAX_SUGGESTIONS);
     });
 
-    function reset() {
-        text = imageId = previewUrl = '';
-        file = null;
-    }
-
-    async function add(wish: Parameters<typeof addWish>[0], photo = { file, imageId }) {
+    async function addText(event: SubmitEvent) {
+        event.preventDefault();
+        if (!text.trim()) return;
         saving = true;
-        const saved = await saveWithPhoto(uploads, photo, (photoId) =>
-            addWish({ ...wish, imageId: photoId })
+        const saved = await saveWithPhoto(uploads, { file, imageId }, (photoId) =>
+            addWish({ text, imageId: photoId })
         );
         saving = false;
-        if (saved) reset();
+        if (saved) {
+            text = imageId = previewUrl = '';
+            file = null;
+        }
     }
 
-    const addText = (event: SubmitEvent) => {
-        event.preventDefault();
-        if (text.trim()) add({ text });
-    };
-
-    // A wine of the cellar shows its own photos: a photo chosen for a text is left out.
-    const addWine = (wine: Wine) => add({ definitionId: wine.id }, { file: null, imageId: '' });
+    // A wine of the cellar shows its own photos: a photo chosen for a text stays for the next one.
+    async function addWine(wine: Wine) {
+        saving = true;
+        const saved = await saveWithPhoto(uploads, { file: null, imageId: '' }, () =>
+            addWish({ definitionId: wine.id })
+        );
+        saving = false;
+        if (saved) text = '';
+    }
 </script>
 
 <Card class="mb-6 py-0">

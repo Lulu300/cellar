@@ -5,13 +5,15 @@ import { compareText } from '#lib/utils/compare.js';
 import type { PageServerLoad } from './$types';
 
 // Public data only, as GET /api/wishes and /api/definitions give it.
-export const load: PageServerLoad = ({ depends }) => {
+export const load: PageServerLoad = ({ depends, locals }) => {
     depends(CELLAR);
     return {
         wishes: listWishes(),
-        // The wines that the field suggests, by their name
-        wines: listDefinitions()
-            .map(({ id, name, producer }) => ({ id, name, producer }))
-            .sort((a, b) => compareText(a.name, b.name))
+        // The wines that the field suggests, by their name: the field needs a session
+        wines: locals.session
+            ? listDefinitions()
+                  .map(({ id, name, producer }) => ({ id, name, producer }))
+                  .sort((a, b) => compareText(a.name, b.name))
+            : []
     };
 };

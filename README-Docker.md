@@ -674,9 +674,9 @@ When you allow changes, it can also write, as you would in the app: « I just bo
 this Chablis, put them in rack B », « we drank the 2015 Margaux tonight, with the lamb ». It adds a
 wine and its bottles, marks bottles drunk with the day and a note, moves bottles to another case,
 changes the notes of bottles and the rating of a wine, and adds wines to the wishlist or removes
-them. It never reaches the admin: backups,
-restore, wipe, imports and the access code stay in the app. Most assistants ask you before each
-change; during a restore or an import, a change is refused until it ends.
+them. It never reaches the admin: backups, restore, wipe, imports and the access code stay in the
+app. Most assistants ask you before each change; during a restore or an import, a change is refused
+until it ends.
 
 1. In Cellar, open Admin › Settings › MCP access and create the token. Copy it: it is shown once.
    It is read-only unless you allow changes there.

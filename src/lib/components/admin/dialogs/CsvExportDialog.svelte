@@ -40,7 +40,7 @@
         csvExportTables = Object.keys(CSV_TABLE_TEXTS);
     }
 
-    function clearAllCsvTables() {
+    function selectNoCsvTables() {
         csvExportTables = [];
     }
 
@@ -99,7 +99,7 @@
                         <Button size="sm" variant="outline" onclick={selectAllCsvTables}>
                             {m['common.select_all']()}
                         </Button>
-                        <Button size="sm" variant="outline" onclick={clearAllCsvTables}>
+                        <Button size="sm" variant="outline" onclick={selectNoCsvTables}>
                             {m['admin.select_none']()}
                         </Button>
                     </div>

@@ -217,6 +217,9 @@ the server.
 
 If a reverse proxy (Traefik, Caddy, nginx, Synology reverse proxy...) serves the app on a
 single public URL, setting `ORIGIN` to that URL is enough.
+[docs/reverse-proxy.md](docs/reverse-proxy.md) gives configurations to copy for nginx, SWAG, Caddy
+and Traefik, with the upload size of a restore, the time limits and what the MCP server needs, and
+says what to set in Nginx Proxy Manager and the Synology reverse proxy.
 
 If the app must answer on several hostnames, replace the `ORIGIN` line in `docker-compose.yml`
 with the headers your proxy sets, so the server rebuilds its URL from each request:
@@ -701,6 +704,10 @@ check its documentation:
   }
 }
 ```
+
+Behind a reverse proxy, the address is that of the proxy, such as
+`https://cellar.example.com/mcp`, and the proxy must pass the answers of `/mcp` as they come: see
+[docs/reverse-proxy.md](docs/reverse-proxy.md).
 
 The server speaks Streamable HTTP, without sessions, in the revisions of the protocol from
 2024-11-05 to 2026-07-28. An app that only starts local (stdio) servers needs a bridge to HTTP.

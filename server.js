@@ -1,5 +1,5 @@
-// Starts the built app (`node server.js`): adapter-node's build/index.js, plus the ORIGIN variable
-// and the headers that forbid framing.
+// Starts the built app (`node server.js`): adapter-node's build/index.js, plus the ORIGIN variable,
+// the headers that forbid framing and a longer time for an upload to arrive.
 //
 // adapter-node 6 no longer reads ORIGIN. The origin it trusts, `paths.origin`, is fixed when the app
 // is built, but one Docker image serves every installation. Without it, adapter-node takes the
@@ -45,7 +45,7 @@ const { server } = await import('./build/index.js');
 
 // Node answers 408 to a request that has not fully arrived after 5 minutes: a restore or a ZIP
 // import of up to 512 MB over slow Wi-Fi needs longer. 30 minutes let it arrive at 0.3 MB/s. Not 0,
-// which would let a client hold a connection forever by sending a byte now and then. Node reads it
+// which would let a client hold a connection forever without finishing its request. Node reads it
 // at each of its periodic checks, so it applies although the server already listens. The headers
 // keep Node's 60 seconds.
 server.requestTimeout = 30 * 60 * 1000;

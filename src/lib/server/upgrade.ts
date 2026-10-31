@@ -30,11 +30,11 @@ const ORIGIN_DOC =
 /**
  * The versions that ran before this check existed did not record themselves, so a database from
  * one of them only tells its migrations: the newest one each version shipped, by its `when` in the
- * Drizzle journal of the tags v0.1.0 to v0.5.0-rc.1. Versions that shipped the same migrations
- * form a range. 0.2.0-rc.1 still ended at 0002, like 0.1.0, but its database is taken for 0.1.0
- * on purpose: most 0.2.0 actions were added after rc.1 and apply to it too, while marking them
- * "may already be done" would weaken them for every 0.1.0 user. Never extended: later versions
- * record themselves.
+ * Drizzle journal of those versions. Versions that shipped the same migrations form a range. A
+ * release candidate of the second entry's `lowest` still ended at 0002, like the first entry, but
+ * its database is taken for the first entry on purpose: most actions of that `lowest` were added
+ * after the candidate and apply to it too, while marking them "may already be done" would weaken
+ * them for every user of the first entry. Never extended: later versions record themselves.
  */
 export const UNRECORDED_VERSIONS = [
     { lastMigration: 1766167130064, lowest: '0.1.0', highest: '0.1.0' }, // 0002_fine_nextwave

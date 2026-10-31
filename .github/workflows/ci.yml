@@ -13,7 +13,7 @@ permissions:
 jobs:
   verify:
     runs-on: ubuntu-latest
-    # Far above a normal run: a hung test would otherwise use up private-repo minutes for 6 hours.
+    # Far above a normal run: this stops a hung test long before the 6-hour default.
     timeout-minutes: 15
     steps:
       # Keep the action versions in step with release.yml. Updating a pinned action: see AGENTS.md.

@@ -34,7 +34,8 @@ const ROW_SCHEMAS = {
     wineFormats: namedSchema,
     origins: namedSchema,
     storageContainers: z.object({ name, parentContainerId: optionalId }),
-    // Files from 0.7.0 or earlier have no position: the cases keep the order of those versions.
+    // Exports made before cases had a position lack it: the cases keep the order those versions
+    // showed.
     storageCases: z.object({
         name,
         capacity: caseCapacitySchema,
@@ -155,9 +156,9 @@ function repairedBottle(row: ImportedRow): ImportedRow {
 }
 
 /**
- * `row` with the text of `column` cut to LONG_TEXT_MAX_LENGTH characters, as the upgrade to 0.10.0
- * cut the notes and descriptions stored before (DATA-10): with LF line breaks, which the forms of
- * earlier versions stored as CRLF. The end of a repair line may go with it.
+ * `row` with the text of `column` cut to LONG_TEXT_MAX_LENGTH characters, as migration 0011 cut the
+ * notes and descriptions stored before that limit (DATA-10): with LF line breaks, which the forms
+ * of earlier versions stored as CRLF. The end of a repair line may go with it.
  */
 function withLongTextCut(row: ImportedRow, column: string): ImportedRow {
     const text = row[column];

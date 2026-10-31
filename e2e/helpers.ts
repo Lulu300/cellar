@@ -72,3 +72,67 @@ export async function addWine(page: Page, name: string, bottles: number) {
     await bottleDialog.getByRole('button', { name: 'Save Bottle' }).click();
     await expect(bottleDialog).toBeHidden();
 }
+
+/** An APP1 segment of EXIF data: the photo is to be turned a quarter clockwise, and a GPS block. */
+function exifSegment(): Buffer {
+    const tiff = Buffer.alloc(56);
+    tiff.write('II', 0, 'latin1');
+    tiff.writeUInt16LE(42, 2);
+    tiff.writeUInt32LE(8, 4);
+    // The first block, of two entries: Orientation 6, then where the GPS block starts
+    tiff.writeUInt16LE(2, 8);
+    tiff.writeUInt16LE(0x0112, 10);
+    tiff.writeUInt16LE(3, 12);
+    tiff.writeUInt32LE(1, 14);
+    tiff.writeUInt16LE(6, 18);
+    tiff.writeUInt16LE(0x8825, 22);
+    tiff.writeUInt16LE(4, 24);
+    tiff.writeUInt32LE(1, 26);
+    tiff.writeUInt32LE(38, 30);
+    // The GPS block, of one entry: GPSLatitudeRef "N"
+    tiff.writeUInt16LE(1, 38);
+    tiff.writeUInt16LE(1, 40);
+    tiff.writeUInt16LE(2, 42);
+    tiff.writeUInt32LE(2, 44);
+    tiff.write('N', 48, 'latin1');
+    const body = Buffer.concat([Buffer.from('Exif\0\0', 'latin1'), tiff]);
+    const header = Buffer.from([0xff, 0xe1, 0, 0]);
+    header.writeUInt16BE(body.length + 2, 2);
+    return Buffer.concat([header, body]);
+}
+
+/**
+ * A JPEG of 2000 × 1000 pixels as a phone held upright writes it: its EXIF data say to turn it a
+ * quarter clockwise, and where it was taken.
+ */
+export async function phonePhoto(page: Page): Promise<Buffer> {
+    const bytes = await page.evaluate(async () => {
+        const canvas = document.createElement('canvas');
+        canvas.width = 2000;
+        canvas.height = 1000;
+        const context = canvas.getContext('2d')!;
+        context.fillStyle = '#8b1a1a';
+        context.fillRect(0, 0, 2000, 1000);
+        const blob = await new Promise<Blob | null>((resolve) =>
+            canvas.toBlob(resolve, 'image/jpeg')
+        );
+        return Array.from(new Uint8Array(await blob!.arrayBuffer()));
+    });
+    const jpeg = Buffer.from(bytes);
+    return Buffer.concat([jpeg.subarray(0, 2), exifSegment(), jpeg.subarray(2)]);
+}
+
+/** The size of a JPEG in pixels, and whether it holds EXIF data, read from its segments. */
+export function jpegInfo(jpeg: Buffer) {
+    let exif = false;
+    // The segments before the image data (FFDA), each with its length
+    for (let at = 2; jpeg[at] === 0xff && jpeg[at + 1] !== 0xda;) {
+        const marker = jpeg[at + 1];
+        if (marker === 0xe1 && jpeg.toString('latin1', at + 4, at + 10) === 'Exif\0\0') exif = true;
+        if (marker === 0xc0 || marker === 0xc2) {
+            return { width: jpeg.readUInt16BE(at + 7), height: jpeg.readUInt16BE(at + 5), exif };
+        }
+        at += 2 + jpeg.readUInt16BE(at + 2);
+    }
+    return { exif };
+}

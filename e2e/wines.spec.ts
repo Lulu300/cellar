@@ -1,11 +1,5 @@
 import { expect, test } from '@playwright/test';
-import { addWine, addWineThenBottle, logIn } from './helpers.js';
-
-/** A PNG of one pixel: the app sends it as a JPEG. */
-const PIXEL = Buffer.from(
-    'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==',
-    'base64'
-);
+import { addWine, addWineThenBottle, jpegInfo, logIn, phonePhoto } from './helpers.js';
 
 test('log in, then add a wine and two bottles from the wine list', async ({ page }) => {
     await logIn(page);
@@ -49,18 +43,23 @@ test('log in, then add a wine and two bottles from the wine list', async ({ page
     await page.getByRole('heading', { name: 'Château Journey' }).click();
     await expect(page.getByText('Available Bottles (2)')).toBeVisible();
 
-    // A photo of the label, through the preview that turns and crops it
+    // A photo of the label as a phone writes it, through the preview that turns and crops it. It
+    // is stored the right way up (portrait), shrunk, without its EXIF data and GPS position.
+    const photo = await phonePhoto(page);
+    expect(jpegInfo(photo)).toEqual({ width: 2000, height: 1000, exif: true });
     const chooser = page.waitForEvent('filechooser');
     await page.getByRole('button', { name: 'Choose a file' }).click();
-    await (await chooser).setFiles({ name: 'label.png', mimeType: 'image/png', buffer: PIXEL });
+    await (await chooser).setFiles({ name: 'label.jpg', mimeType: 'image/jpeg', buffer: photo });
     const preview = page.getByRole('dialog', { name: 'Rotate and crop the photo' });
+    // Half a turn keeps the photo upright: both buttons turn it
+    await preview.getByRole('button', { name: 'Rotate right' }).click();
     await preview.getByRole('button', { name: 'Rotate right' }).click();
     await preview.getByRole('button', { name: 'Use this photo' }).click();
     await expect(preview).toBeHidden();
-    await expect(page.getByRole('img', { name: 'Château Journey' })).toHaveAttribute(
-        'src',
-        /^\/uploads\/wines\/wine-.*\.jpg$/
-    );
+    const shown = page.getByRole('img', { name: 'Château Journey' });
+    await expect(shown).toHaveAttribute('src', /^\/uploads\/wines\/wine-.*\.jpg$/);
+    const stored = await page.request.get((await shown.getAttribute('src'))!);
+    expect(jpegInfo(await stored.body())).toEqual({ width: 800, height: 1600, exif: false });
     await expect(page.getByText('Main photo', { exact: true })).toBeVisible();
 
     await page.goBack();

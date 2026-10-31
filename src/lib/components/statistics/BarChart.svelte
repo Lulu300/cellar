@@ -33,8 +33,8 @@
     // In pixels: 200 for the largest count, and never under 20, so that a small count shows.
     const height = (bar: Bar) => Math.max((bar.count / maxCount) * 200, 20);
     const wholeName = (bar: Bar) => (bar.detail ? `${bar.name} (${bar.detail})` : bar.name);
-    const summary = (bar: Bar) =>
-        `${m['common.label']({ label: wholeName(bar) })} ${m['common.n_bottles']({ count: bar.count })}`;
+    const label = (bar: Bar) => m['common.label']({ label: wholeName(bar) });
+    const bottles = (bar: Bar) => m['common.n_bottles']({ count: bar.count });
 </script>
 
 <div class="h-[300px] flex items-end justify-center gap-2 px-2">
@@ -43,7 +43,7 @@
             type="button"
             class="group flex h-full min-w-0 flex-1 flex-col items-center justify-end gap-2 rounded-sm focus-visible:outline-2 focus-visible:outline-ring"
             aria-pressed={bar === chosen}
-            aria-label={summary(bar)}
+            aria-label="{label(bar)} {bottles(bar)}"
             title={wholeName(bar)}
             onclick={() => (chosenKey = bar.key)}
         >
@@ -66,5 +66,8 @@
     {/each}
 </div>
 {#if chosen}
-    <p class="mt-2 text-center text-sm" aria-live="polite">{summary(chosen)}</p>
+    <!-- Not read out on a change: the button gives a screen reader the same words. -->
+    <p class="mt-2 text-center text-sm">
+        {label(chosen)} <span class="whitespace-nowrap">{bottles(chosen)}</span>
+    </p>
 {/if}

@@ -12,7 +12,9 @@ permissions:
 
 jobs:
   verify:
-    runs-on: ubuntu-latest
+    # Same Ubuntu as release.yml, which calls this workflow. ubuntu-latest moves to a new Ubuntu on
+    # GitHub's schedule; a pinned version makes that move a reviewed change, here and in release.yml.
+    runs-on: ubuntu-24.04
     # Far above a normal run: this stops a hung test long before the 6-hour default.
     timeout-minutes: 15
     steps:
@@ -70,7 +72,7 @@ jobs:
   # Same check as release.yml runs before it pushes an image, so that a Dockerfile that builds an
   # image that does not start fails the pull request rather than the release.
   image:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 15
     steps:
       - name: Checkout
@@ -85,7 +87,7 @@ jobs:
         run: scripts/check-image.sh cellar:ci
 
   e2e:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 15
     steps:
       # Same checkout, Node.js and install as the verify job.

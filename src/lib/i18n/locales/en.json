@@ -524,6 +524,7 @@
   "barcode.height_below_minimum": "Barcode height {height}mm is below minimum {min}mm",
   "barcode.height_below_recommended": "Barcode height {height}mm is below recommended {recommended}mm",
   "admin.title": "Admin Panel",
+  "admin.api_doc": "API documentation",
   "admin.session_timeout": "Session Timeout",
   "admin.barcode_settings": "Barcode Settings",
   "admin.change_access_code": "Change Access Code",

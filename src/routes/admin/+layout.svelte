@@ -7,6 +7,9 @@
 
     let { data, children }: LayoutProps = $props();
 
+    // The docs of the latest release, which is what a published image runs.
+    const API_DOC = 'https://github.com/Lulu300/cellar/blob/main/docs/API.md';
+
     const sections = $derived([
         { href: '/admin/settings', label: m['admin.section_settings'](), icon: Settings },
         { href: '/admin/backups', label: m['admin.section_backups'](), icon: Archive },
@@ -23,6 +26,13 @@
         </h1>
         <p class="mt-1 text-sm text-muted-foreground">
             {m['preferences.version']({ version: __APP_VERSION__ })}
+            ·
+            <a
+                href={API_DOC}
+                target="_blank"
+                rel="noopener noreferrer"
+                class="underline underline-offset-2 hover:text-foreground">{m['admin.api_doc']()}</a
+            >
         </p>
     </div>
 

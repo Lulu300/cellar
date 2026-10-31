@@ -524,6 +524,7 @@
   "barcode.height_below_minimum": "Hauteur du code-barres de {height} mm, en dessous du minimum de {min} mm",
   "barcode.height_below_recommended": "Hauteur du code-barres de {height} mm, en dessous des {recommended} mm recommandés",
   "admin.title": "Administration",
+  "admin.api_doc": "Documentation de l’API",
   "admin.session_timeout": "Durée de session",
   "admin.barcode_settings": "Paramètres des codes-barres",
   "admin.change_access_code": "Changer le code d’accès",

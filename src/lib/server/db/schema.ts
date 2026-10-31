@@ -115,6 +115,31 @@ export const wineDefinitions = sqliteTable(
     ]
 );
 
+/**
+ * The photos of a wine besides its main one, `wine_definitions.image_id`, which the wine list
+ * shows: keeping the main photo there leaves every reader of a wine's image as it was.
+ */
+export const winePhotos = sqliteTable(
+    'wine_photos',
+    {
+        id: id(),
+        definitionId: text('definition_id')
+            .references(() => wineDefinitions.id, { onDelete: 'cascade' })
+            .notNull(),
+        imageId: text('image_id')
+            .references(() => wineImages.id, { onDelete: 'cascade' })
+            .notNull(),
+        createdAt: timestamp('created_at')
+    },
+    (table) => [
+        uniqueIndex('wine_photos_definition_id_image_id_unique').on(
+            table.definitionId,
+            table.imageId
+        ),
+        index('wine_photos_image_id_idx').on(table.imageId)
+    ]
+);
+
 // Wine types table
 export const wineTypes = sqliteTable('wine_types', {
     id: id(),

@@ -1,8 +1,15 @@
+import { inspect } from 'node:util';
 import { beforeAll, describe, expect, it, vi } from 'vitest';
 import { storageOverview } from '#lib/server/features/storage/service.js';
 import { fakeEvent } from '../../test/event';
 import { insertBottles, insertWineDefinition } from '../../test/wine';
 import { POST } from './+server';
+
+// The errors that the SDK reports reach the logs, as with DEBUG=mcp in production: read when the
+// MCP server module loads.
+vi.hoisted(() => {
+    process.env.DEBUG = 'mcp';
+});
 
 // One read can be made to fail as an unexpected error would.
 vi.mock('#lib/server/features/storage/service.js', async (importOriginal) => {
@@ -147,7 +154,7 @@ describe('POST /mcp', () => {
         expect(result.isError).toBe(true);
     });
 
-    it('never writes the token to the logs', async () => {
+    it('never writes the token to the logs, nor do the errors that the SDK reports', async () => {
         const logs = (['log', 'info', 'warn', 'error', 'debug'] as const).map((level) =>
             vi.spyOn(console, level).mockImplementation(() => {})
         );
@@ -157,9 +164,17 @@ describe('POST /mcp', () => {
 
         await legacy('tools/call', { name: 'get_free_space', arguments: {} });
         await modernCall('get_wine', { wineId: 'nothing' });
-        await post({ jsonrpc: '2.0', id: 1, method: 'tools/call' }, {});
+        // Requests that the SDK refuses and reports: a 2026-07-28 request without its envelope,
+        // and one whose headers disagree with its body.
+        const listTools = { jsonrpc: '2.0', id: 1, method: 'tools/list' };
+        await post(listTools, { 'mcp-protocol-version': '2026-07-28' });
+        await post(listTools, { 'mcp-protocol-version': '2026-07-28', 'mcp-method': 'tools/call' });
 
-        for (const log of logs) expect(JSON.stringify(log.mock.calls)).not.toContain(TOKEN);
+        const debug = logs[4];
+        expect(debug).toHaveBeenCalledWith('[mcp]', expect.any(Error));
+        // As the console prints them: an error with its message, stack and cause.
+        for (const log of logs)
+            expect(inspect(log.mock.calls, { depth: null })).not.toContain(TOKEN);
         for (const log of logs) log.mockRestore();
     });
 

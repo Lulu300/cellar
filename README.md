@@ -52,7 +52,7 @@ Cellar runs from its published image, `ghcr.io/lulu300/cellar`, with Docker and 
    ORIGIN=http://192.168.1.20:3005
    ```
 
-3. Create the data folders. The container runs as uid `1000`, which must own them ([details](README-Docker.md#data-ownership), also to run it as another user):
+3. Create the data folders. The container runs as uid `1000`, which must own them (without `sudo`, or to run it as another user, see [Data ownership](README-Docker.md#data-ownership)):
 
    ```sh
    mkdir -p docker-data/data docker-data/uploads docker-data/csv-imports

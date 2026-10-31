@@ -5,10 +5,14 @@ import {
     expectLoggedIn,
     jpegInfo,
     logIn,
-    phonePhoto
+    openFromMenu,
+    phonePhoto,
+    pick
 } from './helpers.js';
 
-test('log in, then add a wine and two bottles from the wine list', async ({ page }) => {
+test('log in, add a wine and two bottles from the wine list, and buy a wine of the wishlist', async ({
+    page
+}) => {
     await logIn(page);
     // Back to a ?login page while logged in: the page asks the server, and still shows the session.
     // Once hydrated, so that the link and Back are navigations within the page. Not /wines, whose
@@ -22,6 +26,51 @@ test('log in, then add a wine and two bottles from the wine list', async ({ page
     await expect(page.getByRole('dialog')).toBeHidden();
 
     await addWine(page, 'Château Journey', 2);
+
+    // A name typed on the wishlist, with a photo of its label, becomes a wine, then a bottle; the
+    // wine leaves the wishlist only when the user says so (FEAT-02).
+    await openFromMenu(page, 'Purchases', 'Wishlist');
+    await page.getByLabel('Add a wish').fill('Clos Wished');
+    const wishPhoto = page.waitForEvent('filechooser');
+    await page.getByRole('button', { name: 'Choose a file' }).click();
+    await (
+        await wishPhoto
+    ).setFiles({ name: 'wish.jpg', mimeType: 'image/jpeg', buffer: await phonePhoto(page) });
+    await page
+        .getByRole('dialog', { name: 'Rotate and crop the photo' })
+        .getByRole('button', { name: 'Use this photo' })
+        .click();
+    await page.getByRole('button', { name: 'Add', exact: true }).click();
+    const wish = page
+        .getByRole('listitem')
+        .filter({ has: page.getByRole('heading', { name: 'Clos Wished' }) });
+    await expect(wish).toBeVisible();
+    // Without a wine in shortage, Purchases shows a dot, named by the number of wishes.
+    await expect(
+        page.getByRole('navigation', { name: 'Menu' }).getByRole('link', { name: /^Purchases/ })
+    ).toHaveAccessibleName('Purchases 1 wish');
+
+    await wish.getByRole('button', { name: 'Create the wine' }).click();
+    const wishWine = page.getByRole('dialog', { name: 'Add wine' });
+    await expect(wishWine.getByLabel('Wine Name')).toHaveValue('Clos Wished');
+    const wishLabel = wishWine.getByRole('img', { name: 'Wine preview' });
+    await expect(wishLabel).toHaveAttribute('src', /^\/uploads\/wines\/wine-/);
+    const labelUrl = await wishLabel.getAttribute('src');
+    await pick(wishWine.getByPlaceholder('Search appellations'), 'Margaux');
+    await pick(wishWine.getByPlaceholder('Search wine types'), 'Vin');
+    await pick(wishWine.getByPlaceholder('Search wine colors'), 'Rouge');
+    await wishWine.getByRole('button', { name: 'Save & Add Bottle' }).click();
+    const wishBottle = page.getByRole('dialog', { name: 'Add Wine Bottle' });
+    await expect(wishBottle.getByPlaceholder('Search wines')).toHaveValue('Clos Wished');
+    await pick(wishBottle.getByPlaceholder('Search wine formats'), '75 cl');
+    await wishBottle.getByRole('button', { name: 'Save Bottle' }).click();
+    // The wish, linked to its wine, waits for the user's answer.
+    const offer = page.getByRole('dialog', { name: 'Confirm' });
+    await expect(offer).toContainText('This wine is on your wishlist');
+    await expect(wish.getByRole('img', { name: 'Clos Wished' })).toHaveAttribute('src', labelUrl!);
+    await offer.getByRole('button', { name: 'Remove from the list' }).click();
+    await expect(page.getByText('Your wishlist is empty')).toBeVisible();
+    await openFromMenu(page, 'Cellar', 'My Wines');
 
     // The other journeys add wines too.
     await page.getByLabel('Search', { exact: true }).fill('Château Journey');

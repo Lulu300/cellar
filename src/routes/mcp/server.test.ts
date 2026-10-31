@@ -183,6 +183,8 @@ describe('POST /mcp', () => {
 
         await legacy('tools/call', { name: 'get_free_space', arguments: {} });
         await modernCall('get_wine', { wineId: 'nothing' });
+        await modernCall('rate_wine', { wineId: 'nothing', rating: 2 }, WRITE);
+        await modernCall('rate_wine', { wineId: margaux, rating: 2 });
         // Requests that the SDK refuses and reports: a 2026-07-28 request without its envelope,
         // and one whose headers disagree with its body.
         const listTools = { jsonrpc: '2.0', id: 1, method: 'tools/list' };

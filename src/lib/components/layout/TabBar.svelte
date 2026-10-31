@@ -9,6 +9,7 @@
         isCurrentSection,
         TAB_BAR_PATHS,
         withoutPages,
+        type NavItem,
         type NavSection
     } from './navigation.js';
 
@@ -22,19 +23,18 @@
     let moreOpen = $state(false);
     let moreButton = $state<HTMLButtonElement>();
 
+    // The shorter names of the tab bar, and the cart of the purchases rather than their first tab's
+    const SHORT = $derived<Record<string, Partial<NavItem>>>({
+        '/wines': { label: m['common.wines']() },
+        '/purchases': { label: m['navigation.purchases'](), icon: ShoppingCart }
+    });
     // Each tab opens the first page of the menu at or under its path (the purchases, their first
     // tab), and is current on every page under it.
-    const pages = $derived(sections.flatMap((section) => section.items));
+    const items = $derived(sections.flatMap((section) => section.items));
     const tabs = $derived(
         TAB_BAR_PATHS.map((path) => {
-            const item = pages.find((page) => page.href && isCurrentSection(page.href, path))!;
-            const short =
-                path === '/wines'
-                    ? { label: m['common.wines']() }
-                    : path === '/purchases'
-                      ? { label: m['navigation.purchases'](), icon: ShoppingCart }
-                      : {};
-            return { ...item, ...short, path };
+            const item = items.find((entry) => entry.href && isCurrentSection(entry.href, path))!;
+            return { ...item, ...SHORT[path], path };
         })
     );
     const others = $derived(withoutPages(sections, TAB_BAR_PATHS));

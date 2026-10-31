@@ -142,13 +142,18 @@
                         size="icon"
                         class="relative md:pointer-fine:no-touch:hidden standalone:max-md:hidden"
                         aria-expanded={menuOpen}
-                        aria-controls="navigation-menu"
+                        aria-controls={menuOpen ? 'navigation-menu' : undefined}
                         onclick={() => (menuOpen = !menuOpen)}
                     >
                         {#if menuOpen}<X />{:else}<Menu />{/if}
                         <!-- Named by its text rather than aria-label, which would hide the count -->
                         <span class="sr-only">{m['navigation.menu']()}</span>
-                        {#if shortage && !menuOpen}<NavCount count={shortage} badge />{/if}
+                        <!-- Not next to the top bar of a touch laptop, whose Purchases shows it -->
+                        {#if shortage && !menuOpen}
+                            <span class="md:pointer-fine:hidden"
+                                ><NavCount count={shortage} badge /></span
+                            >
+                        {/if}
                     </Button>
                 </div>
             </div>

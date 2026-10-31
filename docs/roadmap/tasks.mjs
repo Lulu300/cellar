@@ -33,6 +33,7 @@ export const versions = [
 	{
 		id: '1.2.0',
 		title: 'Serveur MCP',
+		released: '2026-10-31',
 		goal: 'Un serveur MCP intégré à Cellar, pour les assistants d’IA du réseau local, avec la description OpenAPI de l’API.'
 	},
 	{
@@ -151,7 +152,7 @@ export const phases = [
 		id: 'P14',
 		version: '1.2.0',
 		title: 'Serveur MCP',
-		goal: 'Pour la 1.2.0, enchaînée juste après la 1.1.0 : un serveur MCP intégré à Cellar, pour les assistants d’IA du réseau local (décision « Serveur MCP (P14) »), et la description OpenAPI de l’API, tirée des mêmes schémas zod. Lots : 1. SEC-11, API-14 (faits le 2026-10-31) ; 2. API-10, API-15 (faits le 2026-10-31) ; 3. API-11, DOC-06 (faits le 2026-10-31) ; BUG-25 ; puis REL-08.'
+		goal: 'Pour la 1.2.0, enchaînée juste après la 1.1.0 : un serveur MCP intégré à Cellar, pour les assistants d’IA du réseau local (décision « Serveur MCP (P14) »), et la description OpenAPI de l’API, tirée des mêmes schémas zod. Lots : 1. SEC-11, API-14 (faits le 2026-10-31) ; 2. API-10, API-15 (faits le 2026-10-31) ; 3. API-11, DOC-06 (faits le 2026-10-31) ; BUG-25 ; puis REL-08. Publiée en 1.2.0 le 2026-10-31.'
 	},
 	{
 		id: 'P15',
@@ -2373,7 +2374,8 @@ export const tasks = [
 		why: 'Trouvé pendant DOC-06 : Node coupe toute requête dont le corps met plus de 300 s à arriver (`requestTimeout` par défaut, que ni adapter-node ni `server.js` ne changent) ; une restauration ou un import ZIP de 500 Mo demande donc au moins 1,8 Mo/s, en direct comme derrière Caddy ou Traefik, sinon 408.',
 		where: ['server.js', 'server.test.ts', 'docs/reverse-proxy.md', 'README-Docker.md'],
 		todo: [
-			'`server.js` donne au serveur un délai assez long pour les plus gros envois documentés sur une connexion lente du réseau local, sans le supprimer ; testé ; docs/reverse-proxy.md et README-Docker suivent (la limite devient celle du proxy). Demande du mainteneur, juste avant la release 1.2.0.'
+			'`server.js` donne au serveur un délai assez long pour les plus gros envois documentés sur une connexion lente du réseau local, sans le supprimer ; testé ; docs/reverse-proxy.md et README-Docker suivent (la limite devient celle du proxy). Demande du mainteneur, juste avant la release 1.2.0.',
+			'Fait en P14 (2026-10-31, e25a144b..29c63864) : `server.requestTimeout` à 30 minutes dans `server.js` (500 Mo à 0,3 Mo/s), réglé après `listen`, ce que Node relit à chaque contrôle ; jamais 0 ; test qui échoue avant ; sur l’app compilée, une restauration envoyée à 100 Ko/s pendant plus de 5 minutes recevait 408 avant et aboutit après ; docs/reverse-proxy.md (Traefik à 2 400 s), README et AGENTS.md suivent.'
 		],
 		done: 'Sur l’app compilée, un envoi lent qui dure plus de 5 minutes aboutit ; testé ; la doc des proxies dit la nouvelle limite.',
 		deps: ['DOC-06'], src: ['Trouvé pendant DOC-06']
@@ -2384,7 +2386,8 @@ export const tasks = [
 		why: 'La 1.2.0 apporte aux utilisateurs ce que sa phase a livré.',
 		where: ['releases.json', 'CHANGELOG.md', 'UPGRADING.md'],
 		todo: [
-			'Résumé 1.2.0 complété à chaque tâche ; banc depuis la version précédente ; release selon RELEASING.md, avec le mainteneur.'
+			'Résumé 1.2.0 complété à chaque tâche ; banc depuis la version précédente ; release selon RELEASING.md, avec le mainteneur.',
+			'Fait en P14 (2026-10-31, 89510c66) : bancs locaux de la 1.1.0 et de la 1.0.0 vers la 1.2.0, 176 sur 176 chacun ; CI 41235975809 verte ; `main` avancée, tag v1.2.0 ; la release 41236223388 a d’abord échoué sur l’écriture du cache GitHub Actions (build arm64, `not_found`), cause extérieure, puis est passée en relançant les tâches en échec, comme le dit RELEASING.md ; image publique sans connexion (`1.2.0`, `1.2`, `latest`, amd64 et arm64). develop passe à 1.3.0-rc.0.'
 		],
 		done: 'v1.2.0 est publiée sur `main` et son image se télécharge sans connexion ; develop passe à la rc suivante.',
 		deps: ['SEC-11', 'API-14', 'API-10', 'API-11', 'API-15', 'DOC-06', 'BUG-25'], src: ['Décision « Versions après la 1.0 »']

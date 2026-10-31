@@ -151,7 +151,7 @@ export const phases = [
 		id: 'P14',
 		version: '1.2.0',
 		title: 'Serveur MCP',
-		goal: 'Pour la 1.2.0, enchaînée juste après la 1.1.0 : un serveur MCP intégré à Cellar, pour les assistants d’IA du réseau local (décision « Serveur MCP (P14) »), et la description OpenAPI de l’API, tirée des mêmes schémas zod. Lots : 1. SEC-11, API-14 (faits le 2026-10-31) ; 2. API-10 ; 3. API-11 ; puis REL-08.'
+		goal: 'Pour la 1.2.0, enchaînée juste après la 1.1.0 : un serveur MCP intégré à Cellar, pour les assistants d’IA du réseau local (décision « Serveur MCP (P14) »), et la description OpenAPI de l’API, tirée des mêmes schémas zod. Lots : 1. SEC-11, API-14 (faits le 2026-10-31) ; 2. API-10, API-15 ; 3. API-11, DOC-06 ; puis REL-08.'
 	},
 	{
 		id: 'P15',
@@ -2333,6 +2333,31 @@ export const tasks = [
 		deps: ['API-10'], src: ['Décision « Serveur MCP (P14) »']
 	},
 	{
+		id: 'API-15', phase: 'P14', size: 'S', sev: 'evolution',
+		title: 'Servir la description OpenAPI depuis Cellar',
+		why: 'Trouvé pendant API-14 : la description OpenAPI n’existe que dans le dépôt GitHub ; un outil branché sur un serveur ne peut pas lire celle de la version qui y tourne.',
+		where: ['src/routes/api/', 'src/lib/server/openapi.ts', 'docs/API.md', 'docs/openapi.json'],
+		todo: [
+			'`GET /api/openapi.json` renvoie la description de la version installée, en lecture sans session comme les autres lectures ; elle se décrit elle-même dans docs/API.md et dans la description (accord du mainteneur, 2026-10-31).',
+			'Lot 2 de P14.'
+		],
+		done: 'Sur l’app compilée, `GET /api/openapi.json` renvoie le même document que `docs/openapi.json` ; les tests de couverture le voient ; testé.',
+		deps: ['API-14'], src: ['Trouvé pendant API-14', 'Décision « Doc de l’API (DOC-05, API-14) »']
+	},
+	{
+		id: 'DOC-06', phase: 'P14', size: 'S', sev: 'mineur',
+		title: 'Exemples de configuration des reverse proxies',
+		why: 'README-Docker explique quoi régler derrière un reverse proxy (`ORIGIN`, en-têtes, port), mais sans aucune configuration à copier ; le serveur MCP ajoute ses propres besoins (en-tête `Authorization`, réponses en flux sans mise en tampon, délais longs). Le serveur d’un ami du mainteneur tourne derrière SWAG (nginx).',
+		where: ['README-Docker.md', 'docs/'],
+		todo: [
+			'Exemples complets et commentés pour nginx, SWAG (fichier `proxy-confs` de linuxserver), Caddy et Traefik (labels Docker), plus une ligne pour Nginx Proxy Manager et le reverse proxy de Synology si leurs réglages diffèrent : HTTPS, `ORIGIN` ou en-têtes, taille des envois (import ZIP, restauration), délais des longues opérations, et la règle de `/mcp` (Authorization transmis, pas de mise en tampon, délai long).',
+			'Chaque exemple rejoué avec l’image officielle du proxy devant une app compilée, sur des ports à part : page, écriture (contrôle d’origine), envoi d’un gros fichier et une requête MCP ; SWAG et Synology, s’ils ne se rejouent pas sans domaine, sont dits « non rejoués » avec la raison.',
+			'Lot 3 de P14, après API-10, pour que la règle de `/mcp` soit la vraie.'
+		],
+		done: 'README-Docker (ou un fichier lié) donne une configuration à copier pour nginx, SWAG, Caddy et Traefik ; celles qui se rejouent servent l’app, ses écritures, un gros envoi et le MCP ; testé à la main, preuves gardées.',
+		deps: ['API-10'], src: ['Demande du mainteneur (2026-10-31)']
+	},
+	{
 		id: 'REL-08', phase: 'P14', size: 'S', sev: 'evolution',
 		title: 'Publication de la 1.2.0',
 		why: 'La 1.2.0 apporte aux utilisateurs ce que sa phase a livré.',
@@ -2341,7 +2366,7 @@ export const tasks = [
 			'Résumé 1.2.0 complété à chaque tâche ; banc depuis la version précédente ; release selon RELEASING.md, avec le mainteneur.'
 		],
 		done: 'v1.2.0 est publiée sur `main` et son image se télécharge sans connexion ; develop passe à la rc suivante.',
-		deps: ['SEC-11', 'API-14', 'API-10', 'API-11'], src: ['Décision « Versions après la 1.0 »']
+		deps: ['SEC-11', 'API-14', 'API-10', 'API-11', 'API-15', 'DOC-06'], src: ['Décision « Versions après la 1.0 »']
 	},
 	// ───────── P15 Navigation, photos et achats
 	{

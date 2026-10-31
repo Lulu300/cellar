@@ -43,6 +43,13 @@ if (origin) {
 
 const { server } = await import('./build/index.js');
 
+// Node answers 408 to a request that has not fully arrived after 5 minutes: a restore or a ZIP
+// import of up to 512 MB over slow Wi-Fi needs longer. 30 minutes let it arrive at 0.3 MB/s. Not 0,
+// which would let a client hold a connection forever by sending a byte now and then. Node reads it
+// at each of its periodic checks, so it applies although the server already listens. The headers
+// keep Node's 60 seconds.
+server.requestTimeout = 30 * 60 * 1000;
+
 // No other site may show Cellar in a frame: a page of another app on the same NAS would get the
 // admin with its session, and could hide it under a decoy to make the user click "Wipe All Data".
 // Cellar never frames itself. X-Frame-Options is for older browsers. Set here rather than in

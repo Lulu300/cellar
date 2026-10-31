@@ -46,8 +46,11 @@
         onBottlesChanged: () => Promise<void> | void;
     } = $props();
 
+    const uid = $props.id();
     // The summary of the check names the list of its rows.
-    const summaryId = $props.id();
+    const summaryId = `${uid}-summary`;
+    // Check is greyed without a code: the count under the field, at « No code », says why.
+    const countId = `${uid}-count`;
 
     type BulkAction = 'consume' | 'take_out' | 'return' | 'move';
 
@@ -275,7 +278,7 @@
                 />
                 <div class="flex justify-between gap-2 text-sm text-muted-foreground">
                     <span>{m['bulk.codes_hint']()}</span>
-                    <span class="whitespace-nowrap"
+                    <span id={countId} class="whitespace-nowrap"
                         >{m['bulk.codes_count']({ count: codes.length })}</span
                     >
                 </div>
@@ -466,7 +469,11 @@
                         <Camera class="h-4 w-4 mr-2" />
                         {m['bulk.scan']()}
                     </Button>
-                    <Button onclick={checkCodes} disabled={codes.length === 0}>
+                    <Button
+                        onclick={checkCodes}
+                        disabled={codes.length === 0}
+                        aria-describedby={codes.length === 0 ? countId : undefined}
+                    >
                         {m['bulk.check']()}
                     </Button>
                 {:else}

@@ -10,6 +10,9 @@ pnpm-lock.yaml
 /CHANGELOG.md
 /UPGRADING.md
 
+# Generated: src/lib/server/openapi.test.ts compares it with its generated content
+/docs/openapi.json
+
 # Roadmap: generated ROADMAP.md and tracker page, frozen audit reports, and the task
 # data the lead edits continuously (see AGENTS.md)
 /docs/roadmap/

@@ -18,6 +18,7 @@
     "check:watch:types": "svelte-check --tsconfig ./tsconfig.json --watch",
     "test": "vitest run",
     "test:e2e": "playwright test",
+    "openapi": "vitest run src/lib/server/openapi.test.ts --update",
     "i18n:check": "node scripts/check-i18n.mjs",
     "knip": "svelte-kit sync && knip",
     "lint": "prettier --check . && eslint .",

@@ -10,7 +10,7 @@ import { ApiError } from '#lib/server/http/errors.js';
 import { apiErrorResponse } from '#lib/server/http/handler.js';
 import { isValidSessionTimeout } from '#lib/shared/session-timeout.js';
 
-const SESSION_COOKIE = 'cellar_session';
+export const SESSION_COOKIE = 'cellar_session';
 export const SESSION_TIMEOUT_KEY = 'session_timeout_hours';
 const DEFAULT_SESSION_TIMEOUT_HOURS = 24;
 

@@ -1,23 +1,9 @@
 import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
+import { openApiPath as documentedPath } from '#lib/server/openapi.js';
 import { requiresSession } from '#lib/server/session.js';
+import { apiRoutes as routes } from '../../test/api-routes';
 import { fakeEvent } from '../../test/event';
-
-const METHODS = ['GET', 'POST', 'PUT', 'PATCH', 'DELETE'];
-
-const routeModules = import.meta.glob<Record<string, unknown>>('./**/+server.ts', { eager: true });
-
-/** `./bottles/[id]/+server.ts` → `/api/bottles/[id]` */
-const routeIdOf = (file: string) => file.replace(/^\./, '/api').replace(/\/\+server\.ts$/, '');
-
-/** What the route index of docs/API.md writes for a route id: `{id}` instead of `[id]`. */
-const documentedPath = (routeId: string) => routeId.replace(/\[(\w+)\]/g, '{$1}');
-
-const routes = Object.entries(routeModules).flatMap(([file, module]) =>
-    Object.keys(module)
-        .filter((name) => METHODS.includes(name))
-        .map((method) => ({ method, routeId: routeIdOf(file) }))
-);
 
 const indexRows = [
     ...readFileSync('docs/API.md', 'utf8').matchAll(

@@ -146,7 +146,7 @@ Revue du code du 2026-10-08, commit `556c7bb`. Ce fichier est la version pour le
 | 1.0.0 | P10 · Fin de l’audit | Le reste de l’audit d’avant 1.0 : thème, accessibilité, seeding, documentation, dépendances, lint et tests. Prévue pour 0.12.0. DEP-06 applique la convention de logs déjà décidée (« Petits choix ») mais attend P10 : passer `no-console` en erreur touche presque tous les composants, que P9 réécrit d’abord. Lots, mêmes règles qu’en P9 (résumé 0.12.0) : 1. DEP-06, DATA-14 (DEP-06 change les règles de lint de tout le code) ; 2. UI-16, DOC-03 ; 3. UI-17 ; 4. UI-18 (couleurs et sélecteurs de presque tous les composants). Terminée le 2026-10-29 (develop f14a795f), publiée en 0.12.0 le 2026-10-29. | DEP-06, DATA-14, UI-16, DOC-03, UI-17, UI-18 | 6 / 6 |
 | 1.0.0 | P11 · Rangement des composants | Deux petites corrections trouvées en P10, puis le rangement des composants par domaine, à la toute fin, comme le veut la décision « Architecture (revue 7) ». Lots : 1. UI-20, BUG-21 ; 2. UI-19, seule, qui déplace presque tous les composants. Prévue pour la 1.0.0, après la vérification de P12. Terminée le 2026-10-29 (develop 70d9e148), publiée en 1.0.0 le 2026-10-30. | UI-20, BUG-21, UI-19 | 3 / 3 |
 | 1.0.0 | P12 · Vérification d’avant 1.0 | Une revue complète en lecture seule après P11, comme l’audit d’avant 1.0 puis sa vérification : tout ce que l’audit demandait est fait, et le nettoyage n’a pas créé de nouveaux problèmes. Le mainteneur juge chaque constat : à corriger avant la 1.0 (tâches ajoutées ici) ou acceptable en l’état. Puis la 1.0.0, avec R2 de l’audit au tag : dépôt et image publics, protection de `main`. Revue faite le 2026-10-30 (QA-06). Lots des corrections, chacun mergé avant le suivant, résumé 1.0.0 : 1. SEC-12, API-12, BUG-22, BUG-23 ; 2. UI-21, UI-22, DEP-07 ; 3. DOC-04 (documentation d’après les deux premiers lots) ; 4. UI-23 ; puis REL-06, la publication, avec le mainteneur. Terminée le 2026-10-30 (develop 89d2c4c1), publiée en 1.0.0 le 2026-10-30. Lots 1 à 4 faits le 2026-10-30, puis la 1.0.0 publiée le même jour (tag v1.0.0 sur 8ad43dff) ; depuis le lot 2, le dépôt public repart d’un nouveau commit racine (décision « Nouveau départ à la 1.0 (REL-06) »). | QA-06, SEC-12, API-12, BUG-22, BUG-23, UI-21, UI-22, DEP-07, DOC-04, UI-23, REL-06 | 11 / 11 |
-| 1.1.0 | P13 · Finitions et installation | Pour la 1.1.0, juste après la 1.0.0 : ce que voit d’abord un nouveau visiteur (installation dans le README, liens vers la doc de l’API), l’app installable sur le téléphone (PWA), et les finitions notées pendant P12 (décision « Versions après la 1.0 »). Lots, chacun mergé avant le suivant, résumé 1.1.0 : 1. DOC-05, UI-27, SEC-13, BUG-24 ; 2. UI-24, UI-25, API-13 ; 3. UI-26, DEP-08 ; puis REL-07. | DOC-05, UI-27, SEC-13, BUG-24, UI-24, UI-25, API-13, UI-26, DEP-08, REL-07 | 4 / 10 |
+| 1.1.0 | P13 · Finitions et installation | Pour la 1.1.0, juste après la 1.0.0 : ce que voit d’abord un nouveau visiteur (installation dans le README, liens vers la doc de l’API), l’app installable sur le téléphone (PWA), et les finitions notées pendant P12 (décision « Versions après la 1.0 »). Lots, chacun mergé avant le suivant, résumé 1.1.0 (lot 1 fait le 2026-10-31) : 1. DOC-05, UI-27, SEC-13, BUG-24 ; 2. UI-24, UI-25, API-13 ; 3. UI-26, DEP-08 ; puis REL-07. | DOC-05, UI-27, SEC-13, BUG-24, UI-24, UI-25, API-13, UI-26, DEP-08, REL-07 | 4 / 10 |
 | 1.2.0 | P14 · Serveur MCP | Pour la 1.2.0, enchaînée juste après la 1.1.0 : un serveur MCP intégré à Cellar, pour les assistants d’IA du réseau local (décision « Serveur MCP (P14) »), et la description OpenAPI de l’API, tirée des mêmes schémas zod. Lots : 1. SEC-11, API-14 ; 2. API-10 ; 3. API-11 ; puis la release. | SEC-11, API-14, API-10, API-11 | 0 / 4 |
 
 ## P0 · Sécurité urgente (1.0.0)
@@ -2687,7 +2687,7 @@ Sévérité **évolution** · effort **S** · dépend de DOC-04, UI-23 · statut
 
 ## P13 · Finitions et installation (1.1.0)
 
-Pour la 1.1.0, juste après la 1.0.0 : ce que voit d’abord un nouveau visiteur (installation dans le README, liens vers la doc de l’API), l’app installable sur le téléphone (PWA), et les finitions notées pendant P12 (décision « Versions après la 1.0 »). Lots, chacun mergé avant le suivant, résumé 1.1.0 : 1. DOC-05, UI-27, SEC-13, BUG-24 ; 2. UI-24, UI-25, API-13 ; 3. UI-26, DEP-08 ; puis REL-07.
+Pour la 1.1.0, juste après la 1.0.0 : ce que voit d’abord un nouveau visiteur (installation dans le README, liens vers la doc de l’API), l’app installable sur le téléphone (PWA), et les finitions notées pendant P12 (décision « Versions après la 1.0 »). Lots, chacun mergé avant le suivant, résumé 1.1.0 (lot 1 fait le 2026-10-31) : 1. DOC-05, UI-27, SEC-13, BUG-24 ; 2. UI-24, UI-25, API-13 ; 3. UI-26, DEP-08 ; puis REL-07.
 
 ### DOC-05 · Installation dans le README et liens vers la doc de l’API
 
@@ -2697,7 +2697,7 @@ Sévérité **mineur** · effort **S** · dépend de REL-06 · statut **Fait**
 
 **Problème** : Le README ne dit comment installer Cellar que par un lien vers README-Docker, et ne cite pas la doc de l’API, que rien dans l’app ne montre non plus. Des restes d’avant 1.0 trompent le lecteur : un onglet « Admin › Barcodes » qui n’existe pas dans docs/API.md, des commentaires qui citent des versions 0.x.
 
-**Fichiers** : `README.md`, `README-Docker.md`, `docs/API.md`, `src/routes/admin/`, `src/lib/i18n/locales/`, `.github/workflows/ci.yml`, `src/lib/server/upgrade.ts`, `src/lib/server/features/csv-import/imported-rows.ts`
+**Fichiers** : `README.md`, `README-Docker.md`, `docs/API.md`, `src/routes/admin/`, `src/lib/i18n/locales/`, `.github/workflows/ci.yml`, `src/lib/server/upgrade.ts`, `src/lib/server/features/shared/imported-rows.ts`
 
 **À faire**
 
@@ -2705,6 +2705,8 @@ Sévérité **mineur** · effort **S** · dépend de REL-06 · statut **Fait**
 - Décision « Doc de l’API (DOC-05, API-14) » : un lien vers `docs/API.md` (adresse GitHub de `main`) dans le README et dans la page d’admin, traduit.
 - Trouvé pendant REL-06 : « Admin › Barcodes » dans docs/API.md nomme le vrai chemin ; les commentaires de `ci.yml`, `upgrade.ts` et `imported-rows.ts` ne citent plus de version 0.x.
 - Lot 1 de P13.
+- Fait en P13 (2026-10-31, b5bee4d6..3161fec9) : section « Installation » du README (compose sans `build`, `.env` avec `ORIGIN`, `pull` puis `up -d`), rejouée dans un dossier vide sans le code source (seuls le nom du conteneur, le port et `ORIGIN` adaptés) ; un test garde le compose du README identique à `docker-compose.yml` ; lien « API documentation » dans l’en-tête de l’admin et dans le README ; « Admin › Settings › Barcode Settings » dans docs/API.md ; commentaires de `ci.yml`, `upgrade.ts` et `imported-rows.ts` sans version 0.x (décision du coordinateur : seulement ces trois fichiers, les versions qui sont des données restent).
+- Trouvé pendant DOC-05 : des commentaires citent encore des versions 0.x dans une vingtaine d’autres fichiers de `src/` et `scripts/` (`access-code.ts`, `db/connection.ts`, `db/index.ts`, `writable-dirs.ts`, `schemas/bottle.ts`, `routes/+page.ts`, `scripts/upgrade-path.mjs`, des tests), ainsi que les en-têtes des migrations 0009 à 0015, qu’on ne modifie jamais ; la plupart expliquent des chemins de mise à jour encore suivis par les serveurs en 0.x.
 
 **Critère d’acceptation** : Le README montre comment installer Cellar en quelques lignes, rejouées sur une machine sans le code source ; la doc de l’API est liée depuis le README et l’admin ; plus de « Admin › Barcodes » ni de version 0.x dans le code et la doc.
 
@@ -2727,6 +2729,7 @@ Sévérité **évolution** · effort **S** · dépend de REL-06 · statut **Fait
 - Pas de mode hors ligne ni de cache des données : un service worker seulement si un navigateur l’exige pour proposer l’installation, sans rien mettre en cache de l’API.
 - README-Docker dit comment l’installer, et que l’installation complète sur Android demande HTTPS (reverse proxy), un raccourci sur l’écran d’accueil marchant partout.
 - Lot 1 de P13.
+- Fait en P13 (2026-10-31, 90ae1d6e..abe7196f) : manifeste « Cellar » (`standalone`, `#582634`), icônes bordeaux du pack copiées telles quelles et déclarées `any` et `maskable` (le verre tient dans la zone sûre : 37,4 % du centre pour 40 %), `apple-touch-icon`, favicon SVG et ICO ; `theme-color` suit le mode clair ou sombre choisi dans les préférences ; `CellarLogo.svelte` remplace l’icône `Wine` de l’en-tête ; pas de service worker ni de cache. Chromium : aucune erreur d’installabilité, l’app installée s’ouvre en `standalone`. README-Docker : « Install on a phone ». Captures validées par le mainteneur ; les deux noms restent (« Cellar » sous l’icône, « Cave à vin » dans l’en-tête).
 
 **Critère d’acceptation** : Chromium reconnaît l’app comme installable en HTTPS ou sur `localhost` (manifeste valide, icônes) ; installée, elle s’ouvre en plein écran ; rien de l’API n’est mis en cache.
 
@@ -2746,6 +2749,8 @@ Sévérité **mineur** · effort **S** · dépend de REL-06 · statut **Fait**
 
 - Décision « Pas de cadre (SEC-12) » : chaque réponse du serveur envoie les deux en-têtes, statiques et erreurs comprises, ou le rapport justifie celles qui ne peuvent pas ; testé.
 - Lot 1 de P13.
+- Fait en P13 (2026-10-31, 3588a50c..4885e697) : `server.js` envoie `frame-ancestors 'none'` et `X-Frame-Options: DENY` sur chaque réponse, avant tout gestionnaire, et `hooks.server.ts` ne le fait plus ; vérifié sur l’app compilée pour les pages, les fichiers statiques, `/uploads`, les 400, 401, 403, 404 et un vrai 500 ; la CI vérifie les en-têtes de l’app compilée (`check-origin.mjs`). Restent sans en-têtes les requêtes que Node refuse lui-même (méthode inconnue, en-têtes trop gros) et le 500 d’adapter-node pour un en-tête de réponse invalide, qu’aucun navigateur ne peut afficher dans un cadre.
+- Trouvé pendant SEC-13 : `pnpm dev` et `pnpm preview` ne passent pas par `server.js` et n’envoient donc plus ces en-têtes ; si l’option `kit.csp` de SvelteKit est un jour activée, sa politique doit garder `frame-ancestors 'none'`.
 
 **Critère d’acceptation** : Une page statique, une image de `/uploads`, un 403 et une erreur serveur envoient les deux en-têtes (preuve sur l’app compilée) ; testé.
 
@@ -2766,6 +2771,8 @@ Sévérité **mineur** · effort **S** · dépend de REL-06 · statut **Fait**
 - Trouvé pendant REL-06 : le message du nom réservé dit vraiment pourquoi `auto` est refusé.
 - Trouvé pendant BUG-22 : une sauvegarde absente donne un seul message cohérent ; un 401 dans un dialogue de l’admin garde le message visible jusqu’à la reconnexion.
 - Chaque correction avec un test qui échoue avant ; lot 1 de P13.
+- Fait en P13 (2026-10-31, 0b471075..19fa8f25) : un nom `auto` ou `auto-…` est refusé avec `details.kind: 'reserved'` et un message qui dit pourquoi ; une sauvegarde supprimée avant son téléchargement donne un seul message et la liste se recharge ; après un 401 pendant l’effacement, la page ne se recharge plus et le dialogue de connexion garde son avis « session expirée ». Tests qui échouent avant (7 unitaires, une étape e2e pour le 401), preuves Chromium avant et après.
+- Trouvé pendant BUG-24 : le message `errors.invalid_file_name` ne cite ni `\` ni les caractères de contrôle, qu’il refuse aussi.
 
 **Critère d’acceptation** : Chacun des trois cas montre un message juste et unique, prouvé dans Chromium ; testé.
 

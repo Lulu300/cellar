@@ -119,7 +119,7 @@ export const phases = [
 		id: 'P13',
 		version: '1.1.0',
 		title: 'Finitions et installation',
-		goal: 'Pour la 1.1.0, juste après la 1.0.0 : ce que voit d’abord un nouveau visiteur (installation dans le README, liens vers la doc de l’API), l’app installable sur le téléphone (PWA), et les finitions notées pendant P12 (décision « Versions après la 1.0 »). Lots, chacun mergé avant le suivant, résumé 1.1.0 : 1. DOC-05, UI-27, SEC-13, BUG-24 ; 2. UI-24, UI-25, API-13 ; 3. UI-26, DEP-08 ; puis REL-07.'
+		goal: 'Pour la 1.1.0, juste après la 1.0.0 : ce que voit d’abord un nouveau visiteur (installation dans le README, liens vers la doc de l’API), l’app installable sur le téléphone (PWA), et les finitions notées pendant P12 (décision « Versions après la 1.0 »). Lots, chacun mergé avant le suivant, résumé 1.1.0 (lot 1 fait le 2026-10-31) : 1. DOC-05, UI-27, SEC-13, BUG-24 ; 2. UI-24, UI-25, API-13 ; 3. UI-26, DEP-08 ; puis REL-07.'
 	},
 	{
 		id: 'P14',
@@ -2034,12 +2034,14 @@ export const tasks = [
 		id: 'DOC-05', phase: 'P13', size: 'S', sev: 'mineur',
 		title: 'Installation dans le README et liens vers la doc de l’API',
 		why: 'Le README ne dit comment installer Cellar que par un lien vers README-Docker, et ne cite pas la doc de l’API, que rien dans l’app ne montre non plus. Des restes d’avant 1.0 trompent le lecteur : un onglet « Admin › Barcodes » qui n’existe pas dans docs/API.md, des commentaires qui citent des versions 0.x.',
-		where: ['README.md', 'README-Docker.md', 'docs/API.md', 'src/routes/admin/', 'src/lib/i18n/locales/', '.github/workflows/ci.yml', 'src/lib/server/upgrade.ts', 'src/lib/server/features/csv-import/imported-rows.ts'],
+		where: ['README.md', 'README-Docker.md', 'docs/API.md', 'src/routes/admin/', 'src/lib/i18n/locales/', '.github/workflows/ci.yml', 'src/lib/server/upgrade.ts', 'src/lib/server/features/shared/imported-rows.ts'],
 		todo: [
 			'Une section « Installation » dans le README : le compose d’exemple (image `ghcr.io/lulu300/cellar:latest`, sans `build`), le `.env` avec `ORIGIN`, `docker compose pull` et `up -d`, puis les liens vers README-Docker (mise à jour, reverse proxy, sauvegardes) ; le compose d’exemple et `docker-compose.yml` ne se contredisent pas.',
 			'Décision « Doc de l’API (DOC-05, API-14) » : un lien vers `docs/API.md` (adresse GitHub de `main`) dans le README et dans la page d’admin, traduit.',
 			'Trouvé pendant REL-06 : « Admin › Barcodes » dans docs/API.md nomme le vrai chemin ; les commentaires de `ci.yml`, `upgrade.ts` et `imported-rows.ts` ne citent plus de version 0.x.',
-			'Lot 1 de P13.'
+			'Lot 1 de P13.',
+			'Fait en P13 (2026-10-31, b5bee4d6..3161fec9) : section « Installation » du README (compose sans `build`, `.env` avec `ORIGIN`, `pull` puis `up -d`), rejouée dans un dossier vide sans le code source (seuls le nom du conteneur, le port et `ORIGIN` adaptés) ; un test garde le compose du README identique à `docker-compose.yml` ; lien « API documentation » dans l’en-tête de l’admin et dans le README ; « Admin › Settings › Barcode Settings » dans docs/API.md ; commentaires de `ci.yml`, `upgrade.ts` et `imported-rows.ts` sans version 0.x (décision du coordinateur : seulement ces trois fichiers, les versions qui sont des données restent).',
+			'Trouvé pendant DOC-05 : des commentaires citent encore des versions 0.x dans une vingtaine d’autres fichiers de `src/` et `scripts/` (`access-code.ts`, `db/connection.ts`, `db/index.ts`, `writable-dirs.ts`, `schemas/bottle.ts`, `routes/+page.ts`, `scripts/upgrade-path.mjs`, des tests), ainsi que les en-têtes des migrations 0009 à 0015, qu’on ne modifie jamais ; la plupart expliquent des chemins de mise à jour encore suivis par les serveurs en 0.x.'
 		],
 		done: 'Le README montre comment installer Cellar en quelques lignes, rejouées sur une machine sans le code source ; la doc de l’API est liée depuis le README et l’admin ; plus de « Admin › Barcodes » ni de version 0.x dans le code et la doc.',
 		deps: ['REL-06'], src: ['Trouvé pendant REL-06', 'Décision « Versions après la 1.0 »']
@@ -2054,7 +2056,8 @@ export const tasks = [
 			'Le verre remplace le favicon (logo de Svelte) et l’icône `Wine` de l’en-tête, en `currentColor`.',
 			'Pas de mode hors ligne ni de cache des données : un service worker seulement si un navigateur l’exige pour proposer l’installation, sans rien mettre en cache de l’API.',
 			'README-Docker dit comment l’installer, et que l’installation complète sur Android demande HTTPS (reverse proxy), un raccourci sur l’écran d’accueil marchant partout.',
-			'Lot 1 de P13.'
+			'Lot 1 de P13.',
+			'Fait en P13 (2026-10-31, 90ae1d6e..abe7196f) : manifeste « Cellar » (`standalone`, `#582634`), icônes bordeaux du pack copiées telles quelles et déclarées `any` et `maskable` (le verre tient dans la zone sûre : 37,4 % du centre pour 40 %), `apple-touch-icon`, favicon SVG et ICO ; `theme-color` suit le mode clair ou sombre choisi dans les préférences ; `CellarLogo.svelte` remplace l’icône `Wine` de l’en-tête ; pas de service worker ni de cache. Chromium : aucune erreur d’installabilité, l’app installée s’ouvre en `standalone`. README-Docker : « Install on a phone ». Captures validées par le mainteneur ; les deux noms restent (« Cellar » sous l’icône, « Cave à vin » dans l’en-tête).'
 		],
 		done: 'Chromium reconnaît l’app comme installable en HTTPS ou sur `localhost` (manifeste valide, icônes) ; installée, elle s’ouvre en plein écran ; rien de l’API n’est mis en cache.',
 		deps: ['REL-06'], src: ['Décision « Versions après la 1.0 »']
@@ -2066,7 +2069,9 @@ export const tasks = [
 		where: ['server.js', 'src/hooks.server.ts', 'src/hooks.server.test.ts'],
 		todo: [
 			'Décision « Pas de cadre (SEC-12) » : chaque réponse du serveur envoie les deux en-têtes, statiques et erreurs comprises, ou le rapport justifie celles qui ne peuvent pas ; testé.',
-			'Lot 1 de P13.'
+			'Lot 1 de P13.',
+			'Fait en P13 (2026-10-31, 3588a50c..4885e697) : `server.js` envoie `frame-ancestors \'none\'` et `X-Frame-Options: DENY` sur chaque réponse, avant tout gestionnaire, et `hooks.server.ts` ne le fait plus ; vérifié sur l’app compilée pour les pages, les fichiers statiques, `/uploads`, les 400, 401, 403, 404 et un vrai 500 ; la CI vérifie les en-têtes de l’app compilée (`check-origin.mjs`). Restent sans en-têtes les requêtes que Node refuse lui-même (méthode inconnue, en-têtes trop gros) et le 500 d’adapter-node pour un en-tête de réponse invalide, qu’aucun navigateur ne peut afficher dans un cadre.',
+			'Trouvé pendant SEC-13 : `pnpm dev` et `pnpm preview` ne passent pas par `server.js` et n’envoient donc plus ces en-têtes ; si l’option `kit.csp` de SvelteKit est un jour activée, sa politique doit garder `frame-ancestors \'none\'`.'
 		],
 		done: 'Une page statique, une image de `/uploads`, un 403 et une erreur serveur envoient les deux en-têtes (preuve sur l’app compilée) ; testé.',
 		deps: ['REL-06'], src: ['Trouvé pendant SEC-12', 'Décision « Pas de cadre (SEC-12) »']
@@ -2079,7 +2084,9 @@ export const tasks = [
 		todo: [
 			'Trouvé pendant REL-06 : le message du nom réservé dit vraiment pourquoi `auto` est refusé.',
 			'Trouvé pendant BUG-22 : une sauvegarde absente donne un seul message cohérent ; un 401 dans un dialogue de l’admin garde le message visible jusqu’à la reconnexion.',
-			'Chaque correction avec un test qui échoue avant ; lot 1 de P13.'
+			'Chaque correction avec un test qui échoue avant ; lot 1 de P13.',
+			'Fait en P13 (2026-10-31, 0b471075..19fa8f25) : un nom `auto` ou `auto-…` est refusé avec `details.kind: \'reserved\'` et un message qui dit pourquoi ; une sauvegarde supprimée avant son téléchargement donne un seul message et la liste se recharge ; après un 401 pendant l’effacement, la page ne se recharge plus et le dialogue de connexion garde son avis « session expirée ». Tests qui échouent avant (7 unitaires, une étape e2e pour le 401), preuves Chromium avant et après.',
+			'Trouvé pendant BUG-24 : le message `errors.invalid_file_name` ne cite ni `\\` ni les caractères de contrôle, qu’il refuse aussi.'
 		],
 		done: 'Chacun des trois cas montre un message juste et unique, prouvé dans Chromium ; testé.',
 		deps: ['REL-06'], src: ['Trouvé pendant BUG-22', 'Trouvé pendant REL-06']

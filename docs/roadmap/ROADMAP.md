@@ -161,7 +161,7 @@ Revue du code du 2026-10-08, commit `556c7bb`. Ce fichier est la version pour le
 | 1.0.0 | P11 · Rangement des composants | Deux petites corrections trouvées en P10, puis le rangement des composants par domaine, à la toute fin, comme le veut la décision « Architecture (revue 7) ». Lots : 1. UI-20, BUG-21 ; 2. UI-19, seule, qui déplace presque tous les composants. Prévue pour la 1.0.0, après la vérification de P12. Terminée le 2026-10-29 (develop 70d9e148), publiée en 1.0.0 le 2026-10-30. | UI-20, BUG-21, UI-19 | 3 / 3 |
 | 1.0.0 | P12 · Vérification d’avant 1.0 | Une revue complète en lecture seule après P11, comme l’audit d’avant 1.0 puis sa vérification : tout ce que l’audit demandait est fait, et le nettoyage n’a pas créé de nouveaux problèmes. Le mainteneur juge chaque constat : à corriger avant la 1.0 (tâches ajoutées ici) ou acceptable en l’état. Puis la 1.0.0, avec R2 de l’audit au tag : dépôt et image publics, protection de `main`. Revue faite le 2026-10-30 (QA-06). Lots des corrections, chacun mergé avant le suivant, résumé 1.0.0 : 1. SEC-12, API-12, BUG-22, BUG-23 ; 2. UI-21, UI-22, DEP-07 ; 3. DOC-04 (documentation d’après les deux premiers lots) ; 4. UI-23 ; puis REL-06, la publication, avec le mainteneur. Terminée le 2026-10-30 (develop 89d2c4c1), publiée en 1.0.0 le 2026-10-30. Lots 1 à 4 faits le 2026-10-30, puis la 1.0.0 publiée le même jour (tag v1.0.0 sur 8ad43dff) ; depuis le lot 2, le dépôt public repart d’un nouveau commit racine (décision « Nouveau départ à la 1.0 (REL-06) »). | QA-06, SEC-12, API-12, BUG-22, BUG-23, UI-21, UI-22, DEP-07, DOC-04, UI-23, REL-06 | 11 / 11 |
 | 1.1.0 | P13 · Finitions et installation | Pour la 1.1.0, juste après la 1.0.0 : ce que voit d’abord un nouveau visiteur (installation dans le README, liens vers la doc de l’API), l’app installable sur le téléphone (PWA), et les finitions notées pendant P12 (décision « Versions après la 1.0 »). Lots, chacun mergé avant le suivant, résumé 1.1.0 (lots 1 à 3 faits le 2026-10-31, publiée en 1.1.0 le même jour) : 1. DOC-05, UI-27, SEC-13, BUG-24 ; 2. UI-24, UI-25, API-13 ; 3. UI-26, UI-29, DEP-08 ; UI-30 ; puis REL-07. | DOC-05, UI-27, SEC-13, BUG-24, UI-24, UI-25, API-13, UI-26, UI-29, UI-30, DEP-08, REL-07 | 12 / 12 |
-| 1.2.0 | P14 · Serveur MCP | Pour la 1.2.0, enchaînée juste après la 1.1.0 : un serveur MCP intégré à Cellar, pour les assistants d’IA du réseau local (décision « Serveur MCP (P14) »), et la description OpenAPI de l’API, tirée des mêmes schémas zod. Lots : 1. SEC-11, API-14 ; 2. API-10 ; 3. API-11 ; puis REL-08. | SEC-11, API-14, API-10, API-11, REL-08 | 2 / 5 |
+| 1.2.0 | P14 · Serveur MCP | Pour la 1.2.0, enchaînée juste après la 1.1.0 : un serveur MCP intégré à Cellar, pour les assistants d’IA du réseau local (décision « Serveur MCP (P14) »), et la description OpenAPI de l’API, tirée des mêmes schémas zod. Lots : 1. SEC-11, API-14 (faits le 2026-10-31) ; 2. API-10 ; 3. API-11 ; puis REL-08. | SEC-11, API-14, API-10, API-11, REL-08 | 2 / 5 |
 | 1.3.0 | P15 · Navigation, photos et achats | Pour la 1.3.0 (décision « Versions de 1.3.0 à 1.7.0 ») : le menu par sections d’abord, parce que les pages qui suivent s’y rangent, puis les photos d’étiquette et la page Achats, dont les envies réutilisent l’envoi de photo. Ordre : UI-28 ; FEAT-01 ; FEAT-02 ; puis REL-09. Les lots se fixent au début de la phase. Si la phase traîne, la page Achats peut partir d’abord avec des envies en texte seul. | UI-28, FEAT-01, FEAT-02, REL-09 | 0 / 4 |
 | 1.4.0 | P16 · Couleurs et plan de la cave | Pour la 1.4.0 : les couleurs des vins, puis le plan de la cave, qui s’appuie dessus. Ordre : FEAT-03 ; FEAT-04 ; puis REL-10. | FEAT-03, FEAT-04, REL-10 | 0 / 3 |
 | 1.5.0 | P17 · À boire et dégustation | Pour la 1.5.0 : la vie d’une bouteille jusqu’à ce qu’on la boive. Les deux tâches ajoutent leur repère et leur fiche à la liste d’une case du plan (FEAT-04). Ordre : FEAT-05 et FEAT-06 ; puis REL-11. | FEAT-05, FEAT-06, REL-11 | 0 / 3 |
@@ -2969,7 +2969,7 @@ Sévérité **évolution** · effort **S** · dépend de DOC-05, UI-27, SEC-13, 
 
 ## P14 · Serveur MCP (1.2.0)
 
-Pour la 1.2.0, enchaînée juste après la 1.1.0 : un serveur MCP intégré à Cellar, pour les assistants d’IA du réseau local (décision « Serveur MCP (P14) »), et la description OpenAPI de l’API, tirée des mêmes schémas zod. Lots : 1. SEC-11, API-14 ; 2. API-10 ; 3. API-11 ; puis REL-08.
+Pour la 1.2.0, enchaînée juste après la 1.1.0 : un serveur MCP intégré à Cellar, pour les assistants d’IA du réseau local (décision « Serveur MCP (P14) »), et la description OpenAPI de l’API, tirée des mêmes schémas zod. Lots : 1. SEC-11, API-14 (faits le 2026-10-31) ; 2. API-10 ; 3. API-11 ; puis REL-08.
 
 ### SEC-11 · Jeton d’accès du MCP
 
@@ -2985,6 +2985,7 @@ Sévérité **évolution** · effort **M** · dépend de REL-07 · statut **Fait
 
 - Décision « Serveur MCP (P14) » : un jeton généré dans l’admin, stocké haché, affiché une fois, régénérable, sur le modèle du jeton du mode cron (décision « Sauvegardes par cron (DATA-05) ») ; lecture seule par défaut, écriture en option ; le jeton n’ouvre que `/mcp`.
 - Migration par `pnpm db:generate` ; une restauration garde le jeton de l’instance, comme le jeton cron (décision « Restauration (audit d’avant 1.0) ») ; tests des refus (jeton absent, faux, révoqué, écriture sans l’option).
+- Fait en P14 (2026-10-31, 65cfcca0..092fde71) : jeton MCP sur le modèle du jeton cron, par des aides partagées (`server/bearer-token.ts`) ; haché dans `app_settings` avec l’option d’écriture, sans migration ; `hooks.server.ts` passe chaque requête de `/mcp` par `authenticateMcp` (401 avec `WWW-Authenticate: Bearer` sans jeton valable, `locals.mcpAccess = { write }` sinon), le jeton refusé sur `/api` et le cookie refusé sur `/mcp` ; `assertMcpWrite` pour les outils d’écriture ; une restauration garde jeton et option ; carte « Accès MCP » dans Admin › Réglages, avec « Copier » (qui sélectionne le jeton en HTTP), validée par le mainteneur avec deux retouches. L’option d’écriture est un réglage à part, gardé quand on régénère ou révoque (accord du mainteneur).
 
 **Critère d’acceptation** : Un jeton créé dans l’admin ouvre `/mcp` et rien d’autre ; régénéré, l’ancien est refusé ; sans l’option d’écriture, une écriture est refusée ; testé.
 
@@ -3006,6 +3007,8 @@ Sévérité **évolution** · effort **M** · dépend de REL-07 · statut **Fait
 - Une interface de lecture (Swagger UI ou autre) seulement avec l’accord du mainteneur pour sa dépendance.
 - Lot 1 de P14.
 - Trouvé pendant API-13 : le contrôle `maxLength` en unités UTF-16 est un contrôle maison que `z.toJSONSchema` ne traduit pas ; la description OpenAPI doit remettre les longueurs maximales.
+- Fait en P14 (2026-10-31, 95cf4b69..ce160a2b) : `docs/openapi.json` (OpenAPI 3.1, 106 opérations), généré par `pnpm openapi` depuis `server/openapi.ts` et les schémas zod (`z.toJSONSchema`), sans dépendance ; un test échoue si le fichier n’est plus à jour, si une route manque ou si les règles de session et du jeton cron divergent ; les longueurs maximales en unités UTF-16 sont rendues à `z.toJSONSchema` ; le jeton MCP est décrit dans une note, puisqu’il n’ouvre aucune route de `/api` ; schémas de requête des routes réunis dans `server/http/request-schemas.ts`. Validé une fois par Redocly CLI 2.71.0 (0 erreur, 121 avertissements de style). Les réponses ne sont pas décrites, faute de schémas : docs/API.md reste la référence.
+- Trouvé pendant API-14 : le préfixe des codes-barres est décrit jusqu’à 100 caractères alors que le service n’en accepte que 6 (`request-schemas.ts`, `features/barcode/service.ts`, `shared/barcode.ts`) ; avec un cache Vitest chaud, une nouvelle route passe les tests de couverture en local jusqu’au vidage du cache (la CI n’est pas touchée) ; les tables de l’export CSV ne sont pas listées, le schéma les vérifiant par un `refine` ; servir la description depuis l’app (`GET /api/openapi.json`) reste à décider par le mainteneur.
 
 **Critère d’acceptation** : La description OpenAPI couvre chaque route de l’API et se valide avec un outil standard ; elle est à jour à chaque build ; testé.
 
@@ -3017,13 +3020,14 @@ Sévérité **évolution** · effort **L** · dépend de SEC-11 · statut **À f
 
 **Problème** : Avec une API propre, Cellar peut répondre aux assistants d’IA du réseau local : « quel vin ce soir avec un poulet rôti ? », « combien me reste-t-il de Bourgogne ? ».
 
-**Fichiers** : `package.json`, `src/routes/mcp/`, `src/lib/server/mcp/`, `src/lib/shared/schemas/`, `docs/API.md`, `README-Docker.md`
+**Fichiers** : `package.json`, `src/routes/mcp/`, `src/lib/server/features/mcp/`, `src/lib/shared/schemas/`, `docs/API.md`, `README-Docker.md`
 
 **À faire**
 
 - Décision « Serveur MCP (P14) » : `@modelcontextprotocol/sdk` (version publiée depuis au moins 7 jours, en `dependencies`), transport HTTP « streamable » à `/mcp`, monté dans une route SvelteKit ; vérifier ce que le SDK ajoute à l’image et qu’il s’intègre au contrôle d’origine de `hooks.server.ts`.
 - Outils de lecture, qui appellent les services (jamais les repositories) et décrivent leurs paramètres à partir des schémas zod partagés : chercher des vins, voir un vin avec ses bouteilles et leurs emplacements, retrouver une bouteille par son code-barres, statistiques, pénurie, place libre dans les rangements.
 - Documenter la configuration d’un client (Claude Code, une application de bureau, un modèle local) et la limite : réseau local ou VPN seulement.
+- Pour brancher le MCP (rapport de SEC-11) : la route est `src/routes/mcp/+server.ts`, exactement à `/mcp`, jamais dans un groupe de routes ; elle lit `locals.mcpAccess` par une aide qui refuse `undefined` ; chaque POST passe par `runWrite`, si bien qu’une lecture reçoit aussi 503 pendant une restauration, un import ou un effacement, et qu’une réponse en flux sort du verrou avant la fin : à trancher ici ; vérifier que le SDK ne journalise jamais les en-têtes ; une route ajoutée sous `/api` entre dans `server/openapi.ts`, puis `pnpm openapi`.
 
 **Critère d’acceptation** : Un client MCP réel, configuré avec l’adresse et le jeton, liste les outils et obtient des réponses justes sur des données inventées ; sans jeton, `/mcp` répond 401 ; les portes et les parcours passent.
 
@@ -3035,7 +3039,7 @@ Sévérité **évolution** · effort **M** · dépend de API-10 · statut **À f
 
 **Problème** : Pour noter une bouteille bue ou ajouter un achat sans ouvrir l’interface, l’assistant doit pouvoir écrire, seulement quand le jeton le permet.
 
-**Fichiers** : `src/lib/server/mcp/`, `docs/API.md`
+**Fichiers** : `src/lib/server/features/mcp/`, `docs/API.md`
 
 **À faire**
 
@@ -3222,7 +3226,7 @@ Sévérité **évolution** · effort **M** · dépend de REL-10 · statut **À f
 
 **Problème** : Marquer une bouteille bue ne garde que sa date : rien sur l’occasion, le plat ou ce qu’on en a pensé, alors que c’est ce qu’on veut relire avant d’en racheter, et ce qu’un assistant pourrait utiliser par le MCP.
 
-**Fichiers** : `src/lib/server/db/schema.ts`, `drizzle/`, `src/lib/server/features/bottles/`, `src/lib/components/bottles/`, `src/routes/wines/[id]/`, `src/routes/cellar-history/`, `src/lib/server/mcp/`, `docs/API.md`
+**Fichiers** : `src/lib/server/db/schema.ts`, `drizzle/`, `src/lib/server/features/bottles/`, `src/lib/components/bottles/`, `src/routes/wines/[id]/`, `src/routes/cellar-history/`, `src/lib/server/features/mcp/`, `docs/API.md`
 
 **À faire**
 

@@ -151,7 +151,7 @@ export const phases = [
 		id: 'P14',
 		version: '1.2.0',
 		title: 'Serveur MCP',
-		goal: 'Pour la 1.2.0, enchaînée juste après la 1.1.0 : un serveur MCP intégré à Cellar, pour les assistants d’IA du réseau local (décision « Serveur MCP (P14) »), et la description OpenAPI de l’API, tirée des mêmes schémas zod. Lots : 1. SEC-11, API-14 ; 2. API-10 ; 3. API-11 ; puis REL-08.'
+		goal: 'Pour la 1.2.0, enchaînée juste après la 1.1.0 : un serveur MCP intégré à Cellar, pour les assistants d’IA du réseau local (décision « Serveur MCP (P14) »), et la description OpenAPI de l’API, tirée des mêmes schémas zod. Lots : 1. SEC-11, API-14 (faits le 2026-10-31) ; 2. API-10 ; 3. API-11 ; puis REL-08.'
 	},
 	{
 		id: 'P15',
@@ -2284,7 +2284,8 @@ export const tasks = [
 		where: ['src/lib/server/db/schema.ts', 'drizzle/', 'src/lib/server/features/', 'src/routes/api/admin/', 'src/routes/admin/', 'docs/API.md'],
 		todo: [
 			'Décision « Serveur MCP (P14) » : un jeton généré dans l’admin, stocké haché, affiché une fois, régénérable, sur le modèle du jeton du mode cron (décision « Sauvegardes par cron (DATA-05) ») ; lecture seule par défaut, écriture en option ; le jeton n’ouvre que `/mcp`.',
-			'Migration par `pnpm db:generate` ; une restauration garde le jeton de l’instance, comme le jeton cron (décision « Restauration (audit d’avant 1.0) ») ; tests des refus (jeton absent, faux, révoqué, écriture sans l’option).'
+			'Migration par `pnpm db:generate` ; une restauration garde le jeton de l’instance, comme le jeton cron (décision « Restauration (audit d’avant 1.0) ») ; tests des refus (jeton absent, faux, révoqué, écriture sans l’option).',
+			'Fait en P14 (2026-10-31, 65cfcca0..092fde71) : jeton MCP sur le modèle du jeton cron, par des aides partagées (`server/bearer-token.ts`) ; haché dans `app_settings` avec l’option d’écriture, sans migration ; `hooks.server.ts` passe chaque requête de `/mcp` par `authenticateMcp` (401 avec `WWW-Authenticate: Bearer` sans jeton valable, `locals.mcpAccess = { write }` sinon), le jeton refusé sur `/api` et le cookie refusé sur `/mcp` ; `assertMcpWrite` pour les outils d’écriture ; une restauration garde jeton et option ; carte « Accès MCP » dans Admin › Réglages, avec « Copier » (qui sélectionne le jeton en HTTP), validée par le mainteneur avec deux retouches. L’option d’écriture est un réglage à part, gardé quand on régénère ou révoque (accord du mainteneur).'
 		],
 		done: 'Un jeton créé dans l’admin ouvre `/mcp` et rien d’autre ; régénéré, l’ancien est refusé ; sans l’option d’écriture, une écriture est refusée ; testé.',
 		deps: ['REL-07'], src: ['Décision « Serveur MCP (P14) »']
@@ -2298,7 +2299,9 @@ export const tasks = [
 			'Décision « Doc de l’API (DOC-05, API-14) » : une description OpenAPI 3.1 générée depuis les schémas zod de l’API (`z.toJSONSchema`, sans dépendance), publiée avec la doc ; un test vérifie qu’elle couvre chaque route, comme `api-doc.test.ts` pour docs/API.md.',
 			'Une interface de lecture (Swagger UI ou autre) seulement avec l’accord du mainteneur pour sa dépendance.',
 			'Lot 1 de P14.',
-			'Trouvé pendant API-13 : le contrôle `maxLength` en unités UTF-16 est un contrôle maison que `z.toJSONSchema` ne traduit pas ; la description OpenAPI doit remettre les longueurs maximales.'
+			'Trouvé pendant API-13 : le contrôle `maxLength` en unités UTF-16 est un contrôle maison que `z.toJSONSchema` ne traduit pas ; la description OpenAPI doit remettre les longueurs maximales.',
+			'Fait en P14 (2026-10-31, 95cf4b69..ce160a2b) : `docs/openapi.json` (OpenAPI 3.1, 106 opérations), généré par `pnpm openapi` depuis `server/openapi.ts` et les schémas zod (`z.toJSONSchema`), sans dépendance ; un test échoue si le fichier n’est plus à jour, si une route manque ou si les règles de session et du jeton cron divergent ; les longueurs maximales en unités UTF-16 sont rendues à `z.toJSONSchema` ; le jeton MCP est décrit dans une note, puisqu’il n’ouvre aucune route de `/api` ; schémas de requête des routes réunis dans `server/http/request-schemas.ts`. Validé une fois par Redocly CLI 2.71.0 (0 erreur, 121 avertissements de style). Les réponses ne sont pas décrites, faute de schémas : docs/API.md reste la référence.',
+			'Trouvé pendant API-14 : le préfixe des codes-barres est décrit jusqu’à 100 caractères alors que le service n’en accepte que 6 (`request-schemas.ts`, `features/barcode/service.ts`, `shared/barcode.ts`) ; avec un cache Vitest chaud, une nouvelle route passe les tests de couverture en local jusqu’au vidage du cache (la CI n’est pas touchée) ; les tables de l’export CSV ne sont pas listées, le schéma les vérifiant par un `refine` ; servir la description depuis l’app (`GET /api/openapi.json`) reste à décider par le mainteneur.'
 		],
 		done: 'La description OpenAPI couvre chaque route de l’API et se valide avec un outil standard ; elle est à jour à chaque build ; testé.',
 		deps: ['REL-07'], src: ['Décision « Doc de l’API (DOC-05, API-14) »']
@@ -2307,11 +2310,12 @@ export const tasks = [
 		id: 'API-10', phase: 'P14', size: 'L', sev: 'evolution',
 		title: 'Serveur MCP : outils de lecture',
 		why: 'Avec une API propre, Cellar peut répondre aux assistants d’IA du réseau local : « quel vin ce soir avec un poulet rôti ? », « combien me reste-t-il de Bourgogne ? ».',
-		where: ['package.json', 'src/routes/mcp/', 'src/lib/server/mcp/', 'src/lib/shared/schemas/', 'docs/API.md', 'README-Docker.md'],
+		where: ['package.json', 'src/routes/mcp/', 'src/lib/server/features/mcp/', 'src/lib/shared/schemas/', 'docs/API.md', 'README-Docker.md'],
 		todo: [
 			'Décision « Serveur MCP (P14) » : `@modelcontextprotocol/sdk` (version publiée depuis au moins 7 jours, en `dependencies`), transport HTTP « streamable » à `/mcp`, monté dans une route SvelteKit ; vérifier ce que le SDK ajoute à l’image et qu’il s’intègre au contrôle d’origine de `hooks.server.ts`.',
 			'Outils de lecture, qui appellent les services (jamais les repositories) et décrivent leurs paramètres à partir des schémas zod partagés : chercher des vins, voir un vin avec ses bouteilles et leurs emplacements, retrouver une bouteille par son code-barres, statistiques, pénurie, place libre dans les rangements.',
-			'Documenter la configuration d’un client (Claude Code, une application de bureau, un modèle local) et la limite : réseau local ou VPN seulement.'
+			'Documenter la configuration d’un client (Claude Code, une application de bureau, un modèle local) et la limite : réseau local ou VPN seulement.',
+			'Pour brancher le MCP (rapport de SEC-11) : la route est `src/routes/mcp/+server.ts`, exactement à `/mcp`, jamais dans un groupe de routes ; elle lit `locals.mcpAccess` par une aide qui refuse `undefined` ; chaque POST passe par `runWrite`, si bien qu’une lecture reçoit aussi 503 pendant une restauration, un import ou un effacement, et qu’une réponse en flux sort du verrou avant la fin : à trancher ici ; vérifier que le SDK ne journalise jamais les en-têtes ; une route ajoutée sous `/api` entre dans `server/openapi.ts`, puis `pnpm openapi`.'
 		],
 		done: 'Un client MCP réel, configuré avec l’adresse et le jeton, liste les outils et obtient des réponses justes sur des données inventées ; sans jeton, `/mcp` répond 401 ; les portes et les parcours passent.',
 		deps: ['SEC-11'], src: ['Décision « Serveur MCP (P14) »']
@@ -2320,7 +2324,7 @@ export const tasks = [
 		id: 'API-11', phase: 'P14', size: 'M', sev: 'evolution',
 		title: 'Serveur MCP : outils d’écriture',
 		why: 'Pour noter une bouteille bue ou ajouter un achat sans ouvrir l’interface, l’assistant doit pouvoir écrire, seulement quand le jeton le permet.',
-		where: ['src/lib/server/mcp/', 'docs/API.md'],
+		where: ['src/lib/server/features/mcp/', 'docs/API.md'],
 		todo: [
 			'Décision « Serveur MCP (P14) » : ajouter des bouteilles (ou un vin et ses bouteilles), marquer des bouteilles bues (date, note, commentaire), déplacer des bouteilles, modifier les notes ; mêmes règles et mêmes validations que l’API, par les services.',
 			'Outils marqués comme écritures pour le client (annotations du protocole), refusés quand le jeton est en lecture seule ; aucun outil d’admin.'
@@ -2448,7 +2452,7 @@ export const tasks = [
 		id: 'FEAT-06', phase: 'P17', size: 'M', sev: 'evolution',
 		title: 'Fiche de dégustation',
 		why: 'Marquer une bouteille bue ne garde que sa date : rien sur l’occasion, le plat ou ce qu’on en a pensé, alors que c’est ce qu’on veut relire avant d’en racheter, et ce qu’un assistant pourrait utiliser par le MCP.',
-		where: ['src/lib/server/db/schema.ts', 'drizzle/', 'src/lib/server/features/bottles/', 'src/lib/components/bottles/', 'src/routes/wines/[id]/', 'src/routes/cellar-history/', 'src/lib/server/mcp/', 'docs/API.md'],
+		where: ['src/lib/server/db/schema.ts', 'drizzle/', 'src/lib/server/features/bottles/', 'src/lib/components/bottles/', 'src/routes/wines/[id]/', 'src/routes/cellar-history/', 'src/lib/server/features/mcp/', 'docs/API.md'],
 		todo: [
 			'Décision « Fiche de dégustation (FEAT-06) » : table des dégustations (migration), une par bouteille ; fiche dans le dialogue « bue », « Plus tard » et signal dans l’historique ; liste et moyenne sur la page du vin ; API, sauvegardes, exports et imports suivent.',
 			'La fiche dans la liste d’une case (FEAT-04) ; les dégustations lisibles par les outils de lecture du MCP (API-10).',

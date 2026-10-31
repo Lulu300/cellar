@@ -17,7 +17,7 @@ import {
 } from '#lib/shared/schemas/common.js';
 import { appellationSchema, regionSchema } from '#lib/shared/schemas/geography.js';
 import { namedSchema, wineColorSchema, wineTypeSchema } from '#lib/shared/schemas/reference.js';
-import { caseCapacitySchema, casePosition } from '#lib/shared/schemas/storage.js';
+import { caseCapacitySchema, caseName, casePosition } from '#lib/shared/schemas/storage.js';
 import { GRAPE_MAX_LENGTH, wineDefinitionSchema } from '#lib/shared/schemas/wine.js';
 
 /**
@@ -38,7 +38,7 @@ const ROW_SCHEMAS = {
     // Exports made before cases had a position lack it: the cases keep the order those versions
     // showed.
     storageCases: z.object({
-        name,
+        name: caseName,
         capacity: caseCapacitySchema,
         position: casePosition.optional(),
         containerId: id

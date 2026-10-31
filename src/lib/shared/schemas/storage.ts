@@ -1,5 +1,7 @@
 import { z } from 'zod';
-import { maxLength, name } from './common.js';
+import { maxLength, name, NAME_MAX_LENGTH } from './common.js';
+
+const CASE_SUFFIX_MAX_LENGTH = 50;
 
 /**
  * The suffix of each case, appended to the container's name: "A" and "1" make case "A1". Only its
@@ -11,9 +13,19 @@ const caseSuffixes = z
         z
             .string()
             .overwrite((suffix) => suffix.trimEnd())
-            .check(maxLength(50))
+            .check(maxLength(CASE_SUFFIX_MAX_LENGTH))
     )
     .max(500);
+
+/**
+ * The name of a case, as the imports read it: its container's name followed by its suffix, so
+ * longer than a name can be.
+ */
+export const caseName = z
+    .string()
+    .trim()
+    .min(1)
+    .check(maxLength(NAME_MAX_LENGTH + CASE_SUFFIX_MAX_LENGTH));
 
 /** The number of bottles a case holds. */
 export const caseCapacitySchema = z.int().min(1).max(1000);

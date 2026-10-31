@@ -311,6 +311,27 @@ describe('CSV export then import', () => {
         ).toEqual([names['red-gc'], names.red].sort());
     });
 
+    // A case name is its container's name, of 500 characters at most, followed by its suffix:
+    // 1.0.0 counted an emoji in them as one character (API-13).
+    it('puts back a case named after a container of 500 UTF-16 units with emoji', async () => {
+        const container = '🍷'.repeat(250);
+        db.update(storageContainers)
+            .set({ name: container })
+            .where(eq(storageContainers.id, 'rack'))
+            .run();
+        db.update(storageCases)
+            .set({ name: `${container}1` })
+            .where(eq(storageCases.id, 'rack1'))
+            .run();
+        const files = await exportAll();
+        emptyCellar();
+
+        const { summary } = await importAll(files);
+
+        expect(summary).toMatchObject({ totalFailed: 0 });
+        expect(db.select().from(storageCases).all()).toMatchObject([{ name: `${container}1` }]);
+    });
+
     it('adds nothing from its next export once barcodes were given to the bottles without one', async () => {
         const files = await exportAll();
         emptyCellar();

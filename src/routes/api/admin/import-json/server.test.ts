@@ -496,13 +496,32 @@ describe('POST /api/admin/import-json', () => {
         });
     });
 
-    // A case is named after its container and its suffix, which a cut would drop: a case of a
-    // container of 500 characters is refused, as before API-13.
-    it('refuses a case name too long rather than cut its suffix, and changes nothing', async () => {
+    // A case is named after its container followed by its suffix, of 500 and 50 characters at
+    // most. The imports checked it against 500: 1.0.0 refused the case of a container of 500
+    // letters, and so would the UTF-16 units of API-13 that of a container of 250 emoji.
+    it.each([
+        ['500 letters', 'y'.repeat(500)],
+        ['250 emoji', '🍷'.repeat(250)]
+    ])('imports whole the case of a container of %s', async (_, container) => {
+        const data = JSON.parse(JSON.stringify(await snapshot()));
+        data.storageContainers[0].name = container;
+        data.storageCases[0].name = `${container}1`;
+
+        const response = await importZip(craftedZip(data));
+
+        expect(response.status).toBe(200);
+        expect((await db.select().from(storageCases)).map(({ name }) => name)).toEqual([
+            `${container}1`
+        ]);
+    });
+
+    // 1.0.0 took a container of 276 emoji, cut to 250 here; a cut of its cases would drop their
+    // suffix, or make two cases alike. Restoring the backup zip brings them back.
+    it('refuses the case of a container of more than 275 emoji, and changes nothing', async () => {
         const before = await snapshot();
         const data = JSON.parse(JSON.stringify(before));
-        data.storageContainers[0].name = 'y'.repeat(500);
-        data.storageCases[0].name = `${'y'.repeat(500)}1`;
+        data.storageContainers[0].name = '🍷'.repeat(276);
+        data.storageCases[0].name = `${'🍷'.repeat(276)}1`;
 
         const response = await importZip(craftedZip(data));
 

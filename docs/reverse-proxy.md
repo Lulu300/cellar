@@ -24,10 +24,11 @@ your network resolves.
   one request, and a wine image up to 20 MB. Cellar refuses anything larger than 512 MB itself;
   nginx refuses anything larger than 1 MB unless you raise its limit.
 - **Time.** An upload of a few hundred megabytes over Wi-Fi or a VPN takes minutes, and Cellar
-  gives an upload 5 minutes at most to arrive, so 500 MB need 1.8 MB/s or more. nginx and SWAG
+  gives an upload 30 minutes at most to arrive, so 500 MB need 0.3 MB/s or more. nginx and SWAG
   receive the whole upload first, in a temporary file that needs as much free disk space, then pass
   it on at once: a slower upload gets through them. Caddy and Traefik pass it on as it comes, so a
-  slower one fails with `408`. Cellar answers a restore or an import only once it is done: the
+  slower one fails with `408`; Caddy sets no limit of its own, and the Traefik example below gives
+  more than these 30 minutes. Cellar answers a restore or an import only once it is done: the
   examples wait for that answer 10 minutes with nginx, 240 seconds with SWAG, and without a limit
   with Caddy and Traefik.
 - **The MCP server, at `/mcp`.** An AI assistant sends its token in the `Authorization` header and
@@ -250,12 +251,12 @@ that configuration too, on the HTTP entry point, as for any other app.
 
 Traefik gives a client 60 seconds to send its whole request, body included: an upload of a few
 hundred megabytes over Wi-Fi or a VPN stops halfway, with `502 Bad Gateway`. Raise that limit above the
-5 minutes that Cellar itself gives an upload, on the HTTPS entry point, in Traefik's static
+30 minutes that Cellar itself gives an upload, on the HTTPS entry point, in Traefik's static
 configuration: in the `command:` of its container,
 
 ```yaml
 command:
-  - --entrypoints.websecure.transport.respondingTimeouts.readTimeout=600s
+  - --entrypoints.websecure.transport.respondingTimeouts.readTimeout=2400s
 ```
 
 or, in `traefik.yml`:
@@ -266,7 +267,7 @@ entryPoints:
     address: ':443'
     transport:
       respondingTimeouts:
-        readTimeout: 600s
+        readTimeout: 2400s
 ```
 
 `/mcp` needs no rule of its own: Traefik passes the headers of the client, does not limit the time
@@ -299,7 +300,7 @@ With `ORIGIN=https://cellar.example.com` set and the container recreated:
    [Troubleshooting](../README-Docker.md#saving-fails-with-cross-site-post--forbidden-403)).
 2. In Admin › Backups, restore a recent backup, or import a ZIP: a `413` from the proxy comes from
    its upload limit, a `502` or a `504` from its time limits, and a `408` from an upload that took
-   more than 5 minutes.
+   more than 30 minutes.
 3. Point the AI assistant at `https://cellar.example.com/mcp` (see
    [AI assistants (MCP)](../README-Docker.md#ai-assistants-mcp)), or call it with curl:
 

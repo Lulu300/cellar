@@ -69,7 +69,7 @@
                 <!-- Detailed Results -->
                 <div class="border rounded-lg overflow-hidden">
                     <div class="bg-muted px-4 py-2 border-b">
-                        <h4 class="font-semibold">{detailsTitle}</h4>
+                        <h3 class="font-semibold">{detailsTitle}</h3>
                     </div>
 
                     <ScrollRegion label={detailsTitle} class="max-h-96 rounded-none p-0">

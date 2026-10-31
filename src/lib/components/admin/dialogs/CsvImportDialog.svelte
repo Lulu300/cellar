@@ -162,7 +162,7 @@
                                 <div class="border rounded p-3 bg-muted/30">
                                     <div class="flex items-start justify-between mb-2">
                                         <div>
-                                            <h4 class="font-medium text-sm">{texts.label()}</h4>
+                                            <h3 class="font-medium text-sm">{texts.label()}</h3>
                                             <p class="text-xs text-muted-foreground">
                                                 {texts.description()}
                                             </p>
@@ -255,9 +255,9 @@
             </div>
 
             <div class="bg-warning/10 p-4 rounded-lg">
-                <h4 class="text-sm font-medium text-warning mb-2">
+                <h3 class="text-sm font-medium text-warning mb-2">
                     {m['admin.import_notes']()}
-                </h4>
+                </h3>
                 <ul class="text-xs text-foreground space-y-1">
                     <li>• {m['admin.import_only_add_new_records']()}</li>
                     <li>• {m['admin.ids_auto_generated']()}</li>

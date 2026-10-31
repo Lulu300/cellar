@@ -31,9 +31,9 @@
     >
         <div class="space-y-4">
             <div class="bg-primary/10 border border-primary/30 rounded-lg p-4">
-                <h4 class="font-semibold text-foreground mb-2">
+                <h3 class="font-semibold text-foreground mb-2">
                     {m['admin.what_does_this_feature_do']()}
-                </h4>
+                </h3>
                 <p class="text-sm text-foreground">
                     <!-- eslint-disable-next-line svelte/no-at-html-tags -- markup from our own locale files, no user data -->
                     {@html m['admin.zip_import_feature_description']({
@@ -45,7 +45,7 @@
             </div>
 
             <div class="space-y-3">
-                <h4 class="font-semibold">{m['admin.how_it_works']()}</h4>
+                <h3 class="font-semibold">{m['admin.how_it_works']()}</h3>
                 <ol class="text-sm text-muted-foreground space-y-2 list-decimal list-inside">
                     <li>{m['admin.zip_import_step_1']()}</li>
                     <li>{m['admin.zip_import_step_2']()}</li>

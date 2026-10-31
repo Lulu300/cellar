@@ -667,6 +667,13 @@ tonight? », « how many Burgundies are left? ». It finds wines, shows a wine w
 where they are, finds a bottle by its barcode, and gives the statistics, the wines to buy again and
 the free space in storage. [docs/API.md](docs/API.md#mcp-access) lists the tools.
 
+When you allow changes, it can also write, as you would in the app: « I just bought six bottles of
+this Chablis, put them in rack B », « we drank the 2015 Margaux tonight, with the lamb ». It adds a
+wine and its bottles, marks bottles drunk with the day and a note, moves bottles to another case,
+and changes the notes of bottles and the rating of a wine. It never reaches the admin: backups,
+restore, wipe, imports and the access code stay in the app. Most assistants ask you before each
+change; during a restore or an import, a change is refused until it ends.
+
 1. In Cellar, open Admin › Settings › MCP access and create the token. Copy it: it is shown once.
    It is read-only unless you allow changes there.
 2. Give the assistant the address `http://<NAS-IP>:3005/mcp` (your `ORIGIN` followed by `/mcp`) and

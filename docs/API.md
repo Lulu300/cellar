@@ -2212,11 +2212,15 @@ README-Docker says how to set up an assistant (see
   `available` (in the cellar), `out_of_cellar` or `consumed`, and its `optimum` is the year it is at
   its best.
 - **Errors:** a tool that cannot answer, for an unknown wine for example, answers `isError: true`
-  with the reason as its text. Arguments that the tool refuses get the same, with the reason.
+  with the reason as its text: the `message` that this API would answer for the same refusal.
+  Arguments that the tool refuses get the same, with the reason.
 - **Restore, import, wipe:** the tools go on reading meanwhile, like the `GET` routes of this API.
-- Every tool only reads, and says so to the client (`readOnlyHint`).
+  A tool that writes refuses with the message of `503 writes_held` until it ends.
+- **Annotations:** each tool tells the client whether it only reads (`readOnlyHint`), and a tool
+  that writes whether it only adds (`destructiveHint: false`) and whether calling it twice changes
+  nothing more (`idempotentHint`), so that the client can ask before a change.
 
-The tools:
+The tools that read:
 
 - `search_wines`: finds wines.
   - **Parameters:** `query`: string, optional, at most 500 characters: words that the wine must all
@@ -2244,9 +2248,67 @@ The tools:
   first, with `id`, `name`, `producer`, `color`, `type`, `appellation`, `region`, `country`,
   `targetQuantity`, `inCellar`, `missing` and `averagePrice`.
 - `get_free_space`: no parameters; `{ "capacity", "bottles", "free", "containers" }`: each container
-  by the name the storage page shows, with its totals and its `cases` (`name`, `capacity`,
+  by the name the storage page shows, with its totals and its `cases` (`id`, `name`, `capacity`,
   `bottles`, `free`). A case holds its capacity in bottles in the cellar; one that holds more has
-  no room left.
+  no room left. The `id` of a case is what `add_bottles` and `move_bottles` take.
+- `list_choices`: no parameters; `{ "formats", "colors", "types", "classifications", "origins" }`:
+  the `id` and `name` of each row of these lists, sorted by name, for the ids that `add_wine` and
+  `add_bottles` take.
+- `search_appellations`: finds appellations, for the `appellationId` of `add_wine`.
+  - **Parameters:** `query`: string, required, at most 500 characters: words that the appellation,
+    its region and its country must all hold between them, capitals and accents aside.
+  - **Answer:** `{ "total", "appellations" }`: at most 50 appellations, by name, each with `id`,
+    `name`, `region` and `country`; `total` counts them all. A missing appellation is added in the
+    app (Admin › Data).
+
+The tools that write run only when the token may write (see [MCP access](#mcp-access)): a
+read-only token gets `isError: true` with the text "This MCP token is read-only: changes can be
+allowed in Cellar, under Admin › Settings › MCP access.", and nothing changes. They check their
+arguments with the rules of the API, and each one writes all or nothing.
+
+- `add_wine`: creates a wine, without bottles.
+  - **Parameters:** the [wine fields](#wine-fields) but `imageId`: `name`, `appellationId` (from
+    `search_appellations`), `typeId` and `colorId` (from `list_choices`) required.
+  - **Answer:** the wine as `get_wine` gives it, with empty `bottles` and `consumed`.
+- `add_bottles`: adds identical bottles of a wine to the cellar, as
+  [`POST /api/bottles`](#post-apibottles) does: `available`, each with the next barcode when
+  automatic barcodes are on.
+  - **Parameters:** `wineId`: string, required; `formatId`: string, required (from
+    `list_choices`); `quantity`: integer 1-100, default 1; and, optional, the
+    [bottle fields](#bottle-fields) `vintage`, `optimum`, `originId` (from `list_choices`),
+    `purchasePrice`, `purchaseDate`, `storageCaseId` (from `get_free_space`), `barcode` (with
+    `quantity` 1 only) and `notes`.
+  - **Answer:** an array of the bottles created, each with `id`, `wineId`, `availability`,
+    `vintage`, `format`, `caseId`, `barcode`, `consumedDate` and `notes`.
+  - **Refusals:** those of `POST /api/bottles`, such as a case without room for them all.
+- `mark_bottles_drunk`: marks bottles `consumed`, as the status dialog of the app does: they leave
+  their case.
+  - **Parameters:** `bottleIds`: array of 1-10,000 bottle ids, required; `date`: `YYYY-MM-DD`,
+    optional: the day they were drunk, today on the server's calendar when left out; `note`:
+    string, optional, at most 5,000 characters: added after the notes of each bottle, as the
+    `addedNote` of [`PATCH /api/bottles`](#patch-apibottles).
+  - **Answer:** an array of the bottles changed, as `add_bottles` answers them.
+  - **Refusals:** those of `PATCH /api/bottles`, such as an unknown bottle or a note that does not
+    fit after the notes.
+- `move_bottles`: puts bottles in a case. Their availability stays: a bottle out of the cellar
+  stays out of it, and a bottle drunk stays out of any case.
+  - **Parameters:** `bottleIds` as above; `caseId`: string, required (from `get_free_space`).
+  - **Answer:** an array of the bottles, as `add_bottles` answers them.
+  - **Refusals:** those of `PATCH /api/bottles`, such as a case without room for them all.
+- `update_bottle_notes`: changes the notes of bottles.
+  - **Parameters:** `bottleIds` as above; `notes`: string or `null`, optional, at most 5,000
+    characters: their new notes, in place of the old ones (empty or `null` removes them);
+    `addedNote`: string, optional, at most 5,000 characters: added after their notes, after `notes`
+    when both are given. One of the two is required.
+  - **Answer:** an array of the bottles changed, as `add_bottles` answers them.
+- `rate_wine`: gives a wine its rating.
+  - **Parameters:** `wineId`: string, required; `rating`: number from 1 to 5, half points
+    included, or `null`: `null` or left out removes the rating. The other fields of the wine stay.
+  - **Answer:** the wine as `search_wines` gives it, without `inCellar`, `outOfCellar` and
+    `vintages`.
+
+No tool reaches the admin: backups, restore, wipe, imports and the access code stay out of the MCP
+server.
 
 A call, as an assistant sends it with the 2025-06-18 revision:
 

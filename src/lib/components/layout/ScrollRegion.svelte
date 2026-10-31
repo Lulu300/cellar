@@ -38,11 +38,17 @@
             setOrRemove('aria-labelledby', named && labelledby);
         };
         update();
-        // The box resizes with the screen; its content grows when a list expands.
+        // The box resizes with the screen; its content grows when a list expands, and its controls
+        // stop being focusable while they are disabled.
         const resizes = new ResizeObserver(update);
         resizes.observe(box);
         const mutations = new MutationObserver(update);
-        mutations.observe(box, { childList: true, subtree: true, characterData: true });
+        mutations.observe(box, {
+            childList: true,
+            subtree: true,
+            characterData: true,
+            attributeFilter: ['disabled']
+        });
         return () => {
             resizes.disconnect();
             mutations.disconnect();

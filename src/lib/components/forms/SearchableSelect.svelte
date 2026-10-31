@@ -46,6 +46,9 @@
     let searchTerm = $state('');
     let showNewInput = $state(false);
     let newItemName = $state('');
+    // Add is greyed without a name: a line says why, before any click. A disabled list greys the
+    // whole field, which says it.
+    const newItemMissing = $derived(!newItemName.trim() && !disabled);
     let isCreating = $state(false);
     let isOpen = $state(false);
     /** The entry that the arrow keys moved to, which Enter chooses; -1 for none. */
@@ -325,7 +328,7 @@
                 placeholder={m['forms.new_item_name']()}
                 autofocus
                 {disabled}
-                aria-describedby={newItemName.trim() ? undefined : newItemMissingId}
+                aria-describedby={newItemMissing ? newItemMissingId : undefined}
                 onkeydown={(e) => {
                     if (e.key === 'Enter') {
                         e.preventDefault();
@@ -337,8 +340,7 @@
                     }
                 }}
             />
-            <!-- Add is greyed without a name: this line says why, before any click. -->
-            {#if !newItemName.trim()}
+            {#if newItemMissing}
                 <p id={newItemMissingId} class="text-xs text-muted-foreground">
                     {m['forms.new_item_name_missing']()}
                 </p>

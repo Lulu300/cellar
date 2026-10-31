@@ -45,7 +45,10 @@
         <CardContent class="p-4 wine-card-content">
             <div class="flex flex-col">
                 {#if showImage}
-                    <div class="mb-4 flex-shrink-0">
+                    <div class="relative mb-4 flex-shrink-0">
+                        {#if auth.isAuthenticated}
+                            <WishButton wineId={wine.id} onPhoto />
+                        {/if}
                         {#if imageUrl}
                             <img
                                 src={imageUrl}
@@ -93,7 +96,6 @@
                             </h2>
                             {#if auth.isAuthenticated}
                                 <div class="flex gap-1">
-                                    <WishButton wineId={wine.id} class={iconButton} />
                                     <button
                                         class={iconButton}
                                         onclick={() => onEdit(wine)}
@@ -139,6 +141,15 @@
                                     >
                                         <SquarePlus class="h-3 w-3" aria-hidden="true" />
                                     </button>
+                                    <!-- Without the photo area, beside the bottles rather than
+                                         the name, which needs the width -->
+                                    {#if !showImage}
+                                        <WishButton
+                                            wineId={wine.id}
+                                            class="relative z-10 flex h-5 w-5 items-center justify-center rounded p-1 text-muted-foreground transition-colors hover:text-foreground"
+                                            iconClass="h-3 w-3"
+                                        />
+                                    {/if}
                                 {/if}
                             </div>
                         </div>

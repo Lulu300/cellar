@@ -10,13 +10,14 @@
 
     /**
      * The heart of a wine, on its card and its page: a press puts the wine on the wishlist, and
-     * another takes it off.
+     * another takes it off. `onPhoto` lays it over a photo, as a white heart on a dark disc.
      */
     let {
         wineId,
         class: className = '',
-        iconClass = 'h-4 w-4'
-    }: { wineId: string; class?: string; iconClass?: string } = $props();
+        iconClass = 'h-4 w-4',
+        onPhoto = false
+    }: { wineId: string; class?: string; iconClass?: string; onPhoto?: boolean } = $props();
 
     // Loaded by the root layout, and reloaded after each change
     const wishId = $derived<string | undefined>(page.data.wishedWines?.[wineId]);
@@ -40,9 +41,12 @@
     }
 </script>
 
+<!-- A fixed dark disc with a white heart stays readable over any photo, in every theme. -->
 <button
     type="button"
-    class={className}
+    class={onPhoto
+        ? 'absolute top-2 right-2 z-10 flex h-9 w-9 items-center justify-center rounded-full bg-black/60 text-white shadow-md ring-1 ring-white/40 transition-colors hover:bg-black/75'
+        : className}
     aria-pressed={!!wishId}
     aria-label={m['navigation.wishlist']()}
     title={wishId ? m['wishlist.remove_from_wishlist']() : m['wishlist.add_to_wishlist']()}
@@ -50,7 +54,11 @@
     onclick={toggle}
 >
     <Heart
-        class="{iconClass} {wishId ? 'fill-current text-primary-text' : ''}"
+        class="{iconClass} {wishId
+            ? onPhoto
+                ? 'fill-current'
+                : 'fill-current text-primary-text'
+            : ''}"
         aria-hidden="true"
     />
 </button>

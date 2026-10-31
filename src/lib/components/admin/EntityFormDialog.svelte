@@ -37,7 +37,11 @@
     let name = $state('');
     let parentId = $state('');
     let saving = $state(false);
-    const complete = $derived(name.trim() !== '' && (!entity.parent || parentId !== ''));
+    // Save is greyed until the form is complete: a line by the button says what is missing.
+    const nameMissing = $derived(name.trim() === '');
+    const parentMissing = $derived(!!entity.parent && parentId === '');
+    const complete = $derived(!nameMissing && !parentMissing);
+    const missingId = $props.id();
 
     // Fills the form each time it opens.
     $effect(() => {
@@ -101,11 +105,25 @@
                     />
                 </div>
             {/if}
+            {#if !complete}
+                <div id={missingId} class="text-xs text-muted-foreground">
+                    {#if nameMissing}
+                        <p>{m['admin.entity_name_missing']()}</p>
+                    {/if}
+                    {#if parentMissing}
+                        <p>{labels.parent?.missing}</p>
+                    {/if}
+                </div>
+            {/if}
             <div class="flex justify-end gap-2">
                 <Button type="button" variant="outline" onclick={() => (open = false)}>
                     {m['common.cancel']()}
                 </Button>
-                <Button type="submit" disabled={!complete || saving}>
+                <Button
+                    type="submit"
+                    disabled={!complete || saving}
+                    aria-describedby={complete ? undefined : missingId}
+                >
                     {editing ? m['common.save']() : m['common.add']()}
                 </Button>
             </div>

@@ -27,6 +27,8 @@
     let csvImportDelimiter = $state(',');
     let csvFileInput = $state<HTMLInputElement>();
     let showCsvImportHelp = $state(false);
+    // Both buttons are greyed without a file: a line above them says why.
+    const filesMissingId = $props.id();
 
     function closeDialog() {
         open = false;
@@ -269,6 +271,11 @@
         </div>
 
         {#snippet footer()}
+            {#if csvImportFiles.length === 0}
+                <p id={filesMissingId} class="basis-full text-end text-xs text-muted-foreground">
+                    {m['admin.csv_files_missing']()}
+                </p>
+            {/if}
             <Button variant="outline" onclick={closeDialog}>
                 {m['common.cancel']()}
             </Button>
@@ -276,10 +283,15 @@
                 variant="outline"
                 onclick={() => executeCsvImport(true)}
                 disabled={csvImportFiles.length === 0}
+                aria-describedby={csvImportFiles.length === 0 ? filesMissingId : undefined}
             >
                 {m['admin.csv_dry_run']()}
             </Button>
-            <Button onclick={() => executeCsvImport(false)} disabled={csvImportFiles.length === 0}>
+            <Button
+                onclick={() => executeCsvImport(false)}
+                disabled={csvImportFiles.length === 0}
+                aria-describedby={csvImportFiles.length === 0 ? filesMissingId : undefined}
+            >
                 {m['admin.import_files']({ count: csvImportFiles.length })}
             </Button>
         {/snippet}

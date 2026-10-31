@@ -19,6 +19,9 @@
     let newHours = $state(24);
     let error = $state('');
     let saving = $state(false);
+    // Save is greyed while the field is empty: a line under it says what it takes.
+    const hoursMissing = $derived(!newHours);
+    const hoursMissingId = $props.id();
 
     $effect(() => {
         if (!open) return;
@@ -73,7 +76,13 @@
                                 max="168"
                                 placeholder={m['placeholders.session_timeout_example']()}
                                 class="w-full"
+                                aria-describedby={hoursMissing ? hoursMissingId : undefined}
                             />
+                            {#if hoursMissing}
+                                <p id={hoursMissingId} class="text-xs text-muted-foreground">
+                                    {m['form_errors.whole_number_between']({ min: 1, max: 168 })}
+                                </p>
+                            {/if}
                             <p class="text-xs text-muted-foreground">
                                 {m['admin.session_timeout_value']({ hours })}
                             </p>
@@ -88,7 +97,11 @@
                 <Button variant="outline" onclick={() => (open = false)}>
                     {m['common.cancel']()}
                 </Button>
-                <Button onclick={save} disabled={saving || !newHours}>
+                <Button
+                    onclick={save}
+                    disabled={saving || hoursMissing}
+                    aria-describedby={hoursMissing ? hoursMissingId : undefined}
+                >
                     {m['common.save']()}
                 </Button>
             </div>

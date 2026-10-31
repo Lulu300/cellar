@@ -24,7 +24,9 @@
 
     let newName = $state('');
     let renaming = $state(false);
+    // Rename is greyed until the name changes: a line under the field says so.
     const changed = $derived(newName.trim() !== '' && newName.trim() !== image?.filename);
+    const unchangedId = $props.id();
 
     // Starts from the current name each time it opens.
     $effect(() => {
@@ -72,13 +74,23 @@
                     id="image-name-input"
                     bind:value={newName}
                     placeholder={m['placeholders.enter_new_image_name']()}
+                    aria-describedby={changed ? undefined : unchangedId}
                 />
+                {#if !changed}
+                    <p id={unchangedId} class="text-xs text-muted-foreground">
+                        {m['admin.image_name_unchanged']()}
+                    </p>
+                {/if}
             </div>
             <div class="flex justify-end gap-2">
                 <Button type="button" variant="outline" onclick={() => (open = false)}>
                     {m['common.cancel']()}
                 </Button>
-                <Button type="submit" disabled={!changed || renaming}>
+                <Button
+                    type="submit"
+                    disabled={!changed || renaming}
+                    aria-describedby={changed ? undefined : unchangedId}
+                >
                     {m['admin.rename']()}
                 </Button>
             </div>

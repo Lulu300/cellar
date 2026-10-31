@@ -15,8 +15,8 @@ interface EntityLabels {
     /** The error of a POST whose name exists already: the API then answers that entry. */
     duplicate: string;
     confirmDelete: (name: string) => string;
-    /** The field of the parent, for an entity that has one. */
-    parent?: { label: string; placeholder: string };
+    /** The field of the parent, for an entity that has one, and why Save is greyed without it. */
+    parent?: { label: string; placeholder: string; missing: string };
 }
 
 export interface ReferenceEntity {
@@ -64,7 +64,11 @@ export const REFERENCE_ENTITIES: Record<ReferenceSlug, ReferenceEntity> = {
             deleted: m['toast.region_deleted'](),
             duplicate: m['errors.duplicate_region'](),
             confirmDelete: (name) => m['admin.confirm_delete_region']({ name }),
-            parent: { label: m['common.country'](), placeholder: m['admin.select_country']() }
+            parent: {
+                label: m['common.country'](),
+                placeholder: m['admin.select_country'](),
+                missing: m['admin.region_country_missing']()
+            }
         })
     },
     appellations: {
@@ -82,7 +86,11 @@ export const REFERENCE_ENTITIES: Record<ReferenceSlug, ReferenceEntity> = {
             deleted: m['toast.appellation_deleted'](),
             duplicate: m['errors.duplicate_appellation'](),
             confirmDelete: (name) => m['admin.confirm_delete_appellation']({ name }),
-            parent: { label: m['common.region'](), placeholder: m['admin.select_region']() }
+            parent: {
+                label: m['common.region'](),
+                placeholder: m['admin.select_region'](),
+                missing: m['admin.appellation_region_missing']()
+            }
         })
     },
     'wine-types': {

@@ -1,7 +1,7 @@
 <script lang="ts">
     import '../app.css';
     import { Button } from '#lib/components/ui/button/index.js';
-    import { Lock, LogOut, Menu, X } from '@lucide/svelte';
+    import { Lock, Menu, Settings, X } from '@lucide/svelte';
     import { onMount } from 'svelte';
     import { page } from '$app/state';
     import { afterNavigate, goto } from '$app/navigation';
@@ -12,7 +12,16 @@
     import { asksForAccessCode } from '#lib/components/layout/session.js';
     import LoginDialog from '#lib/components/layout/LoginDialog.svelte';
     import ConfirmDialog from '#lib/components/layout/ConfirmDialog.svelte';
-    import { isCurrentSection, pageTitle } from '#lib/components/layout/navigation.js';
+    import NavList from '#lib/components/layout/NavList.svelte';
+    import NavCount from '#lib/components/layout/NavCount.svelte';
+    import NavSectionMenu from '#lib/components/layout/NavSectionMenu.svelte';
+    import TabBar from '#lib/components/layout/TabBar.svelte';
+    import {
+        alertOf,
+        navSections,
+        pageTitle,
+        settingsSection
+    } from '#lib/components/layout/navigation.js';
     import { auth } from '#lib/stores/auth.svelte.js';
     import { toasts } from '#lib/stores/toast.svelte.js';
     import { m } from '#lib/paraglide/messages.js';
@@ -22,24 +31,19 @@
     $effect(() => applyTheme(preferences.theme, preferences.isDark));
 
     let loginDialog: LoginDialog;
-    // The links of the navigation, shown in a menu below the xl breakpoint where they do not fit.
+    // The phone menu, which lists the sections where the top bar does not fit or cannot be hovered
     let menuOpen = $state(false);
+    let menuButton = $state<HTMLButtonElement | null>(null);
 
-    const links = $derived([
-        { href: '/wines', label: m['navigation.my_wines']() },
-        { href: '/out-of-cellar', label: m['navigation.out_of_cellar']() },
-        { href: '/wine-shortage', label: m['navigation.wine_shortage']() },
-        { href: '/statistics', label: m['navigation.statistics']() },
-        { href: '/storage', label: m['navigation.storage']() },
-        { href: '/cellar-history', label: m['navigation.history']() },
-        ...(auth.isAuthenticated
-            ? [
-                  { href: '/admin', label: m['navigation.admin']() },
-                  { href: '/barcode', label: m['navigation.barcode']() }
-              ]
-            : []),
-        { href: '/preferences', label: m['navigation.preferences']() }
-    ]);
+    const sections = $derived(
+        navSections({
+            authenticated: auth.isAuthenticated,
+            shortageCount: data.shortageCount,
+            outOfCellarCount: data.outOfCellarCount
+        })
+    );
+    const settings = $derived(settingsSection(auth.isAuthenticated, handleLogout));
+    const shortage = $derived(alertOf(sections));
 
     onMount(promptLoginOnExpiredSession);
 
@@ -79,6 +83,12 @@
         };
     }
 
+    function closeMenuOnEscape(event: KeyboardEvent) {
+        if (event.key !== 'Escape' || !menuOpen) return;
+        menuOpen = false;
+        menuButton?.focus();
+    }
+
     async function handleLogout() {
         await auth.logout();
         leavePageIfSessionRequired();
@@ -90,29 +100,7 @@
     <title>{pageTitle()}</title>
 </svelte:head>
 
-{#snippet navLinks()}
-    {#each links as link (link.href)}
-        <li class="relative">
-            <Button
-                variant="ghost"
-                size="sm"
-                href={link.href}
-                aria-current={isCurrentSection(page.url.pathname, link.href) ? 'page' : undefined}
-                class="px-2 xl:px-1.5 2xl:px-2 aria-[current=page]:bg-accent aria-[current=page]:text-accent-foreground"
-            >
-                {link.label}
-            </Button>
-            {#if link.href === '/wine-shortage' && data.shortageCount > 0}
-                <!-- A fixed dark red with white text keeps the count readable in every theme -->
-                <span
-                    class="absolute -top-2 -right-2 bg-red-700 text-white text-xs font-bold rounded-full min-w-[20px] h-5 flex items-center justify-center px-1.5 border-2 border-background shadow-lg"
-                >
-                    {data.shortageCount}
-                </span>
-            {/if}
-        </li>
-    {/each}
-{/snippet}
+<svelte:window onkeydown={closeMenuOnEscape} />
 
 <div class="min-h-screen bg-background">
     <header class="border-b bg-card text-card-foreground">
@@ -128,51 +116,63 @@
                     {m['navigation.wine_cellar']()}
                 </div>
                 <div class="flex items-center gap-2">
-                    <nav class="hidden xl:block">
-                        <ul class="flex flex-wrap justify-end">
-                            {@render navLinks()}
+                    <!-- Where a pointer can hover it; touch screens get the menu below -->
+                    <nav class="hidden md:pointer-fine:block" aria-label={m['navigation.menu']()}>
+                        <ul class="flex items-center gap-0.5">
+                            {#each sections as section (section.label)}
+                                <li><NavSectionMenu {section} /></li>
+                            {/each}
+                            <li class="ml-2">
+                                <NavSectionMenu section={settings} icon={Settings} align="end" />
+                            </li>
                         </ul>
                     </nav>
 
-                    {#if auth.isAuthenticated}
-                        <Button variant="outline" size="sm" onclick={handleLogout}>
-                            <LogOut />
-                            {m['common.logout']()}
-                        </Button>
-                    {:else}
+                    {#if !auth.isAuthenticated}
                         <Button size="sm" onclick={() => loginDialog.show()}>
                             <Lock />
                             {m['common.login']()}
                         </Button>
                     {/if}
 
+                    <!-- The installed app has its tab bar instead, on a phone -->
                     <Button
+                        bind:ref={menuButton}
                         variant="ghost"
                         size="icon"
-                        class="xl:hidden"
+                        class="relative md:pointer-fine:hidden standalone:max-md:hidden"
                         aria-label={m['navigation.menu']()}
                         aria-expanded={menuOpen}
                         aria-controls="navigation-menu"
                         onclick={() => (menuOpen = !menuOpen)}
                     >
                         {#if menuOpen}<X />{:else}<Menu />{/if}
+                        {#if shortage && !menuOpen}<NavCount count={shortage} badge />{/if}
                     </Button>
                 </div>
             </div>
 
             {#if menuOpen}
-                <nav id="navigation-menu" class="xl:hidden pt-2">
-                    <ul class="flex flex-col items-start gap-1">
-                        {@render navLinks()}
-                    </ul>
+                <nav
+                    id="navigation-menu"
+                    class="pt-2 md:pointer-fine:hidden standalone:max-md:hidden"
+                    aria-label={m['navigation.menu']()}
+                >
+                    <NavList
+                        sections={[...sections, settings]}
+                        onchoose={() => (menuOpen = false)}
+                    />
                 </nav>
             {/if}
         </div>
     </header>
 
-    <main>
+    <!-- Room for the tab bar, which would cover the end of the page -->
+    <main class="standalone:max-md:pb-[calc(4rem+env(safe-area-inset-bottom))]">
         {@render children?.()}
     </main>
+
+    <TabBar sections={[...sections, settings]} />
 
     <ToastContainer />
 </div>

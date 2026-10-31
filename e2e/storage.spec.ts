@@ -1,5 +1,5 @@
 import { expect, test } from '@playwright/test';
-import { addWine, logIn, pick } from './helpers.js';
+import { addWine, logIn, openFromMenu, pick } from './helpers.js';
 
 test('add a container on the storage page, then put a bottle in one of its cases', async ({
     page
@@ -7,7 +7,7 @@ test('add a container on the storage page, then put a bottle in one of its cases
     await logIn(page);
     await addWine(page, 'Cuvée Stored', 1);
 
-    await page.getByRole('link', { name: 'Storage' }).click();
+    await openFromMenu(page, 'Cellar', 'Storage');
     await page.getByRole('button', { name: '+ Add Container' }).click();
     const containerDialog = page.getByRole('dialog', { name: 'Add New Storage Container' });
     // Save is greyed until the container has a name, and the field says so.

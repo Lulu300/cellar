@@ -23,7 +23,7 @@
 </script>
 
 <svelte:head>
-    <title>{pageTitle(m['admin.section_settings'](), m['admin.title']())}</title>
+    <title>{pageTitle(m['common.settings'](), m['admin.title']())}</title>
 </svelte:head>
 
 <div class="grid gap-6 md:grid-cols-2 xl:grid-cols-3">

@@ -3,6 +3,8 @@
 @import 'tw-animate-css';
 
 @custom-variant dark (&:is(.dark *));
+/* The app opened from its icon, once installed (manifest.webmanifest) */
+@custom-variant standalone (@media (display-mode: standalone));
 
 :root {
     /* Native controls (select lists, the date picker, scrollbars) follow the mode */

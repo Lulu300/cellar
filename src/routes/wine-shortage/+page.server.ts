@@ -1,10 +1,5 @@
-import { getWineShortages } from '#lib/server/features/bottles/service.js';
-import { imageUrlsById } from '#lib/server/features/images/service.js';
-import { CELLAR } from '#lib/shared/dependencies.js';
+import { redirect } from '@sveltejs/kit';
 import type { PageServerLoad } from './$types';
 
-// Public data only, as GET /api/wine-shortage and /api/images give it.
-export const load: PageServerLoad = async ({ depends }) => {
-    depends(CELLAR);
-    return { shortageData: await getWineShortages(), imageUrls: imageUrlsById() };
-};
+// The shortage moved to a tab of the purchases (UI-28): links and bookmarks still lead there.
+export const load: PageServerLoad = ({ url }) => redirect(308, `/purchases/shortage${url.search}`);

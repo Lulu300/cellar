@@ -24,7 +24,7 @@ export async function logIn(page: Page) {
     await dialog.getByLabel('Confirm Access Code').fill(ACCESS_CODE);
     await dialog.getByLabel('Setup token').fill(setupToken);
     await dialog.getByRole('button', { name: 'Save' }).click();
-    await expect(page.getByRole('button', { name: 'Logout' })).toBeVisible();
+    await expectLoggedIn(page);
 }
 
 /** Logs in with the login dialog already open, as after a session that ended. */
@@ -32,7 +32,28 @@ export async function logInAgain(page: Page) {
     const dialog = page.getByRole('dialog', { name: 'Access Code Required' });
     await dialog.getByLabel('Access Code', { exact: true }).fill(ACCESS_CODE);
     await dialog.getByRole('button', { name: 'Login' }).click();
-    await expect(page.getByRole('button', { name: 'Logout' })).toBeVisible();
+    await expectLoggedIn(page);
+}
+
+/** The menu of the top bar, which shows at Desktop Chrome's width (playwright.config.ts). */
+const menu = (page: Page) => page.getByRole('navigation', { name: 'Menu' });
+
+/** Waits for the menu of a session: the tools are only in it with one. */
+export async function expectLoggedIn(page: Page) {
+    await expect(menu(page).getByRole('link', { name: 'Tools', exact: true })).toBeVisible();
+}
+
+/**
+ * Opens a page of the menu as a mouse does: hovers its section, a link or the gear (Settings),
+ * which shows the section's pages, then clicks the page.
+ */
+export async function openFromMenu(page: Page, section: string, name: string) {
+    const nav = menu(page);
+    await nav
+        .getByRole('link', { name: section, exact: true })
+        .or(nav.getByRole('button', { name: section, exact: true }))
+        .hover();
+    await nav.getByRole('link', { name, exact: true }).click();
 }
 
 /**
@@ -49,7 +70,7 @@ export async function pick(input: Locator, option: string) {
  * dialog that opens for it.
  */
 export async function addWineThenBottle(page: Page, name: string): Promise<Locator> {
-    await page.getByRole('link', { name: 'My Wines' }).click();
+    await openFromMenu(page, 'Cellar', 'My Wines');
     await page.getByRole('button', { name: 'Add wine' }).click();
     const wineDialog = page.getByRole('dialog', { name: 'Add wine' });
     await wineDialog.getByLabel('Wine Name').fill(name);

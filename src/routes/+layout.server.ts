@@ -1,4 +1,7 @@
-import { getWineShortages } from '#lib/server/features/bottles/service.js';
+import {
+    countBottlesByAvailability,
+    getWineShortages
+} from '#lib/server/features/bottles/service.js';
 import {
     originHandlers,
     wineClassificationHandlers,
@@ -8,6 +11,7 @@ import {
 } from '#lib/server/features/catalog/service.js';
 import { countryHandlers, regionHandlers } from '#lib/server/features/geography/service.js';
 import { accessCodeExists } from '#lib/server/features/settings/service.js';
+import { BottleAvailability } from '#lib/shared/bottle-availability.js';
 import { CELLAR } from '#lib/shared/dependencies.js';
 import type { LayoutServerLoad } from './$types';
 
@@ -19,8 +23,9 @@ export const load: LayoutServerLoad = async ({ depends, locals }) => {
         // as GET /api/session and GET /api/access-code would tell it.
         authenticated: locals.session !== null,
         accessCodeSet: await accessCodeExists(),
-        // The badge of the navigation
+        // The counts of the navigation, and of the link to the bottles out of the cellar
         shortageCount: (await getWineShortages()).length,
+        outOfCellarCount: countBottlesByAvailability(BottleAvailability.OUT_OF_CELLAR),
         // The reference lists shared by the pages, loaded once rather than by each component
         references: {
             wineTypes: wineTypeHandlers.list(),

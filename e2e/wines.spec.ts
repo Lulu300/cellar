@@ -1,5 +1,12 @@
 import { expect, test } from '@playwright/test';
-import { addWine, addWineThenBottle, jpegInfo, logIn, phonePhoto } from './helpers.js';
+import {
+    addWine,
+    addWineThenBottle,
+    expectLoggedIn,
+    jpegInfo,
+    logIn,
+    phonePhoto
+} from './helpers.js';
 
 test('log in, then add a wine and two bottles from the wine list', async ({ page }) => {
     await logIn(page);
@@ -11,7 +18,7 @@ test('log in, then add a wine and two bottles from the wine list', async ({ page
     await expect(page).toHaveURL(/\/statistics$/);
     await page.goBack();
     await expect(page).toHaveURL(/\/preferences\?login$/);
-    await expect(page.getByRole('button', { name: 'Logout' })).toBeVisible();
+    await expectLoggedIn(page);
     await expect(page.getByRole('dialog')).toBeHidden();
 
     await addWine(page, 'Château Journey', 2);

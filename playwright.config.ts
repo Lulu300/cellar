@@ -14,7 +14,8 @@ export default defineConfig({
         locale: 'en-US',
         trace: 'retain-on-failure'
     },
-    // The journeys follow the menu, whose links show from 1280 px wide: Desktop Chrome's width.
+    // The journeys follow the menu of the top bar, which shows from 768 px wide with a mouse:
+    // Desktop Chrome's.
     projects: [{ name: 'chromium', use: { ...devices['Desktop Chrome'] } }],
     webServer: {
         command: 'node e2e/server.mjs',

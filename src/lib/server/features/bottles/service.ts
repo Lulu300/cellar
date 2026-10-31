@@ -11,6 +11,7 @@ import { sortBottles } from '#lib/utils/bottle-sort.js';
 import { compareText } from '#lib/utils/compare.js';
 import {
     cellarStatistics,
+    countBottlesByAvailability,
     deleteBottle,
     findBottles,
     formatName,
@@ -25,6 +26,7 @@ import {
 } from './repository';
 
 export {
+    countBottlesByAvailability,
     listBottlesForAdmin,
     listBottlesNotConsumed,
     listBottlesWithDefinitions,

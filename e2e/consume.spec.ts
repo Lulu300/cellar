@@ -1,5 +1,5 @@
 import { expect, test } from '@playwright/test';
-import { addWine, logIn } from './helpers.js';
+import { addWine, logIn, openFromMenu } from './helpers.js';
 
 test('consume a bottle with a note from the wine page, then find it in the history', async ({
     page
@@ -17,7 +17,7 @@ test('consume a bottle with a note from the wine page, then find it in the histo
     await expect(page.getByText('Available Bottles (1)')).toBeVisible();
     await expect(page.getByText('Consumed Bottles (1)')).toBeVisible();
 
-    await page.getByRole('link', { name: 'History' }).click();
+    await openFromMenu(page, 'Cellar', 'History');
     // The history lists every bottle: the one still available has no note.
     const consumed = page
         .getByRole('row')

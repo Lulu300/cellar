@@ -139,6 +139,15 @@ export function listBottlesByAvailability(availabilities: BottleAvailability[]) 
         .map(toBottleWithDefinition);
 }
 
+/** How many bottles have this availability. */
+export function countBottlesByAvailability(availability: BottleAvailability): number {
+    return db
+        .select({ count: count() })
+        .from(wineBottles)
+        .where(eq(wineBottles.availability, availability))
+        .get()!.count;
+}
+
 /** The bottles available or out of the cellar, with what the bottle lists show of them. */
 export function listBottlesNotConsumed() {
     const rows = db

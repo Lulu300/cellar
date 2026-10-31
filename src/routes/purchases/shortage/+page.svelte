@@ -6,7 +6,7 @@
     import { Badge } from '#lib/components/ui/badge/index.js';
     import { Button } from '#lib/components/ui/button/index.js';
     import WineBottleDialog from '#lib/components/bottles/WineBottleDialog.svelte';
-    import { BottleWine, TrendingDown, Plus } from '@lucide/svelte';
+    import { BottleWine, Plus } from '@lucide/svelte';
     import { auth } from '#lib/stores/auth.svelte.js';
     import { toasts } from '#lib/stores/toast.svelte.js';
     import { m } from '#lib/paraglide/messages.js';
@@ -64,26 +64,18 @@
 </script>
 
 <svelte:head>
-    <title>{pageTitle(m['navigation.wine_shortage']())}</title>
+    <title>{pageTitle(m['navigation.shortage'](), m['navigation.purchases']())}</title>
     <meta name="description" content={m['wine_shortage.subtitle']()} />
 </svelte:head>
 
-<div class="container mx-auto py-8 max-w-none w-full px-4 lg:w-[90%] xl:w-[85%] 2xl:w-[80%]">
-    <div class="flex justify-between items-center mb-6">
-        <div>
-            <h1 class="text-3xl font-bold tracking-tight flex items-center gap-2">
-                <TrendingDown class="h-8 w-8 text-primary" />
-                {m['navigation.wine_shortage']()}
-            </h1>
-            <p class="text-muted-foreground">{m['wine_shortage.subtitle']()}</p>
-        </div>
+<div>
+    <div class="flex flex-wrap justify-between items-center gap-4 mb-6">
+        <p class="text-muted-foreground">{m['wine_shortage.subtitle']()}</p>
 
         {#if shortageData.length > 0}
-            <div class="flex items-center gap-4">
-                <Badge variant="outline" class="text-destructive border-destructive/30">
-                    {m['wine_shortage.wines_need_attention']({ count: shortageData.length })}
-                </Badge>
-            </div>
+            <Badge variant="outline" class="text-destructive border-destructive/30">
+                {m['wine_shortage.wines_need_attention']({ count: shortageData.length })}
+            </Badge>
         {/if}
     </div>
 

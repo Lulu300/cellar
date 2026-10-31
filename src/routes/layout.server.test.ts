@@ -4,7 +4,9 @@ import { ACCESS_CODE_KEY, hashAccessCode } from '#lib/server/access-code.js';
 import { db } from '#lib/server/db/index.js';
 import { appSettings } from '#lib/server/db/schema.js';
 import { setAppSetting } from '#lib/server/features/settings/repository.js';
+import { BottleAvailability } from '#lib/shared/bottle-availability.js';
 import { fakeEvent } from '../test/event';
+import { insertBottles, insertWineDefinition } from '../test/wine';
 import { load } from './+layout.server';
 
 const loadLayout = (session: { tokenHash: string; expiresAt: Date } | null) =>
@@ -14,6 +16,7 @@ const loadLayout = (session: { tokenHash: string; expiresAt: Date } | null) =>
     } as never) as Promise<{
         authenticated: boolean;
         accessCodeSet: boolean;
+        outOfCellarCount: number;
     }>;
 
 beforeEach(() => {
@@ -36,5 +39,17 @@ describe('the root layout load', () => {
         setAppSetting(ACCESS_CODE_KEY, await hashAccessCode('4821'));
 
         expect(await loadLayout(null)).toMatchObject({ accessCodeSet: true });
+    });
+
+    it('counts the bottles out of the cellar, for the menu and the wine list', async () => {
+        const { AVAILABLE, OUT_OF_CELLAR, CONSUMED } = BottleAvailability;
+        await insertBottles(await insertWineDefinition(), [
+            { availability: AVAILABLE },
+            { availability: OUT_OF_CELLAR },
+            { availability: OUT_OF_CELLAR },
+            { availability: CONSUMED }
+        ]);
+
+        expect(await loadLayout(null)).toMatchObject({ outOfCellarCount: 2 });
     });
 });

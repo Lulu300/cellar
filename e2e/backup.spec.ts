@@ -1,12 +1,12 @@
 import { expect, test } from '@playwright/test';
-import { addWine, logIn, logInAgain } from './helpers.js';
+import { addWine, logIn, logInAgain, openFromMenu } from './helpers.js';
 
 test('back up, wipe the cellar, then restore the backup from the list', async ({ page }) => {
     await logIn(page);
     await addWine(page, 'Domaine Saved', 1);
     const wine = page.getByRole('heading', { name: 'Domaine Saved' });
 
-    await page.getByRole('link', { name: 'Admin' }).click();
+    await openFromMenu(page, 'Settings', 'Admin');
     await page.getByRole('link', { name: 'Backups' }).click();
     await page.getByRole('button', { name: 'Full Backup', exact: true }).click();
     const backupDialog = page.getByRole('dialog', { name: 'Full Backup' });
@@ -93,7 +93,13 @@ test('back up, wipe the cellar, then restore the backup from the list', async ({
             .getByText('Your session has expired. Please log in again.')
     ).toBeVisible();
     await logInAgain(page);
-    await page.getByRole('link', { name: 'My Wines' }).click();
+    // The toasts of the wipe cover the pages of the menu for a few seconds, not the name of the
+    // section, which opens its first page.
+    const cellar = page.getByRole('navigation', { name: 'Menu' }).getByRole('link', {
+        name: 'Cellar',
+        exact: true
+    });
+    await cellar.click();
     await expect(page.getByText('0 wines (0 bottles in all)')).toBeVisible();
 
     // Back rather than the menu, which the toasts of the wipe cover for a few seconds.
@@ -104,6 +110,6 @@ test('back up, wipe the cellar, then restore the backup from the list', async ({
     await expect(restoreDialog).toBeHidden();
     await expect(page.getByText('Database restored.')).toBeVisible();
 
-    await page.getByRole('link', { name: 'My Wines' }).click();
+    await cellar.click();
     await expect(wine).toBeVisible();
 });

@@ -24,11 +24,16 @@ your network resolves.
   one request, and a wine image up to 20 MB. Cellar refuses anything larger than 512 MB itself;
   nginx refuses anything larger than 1 MB unless you raise its limit.
 - **Time.** An upload of a few hundred megabytes over Wi-Fi or a VPN takes minutes, and Cellar
-  answers a restore or an import only once it is done. The examples give each 10 minutes.
+  gives an upload 5 minutes at most to arrive, so 500 MB need 1.7 MB/s or more. nginx and SWAG
+  receive the whole upload first, in a temporary file that needs as much free disk space, then pass
+  it on at once: a slower upload gets through them. Caddy and Traefik pass it on as it comes, so a
+  slower one fails with `408`. Cellar answers a restore or an import only once it is done: the
+  examples wait for that answer 10 minutes with nginx, 240 seconds with SWAG, and without a limit
+  with Caddy and Traefik.
 - **The MCP server, at `/mcp`.** An AI assistant sends its token in the `Authorization` header and
   the protocol in `Accept`, `Content-Type`, `MCP-Protocol-Version`, `Mcp-Method` and `Mcp-Name`:
   the proxy passes them as they are, which all four do unless told otherwise. Every message is a
-  `POST` of at most 4 MB. A client of the 2025 revisions gets its answers as a stream
+  `POST` of at most 4 MiB. A client of the 2025 revisions gets its answers as a stream
   (`text/event-stream`), and a 2026-07-28 client may keep a stream open (`subscriptions/listen`),
   with a keep-alive line every 15 seconds: the proxy must pass each piece as it comes, without
   buffering, over HTTP/1.1, and wait at least 60 seconds between two of them. MCP clients send no
@@ -200,17 +205,20 @@ answer, and passes event streams as they come. In the `Caddyfile`:
 ```caddyfile
 cellar.example.com {
 	# A restore or a ZIP import sends up to 500 MB; Cellar refuses more than 512 MB itself.
+	# Cellar counts in MiB: Caddy's 512MB would be 512,000,000 bytes and refuse some restores.
 	request_body {
-		max_size 512MB
+		max_size 512MiB
 	}
 	reverse_proxy cellar:3000
 }
 ```
 
 `cellar:3000` is Cellar on Caddy's Docker network; with Caddy on the host, write
-`reverse_proxy 127.0.0.1:3005`. For an address that the internet cannot reach, Caddy can sign the
-certificate itself: add `tls internal` to the block, and install Caddy's root certificate on your
-devices (`caddy trust`, or the `root.crt` file from Caddy's data folder), or each browser warns.
+`reverse_proxy 127.0.0.1:3005`. Caddy gets its certificate through ports 80 and 443, which the
+internet must reach. For a name that only your network resolves, a DNS challenge needs a Caddy built
+with the module of your DNS provider; or Caddy signs the certificate itself: add `tls internal` to
+the block, and install Caddy's root certificate on your devices (`caddy trust`, or the `root.crt`
+file from Caddy's data folder), or each browser warns.
 
 ## Traefik
 
@@ -237,15 +245,17 @@ networks:
 ```
 
 `websecure` and `letsencrypt` are the names of the HTTPS entry point and the certificate resolver
-in Traefik's own configuration: use yours.
+in Traefik's own configuration: use yours. The redirect from `http://` to `https://` belongs to
+that configuration too, on the HTTP entry point, as for any other app.
 
 Traefik gives a client 60 seconds to send its whole request, body included: an upload of a few
-hundred megabytes over Wi-Fi or a VPN stops halfway, with `502 Bad Gateway`. Raise that limit on the HTTPS entry point, in
-Traefik's static configuration: in the `command:` of its container,
+hundred megabytes over Wi-Fi or a VPN stops halfway, with `502 Bad Gateway`. Raise that limit to the
+5 minutes that Cellar itself gives an upload, on the HTTPS entry point, in Traefik's static
+configuration: in the `command:` of its container,
 
 ```yaml
 command:
-  - --entrypoints.websecure.transport.respondingTimeouts.readTimeout=600s
+  - --entrypoints.websecure.transport.respondingTimeouts.readTimeout=300s
 ```
 
 or, in `traefik.yml`:
@@ -256,7 +266,7 @@ entryPoints:
     address: ':443'
     transport:
       respondingTimeouts:
-        readTimeout: 600s
+        readTimeout: 300s
 ```
 
 `/mcp` needs no rule of its own: Traefik passes the headers of the client, does not limit the time
@@ -267,9 +277,10 @@ router.
 
 A proxy host with scheme `http`, Cellar's address as forward hostname (`cellar` on a shared Docker
 network, port `3000`, or the address of the NAS and port `3005`), and a certificate in its SSL tab
-with **Force SSL**. It already allows uploads of 2000 MB and uses HTTP/1.1, and the streams of `/mcp`
-pass unbuffered, but it waits 90 seconds for an answer: in its **Advanced** tab, add
-`proxy_read_timeout 600s;` and `proxy_send_timeout 600s;`. Not replayed.
+with **Force SSL**. It already allows uploads of 2000 MB and uses HTTP/1.1, and the streams of
+`/mcp` pass unbuffered, since the MCP server asks for it with `X-Accel-Buffering: no`. But it waits
+90 seconds for an answer: in its **Advanced** tab, add `proxy_read_timeout 600s;` and
+`proxy_send_timeout 600s;`. Not replayed.
 
 ## Synology reverse proxy
 
@@ -287,7 +298,8 @@ With `ORIGIN=https://cellar.example.com` set and the container recreated:
    means that `ORIGIN` is not the address in the address bar (see
    [Troubleshooting](../README-Docker.md#saving-fails-with-cross-site-post--forbidden-403)).
 2. In Admin › Backups, restore a recent backup, or import a ZIP: a `413` from the proxy comes from
-   its upload limit, a `502` or a `504` from its time limits.
+   its upload limit, a `502` or a `504` from its time limits, and a `408` from an upload that took
+   more than 5 minutes.
 3. Point the AI assistant at `https://cellar.example.com/mcp` (see
    [AI assistants (MCP)](../README-Docker.md#ai-assistants-mcp)), or call it with curl:
 

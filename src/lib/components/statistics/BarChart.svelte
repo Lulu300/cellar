@@ -1,7 +1,6 @@
 <script lang="ts">
     import { m } from '#lib/paraglide/messages.js';
     import { preferences } from '#lib/stores/preferences.svelte.js';
-    import { abbreviate } from '#lib/utils/format.js';
     import { themes } from '#lib/utils/theme-colors.js';
 
     interface Bar {
@@ -15,11 +14,12 @@
     }
 
     /**
-     * Bottle counts as bars, a name under each, cut past `cut.max` characters. A phone has no
-     * hover to show a cut name in a tooltip: the line under the chart gives the whole name and the
-     * count of the bar chosen by a tap, a click or the keyboard, the first one until then.
+     * Bottle counts as bars, a name under each on one line, cut by "…" when it is wider than its
+     * bar. A phone has no hover to show a cut name in a tooltip: the line under the chart gives the
+     * whole name and the count of the bar chosen by a tap, a click or the keyboard, the first one
+     * until then.
      */
-    let { bars, cut }: { bars: Bar[]; cut?: { max: number; keep: number } } = $props();
+    let { bars }: { bars: Bar[] } = $props();
 
     let chosenKey = $state<Bar['key']>();
     const chosen = $derived(bars.find((bar) => bar.key === chosenKey) ?? bars[0]);
@@ -32,7 +32,6 @@
 
     // In pixels: 200 for the largest count, and never under 20, so that a small count shows.
     const height = (bar: Bar) => Math.max((bar.count / maxCount) * 200, 20);
-    const short = (name: string) => (cut ? abbreviate(name, cut.max, cut.keep) : name);
     const wholeName = (bar: Bar) => (bar.detail ? `${bar.name} (${bar.detail})` : bar.name);
     const summary = (bar: Bar) =>
         `${m['common.label']({ label: wholeName(bar) })} ${m['common.n_bottles']({ count: bar.count })}`;
@@ -53,13 +52,14 @@
                 class="w-full rounded-t-sm transition-all duration-500"
                 style="height: {height(bar)}px; background: {background}"
             ></span>
-            <!-- As tall for every bar, which keeps the bars on one line whatever their names. -->
-            <span
-                class="h-12 w-full overflow-hidden break-words text-center text-xs font-medium leading-tight group-aria-pressed:underline"
-            >
-                {short(bar.name)}
+            <!-- Two lines high for every bar, the second one for a detail, which keeps the bars
+                 aligned whatever their names. -->
+            <span class="h-8 w-full text-center text-xs leading-tight">
+                <span class="block truncate font-medium group-aria-pressed:underline"
+                    >{bar.name}</span
+                >
                 {#if bar.detail}
-                    <span class="block font-normal text-muted-foreground">{short(bar.detail)}</span>
+                    <span class="block truncate text-muted-foreground">{bar.detail}</span>
                 {/if}
             </span>
         </button>

@@ -2,7 +2,6 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { readNumber } from '#lib/shared/schemas/form.js';
 import { plain, useLocale } from '../../test/locale';
 import {
-    abbreviate,
     formatCurrency,
     formatDate,
     formatFileSize,
@@ -141,16 +140,5 @@ describe('isoDate', () => {
         // The server stores the day 2026-03-01 as its midnight in UTC.
         expect(isoDate(new Date('2026-03-01T00:00:00Z'))).toBe('2026-03-01');
         expect(isoDate('2026-03-01T00:00:00.000Z')).toBe('2026-03-01');
-    });
-});
-
-describe('abbreviate', () => {
-    it('ends a name longer than the limit with an ellipsis, without the space before it', () => {
-        expect(abbreviate('Australie', 8, 6)).toBe('Austra…');
-        expect(abbreviate('Héritiers Müller', 12, 10)).toBe('Héritiers…');
-    });
-
-    it('keeps a name that fits', () => {
-        expect(abbreviate('Chili', 8, 6)).toBe('Chili');
     });
 });

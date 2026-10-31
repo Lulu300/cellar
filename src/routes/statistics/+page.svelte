@@ -305,7 +305,6 @@
                             name: country,
                             count
                         }))}
-                        cut={{ max: 8, keep: 6 }}
                     />
                 {:else}
                     <p class="text-center text-muted-foreground py-8">
@@ -328,7 +327,6 @@
                             name: producer,
                             count
                         }))}
-                        cut={{ max: 12, keep: 10 }}
                     />
                 {:else}
                     <p class="text-center text-muted-foreground py-8">
@@ -425,7 +423,6 @@
                             : undefined,
                         count: region.count
                     }))}
-                    cut={{ max: 8, keep: 6 }}
                 />
             </CardContent>
         </Card>

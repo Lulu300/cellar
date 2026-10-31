@@ -129,11 +129,3 @@ export function today(): string {
 export function isoDate(value: Date | string): string {
     return new Date(value).toISOString().slice(0, 10);
 }
-
-/**
- * `name` cut to `keep` characters and "…" when it is longer than `max`, for a short label whose
- * `title` holds the whole name.
- */
-export function abbreviate(name: string, max: number, keep: number): string {
-    return name.length > max ? name.substring(0, keep).trimEnd() + '…' : name;
-}

@@ -2,8 +2,9 @@
 
 Cellar is a self-hosted wine cellar manager. It runs as a Docker container, for example on a home NAS, and is meant for a home network or a VPN: do not expose it directly to the Internet.
 
-- **Install:** [Docker installation](README-Docker.md#quick-start)
+- **Install:** [Installation](#installation) below; [README-Docker.md](README-Docker.md) gives every detail.
 - **Upgrade:** read [UPGRADING.md](UPGRADING.md) for every version between yours and the new one, then follow [Updating](README-Docker.md#updating). [CHANGELOG.md](CHANGELOG.md) lists the changes of each version.
+- **API:** your own scripts can read and change the cellar through the HTTP API that the app uses, described in [docs/API.md](https://github.com/Lulu300/cellar/blob/main/docs/API.md). The admin page links to it too.
 
 ## Features
 
@@ -19,6 +20,59 @@ Cellar is a self-hosted wine cellar manager. It runs as a Docker container, for 
 - **Administration:** reference data (countries, regions, appellations, origins, wine types, colors, formats, classifications), images, and settings.
 - **Access code:** anyone on the network can browse the cellar; changes and the admin pages need the access code ([details](README-Docker.md#access-code)).
 - **Interface:** English and French, light and dark modes, and several color schemes.
+
+## Installation
+
+Cellar runs from its published image, `ghcr.io/lulu300/cellar`, with Docker and its Compose plugin. The image is public: pulling it needs no login. On the machine that will run Cellar:
+
+1. Create a folder for Cellar, and in it a file named `docker-compose.yml`:
+
+   ```yaml
+   services:
+     cellar:
+       image: ghcr.io/lulu300/cellar:latest
+       container_name: wine-cellar
+       restart: unless-stopped
+       ports:
+         - '3005:3000'
+       environment:
+         - NODE_ENV=production
+         - PORT=3000
+         - HOST=0.0.0.0
+         - ORIGIN=${ORIGIN:?Set ORIGIN in .env to the URL used in the browser, e.g. http://192.168.1.20:3005}
+       volumes:
+         - ./docker-data/data:/app/data
+         - ./docker-data/uploads:/app/static/uploads
+         - ./docker-data/csv-imports:/app/csv-imports
+   ```
+
+2. Next to it, create a file named `.env` that sets `ORIGIN` to the exact URL you will type in the browser: scheme, address of the machine and port `3005`. Cellar refuses changes sent from any other URL ([details](README-Docker.md#application-url-origin)).
+
+   ```sh
+   ORIGIN=http://192.168.1.20:3005
+   ```
+
+3. Create the data folders. The container runs as uid `1000`, which must own them ([details](README-Docker.md#data-ownership), also to run it as another user):
+
+   ```sh
+   mkdir -p docker-data/data docker-data/uploads docker-data/csv-imports
+   sudo chown -R 1000:1000 docker-data
+   ```
+
+4. Download the image and start Cellar in the background:
+
+   ```sh
+   docker compose pull
+   docker compose up -d
+   ```
+
+5. Open the URL set in `ORIGIN`, and choose an access code. The app asks for a setup token, which the logs show:
+
+   ```sh
+   docker compose logs cellar | grep "Setup token"
+   ```
+
+[README-Docker.md](README-Docker.md) covers the rest, such as [updating](README-Docker.md#updating), serving Cellar over HTTPS [behind a reverse proxy](README-Docker.md#behind-a-reverse-proxy), and [backups](README-Docker.md#backup).
 
 ## Development
 

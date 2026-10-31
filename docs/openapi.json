@@ -3,7 +3,7 @@
   "info": {
     "title": "Cellar API",
     "version": "1",
-    "description": "The HTTP API of Cellar, a self-hosted wine cellar manager. [docs/API.md](https://github.com/Lulu300/cellar/blob/main/docs/API.md) describes each route in full, with the fields of its answers, which this description leaves out; the request bodies here come from the schemas that the server checks them with.\n\n- **Lengths:** a name, a producer, a description, a note, a grape variety or a case suffix is measured in UTF-16 units once trimmed (a case suffix at its end only), as JavaScript's `.length`, a note or a description with its line breaks as LF. `maxLength` gives that limit, but a JSON Schema validator counts characters, an emoji as one: it may accept a text with emoji that the server refuses.\n- **Reads are public:** every `GET` outside `/api/admin` works without a session. Every other method, and all of `/api/admin`, needs one; `POST /api/access-code` logs in and sets the `cellar_session` cookie.\n- **Origin check:** a write whose `Origin` header is not Cellar's URL gets `403 cross_site_request`, and a form upload (`multipart/form-data`) or a write without `Content-Type` must send that header. Send `Origin` with every write.\n- **Errors:** every error answer has the body of the `Error` response, except the `403` of a form write without `Origin`, which comes from the server before Cellar's code runs."
+    "description": "The HTTP API of Cellar, a self-hosted wine cellar manager. [docs/API.md](https://github.com/Lulu300/cellar/blob/main/docs/API.md) describes each route in full, with the fields of its answers, which this description leaves out; the request bodies here come from the schemas that the server checks them with.\n\n- **Lengths:** a name, a producer, a description, a note, a grape variety or a case suffix is measured in UTF-16 units once trimmed (a case suffix at its end only), as JavaScript's `.length`, a note or a description with its line breaks as LF. `maxLength` gives that limit, but a JSON Schema validator counts characters, an emoji as one: it may accept a text with emoji that the server refuses.\n- **Reads are public:** every `GET` outside `/api/admin` works without a session. Every other method, and all of `/api/admin`, needs one; `POST /api/access-code` logs in and sets the `cellar_session` cookie.\n- **MCP token:** the token of Admin › Settings › MCP access opens the MCP server at `/mcp`, outside this API, and nothing here: sent to a route of this API, it counts for nothing.\n- **Origin check:** a write whose `Origin` header is not Cellar's URL gets `403 cross_site_request`, and a form upload (`multipart/form-data`) or a write without `Content-Type` must send that header. Send `Origin` with every write.\n- **Errors:** every error answer has the body of the `Error` response, except the `403` of a form write without `Origin`, which comes from the server before Cellar's code runs."
   },
   "externalDocs": {
     "url": "https://github.com/Lulu300/cellar/blob/main/docs/API.md"
@@ -96,6 +96,12 @@
       "name": "Automatic backups",
       "externalDocs": {
         "url": "https://github.com/Lulu300/cellar/blob/main/docs/API.md#automatic-backups"
+      }
+    },
+    {
+      "name": "MCP access",
+      "externalDocs": {
+        "url": "https://github.com/Lulu300/cellar/blob/main/docs/API.md#mcp-access"
       }
     },
     {
@@ -4458,6 +4464,92 @@
             "content": {
               "application/json": {}
             }
+          },
+          "default": {
+            "$ref": "#/components/responses/Error"
+          }
+        }
+      }
+    },
+    "/api/admin/mcp-token": {
+      "post": {
+        "tags": [
+          "MCP access"
+        ],
+        "summary": "Creates the MCP token, replacing the earlier one",
+        "operationId": "postAdminMcpToken",
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {}
+            }
+          },
+          "default": {
+            "$ref": "#/components/responses/Error"
+          }
+        }
+      },
+      "put": {
+        "tags": [
+          "MCP access"
+        ],
+        "summary": "Allows or forbids the changes through the MCP server",
+        "operationId": "putAdminMcpToken",
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "write": {
+                    "type": "boolean"
+                  }
+                },
+                "required": [
+                  "write"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {}
+            }
+          },
+          "default": {
+            "$ref": "#/components/responses/Error"
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "MCP access"
+        ],
+        "summary": "Revokes the MCP token",
+        "operationId": "deleteAdminMcpToken",
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "No content"
           },
           "default": {
             "$ref": "#/components/responses/Error"

@@ -51,6 +51,8 @@ export const barcodeSettingsRequest = z.object({
     startNumber: z.int().min(1)
 });
 
+export const mcpTokenRequest = z.object({ write: z.boolean() });
+
 export const csvExportRequest = z.object({
     tables: z
         .array(

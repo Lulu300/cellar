@@ -12,6 +12,7 @@ import {
     imagesDeleteRequest,
     imagesDownloadRequest,
     loginRequest,
+    mcpTokenRequest,
     settingsRequest,
     upgradeTickRequest
 } from '#lib/server/http/request-schemas.js';
@@ -58,6 +59,7 @@ const tags = {
     labelPresets: ['Label presets', 'label-presets'],
     backups: ['Backups', 'backups'],
     autoBackups: ['Automatic backups', 'automatic-backups'],
+    mcp: ['MCP access', 'mcp-access'],
     csv: ['CSV import and export', 'csv-import-and-export'],
     data: ['Data', 'data'],
     adminImages: ['Admin images', 'images-1'],
@@ -431,6 +433,23 @@ const operations: Record<string, Operation> = {
         cronToken: true
     },
 
+    'POST /api/admin/mcp-token': {
+        tag: 'mcp',
+        summary: 'Creates the MCP token, replacing the earlier one',
+        answers: ok
+    },
+    'PUT /api/admin/mcp-token': {
+        tag: 'mcp',
+        summary: 'Allows or forbids the changes through the MCP server',
+        body: json(mcpTokenRequest),
+        answers: ok
+    },
+    'DELETE /api/admin/mcp-token': {
+        tag: 'mcp',
+        summary: 'Revokes the MCP token',
+        answers: noContent
+    },
+
     'POST /api/admin/export-csv': {
         tag: 'csv',
         summary: 'Exports tables as CSV, in the answer',
@@ -594,6 +613,7 @@ const DESCRIPTION = `The HTTP API of Cellar, a self-hosted wine cellar manager. 
 
 - **Lengths:** a name, a producer, a description, a note, a grape variety or a case suffix is measured in UTF-16 units once trimmed (a case suffix at its end only), as JavaScript's \`.length\`, a note or a description with its line breaks as LF. \`maxLength\` gives that limit, but a JSON Schema validator counts characters, an emoji as one: it may accept a text with emoji that the server refuses.
 - **Reads are public:** every \`GET\` outside \`/api/admin\` works without a session. Every other method, and all of \`/api/admin\`, needs one; \`POST /api/access-code\` logs in and sets the \`${SESSION_COOKIE}\` cookie.
+- **MCP token:** the token of Admin › Settings › MCP access opens the MCP server at \`/mcp\`, outside this API, and nothing here: sent to a route of this API, it counts for nothing.
 - **Origin check:** a write whose \`Origin\` header is not Cellar's URL gets \`403 cross_site_request\`, and a form upload (\`multipart/form-data\`) or a write without \`Content-Type\` must send that header. Send \`Origin\` with every write.
 - **Errors:** every error answer has the body of the \`Error\` response, except the \`403\` of a form write without \`Origin\`, which comes from the server before Cellar's code runs.`;
 

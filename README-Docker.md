@@ -82,6 +82,10 @@ release's changes in yours:
 curl -fsSL https://raw.githubusercontent.com/Lulu300/cellar/main/docker-compose.yml | diff docker-compose.yml -
 ```
 
+A `docker-compose.yml` written from the [Installation](README.md#installation) section of the
+README has no comments and no `build: .`: the diff shows them at every update, and they are not
+changes to make.
+
 The image of the previous version stays on disk: once it has lost its tag to the new one,
 `docker image prune` frees it; a version tag you set yourself goes with
 `docker rmi ghcr.io/lulu300/cellar:<tag>`.

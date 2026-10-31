@@ -75,6 +75,7 @@
     ]
   },
   "dependencies": {
+    "@modelcontextprotocol/server": "^2.4.0",
     "archiver": "^8.0.0",
     "better-sqlite3": "^13.0.3",
     "csv-parse": "^7.0.3",

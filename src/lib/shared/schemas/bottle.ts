@@ -30,9 +30,12 @@ const amount = z
     .nullish()
     .transform((value) => value ?? null);
 
+/** The most characters of a barcode that a request gives. */
+export const BARCODE_MAX_LENGTH = 1000;
+
 /** Text or a number, as a scanner or a spreadsheet gives it; stored trimmed, null when blank. */
 const barcode = z
-    .union([z.string().max(1000), z.number()])
+    .union([z.string().max(BARCODE_MAX_LENGTH), z.number()])
     .nullish()
     .transform((value) => (value == null ? null : storedBarcode(String(value))));
 

@@ -70,6 +70,15 @@ export function authenticateMcp(event: RequestEvent): Response | null {
     return null;
 }
 
+/**
+ * What the request's MCP token allows, which the hook filled. Throws when it is missing: the request
+ * reached the MCP server without the token check of hooks.server.ts.
+ */
+export function requireMcpAccess(locals: App.Locals): McpAccess {
+    if (!locals.mcpAccess) throw new Error('The MCP server was reached without its token check');
+    return locals.mcpAccess;
+}
+
 /** For each write tool of the MCP server: refuses the call when the token is read-only. */
 export function assertMcpWrite(access: McpAccess): void {
     if (!access.write) {

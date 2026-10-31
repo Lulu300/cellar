@@ -159,7 +159,7 @@ Revue du code du 2026-10-08, commit `556c7bb`. Ce fichier est la version pour le
 | 1.0.0 | P10 · Fin de l’audit | Le reste de l’audit d’avant 1.0 : thème, accessibilité, seeding, documentation, dépendances, lint et tests. Prévue pour 0.12.0. DEP-06 applique la convention de logs déjà décidée (« Petits choix ») mais attend P10 : passer `no-console` en erreur touche presque tous les composants, que P9 réécrit d’abord. Lots, mêmes règles qu’en P9 (résumé 0.12.0) : 1. DEP-06, DATA-14 (DEP-06 change les règles de lint de tout le code) ; 2. UI-16, DOC-03 ; 3. UI-17 ; 4. UI-18 (couleurs et sélecteurs de presque tous les composants). Terminée le 2026-10-29 (develop f14a795f), publiée en 0.12.0 le 2026-10-29. | DEP-06, DATA-14, UI-16, DOC-03, UI-17, UI-18 | 6 / 6 |
 | 1.0.0 | P11 · Rangement des composants | Deux petites corrections trouvées en P10, puis le rangement des composants par domaine, à la toute fin, comme le veut la décision « Architecture (revue 7) ». Lots : 1. UI-20, BUG-21 ; 2. UI-19, seule, qui déplace presque tous les composants. Prévue pour la 1.0.0, après la vérification de P12. Terminée le 2026-10-29 (develop 70d9e148), publiée en 1.0.0 le 2026-10-30. | UI-20, BUG-21, UI-19 | 3 / 3 |
 | 1.0.0 | P12 · Vérification d’avant 1.0 | Une revue complète en lecture seule après P11, comme l’audit d’avant 1.0 puis sa vérification : tout ce que l’audit demandait est fait, et le nettoyage n’a pas créé de nouveaux problèmes. Le mainteneur juge chaque constat : à corriger avant la 1.0 (tâches ajoutées ici) ou acceptable en l’état. Puis la 1.0.0, avec R2 de l’audit au tag : dépôt et image publics, protection de `main`. Revue faite le 2026-10-30 (QA-06). Lots des corrections, chacun mergé avant le suivant, résumé 1.0.0 : 1. SEC-12, API-12, BUG-22, BUG-23 ; 2. UI-21, UI-22, DEP-07 ; 3. DOC-04 (documentation d’après les deux premiers lots) ; 4. UI-23 ; puis REL-06, la publication, avec le mainteneur. Terminée le 2026-10-30 (develop 89d2c4c1), publiée en 1.0.0 le 2026-10-30. Lots 1 à 4 faits le 2026-10-30, puis la 1.0.0 publiée le même jour (tag v1.0.0 sur 8ad43dff) ; depuis le lot 2, le dépôt public repart d’un nouveau commit racine (décision « Nouveau départ à la 1.0 (REL-06) »). | QA-06, SEC-12, API-12, BUG-22, BUG-23, UI-21, UI-22, DEP-07, DOC-04, UI-23, REL-06 | 11 / 11 |
-| 1.1.0 | P13 · Finitions et installation | Pour la 1.1.0, juste après la 1.0.0 : ce que voit d’abord un nouveau visiteur (installation dans le README, liens vers la doc de l’API), l’app installable sur le téléphone (PWA), et les finitions notées pendant P12 (décision « Versions après la 1.0 »). Lots, chacun mergé avant le suivant, résumé 1.1.0 (lots 1 et 2 faits le 2026-10-31) : 1. DOC-05, UI-27, SEC-13, BUG-24 ; 2. UI-24, UI-25, API-13 ; 3. UI-26, DEP-08 ; puis REL-07. | DOC-05, UI-27, SEC-13, BUG-24, UI-24, UI-25, API-13, UI-26, DEP-08, REL-07 | 7 / 10 |
+| 1.1.0 | P13 · Finitions et installation | Pour la 1.1.0, juste après la 1.0.0 : ce que voit d’abord un nouveau visiteur (installation dans le README, liens vers la doc de l’API), l’app installable sur le téléphone (PWA), et les finitions notées pendant P12 (décision « Versions après la 1.0 »). Lots, chacun mergé avant le suivant, résumé 1.1.0 (lots 1 et 2 faits le 2026-10-31) : 1. DOC-05, UI-27, SEC-13, BUG-24 ; 2. UI-24, UI-25, API-13 ; 3. UI-26, UI-29, DEP-08 ; puis REL-07. | DOC-05, UI-27, SEC-13, BUG-24, UI-24, UI-25, API-13, UI-26, UI-29, DEP-08, REL-07 | 7 / 11 |
 | 1.2.0 | P14 · Serveur MCP | Pour la 1.2.0, enchaînée juste après la 1.1.0 : un serveur MCP intégré à Cellar, pour les assistants d’IA du réseau local (décision « Serveur MCP (P14) »), et la description OpenAPI de l’API, tirée des mêmes schémas zod. Lots : 1. SEC-11, API-14 ; 2. API-10 ; 3. API-11 ; puis REL-08. | SEC-11, API-14, API-10, API-11, REL-08 | 0 / 5 |
 | 1.3.0 | P15 · Navigation, photos et achats | Pour la 1.3.0 (décision « Versions de 1.3.0 à 1.7.0 ») : le menu par sections d’abord, parce que les pages qui suivent s’y rangent, puis les photos d’étiquette et la page Achats, dont les envies réutilisent l’envoi de photo. Ordre : UI-28 ; FEAT-01 ; FEAT-02 ; puis REL-09. Les lots se fixent au début de la phase. Si la phase traîne, la page Achats peut partir d’abord avec des envies en texte seul. | UI-28, FEAT-01, FEAT-02, REL-09 | 0 / 4 |
 | 1.4.0 | P16 · Couleurs et plan de la cave | Pour la 1.4.0 : les couleurs des vins, puis le plan de la cave, qui s’appuie dessus. Ordre : FEAT-03 ; FEAT-04 ; puis REL-10. | FEAT-03, FEAT-04, REL-10 | 0 / 3 |
@@ -2705,7 +2705,7 @@ Sévérité **évolution** · effort **S** · dépend de DOC-04, UI-23 · statut
 
 ## P13 · Finitions et installation (1.1.0)
 
-Pour la 1.1.0, juste après la 1.0.0 : ce que voit d’abord un nouveau visiteur (installation dans le README, liens vers la doc de l’API), l’app installable sur le téléphone (PWA), et les finitions notées pendant P12 (décision « Versions après la 1.0 »). Lots, chacun mergé avant le suivant, résumé 1.1.0 (lots 1 et 2 faits le 2026-10-31) : 1. DOC-05, UI-27, SEC-13, BUG-24 ; 2. UI-24, UI-25, API-13 ; 3. UI-26, DEP-08 ; puis REL-07.
+Pour la 1.1.0, juste après la 1.0.0 : ce que voit d’abord un nouveau visiteur (installation dans le README, liens vers la doc de l’API), l’app installable sur le téléphone (PWA), et les finitions notées pendant P12 (décision « Versions après la 1.0 »). Lots, chacun mergé avant le suivant, résumé 1.1.0 (lots 1 et 2 faits le 2026-10-31) : 1. DOC-05, UI-27, SEC-13, BUG-24 ; 2. UI-24, UI-25, API-13 ; 3. UI-26, UI-29, DEP-08 ; puis REL-07.
 
 ### DOC-05 · Installation dans le README et liens vers la doc de l’API
 
@@ -2879,6 +2879,25 @@ Sévérité **mineur** · effort **S** · dépend de UI-24 · statut **À faire*
 
 **Sources** : Trouvé pendant UI-21
 
+### UI-29 · Derniers boutons grisés sans raison et doubles envois
+
+Sévérité **mineur** · effort **S** · dépend de UI-25 · statut **À faire**
+
+**Problème** : Trouvé pendant UI-25 : des boutons de l’admin et des codes-barres restent grisés sans dire pourquoi, contre la décision « Messages d’erreur (P7) », et deux boutons envoient leur requête deux fois sur un double clic.
+
+**Fichiers** : `src/lib/components/admin/`, `src/lib/components/barcode/`, `src/lib/components/forms/SearchableSelect.svelte`, `src/lib/components/admin/dialogs/AccessCodeDialog.svelte`, `src/lib/components/barcode/PresetManager.svelte`, `src/lib/i18n/locales/`
+
+**À faire**
+
+- Décision « Messages d’erreur (P7) », comme UI-22 et UI-25 : une raison visible pour `admin/EntityFormDialog.svelte:108`, `admin/dialogs/SessionTimeoutDialog.svelte:91`, `admin/dialogs/ImageRenameDialog.svelte:81`, `admin/dialogs/CsvImportDialog.svelte:278` et `:282` ; pour `barcode/BulkBarcodeDialog.svelte:291` et `barcode/BarcodeStatsCard.svelte:82`, dire si le nombre à 0 affiché à côté suffit ou ajouter la raison.
+- « Annuler » de `SearchableSelect` reste utilisable quand la liste est désactivée.
+- Le changement de code d’accès et l’enregistrement d’un préréglage passent en état « en cours » : un double clic n’envoie qu’une requête ; testé.
+- Lot 3 de P13 (accord du mainteneur, 2026-10-31).
+
+**Critère d’acceptation** : Aucun bouton grisé de l’admin et des codes-barres sans raison visible avant le clic, en anglais et en français (captures) ; un double clic sur ces deux boutons n’envoie qu’une requête ; testé.
+
+**Sources** : Trouvé pendant UI-25, Décision « Messages d’erreur (P7) »
+
 ### DEP-08 · Revue des dépendances d’avant la 1.1.0
 
 Sévérité **mineur** · effort **S** · dépend de DEP-07 · statut **À faire**
@@ -2898,7 +2917,7 @@ Sévérité **mineur** · effort **S** · dépend de DEP-07 · statut **À faire
 
 ### REL-07 · Publication de la 1.1.0
 
-Sévérité **évolution** · effort **S** · dépend de DOC-05, UI-27, SEC-13, BUG-24, UI-24, UI-25, API-13, UI-26, DEP-08 · statut **À faire**
+Sévérité **évolution** · effort **S** · dépend de DOC-05, UI-27, SEC-13, BUG-24, UI-24, UI-25, API-13, UI-26, UI-29, DEP-08 · statut **À faire**
 
 **Problème** : La 1.1.0 apporte aux utilisateurs l’installation dans le README, l’app installable sur le téléphone et les finitions de P13.
 

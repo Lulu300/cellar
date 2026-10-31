@@ -144,7 +144,7 @@ export const phases = [
 		id: 'P13',
 		version: '1.1.0',
 		title: 'Finitions et installation',
-		goal: 'Pour la 1.1.0, juste après la 1.0.0 : ce que voit d’abord un nouveau visiteur (installation dans le README, liens vers la doc de l’API), l’app installable sur le téléphone (PWA), et les finitions notées pendant P12 (décision « Versions après la 1.0 »). Lots, chacun mergé avant le suivant, résumé 1.1.0 (lots 1 et 2 faits le 2026-10-31) : 1. DOC-05, UI-27, SEC-13, BUG-24 ; 2. UI-24, UI-25, API-13 ; 3. UI-26, DEP-08 ; puis REL-07.'
+		goal: 'Pour la 1.1.0, juste après la 1.0.0 : ce que voit d’abord un nouveau visiteur (installation dans le README, liens vers la doc de l’API), l’app installable sur le téléphone (PWA), et les finitions notées pendant P12 (décision « Versions après la 1.0 »). Lots, chacun mergé avant le suivant, résumé 1.1.0 (lots 1 et 2 faits le 2026-10-31) : 1. DOC-05, UI-27, SEC-13, BUG-24 ; 2. UI-24, UI-25, API-13 ; 3. UI-26, UI-29, DEP-08 ; puis REL-07.'
 	},
 	{
 		id: 'P14',
@@ -2217,6 +2217,20 @@ export const tasks = [
 		deps: ['UI-24'], src: ['Trouvé pendant UI-21']
 	},
 	{
+		id: 'UI-29', phase: 'P13', size: 'S', sev: 'mineur',
+		title: 'Derniers boutons grisés sans raison et doubles envois',
+		why: 'Trouvé pendant UI-25 : des boutons de l’admin et des codes-barres restent grisés sans dire pourquoi, contre la décision « Messages d’erreur (P7) », et deux boutons envoient leur requête deux fois sur un double clic.',
+		where: ['src/lib/components/admin/', 'src/lib/components/barcode/', 'src/lib/components/forms/SearchableSelect.svelte', 'src/lib/components/admin/dialogs/AccessCodeDialog.svelte', 'src/lib/components/barcode/PresetManager.svelte', 'src/lib/i18n/locales/'],
+		todo: [
+			'Décision « Messages d’erreur (P7) », comme UI-22 et UI-25 : une raison visible pour `admin/EntityFormDialog.svelte:108`, `admin/dialogs/SessionTimeoutDialog.svelte:91`, `admin/dialogs/ImageRenameDialog.svelte:81`, `admin/dialogs/CsvImportDialog.svelte:278` et `:282` ; pour `barcode/BulkBarcodeDialog.svelte:291` et `barcode/BarcodeStatsCard.svelte:82`, dire si le nombre à 0 affiché à côté suffit ou ajouter la raison.',
+			'« Annuler » de `SearchableSelect` reste utilisable quand la liste est désactivée.',
+			'Le changement de code d’accès et l’enregistrement d’un préréglage passent en état « en cours » : un double clic n’envoie qu’une requête ; testé.',
+			'Lot 3 de P13 (accord du mainteneur, 2026-10-31).'
+		],
+		done: 'Aucun bouton grisé de l’admin et des codes-barres sans raison visible avant le clic, en anglais et en français (captures) ; un double clic sur ces deux boutons n’envoie qu’une requête ; testé.',
+		deps: ['UI-25'], src: ['Trouvé pendant UI-25', 'Décision « Messages d’erreur (P7) »']
+	},
+	{
 		id: 'DEP-08', phase: 'P13', size: 'S', sev: 'mineur',
 		title: 'Revue des dépendances d’avant la 1.1.0',
 		why: 'Écarts laissés par DEP-07 : correctifs de SvelteKit, Svelte, adapter-node et Paraglide trop récents, image node 24.22.2 éligible vers le 2026-11-04, docker/login-action 4.7.0 (mineure).',
@@ -2237,7 +2251,7 @@ export const tasks = [
 			'Résumé 1.1.0 complété à chaque tâche ; banc de la 1.0.0 vers la 1.1.0 ; release selon RELEASING.md, avec le mainteneur.'
 		],
 		done: 'v1.1.0 est publiée sur `main` et son image se télécharge sans connexion ; develop passe à 1.2.0-rc.0.',
-		deps: ['DOC-05', 'UI-27', 'SEC-13', 'BUG-24', 'UI-24', 'UI-25', 'API-13', 'UI-26', 'DEP-08'], src: ['Décision « Versions après la 1.0 »']
+		deps: ['DOC-05', 'UI-27', 'SEC-13', 'BUG-24', 'UI-24', 'UI-25', 'API-13', 'UI-26', 'UI-29', 'DEP-08'], src: ['Décision « Versions après la 1.0 »']
 	},
 
 	// ───────── P14 Serveur MCP

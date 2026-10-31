@@ -9,7 +9,8 @@ instead, which are not part of this API. Some routes serve no page: they are her
 client, test an API or show it: each route and method, its session rule, its parameters and the
 schema of its request body, made from the schemas that the server checks the body with, and the
 error format. The fields of the answers are only described here. A test,
-`src/lib/server/openapi.test.ts`, fails when the file no longer matches the code.
+`src/lib/server/openapi.test.ts`, fails when the file no longer matches the code. Cellar also serves
+it, for the version that runs: see [`GET /api/openapi.json`](#get-apiopenapijson).
 
 A change that requires your scripts to change is described in the release notes of its version; some
 are also shown as an upgrade action in the Admin page.
@@ -236,6 +237,7 @@ request needs one.
 | GET    | `/api/definitions/{id}`            | no                       |
 | PUT    | `/api/definitions/{id}`            | yes                      |
 | GET    | `/api/images`                      | no                       |
+| GET    | `/api/openapi.json`                | no                       |
 | GET    | `/api/origins`                     | no                       |
 | POST   | `/api/origins`                     | yes                      |
 | DELETE | `/api/origins/{id}`                | yes                      |
@@ -2678,4 +2680,19 @@ Ticks or unticks an action of the upgrade notice that the Admin page shows after
 
 ```json
 { "version": "1.1.0", "index": 0, "done": true }
+```
+
+## OpenAPI description
+
+### `GET /api/openapi.json`
+
+The OpenAPI 3.1 description of this API, as the running version gives it: the same document as
+[openapi.json](openapi.json) for that version.
+
+- **Session:** not needed.
+- **Body:** none.
+- **Response:** `200` with the description, as JSON.
+
+```sh
+curl -s "$CELLAR/api/openapi.json" -o openapi.json
 ```

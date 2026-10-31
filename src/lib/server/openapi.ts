@@ -35,8 +35,9 @@ import { wineDefinitionSchema } from '#lib/shared/schemas/wine.js';
 
 /**
  * The OpenAPI 3.1 description of the API under /api, for tools: its request bodies come from the
- * zod schemas that the routes check them with. docs/openapi.json holds it, and openapi.test.ts
- * fails when that file is out of date or when a route of the code is missing here.
+ * zod schemas that the routes check them with. docs/openapi.json holds it, `GET /api/openapi.json`
+ * serves it, and openapi.test.ts fails when that file is out of date or when a route of the code is
+ * missing here.
  */
 
 const API_DOC = 'https://github.com/Lulu300/cellar/blob/main/docs/API.md';
@@ -63,7 +64,8 @@ const tags = {
     csv: ['CSV import and export', 'csv-import-and-export'],
     data: ['Data', 'data'],
     adminImages: ['Admin images', 'images-1'],
-    upgradeActions: ['Upgrade actions', 'upgrade-actions']
+    upgradeActions: ['Upgrade actions', 'upgrade-actions'],
+    openApi: ['OpenAPI description', 'openapi-description']
 } as const satisfies Record<string, readonly [name: string, anchor: string]>;
 
 interface Parameter {
@@ -526,6 +528,12 @@ const operations: Record<string, Operation> = {
         tag: 'upgradeActions',
         summary: 'Ticks or unticks an upgrade action',
         body: json(upgradeTickRequest),
+        answers: ok
+    },
+
+    'GET /api/openapi.json': {
+        tag: 'openApi',
+        summary: 'This description, as the running version gives it',
         answers: ok
     }
 };

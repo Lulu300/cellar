@@ -127,6 +127,12 @@
       "externalDocs": {
         "url": "https://github.com/Lulu300/cellar/blob/main/docs/API.md#upgrade-actions"
       }
+    },
+    {
+      "name": "OpenAPI description",
+      "externalDocs": {
+        "url": "https://github.com/Lulu300/cellar/blob/main/docs/API.md#openapi-description"
+      }
     }
   ],
   "paths": {
@@ -5099,6 +5105,27 @@
             }
           }
         },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {}
+            }
+          },
+          "default": {
+            "$ref": "#/components/responses/Error"
+          }
+        }
+      }
+    },
+    "/api/openapi.json": {
+      "get": {
+        "tags": [
+          "OpenAPI description"
+        ],
+        "summary": "This description, as the running version gives it",
+        "operationId": "getOpenapiJson",
+        "security": [],
         "responses": {
           "200": {
             "description": "OK",

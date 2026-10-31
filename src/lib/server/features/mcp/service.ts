@@ -261,6 +261,7 @@ export function searchAppellations(query: string) {
         .map((row) => ({
             id: row.id,
             name: row.name,
+            // The lookup rows are typed for every table; an appellation's come with both names.
             region: row.regionName as string,
             country: row.countryName as string
         }))
@@ -297,17 +298,17 @@ export type NewBottles = Pick<
     | 'optimum'
     | 'purchasePrice'
     | 'purchaseDate'
-    | 'storageCaseId'
     | 'barcode'
     | 'notes'
-> & { wineId: string; quantity: number };
+> & { wineId: string; quantity: number; caseId: string | null };
 
 /** Creates `quantity` bottles of the wine in the cellar, all or none, as POST /api/bottles does. */
-export function addBottles({ wineId, quantity, ...bottle }: NewBottles) {
+export function addBottles({ wineId, quantity, caseId, ...bottle }: NewBottles) {
     const created = createBottles(
         {
             ...bottle,
             definitionId: wineId,
+            storageCaseId: caseId,
             availability: BottleAvailability.AVAILABLE,
             consumedDate: null,
             currentValue: null,

@@ -25,7 +25,7 @@ import {
     optionalDate,
     optionalId
 } from '#lib/shared/schemas/common.js';
-import { wineDefinitionSchema } from '#lib/shared/schemas/wine.js';
+import { rating, wineDefinitionSchema } from '#lib/shared/schemas/wine.js';
 import {
     addBottles,
     addWine,
@@ -105,7 +105,7 @@ const bottleIds = bulkBottleChangesSchema.shape.ids.describe(
 );
 
 /** A day of a write tool. */
-const day = (what: string) => optionalDate.describe(`${what}, as YYYY-MM-DD.`);
+const dateParam = (what: string) => optionalDate.describe(`${what}, as YYYY-MM-DD.`);
 
 /**
  * What the token of the request allows, which serveMcp hands to the server of the request:
@@ -249,7 +249,8 @@ function createServer({ authInfo }: McpRequestContext): McpServer {
     );
 
     // The write tools: each one refuses a read-only token, and checks its arguments with the
-    // rules of the API.
+    // rules of the API. An argument they do not know is refused, as PATCH /api/bottles refuses
+    // a field: dropped, a misspelt one would leave the write done without it.
 
     server.registerTool(
         'add_wine',
@@ -257,20 +258,25 @@ function createServer({ authInfo }: McpRequestContext): McpServer {
             title: 'Add a wine',
             description:
                 'Creates a wine, without bottles: add_bottles adds them. Answers it as get_wine does. Look for it with search_wines first: a wine is added once, then gets bottles of each vintage.',
-            inputSchema: wineDefinitionSchema.omit({ imageId: true }).extend({
-                appellationId: id.describe('The id of its appellation, from search_appellations.'),
-                typeId: id.describe('The id of its type, from list_choices.'),
-                colorId: id.describe('The id of its color, from list_choices.'),
-                classificationId: optionalId.describe(
-                    'The id of its classification, from list_choices.'
-                ),
-                rating: wineDefinitionSchema.shape.rating.describe(
-                    "The owner's rating, from 1 to 5, half points included."
-                ),
-                targetQuantity: wineDefinitionSchema.shape.targetQuantity.describe(
-                    'How many bottles to keep in the cellar: get_wine_shortage lists the wines below it.'
-                )
-            }),
+            inputSchema: wineDefinitionSchema
+                .omit({ imageId: true })
+                .extend({
+                    appellationId: id.describe(
+                        'The id of its appellation, from search_appellations.'
+                    ),
+                    typeId: id.describe('The id of its type, from list_choices.'),
+                    colorId: id.describe('The id of its color, from list_choices.'),
+                    classificationId: optionalId.describe(
+                        'The id of its classification, from list_choices.'
+                    ),
+                    rating: wineDefinitionSchema.shape.rating.describe(
+                        "The owner's rating, from 1 to 5, half points included."
+                    ),
+                    targetQuantity: wineDefinitionSchema.shape.targetQuantity.describe(
+                        'How many bottles to keep in the cellar: get_wine_shortage lists the wines below it.'
+                    )
+                })
+                .strict(),
             annotations: ADDS
         },
         (wine) => answerWrite('add_wine', access, () => addWine({ ...wine, imageId: null }))
@@ -282,23 +288,31 @@ function createServer({ authInfo }: McpRequestContext): McpServer {
             title: 'Add bottles',
             description:
                 'Adds bottles of a wine to the cellar, all alike, each with its own id and, when Cellar numbers them, its own barcode. All or none: a case without room for them adds none.',
-            inputSchema: z.object({
-                wineId: id.describe('The id of the wine, from search_wines or add_wine.'),
-                quantity: newBottlesSchema.shape.quantity.describe('How many bottles to add.'),
-                ...bottleSchema.pick({
-                    vintage: true,
-                    optimum: true,
-                    purchasePrice: true,
-                    barcode: true,
-                    notes: true
-                }).shape,
-                formatId: id.describe('The id of their format, from list_choices.'),
-                originId: optionalId.describe(
-                    'The id of where they were bought, from list_choices.'
-                ),
-                purchaseDate: day('The day they were bought'),
-                storageCaseId: optionalId.describe('The id of their case, from get_free_space.')
-            }),
+            inputSchema: z
+                .object({
+                    wineId: id.describe('The id of the wine, from search_wines or add_wine.'),
+                    quantity: newBottlesSchema.shape.quantity.describe('How many bottles to add.'),
+                    formatId: id.describe('The id of their format, from list_choices.'),
+                    vintage: bottleSchema.shape.vintage.describe(
+                        'Their vintage, a year: 0 or left out for a wine without one.'
+                    ),
+                    optimum: bottleSchema.shape.optimum.describe(
+                        'The year they are at their best.'
+                    ),
+                    originId: optionalId.describe(
+                        'The id of where they were bought, from list_choices.'
+                    ),
+                    purchasePrice: bottleSchema.shape.purchasePrice.describe(
+                        'The price of one bottle, in the currency of the owner.'
+                    ),
+                    purchaseDate: dateParam('The day they were bought'),
+                    caseId: optionalId.describe('The id of their case, from get_free_space.'),
+                    barcode: bottleSchema.shape.barcode.describe(
+                        'The barcode of their label, for a single bottle: left out, Cellar numbers them when its automatic barcodes are on.'
+                    ),
+                    notes: bottleSchema.shape.notes.describe('Notes, on each bottle.')
+                })
+                .strict(),
             annotations: ADDS
         },
         (bottles) => answerWrite('add_bottles', access, () => addBottles(bottles))
@@ -309,10 +323,12 @@ function createServer({ authInfo }: McpRequestContext): McpServer {
         {
             title: 'Mark bottles drunk',
             description:
-                'Marks bottles as drunk on a day: they leave their case, and the note goes after the notes of each one. All or none.',
-            inputSchema: z.object({
+                'Marks bottles as drunk on a day: they leave their case, and the note goes after the notes of each one. A bottle already drunk takes the new day, and the note too. All or none.',
+            inputSchema: z.strictObject({
                 bottleIds,
-                date: day('The day they were drunk: today when left out'),
+                date: dateParam(
+                    "The day they were drunk, on the owner's calendar: left out, today on the server's clock, often in UTC"
+                ),
                 note: longText.describe('A note to add after the notes of each bottle.')
             }),
             annotations: changes(false)
@@ -327,7 +343,7 @@ function createServer({ authInfo }: McpRequestContext): McpServer {
             title: 'Move bottles',
             description:
                 'Puts bottles in a case, keeping their availability: a bottle drunk stays out of any case. All or none: a case without room for them moves none.',
-            inputSchema: z.object({
+            inputSchema: z.strictObject({
                 bottleIds,
                 caseId: id.describe('The id of the case, from get_free_space.')
             }),
@@ -344,7 +360,7 @@ function createServer({ authInfo }: McpRequestContext): McpServer {
             description:
                 'Replaces the notes of bottles with notes, adds addedNote after them, or both. All or none.',
             inputSchema: z
-                .object({
+                .strictObject({
                     bottleIds,
                     notes: bottleChangesSchema.shape.notes.describe(
                         'Their new notes, in place of the old ones: empty or null removes them.'
@@ -368,11 +384,11 @@ function createServer({ authInfo }: McpRequestContext): McpServer {
         {
             title: 'Rate a wine',
             description: "Gives a wine the owner's rating, or removes it.",
-            inputSchema: z.object({
+            inputSchema: z.strictObject({
                 wineId: id.describe('The id of the wine, from search_wines.'),
-                rating: wineDefinitionSchema.shape.rating.describe(
-                    'From 1 to 5, half points included: null or left out removes the rating.'
-                )
+                rating: rating
+                    .nullable()
+                    .describe('From 1 to 5, half points included: null removes the rating.')
             }),
             annotations: changes(true)
         },

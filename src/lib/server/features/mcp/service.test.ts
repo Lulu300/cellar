@@ -309,7 +309,7 @@ const purchase = {
     optimum: null,
     purchasePrice: 40,
     purchaseDate: null,
-    storageCaseId: null,
+    caseId: null,
     barcode: null,
     notes: null
 };
@@ -318,7 +318,7 @@ describe('addBottles', () => {
     it('adds the bottles in the cellar, each with its own id', () => {
         const { cases } = createContainer({ name: 'Rack', cases: ['1'], caseCapacities: [6] });
 
-        const added = addBottles({ ...purchase, quantity: 2, storageCaseId: cases[0].id });
+        const added = addBottles({ ...purchase, quantity: 2, caseId: cases[0].id });
 
         expect(added).toEqual([
             expect.objectContaining({
@@ -336,7 +336,7 @@ describe('addBottles', () => {
     it('adds none when the case has no room for them all', () => {
         const { cases } = createContainer({ name: 'Rack', cases: ['1'], caseCapacities: [1] });
 
-        expect(() => addBottles({ ...purchase, quantity: 2, storageCaseId: cases[0].id })).toThrow(
+        expect(() => addBottles({ ...purchase, quantity: 2, caseId: cases[0].id })).toThrow(
             expect.objectContaining({ code: 'case_full' })
         );
         expect(listBottlesWithDefinitions(margaux)).toEqual([]);
@@ -366,15 +366,21 @@ describe('markDrunk', () => {
     });
 
     it("takes today on the server's calendar when no day is given", async () => {
+        const zone = process.env.TZ;
+        process.env.TZ = 'Europe/Paris';
         vi.useFakeTimers({ toFake: ['Date'] });
-        // Past midnight in the local time, still the day before in UTC east of Greenwich.
-        vi.setSystemTime(new Date(2026, 9, 31, 0, 30));
+        // Half past midnight in Paris, still the day before in UTC.
+        vi.setSystemTime(new Date('2026-10-30T23:30:00Z'));
         await insertBottles(margaux, [{ id: 'a' }]);
 
-        expect(markDrunk(['a'], null, null)).toEqual([
-            expect.objectContaining({ consumedDate: '2026-10-31', notes: null })
-        ]);
-        vi.useRealTimers();
+        try {
+            expect(markDrunk(['a'], null, null)).toEqual([
+                expect.objectContaining({ consumedDate: '2026-10-31', notes: null })
+            ]);
+        } finally {
+            vi.useRealTimers();
+            process.env.TZ = zone;
+        }
     });
 
     it('changes none of the bottles when one does not exist', async () => {

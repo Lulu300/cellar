@@ -20,6 +20,9 @@ const website = z
     .refine(isValidOptionalWebsite, INVALID_WEBSITE_ERROR)
     .transform((url) => url || null);
 
+/** A wine's rating: any number from 1 to 5, half points included (DATA-03). */
+export const rating = z.number().min(1).max(5);
+
 /** The most characters of a grape variety. */
 export const GRAPE_MAX_LENGTH = 100;
 
@@ -31,13 +34,7 @@ export const wineDefinitionSchema = z.object({
     typeId: id,
     colorId: id,
     classificationId: optionalId,
-    // Any number from 1 to 5, half points included (DATA-03).
-    rating: z
-        .number()
-        .min(1)
-        .max(5)
-        .nullish()
-        .transform((rating) => rating ?? null),
+    rating: rating.nullish().transform((rating) => rating ?? null),
     website,
     description: longText,
     imageId: optionalId,

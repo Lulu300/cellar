@@ -112,8 +112,9 @@ export function formatFileSize(bytes: number): string {
 }
 
 /**
- * Today in the local time of the browser, as YYYY-MM-DD: the value of a date input. Not
- * `toISOString()`, which gives the day in UTC: the day before between midnight and 2 am in Paris.
+ * Today in the local time of the browser, or of the server, as YYYY-MM-DD: the value of a date
+ * input. Not `toISOString()`, which gives the day in UTC: the day before between midnight and 2 am
+ * in Paris.
  */
 export function today(): string {
     const now = new Date();

@@ -292,6 +292,32 @@ describe('POST /mcp', () => {
             expect(listBottlesWithDefinitions()).toEqual(before);
         });
 
+        it('refuses an argument that a write tool does not know, rather than write without it', async () => {
+            const ratingOf = async () =>
+                JSON.parse(
+                    (await modernCall('get_wine', { wineId: margaux })).result.content[0].text
+                ).rating;
+            await modernCall('rate_wine', { wineId: margaux, rating: 4.5 }, WRITE);
+            const before = listBottlesWithDefinitions();
+
+            for (const [name, args] of [
+                ['rate_wine', { wineId: margaux, score: 5 }],
+                ['add_bottles', { wineId: margaux, formatId: 'bottle', storageCaseId: 'x' }],
+                ['mark_bottles_drunk', { bottleIds: [before[0].id], notes: 'Typo' }]
+            ] as const) {
+                const { result } = await modernCall(name, args, WRITE);
+                expect(result.isError, `${name} ${JSON.stringify(args)}`).toBe(true);
+            }
+            expect(await ratingOf()).toBe(4.5);
+            expect(listBottlesWithDefinitions()).toEqual(before);
+
+            const { result } = await legacy('tools/list');
+            for (const tool of result.tools.filter(
+                (tool: { annotations: { readOnlyHint: boolean } }) => !tool.annotations.readOnlyHint
+            ))
+                expect(tool.inputSchema.additionalProperties, tool.name).toBe(false);
+        });
+
         it('refuses a write while a restore, an import or a wipe holds them, and goes on reading', async () => {
             let release = () => {};
             const restore = holdWrites(() => new Promise<void>((resolve) => (release = resolve)));

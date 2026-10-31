@@ -2264,7 +2264,8 @@ The tools that read:
 The tools that write run only when the token may write (see [MCP access](#mcp-access)): a
 read-only token gets `isError: true` with the text "This MCP token is read-only: changes can be
 allowed in Cellar, under Admin › Settings › MCP access.", and nothing changes. They check their
-arguments with the rules of the API, and each one writes all or nothing.
+arguments with the rules of the API and refuse an argument they do not know, so that a misspelt
+one is not dropped; each one writes all or nothing.
 
 - `add_wine`: creates a wine, without bottles.
   - **Parameters:** the [wine fields](#wine-fields) but `imageId`: `name`, `appellationId` (from
@@ -2274,20 +2275,22 @@ arguments with the rules of the API, and each one writes all or nothing.
   [`POST /api/bottles`](#post-apibottles) does: `available`, each with the next barcode when
   automatic barcodes are on.
   - **Parameters:** `wineId`: string, required; `formatId`: string, required (from
-    `list_choices`); `quantity`: integer 1-100, default 1; and, optional, the
+    `list_choices`); `quantity`: integer 1-100, default 1; `caseId`: string, optional (from
+    `get_free_space`), the `storageCaseId` of the bottles; and, optional, the
     [bottle fields](#bottle-fields) `vintage`, `optimum`, `originId` (from `list_choices`),
-    `purchasePrice`, `purchaseDate`, `storageCaseId` (from `get_free_space`), `barcode` (with
-    `quantity` 1 only) and `notes`.
+    `purchasePrice`, `purchaseDate`, `barcode` (with `quantity` 1 only) and `notes`.
   - **Answer:** an array of the bottles created, each with `id`, `wineId`, `availability`,
     `vintage`, `format`, `caseId`, `barcode`, `consumedDate` and `notes`.
   - **Refusals:** those of `POST /api/bottles`, such as a case without room for them all.
 - `mark_bottles_drunk`: marks bottles `consumed`, as the status dialog of the app does: they leave
   their case.
   - **Parameters:** `bottleIds`: array of 1-10,000 bottle ids, required; `date`: `YYYY-MM-DD`,
-    optional: the day they were drunk, today on the server's calendar when left out; `note`:
+    optional: the day they were drunk, today on the server's clock when left out, which is UTC in
+    the Docker image unless `TZ` is set, so an assistant should give the user's day; `note`:
     string, optional, at most 5,000 characters: added after the notes of each bottle, as the
     `addedNote` of [`PATCH /api/bottles`](#patch-apibottles).
-  - **Answer:** an array of the bottles changed, as `add_bottles` answers them.
+  - **Answer:** an array of the bottles changed, as `add_bottles` answers them. A bottle already
+    drunk takes the new day, and the note too, as with `PATCH /api/bottles`.
   - **Refusals:** those of `PATCH /api/bottles`, such as an unknown bottle or a note that does not
     fit after the notes.
 - `move_bottles`: puts bottles in a case. Their availability stays: a bottle out of the cellar
@@ -2303,7 +2306,7 @@ arguments with the rules of the API, and each one writes all or nothing.
   - **Answer:** an array of the bottles changed, as `add_bottles` answers them.
 - `rate_wine`: gives a wine its rating.
   - **Parameters:** `wineId`: string, required; `rating`: number from 1 to 5, half points
-    included, or `null`: `null` or left out removes the rating. The other fields of the wine stay.
+    included, or `null`, required: `null` removes the rating. The other fields of the wine stay.
   - **Answer:** the wine as `search_wines` gives it, without `inCellar`, `outOfCellar` and
     `vintages`.
 

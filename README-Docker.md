@@ -199,6 +199,19 @@ Browsers only let a page use the camera over HTTPS or on `localhost`. At an addr
 still works. To scan with the camera of a phone, serve Cellar over HTTPS
 [behind a reverse proxy](#behind-a-reverse-proxy), and set `ORIGIN` to that `https://` URL.
 
+### Install on a phone
+
+Cellar can be installed on the home screen of a phone, with its own icon, and then opens full
+screen, without the browser's address bar. Nothing is stored for offline use: the app still needs
+the server.
+
+- **Android (Chrome):** open Cellar, then the menu **⋮** › **Install app**. Chrome only offers
+  this over HTTPS: serve Cellar [behind a reverse proxy](#behind-a-reverse-proxy), and set
+  `ORIGIN` to that `https://` URL. At an address such as `http://192.168.1.20:3005`,
+  **⋮** › **Add to Home screen** still adds a shortcut, which opens Cellar in a browser tab.
+- **iPhone and iPad (Safari):** open Cellar, then **Share** › **Add to Home Screen**.
+- **Computer (Chrome, Edge):** the install button at the end of the address bar, over HTTPS too.
+
 ### Behind a reverse proxy
 
 If a reverse proxy (Traefik, Caddy, nginx, Synology reverse proxy...) serves the app on a

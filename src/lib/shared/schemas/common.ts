@@ -10,7 +10,7 @@ export const id = z.string().trim().min(1).max(100);
  * Null counts as empty.
  */
 export function maxLength(max: number) {
-    return z.check<string | null>((context) => {
+    const check = z.check<string | null>((context) => {
         if ((context.value?.length ?? 0) <= max) return;
         context.issues.push({
             code: 'too_big',
@@ -20,6 +20,12 @@ export function maxLength(max: number) {
             input: context.value
         });
     });
+    // A custom check says nothing to z.toJSONSchema, which reads the maximum that zod's own checks
+    // leave in the bag of their schema: the OpenAPI description gives the limit this way.
+    check._zod.onattach.push((schema) => {
+        schema._zod.bag.maximum = max;
+    });
+    return check;
 }
 
 /** The most characters of a name, and of a producer. */
@@ -83,6 +89,7 @@ export function asLongText(text: string): string {
  */
 export const longText = z
     .string()
+    .overwrite(asLongText)
+    .check(maxLength(LONG_TEXT_MAX_LENGTH))
     .nullish()
-    .transform((text) => (text == null ? null : asLongText(text) || null))
-    .check(maxLength(LONG_TEXT_MAX_LENGTH));
+    .transform((text) => text || null);

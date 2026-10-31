@@ -354,13 +354,7 @@
                 >
                     {isCreating ? m['common.adding']() : m['common.add']()}
                 </Button>
-                <Button
-                    type="button"
-                    variant="outline"
-                    size="sm"
-                    onclick={closeNewInput}
-                    {disabled}
-                >
+                <Button type="button" variant="outline" size="sm" onclick={closeNewInput}>
                     {m['common.cancel']()}
                 </Button>
             </div>

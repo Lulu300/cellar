@@ -151,7 +151,7 @@ export const phases = [
 		id: 'P14',
 		version: '1.2.0',
 		title: 'Serveur MCP',
-		goal: 'Pour la 1.2.0, enchaînée juste après la 1.1.0 : un serveur MCP intégré à Cellar, pour les assistants d’IA du réseau local (décision « Serveur MCP (P14) »), et la description OpenAPI de l’API, tirée des mêmes schémas zod. Lots : 1. SEC-11, API-14 (faits le 2026-10-31) ; 2. API-10, API-15 (faits le 2026-10-31) ; 3. API-11, DOC-06 (faits le 2026-10-31) ; puis REL-08.'
+		goal: 'Pour la 1.2.0, enchaînée juste après la 1.1.0 : un serveur MCP intégré à Cellar, pour les assistants d’IA du réseau local (décision « Serveur MCP (P14) »), et la description OpenAPI de l’API, tirée des mêmes schémas zod. Lots : 1. SEC-11, API-14 (faits le 2026-10-31) ; 2. API-10, API-15 (faits le 2026-10-31) ; 3. API-11, DOC-06 (faits le 2026-10-31) ; BUG-25 ; puis REL-08.'
 	},
 	{
 		id: 'P15',
@@ -2368,6 +2368,17 @@ export const tasks = [
 		deps: ['API-10'], src: ['Demande du mainteneur (2026-10-31)']
 	},
 	{
+		id: 'BUG-25', phase: 'P14', size: 'S', sev: 'majeur',
+		title: 'Envois coupés au bout de 5 minutes',
+		why: 'Trouvé pendant DOC-06 : Node coupe toute requête dont le corps met plus de 300 s à arriver (`requestTimeout` par défaut, que ni adapter-node ni `server.js` ne changent) ; une restauration ou un import ZIP de 500 Mo demande donc au moins 1,8 Mo/s, en direct comme derrière Caddy ou Traefik, sinon 408.',
+		where: ['server.js', 'server.test.ts', 'docs/reverse-proxy.md', 'README-Docker.md'],
+		todo: [
+			'`server.js` donne au serveur un délai assez long pour les plus gros envois documentés sur une connexion lente du réseau local, sans le supprimer ; testé ; docs/reverse-proxy.md et README-Docker suivent (la limite devient celle du proxy). Demande du mainteneur, juste avant la release 1.2.0.'
+		],
+		done: 'Sur l’app compilée, un envoi lent qui dure plus de 5 minutes aboutit ; testé ; la doc des proxies dit la nouvelle limite.',
+		deps: ['DOC-06'], src: ['Trouvé pendant DOC-06']
+	},
+	{
 		id: 'REL-08', phase: 'P14', size: 'S', sev: 'evolution',
 		title: 'Publication de la 1.2.0',
 		why: 'La 1.2.0 apporte aux utilisateurs ce que sa phase a livré.',
@@ -2376,7 +2387,7 @@ export const tasks = [
 			'Résumé 1.2.0 complété à chaque tâche ; banc depuis la version précédente ; release selon RELEASING.md, avec le mainteneur.'
 		],
 		done: 'v1.2.0 est publiée sur `main` et son image se télécharge sans connexion ; develop passe à la rc suivante.',
-		deps: ['SEC-11', 'API-14', 'API-10', 'API-11', 'API-15', 'DOC-06'], src: ['Décision « Versions après la 1.0 »']
+		deps: ['SEC-11', 'API-14', 'API-10', 'API-11', 'API-15', 'DOC-06', 'BUG-25'], src: ['Décision « Versions après la 1.0 »']
 	},
 	// ───────── P15 Navigation, photos et achats
 	{

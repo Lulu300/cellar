@@ -8,6 +8,7 @@
   "API-07": {"state":"done","note":"06388c6e..11e22ce2 (PUT /api/bottles/{id} retiré → 405, action « scripts » 0.9.0 ; docs/API.md : 103 couples route × méthode, à jour de DATA-08 et BUG-16 ; un test de route par couple ; api-doc.test.ts compare le document au code). CI verte.","updatedAt":"2026-10-18T00:30:00Z"},
   "API-08": {"state":"done","note":"168a454f..88d7de89","updatedAt":"2026-10-28T10:46:09.781Z"},
   "API-09": {"state":"done","note":"70a1afbb..f84e3d91","updatedAt":"2026-10-28T15:34:42.628Z"},
+  "API-10": {"state":"done","note":"c318671a..315b3a82","updatedAt":"2026-10-31T17:17:12.005Z"},
   "API-12": {"state":"done","note":"c629b212..8fc8ebf5","updatedAt":"2026-10-30T09:00:32.922Z"},
   "API-13": {"state":"done","note":"1241bf5f..4f4b22ad","updatedAt":"2026-10-31T12:02:52.827Z"},
   "API-14": {"state":"done","note":"95cf4b69..ce160a2b","updatedAt":"2026-10-31T16:17:37.865Z"},

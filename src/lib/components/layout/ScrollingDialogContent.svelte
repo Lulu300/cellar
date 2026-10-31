@@ -35,7 +35,7 @@
          * on a selection. */
         toolbar?: Snippet;
         children: Snippet;
-        /** The buttons. */
+        /** What stays in view under the body: the buttons, or a pagination. */
         footer?: Snippet;
     } = $props();
 </script>

@@ -28,7 +28,8 @@
 <!-- A dialog as tall as its content, up to 85 % of the screen: between the title and the buttons,
      which stay in view, the body scrolls, so that a phone always shows both. -->
 <DialogContent class={cn('max-h-[85vh] flex flex-col', className)}>
-    <DialogHeader class="flex-shrink-0">
+    <!-- Padded at the end, so that a long title wraps before the close cross of the corner. -->
+    <DialogHeader class="flex-shrink-0 pe-6">
         <DialogTitle class={Icon ? 'flex items-center gap-2' : undefined}>
             {#if Icon}
                 <Icon class="h-5 w-5 shrink-0 text-primary" />

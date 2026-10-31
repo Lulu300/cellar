@@ -20,6 +20,10 @@
     let newAccessCode = $state('');
     let confirmAccessCode = $state('');
     let accessCodeError = $state('');
+    // The button is greyed until the three fields hold something: a line by it says why.
+    const fieldsMissing = $derived(
+        !currentAccessCode.trim() || !newAccessCode.trim() || !confirmAccessCode.trim()
+    );
 
     function closeDialog() {
         open = false;
@@ -34,11 +38,6 @@
         // Trimmed like the code typed at login, which must match the new one.
         const currentCode = currentAccessCode.trim();
         const newCode = newAccessCode.trim();
-
-        if (!currentCode) {
-            accessCodeError = m['auth.please_enter_access_code']();
-            return;
-        }
 
         if (newCode.length < MIN_ACCESS_CODE_LENGTH) {
             accessCodeError = m['auth.access_code_too_short']({ min: MIN_ACCESS_CODE_LENGTH });
@@ -121,6 +120,14 @@
                         {#if accessCodeError}
                             <p class="text-sm text-destructive">{accessCodeError}</p>
                         {/if}
+                        {#if fieldsMissing}
+                            <p
+                                id="access-code-fields-missing"
+                                class="text-xs text-muted-foreground"
+                            >
+                                {m['admin.access_code_fields_missing']()}
+                            </p>
+                        {/if}
                     </div>
                 </div>
             </div>
@@ -130,9 +137,8 @@
                 </Button>
                 <Button
                     onclick={changeAccessCode}
-                    disabled={!currentAccessCode.trim() ||
-                        !newAccessCode.trim() ||
-                        !confirmAccessCode.trim()}
+                    disabled={fieldsMissing}
+                    aria-describedby={fieldsMissing ? 'access-code-fields-missing' : undefined}
                 >
                     {m['admin.change_access_code']()}
                 </Button>

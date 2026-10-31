@@ -29,6 +29,10 @@
     const reasonId = $props.id();
     const describedBy = $derived(options.layoutPrintable ? undefined : reasonId);
     const selected = $derived(presets.find((preset) => preset.id === selectedId));
+    // Update is greyed until a preset is applied, and Save until the preset has a name: a line
+    // says why, before any click.
+    const noneAppliedId = `${reasonId}-none-applied`;
+    const nameMissingId = `${reasonId}-name-missing`;
 
     /** The dialog open: saving a new preset, updating the selected one, or the list. */
     let dialog = $state<'save' | 'update' | 'manage' | null>(null);
@@ -117,7 +121,7 @@
                 variant="outline"
                 size="sm"
                 disabled={!selected || !options.layoutPrintable}
-                aria-describedby={describedBy}
+                aria-describedby={describedBy ?? (selected ? undefined : noneAppliedId)}
                 onclick={() => openEditor('update')}
             >
                 <PenLine class="h-4 w-4 mr-1" />
@@ -130,6 +134,11 @@
         </div>
     </div>
 
+    {#if options.layoutPrintable && !selected}
+        <p id={noneAppliedId} class="text-xs text-muted-foreground">
+            {m['barcode.preset_to_update_missing']()}
+        </p>
+    {/if}
     {#if !options.layoutPrintable}
         <!-- The server refuses such a preset. Said here, by the buttons: on a phone, the list
              under the form is a screen away. -->
@@ -188,7 +197,13 @@
                     id="preset-name"
                     bind:value={name}
                     placeholder={m['barcode.preset_name_placeholder']()}
+                    aria-describedby={name.trim() ? undefined : nameMissingId}
                 />
+                {#if !name.trim()}
+                    <p id={nameMissingId} class="text-xs text-muted-foreground">
+                        {m['barcode.preset_name_missing']()}
+                    </p>
+                {/if}
             </div>
             <div class="space-y-2">
                 <Label for="preset-description">{m['barcode.description_optional']()}</Label>

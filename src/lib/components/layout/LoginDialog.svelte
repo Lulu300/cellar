@@ -34,6 +34,8 @@
     let isLoggingIn = $state(false);
     // On first launch the same dialog asks for the code to set instead of the current one.
     const isChoosingCode = $derived(!auth.accessCodeSet);
+    // The button is greyed without a code: the field says why before any click.
+    const codeMissing = $derived(!loginCode.trim());
 
     /** Opens the dialog, with a notice such as why the session ended. */
     export function show(notice = '') {
@@ -50,11 +52,6 @@
     }
 
     async function handleLogin() {
-        if (!loginCode.trim()) {
-            loginError = m['auth.please_enter_access_code']();
-            return;
-        }
-
         isLoggingIn = true;
         loginError = '';
 
@@ -168,7 +165,15 @@
                     placeholder={isChoosingCode
                         ? m['placeholders.enter_new_access_code']()
                         : m['auth.enter_access_code_placeholder']()}
+                    aria-describedby={codeMissing ? 'login-code-missing' : undefined}
                 />
+                {#if codeMissing}
+                    <p id="login-code-missing" class="text-xs text-muted-foreground">
+                        {isChoosingCode
+                            ? m['auth.new_access_code_missing']()
+                            : m['auth.access_code_missing']()}
+                    </p>
+                {/if}
                 {#if isChoosingCode}
                     <Label for="confirm-code">{m['auth.confirm_access_code']()}</Label>
                     <Input
@@ -201,7 +206,7 @@
                 <DialogClose type="button" class={buttonVariants({ variant: 'outline' })}>
                     {m['common.cancel']()}
                 </DialogClose>
-                <Button type="submit" disabled={!loginCode.trim() || isLoggingIn}>
+                <Button type="submit" disabled={codeMissing || isLoggingIn}>
                     {#if isLoggingIn}
                         <span
                             class="animate-spin rounded-full h-4 w-4 border-b-2 border-current"

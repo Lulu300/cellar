@@ -41,6 +41,7 @@
     const uid = $props.id();
     const listId = `${uid}-list`;
     const optionId = (index: number) => `${uid}-option-${index}`;
+    const newItemMissingId = `${uid}-new-item-missing`;
 
     let searchTerm = $state('');
     let showNewInput = $state(false);
@@ -324,6 +325,7 @@
                 placeholder={m['forms.new_item_name']()}
                 autofocus
                 {disabled}
+                aria-describedby={newItemName.trim() ? undefined : newItemMissingId}
                 onkeydown={(e) => {
                     if (e.key === 'Enter') {
                         e.preventDefault();
@@ -335,6 +337,12 @@
                     }
                 }}
             />
+            <!-- Add is greyed without a name: this line says why, before any click. -->
+            {#if !newItemName.trim()}
+                <p id={newItemMissingId} class="text-xs text-muted-foreground">
+                    {m['forms.new_item_name_missing']()}
+                </p>
+            {/if}
             <div class="flex gap-2">
                 <Button
                     type="button"

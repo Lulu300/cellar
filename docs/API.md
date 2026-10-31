@@ -23,6 +23,12 @@ which is also the value of `ORIGIN` (see
   number of milliseconds since 1970; an empty string or `null` clears it.
 - In request bodies, names and optional texts are trimmed, and an optional text or id that is empty
   is stored as `null`.
+- The length of a name, a producer, a description, a note, a grape variety or a case suffix is
+  counted in UTF-16 units, like JavaScript's `.length`, once trimmed: an emoji counts two (or more,
+  for a flag or a family). The forms and the imports count the same way, so 250 emoji fill the 500
+  characters of a name. Versions before 1.1.0 counted an emoji as one character in a name, a
+  producer, a grape variety or a case suffix: a text they stored can be too long now, and a `PUT`
+  that keeps it answers `422 invalid_body` until it is shortened.
 - A `GET` route also answers `HEAD`.
 - Every answer of the app, static files and error pages included, carries
   `Content-Security-Policy: frame-ancestors 'none'` and `X-Frame-Options: DENY`: no web page can show
@@ -1984,7 +1990,11 @@ pre-import export.
 - The import is all or nothing: a refused row leaves the data as it was. Settings, sessions and
   label presets are not part of an export and stay. The line breaks of notes and descriptions become
   LF, and a note or a description of more than 5,000 characters, from an export of an older
-  version, is cut to 5,000 characters, as the upgrade cuts those of the database. A negative
+  version, is cut to 5,000 characters, as the upgrade cuts those of the database. A name, a wine
+  type or colour, or a producer over 500 characters and a grape variety over 100, which versions
+  before 1.1.0 took because they counted an emoji as one character, is cut to its limit, never in
+  the middle of an emoji. Two names that become the same once cut answer `422 export_refused`, as
+  any two rows of the same name do. A negative
   purchase price or current value is removed and written into the bottle's notes, as the upgrade of
   an older database does. While the import runs, other writes get `503 writes_held`.
 - **Errors:**
@@ -2194,8 +2204,11 @@ server.
 Imports the rows of CSV files, table by table. Rows already in the cellar are skipped, and rows that
 lack a value or break a rule are reported; the other rows are imported. The line breaks of notes and
 descriptions become LF, and a note or a description of more than 5,000 characters, as an export of
-an older version may hold, is cut to 5,000 characters. A negative purchase price or current value,
-which an older version may have stored, is removed and written into the bottle's notes.
+an older version may hold, is cut to 5,000 characters. A name, a producer or a grape variety over
+its limit, which versions before 1.1.0 took because they counted an emoji as one character, is not
+cut: its row is reported, as `invalid`, because a cut name would not match the next import of the
+same file. A negative purchase price or current value, which an older version may have stored, is
+removed and written into the bottle's notes.
 
 Names are compared without their case. A region is named within its country, an appellation within
 its region, and a case within its container: a file that gives the parent next to the name, as the

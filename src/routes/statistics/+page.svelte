@@ -2,12 +2,11 @@
     import { pageTitle } from '#lib/components/layout/navigation.js';
     import { Card, CardContent, CardHeader, CardTitle } from '#lib/components/ui/card/index.js';
     import { TrendingUp, DollarSign, BottleWine, ChartColumn } from '@lucide/svelte';
-    import { themes } from '#lib/utils/theme-colors.js';
-    import { preferences } from '#lib/stores/preferences.svelte.js';
+    import BarChart from '#lib/components/statistics/BarChart.svelte';
     import PieChart from '#lib/components/statistics/PieChart.svelte';
     import { colorFill, typeFill } from '#lib/utils/wine-badges.js';
     import { m } from '#lib/paraglide/messages.js';
-    import { abbreviate, formatCurrency } from '#lib/utils/format.js';
+    import { formatCurrency } from '#lib/utils/format.js';
     import { nameIsShared } from '#lib/utils/compare.js';
     import { availabilityLabel } from '#lib/components/bottles/availability.js';
     import type { PageData } from './$types';
@@ -23,12 +22,6 @@
             .filter((vintage) => vintage.vintage >= currentYear - 10)
             .slice(-10);
     });
-
-    // The bars take the colour of the theme
-    function getThemeGradient() {
-        const preview = themes[preferences.theme].preview;
-        return `linear-gradient(to top, ${preview.primary}, ${preview.primary}cc)`;
-    }
 
     // Neutral colors for pie charts
     const neutralColors = [
@@ -306,30 +299,14 @@
             </CardHeader>
             <CardContent>
                 {#if statsData.winesByCountry?.length > 0}
-                    {@const maxCount = Math.max(...statsData.winesByCountry.map((c) => c.count))}
-                    <div class="h-[300px] flex items-end justify-center gap-2 px-2">
-                        {#each statsData.winesByCountry as country (country.country)}
-                            {@const height = Math.max((country.count / maxCount) * 200, 20)}
-                            <div class="flex flex-col items-center gap-2 flex-1 min-w-0">
-                                <!-- Value label on top -->
-                                <span class="text-sm font-bold text-center">{country.count}</span>
-
-                                <!-- Bar -->
-                                <div
-                                    class="w-full rounded-t-sm flex items-end justify-center transition-all duration-500"
-                                    style="height: {height}px; background: {getThemeGradient()}"
-                                ></div>
-
-                                <!-- Country name -->
-                                <span
-                                    class="text-xs text-center font-medium leading-tight max-w-full break-words"
-                                    title={country.country}
-                                >
-                                    {abbreviate(country.country, 8, 6)}
-                                </span>
-                            </div>
-                        {/each}
-                    </div>
+                    <BarChart
+                        bars={statsData.winesByCountry.map(({ country, count }) => ({
+                            key: country,
+                            name: country,
+                            count
+                        }))}
+                        cut={{ max: 8, keep: 6 }}
+                    />
                 {:else}
                     <p class="text-center text-muted-foreground py-8">
                         {m['statistics.no_data_available']()}
@@ -345,30 +322,14 @@
             </CardHeader>
             <CardContent>
                 {#if statsData.topProducers?.length > 0}
-                    {@const maxCount = Math.max(...statsData.topProducers.map((p) => p.count))}
-                    <div class="h-[300px] flex items-end justify-center gap-2 px-2">
-                        {#each statsData.topProducers as producer (producer.producer)}
-                            {@const height = Math.max((producer.count / maxCount) * 200, 20)}
-                            <div class="flex flex-col items-center gap-2 flex-1 min-w-0">
-                                <!-- Value label on top -->
-                                <span class="text-sm font-bold text-center">{producer.count}</span>
-
-                                <!-- Bar -->
-                                <div
-                                    class="w-full rounded-t-sm flex items-end justify-center transition-all duration-500"
-                                    style="height: {height}px; background: {getThemeGradient()}"
-                                ></div>
-
-                                <!-- Producer name -->
-                                <span
-                                    class="text-xs text-center font-medium leading-tight max-w-full break-words"
-                                    title={producer.producer}
-                                >
-                                    {abbreviate(producer.producer, 12, 10)}
-                                </span>
-                            </div>
-                        {/each}
-                    </div>
+                    <BarChart
+                        bars={statsData.topProducers.map(({ producer, count }) => ({
+                            key: producer,
+                            name: producer,
+                            count
+                        }))}
+                        cut={{ max: 12, keep: 10 }}
+                    />
                 {:else}
                     <p class="text-center text-muted-foreground py-8">
                         {m['statistics.no_producer_data']()}
@@ -431,27 +392,13 @@
             </CardHeader>
             <CardContent>
                 {#if recentVintages.length > 0}
-                    {@const maxCount = Math.max(...recentVintages.map((v) => v.count))}
-                    <div class="h-[300px] flex items-end justify-center gap-2 px-2">
-                        {#each recentVintages as vintage (vintage.vintage)}
-                            {@const height = Math.max((vintage.count / maxCount) * 200, 20)}
-                            <div class="flex flex-col items-center gap-2 flex-1 min-w-0">
-                                <!-- Value label on top -->
-                                <span class="text-sm font-bold text-center">{vintage.count}</span>
-
-                                <!-- Bar -->
-                                <div
-                                    class="w-full rounded-t-sm flex items-end justify-center transition-all duration-500"
-                                    style="height: {height}px; background: {getThemeGradient()}"
-                                ></div>
-
-                                <!-- Vintage year -->
-                                <span class="text-xs text-center font-medium leading-tight">
-                                    {vintage.vintage}
-                                </span>
-                            </div>
-                        {/each}
-                    </div>
+                    <BarChart
+                        bars={recentVintages.map(({ vintage, count }) => ({
+                            key: vintage,
+                            name: String(vintage),
+                            count
+                        }))}
+                    />
                 {:else}
                     <p class="text-center text-muted-foreground py-8">
                         {m['statistics.no_vintage_data']()}
@@ -468,42 +415,18 @@
                 <CardTitle>{m['statistics.top_wine_regions']()}</CardTitle>
             </CardHeader>
             <CardContent>
-                {@const maxCount = Math.max(...statsData.winesByRegion.map((r) => r.count))}
-                <div class="h-[300px] flex items-end justify-center gap-2 px-2">
-                    {#each statsData.winesByRegion as region (region.id)}
-                        {@const height = Math.max((region.count / maxCount) * 200, 20)}
-                        {@const shared = nameIsShared(
-                            statsData.winesByRegion,
-                            region,
-                            (row) => row.region
-                        )}
-                        <div class="flex flex-col items-center gap-2 flex-1 min-w-0">
-                            <!-- Value label on top -->
-                            <span class="text-sm font-bold text-center">{region.count}</span>
-
-                            <!-- Bar -->
-                            <div
-                                class="w-full rounded-t-sm flex items-end justify-center transition-all duration-500"
-                                style="height: {height}px; background: {getThemeGradient()}"
-                            ></div>
-
-                            <!-- Region name, and its country when another region has the name -->
-                            <span
-                                class="text-xs text-center font-medium leading-tight max-w-full break-words"
-                                title={shared
-                                    ? `${region.region} (${region.country})`
-                                    : region.region}
-                            >
-                                {abbreviate(region.region, 8, 6)}
-                                {#if shared}
-                                    <span class="block text-muted-foreground font-normal">
-                                        {abbreviate(region.country, 8, 6)}
-                                    </span>
-                                {/if}
-                            </span>
-                        </div>
-                    {/each}
-                </div>
+                <!-- A region's country shows when another region has its name. -->
+                <BarChart
+                    bars={statsData.winesByRegion.map((region) => ({
+                        key: region.id,
+                        name: region.region,
+                        detail: nameIsShared(statsData.winesByRegion, region, (row) => row.region)
+                            ? region.country
+                            : undefined,
+                        count: region.count
+                    }))}
+                    cut={{ max: 8, keep: 6 }}
+                />
             </CardContent>
         </Card>
     {/if}

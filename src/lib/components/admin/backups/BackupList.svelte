@@ -5,7 +5,7 @@
     import { Badge } from '#lib/components/ui/badge/index.js';
     import { Button } from '#lib/components/ui/button/index.js';
     import OptionSelect from '#lib/components/forms/OptionSelect.svelte';
-    import { backupTypeLabel } from '#lib/components/admin/backups/backup-type.js';
+    import { backupKind, backupTypeLabel } from '#lib/components/admin/backups/backup-type.js';
     import { formatDateTime, formatFileSize } from '#lib/utils/format.js';
     import type { BackupFileDTO } from '#lib/shared/dto.js';
 
@@ -44,7 +44,7 @@
     const kindOptions = $derived([
         { value: 'all' as const, label: withCount(m['common.all'](), files.length) },
         { value: 'backup' as const, label: withCount(m['admin.full_backup'](), backups.length) },
-        { value: 'export' as const, label: withCount(m['admin.export'](), exports.length) }
+        { value: 'export' as const, label: withCount(m['admin.full_export'](), exports.length) }
     ]);
     const toneClasses = {
         primary: { icon: 'text-primary', row: 'bg-primary/5' },
@@ -80,6 +80,7 @@
     {:else}
         <ul class="max-h-96 space-y-2 overflow-y-auto">
             {#each shown as file (file.filename)}
+                {@const fileKind = backupKind(file)}
                 <li
                     class="flex items-center justify-between gap-2 rounded-lg border p-3 {toneClasses[
                         tone
@@ -111,8 +112,8 @@
                             size="sm"
                             variant="ghost"
                             onclick={() => onDownload(file)}
-                            title={m['admin.download_backup']()}
-                            aria-label={m['admin.download_backup']()}
+                            title={m['admin.download_backup']({ kind: fileKind })}
+                            aria-label={m['admin.download_backup']({ kind: fileKind })}
                         >
                             <Download class="h-4 w-4" />
                         </Button>
@@ -135,8 +136,8 @@
                             variant="ghost"
                             disabled={busy}
                             onclick={() => onDelete(file)}
-                            title={m['admin.delete_backup']()}
-                            aria-label={m['admin.delete_backup']()}
+                            title={m['admin.delete_backup']({ kind: fileKind })}
+                            aria-label={m['admin.delete_backup']({ kind: fileKind })}
                         >
                             <Trash class="h-4 w-4" />
                         </Button>

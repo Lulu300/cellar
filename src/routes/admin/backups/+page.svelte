@@ -9,6 +9,7 @@
         type BackupJob
     } from '#lib/components/admin/backups/BackupActions.svelte';
     import BackupList from '#lib/components/admin/backups/BackupList.svelte';
+    import { backupKind } from '#lib/components/admin/backups/backup-type.js';
     import NameBackupDialog from '#lib/components/admin/backups/NameBackupDialog.svelte';
     import ReplaceDataDialog from '#lib/components/admin/backups/ReplaceDataDialog.svelte';
     import WipeDialog from '#lib/components/admin/backups/WipeDialog.svelte';
@@ -73,14 +74,14 @@
                         '/api/admin/create-backup',
                         { method: 'POST', json }
                     );
-                    toasts.add(m['toast.database_backup_created'](), 'success');
+                    toasts.add(m['toast.full_backup_created'](), 'success');
                     if (!restorable) toasts.add(m['toast.backup_too_large'](), 'warning', 0);
                 } else {
                     const { recordCount, restorable } = await request<ExportCreatedDTO>(
                         '/api/admin/create-export',
                         { method: 'POST', json }
                     );
-                    toasts.add(m['toast.json_export_created']({ count: recordCount }), 'success');
+                    toasts.add(m['toast.full_export_created']({ count: recordCount }), 'success');
                     if (!restorable) toasts.add(m['toast.export_too_large'](), 'warning', 0);
                 }
                 showNaming = false;
@@ -89,24 +90,25 @@
                 const values = { error: errorMessage(error) };
                 toasts.add(
                     kind === 'backup'
-                        ? m['toast.failed_to_create_backup'](values)
-                        : m['toast.failed_to_create_json_export'](values)
+                        ? m['toast.failed_to_create_full_backup'](values)
+                        : m['toast.failed_to_create_full_export'](values)
                 );
             }
         });
 
     async function remove(file: BackupFileDTO) {
-        const message = m['admin.confirm_delete_backup']({ filename: file.filename });
+        const kind = backupKind(file);
+        const message = m['admin.confirm_delete_backup']({ kind, filename: file.filename });
         if (!(await confirm({ message }))) return;
         try {
             await request('/api/admin/delete-backup', {
                 method: 'DELETE',
                 json: { filename: file.filename }
             });
-            toasts.add(m['toast.backup_deleted'](), 'success');
+            toasts.add(m['toast.backup_deleted']({ kind }), 'success');
             await invalidateAll();
         } catch (error) {
-            toasts.add(m['toast.failed_to_delete_backup']({ error: errorMessage(error) }));
+            toasts.add(m['toast.failed_to_delete_backup']({ kind, error: errorMessage(error) }));
         }
     }
 
@@ -153,7 +155,7 @@
                 toasts.add(
                     kind === 'restore'
                         ? m['toast.failed_to_restore_database'](values)
-                        : m['toast.failed_to_import_json'](values),
+                        : m['toast.failed_to_import_export'](values),
                     'error',
                     10000
                 );

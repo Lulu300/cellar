@@ -61,7 +61,7 @@
             <div class="mb-3 flex items-center gap-2">
                 <h3 class="text-sm font-medium">{m['common.filters']()}</h3>
                 <Button size="sm" variant="outline" onclick={onClearFilters}>
-                    {m['admin.clear_all']()}
+                    {m['admin.clear_filters']()}
                 </Button>
             </div>
             <div class="grid grid-cols-1 gap-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5">

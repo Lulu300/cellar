@@ -85,7 +85,7 @@
 
 <Dialog bind:open onOpenChange={(isOpen) => !isOpen && closeDialog()}>
     <ScrollingDialogContent
-        title={m['admin.export_to_csv_files']()}
+        title={m['admin.csv_export']()}
         error={csvExportError}
         class="max-w-2xl"
     >
@@ -100,7 +100,7 @@
                             {m['common.select_all']()}
                         </Button>
                         <Button size="sm" variant="outline" onclick={clearAllCsvTables}>
-                            {m['admin.clear_all']()}
+                            {m['admin.select_none']()}
                         </Button>
                     </div>
                 </div>

@@ -9,7 +9,7 @@ test('back up, wipe the cellar, then restore the backup from the list', async ({
     await page.getByRole('link', { name: 'Admin' }).click();
     await page.getByRole('link', { name: 'Backups' }).click();
     await page.getByRole('button', { name: 'Full Backup', exact: true }).click();
-    const backupDialog = page.getByRole('dialog', { name: 'Create Database Backup' });
+    const backupDialog = page.getByRole('dialog', { name: 'Full Backup' });
     await backupDialog.getByLabel('Custom filename (optional)').fill('e2e-journey');
     await backupDialog.getByRole('button', { name: 'Create Backup' }).click();
     const backup = page.getByRole('listitem').filter({ hasText: 'e2e-journey' });
@@ -25,7 +25,7 @@ test('back up, wipe the cellar, then restore the backup from the list', async ({
     await expect(page.getByRole('option', { name: 'All (1)' })).toHaveAttribute('data-highlighted');
     await page.keyboard.press('ArrowDown');
     await page.keyboard.press('ArrowDown');
-    await expect(page.getByRole('option', { name: 'Export (0)' })).toHaveAttribute(
+    await expect(page.getByRole('option', { name: 'Full Export (0)' })).toHaveAttribute(
         'data-highlighted'
     );
     await page.keyboard.press('Enter');
@@ -38,7 +38,7 @@ test('back up, wipe the cellar, then restore the backup from the list', async ({
     // Tab passes over a list, closed or open, without choosing: here "Tab", one of the CSV
     // delimiters (BUG-23).
     await page.getByRole('button', { name: 'CSV Export', exact: true }).click();
-    const csvExportDialog = page.getByRole('dialog', { name: 'Export to CSV Files' });
+    const csvExportDialog = page.getByRole('dialog', { name: 'CSV Export' });
     const delimiter = csvExportDialog.getByRole('combobox', { name: 'Delimiter' });
     await delimiter.focus();
     await delimiter.press('Tab');
@@ -55,9 +55,9 @@ test('back up, wipe the cellar, then restore the backup from the list', async ({
     // (UI-21).
     const viewport = page.viewportSize();
     await page.setViewportSize({ width: 375, height: 667 });
-    await expect(
-        csvExportDialog.getByRole('heading', { name: 'Export to CSV Files' })
-    ).toBeInViewport({ ratio: 1 });
+    await expect(csvExportDialog.getByRole('heading', { name: 'CSV Export' })).toBeInViewport({
+        ratio: 1
+    });
     await expect(csvExportDialog.getByRole('button', { name: 'Export CSV Files' })).toBeInViewport({
         ratio: 1
     });

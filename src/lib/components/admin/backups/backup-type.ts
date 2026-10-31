@@ -7,6 +7,11 @@ interface BackupFile {
     type: string;
 }
 
+/** The `kind` that the texts naming a file of the backup list take: backup or export. */
+export function backupKind(file: Pick<BackupFile, 'isExport'>): 'backup' | 'export' {
+    return file.isExport ? 'export' : 'backup';
+}
+
 /** What a file of the backup list is, in the user's language. */
 export function backupTypeLabel(file: BackupFile): string {
     // Made by Cellar before a restore, a wipe or a JSON import.

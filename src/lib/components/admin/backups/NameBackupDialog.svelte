@@ -40,9 +40,7 @@
     <DialogContent class="max-w-md">
         <DialogHeader>
             <DialogTitle>
-                {kind === 'backup'
-                    ? m['admin.create_database_backup']()
-                    : m['admin.create_json_export']()}
+                {kind === 'backup' ? m['admin.full_backup']() : m['admin.full_export']()}
             </DialogTitle>
         </DialogHeader>
         <form class="space-y-6 py-4" onsubmit={create}>

@@ -37,11 +37,15 @@ describe('toasts', () => {
 
     it('leaves it to the dialog too when the error of an action names it', () => {
         const error = m['errors.unauthenticated']();
-        toasts.add(m['toast.failed_to_delete_backup']({ error }), 'error', 0);
-        toasts.add(m['toast.failed_to_delete_backup']({ error: 'Not found' }), 'error', 0);
+        toasts.add(m['toast.failed_to_delete_backup']({ kind: 'backup', error }), 'error', 0);
+        toasts.add(
+            m['toast.failed_to_delete_backup']({ kind: 'backup', error: 'Not found' }),
+            'error',
+            0
+        );
 
         expect(toasts.items.map((toast) => toast.message)).toEqual([
-            m['toast.failed_to_delete_backup']({ error: 'Not found' })
+            m['toast.failed_to_delete_backup']({ kind: 'backup', error: 'Not found' })
         ]);
     });
 });

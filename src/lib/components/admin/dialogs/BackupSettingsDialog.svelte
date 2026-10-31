@@ -82,7 +82,7 @@
 </script>
 
 <Dialog bind:open>
-    <ScrollingDialogContent title={m['admin.backup_settings_dialog']()} {error} class="max-w-md">
+    <ScrollingDialogContent title={m['admin.auto_backup_settings']()} {error} class="max-w-md">
         <div class="py-3">
             <div class="flex items-start gap-3">
                 <div

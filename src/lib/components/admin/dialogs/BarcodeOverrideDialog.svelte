@@ -35,7 +35,7 @@
         <DialogHeader>
             <DialogTitle class="flex items-center gap-2">
                 <Key class="h-5 w-5" />
-                {m['admin.barcode_settings_for_wine_bottles']()}
+                {m['admin.imported_bottle_barcodes']()}
             </DialogTitle>
         </DialogHeader>
         <div class="space-y-4">

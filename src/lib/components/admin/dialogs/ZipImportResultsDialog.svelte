@@ -33,7 +33,7 @@
 
 <Dialog bind:open>
     <ScrollingDialogContent
-        title={m['admin.zip_import_results']()}
+        title={m['admin.image_import_results']()}
         icon={FileArchive}
         class="sm:max-w-4xl"
     >

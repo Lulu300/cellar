@@ -79,7 +79,7 @@
 </script>
 
 <Dialog bind:open onOpenChange={(isOpen) => !isOpen && closeDialog()}>
-    <ScrollingDialogContent title={m['admin.import_from_csv_files']()} class="max-w-2xl">
+    <ScrollingDialogContent title={m['admin.csv_import']()} class="max-w-2xl">
         <div class="space-y-6 py-3">
             <div class="space-y-3">
                 <Label class="text-base font-medium"

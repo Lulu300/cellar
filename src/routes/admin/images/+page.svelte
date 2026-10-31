@@ -33,7 +33,7 @@
     let { data }: PageProps = $props();
 
     const selection = new ImageSelection(() => data.images);
-    const jobs = new Jobs<'upload' | 'export' | 'download' | 'zip' | 'refresh'>();
+    const jobs = new Jobs<'upload' | 'export-selected' | 'export' | 'zip' | 'refresh'>();
 
     let uploadInput = $state<HTMLInputElement>();
     let zipInput = $state<HTMLInputElement>();
@@ -45,41 +45,36 @@
     let toDelete = $state<string[]>([]);
     let showDelete = $state(false);
 
-    /** Makes the browser save the images as one zip. */
-    function saveZip(imageIds: string[], fallbackName: string) {
-        return downloadBlob('/api/admin/download-images', fallbackName, {
-            method: 'POST',
-            json: { imageIds }
-        });
-    }
-
-    const downloadSelected = () =>
-        jobs.run('download', async () => {
-            const count = selection.ids.length;
+    /** Makes the browser save the images as one zip: the selected ones, or those in view. */
+    const exportImages = (
+        job: 'export-selected' | 'export',
+        imageIds: string[],
+        fallbackName: string
+    ) =>
+        jobs.run(job, async () => {
             try {
-                const filename = await saveZip(selection.ids, `wine-images-${today()}.zip`);
-                toasts.add(m['toast.downloaded_images']({ count, filename }), 'success');
-            } catch (error) {
-                const message = errorMessage(error);
-                toasts.add(m['toast.failed_to_download_images']({ error: message }));
-            }
-        });
-
-    // Exports the images in view, which the search may narrow.
-    const exportVisible = () =>
-        jobs.run('export', async () => {
-            const imageIds = selection.visible.map((image) => image.id);
-            try {
-                const filename = await saveZip(imageIds, `all-wine-images-${today()}.zip`);
+                const filename = await downloadBlob('/api/admin/download-images', fallbackName, {
+                    method: 'POST',
+                    json: { imageIds }
+                });
                 toasts.add(
                     m['toast.exported_images']({ count: imageIds.length, filename }),
                     'success'
                 );
             } catch (error) {
-                const message = errorMessage(error);
-                toasts.add(m['toast.failed_to_export_images']({ error: message }));
+                toasts.add(m['toast.failed_to_export_images']({ error: errorMessage(error) }));
             }
         });
+
+    const exportSelected = () =>
+        exportImages('export-selected', selection.ids, `wine-images-${today()}.zip`);
+    // The images in view, which the search may narrow.
+    const exportVisible = () =>
+        exportImages(
+            'export',
+            selection.visible.map((image) => image.id),
+            `all-wine-images-${today()}.zip`
+        );
 
     function upload(input: HTMLInputElement) {
         const files = Array.from(input.files ?? []);
@@ -140,7 +135,7 @@
                 showZipResults = true;
                 await invalidateAll();
             } catch (error) {
-                toasts.add(m['toast.zip_import_failed']({ error: errorMessage(error) }));
+                toasts.add(m['toast.image_import_failed']({ error: errorMessage(error) }));
             }
         });
     }
@@ -189,13 +184,13 @@
                 <Badge variant="secondary"
                     >{m['common.selected_count']({ count: selection.ids.length })}</Badge
                 >
-                <Button size="sm" onclick={downloadSelected} disabled={jobs.running !== null}>
-                    {#if jobs.running === 'download'}
+                <Button size="sm" onclick={exportSelected} disabled={jobs.running !== null}>
+                    {#if jobs.running === 'export-selected'}
                         <LoaderCircle class="h-4 w-4 mr-1 animate-spin" />
                     {:else}
                         <Download class="h-4 w-4 mr-1" />
                     {/if}
-                    {m['admin.download_zip']()}
+                    {m['admin.export_selected']()}
                 </Button>
                 <Button size="sm" variant="destructive" onclick={() => startDelete(selection.ids)}>
                     <Trash class="h-4 w-4 mr-1" />

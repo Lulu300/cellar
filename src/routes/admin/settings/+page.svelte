@@ -39,7 +39,7 @@
                 {m['admin.session_timeout_value']({ hours: data.settings.sessionTimeoutHours })}
             </p>
             <Button variant="outline" onclick={() => (showSessionTimeout = true)}>
-                {m['common.edit']()}
+                {m['admin.change_session_timeout']()}
             </Button>
         </CardContent>
     </Card>
@@ -64,7 +64,7 @@
                 {/if}
             </p>
             <Button variant="outline" onclick={() => (showBarcodeSettings = true)}>
-                {m['common.edit']()}
+                {m['admin.change_barcode_settings']()}
             </Button>
         </CardContent>
     </Card>

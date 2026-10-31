@@ -49,7 +49,7 @@
 <Dialog bind:open>
     <DialogContent class="max-w-md">
         <DialogHeader>
-            <DialogTitle>{m['admin.session_timeout_dialog']()}</DialogTitle>
+            <DialogTitle>{m['admin.session_timeout']()}</DialogTitle>
         </DialogHeader>
         <div class="space-y-4 py-4">
             <div class="flex items-start gap-3">

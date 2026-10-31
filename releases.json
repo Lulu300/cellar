@@ -1,7 +1,7 @@
 [
   {
     "version": "1.2.0",
-    "summary": "1.2.0 adds an MCP server to Cellar, so that an AI assistant on your network can read your cellar and, if you allow it, update it, and publishes an OpenAPI description of the API.",
+    "summary": "1.2.0 adds an MCP server to Cellar, so that an AI assistant on your network can read your cellar and, if you allow it, update it, and publishes an OpenAPI description of the API.\n\nThe MCP server has its own access token, made in Admin › Settings › MCP access: Cellar shows it once, keeps only its hash, and can replace or revoke it. The token is read-only unless you tick \"Allow changes\". It opens the MCP server only, never the pages, the API or the admin, and a restore keeps the token of your instance.",
     "mandatoryStop": false,
     "actions": []
   },

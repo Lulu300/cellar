@@ -16,8 +16,9 @@ import type {
     restoreBackup,
     wipeDatabase
 } from '#lib/server/features/backup/service.js';
-import type { createBackupToken } from '#lib/server/features/backup/token.js';
 import type { BackupFile } from '#lib/server/features/backup/files.js';
+import type { createStoredToken } from '#lib/server/bearer-token.js';
+import type { getMcpTokenView } from '#lib/server/features/mcp/token.js';
 import type {
     BarcodeConflictInfo,
     getBarcodeSettings,
@@ -176,11 +177,14 @@ export type WipeDTO = Awaited<ReturnType<typeof wipeDatabase>>;
 /** POST /api/admin/export-csv: the files themselves, as nothing is written on the server. */
 export type CsvExportDTO = { success: true; message: string } & ReturnType<typeof exportCsvTables>;
 
-/** POST /api/admin/backup-token: the token of the cron job, shown this once. */
-export type BackupTokenDTO = { token: ReturnType<typeof createBackupToken> };
+/** POST /api/admin/backup-token and /api/admin/mcp-token: the new token, shown this once. */
+export type NewTokenDTO = { token: ReturnType<typeof createStoredToken> };
 
 /** GET /api/admin/backup-settings */
 export type BackupSettingsDTO = ReturnType<typeof getBackupSettingsView>;
+
+/** PUT /api/admin/mcp-token */
+export type McpTokenDTO = ReturnType<typeof getMcpTokenView>;
 
 /** GET /api/admin/barcode-settings */
 export type BarcodeSettingsDTO = ReturnType<typeof getBarcodeSettings>;

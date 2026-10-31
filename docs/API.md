@@ -67,6 +67,9 @@ curl -fsS -b cookies.txt -H "Origin: $CELLAR" -X DELETE "$CELLAR/api/session"
 - The cron job of the automatic backups does not log in: it sends the token generated in Admin ›
   Backups as `Authorization: Bearer <token>`. That token opens
   [`POST /api/admin/auto-backup`](#post-apiadminauto-backup) only.
+- An AI assistant does not log in either: it reaches the MCP server at `/mcp`, outside this API,
+  with its own token (see [MCP access](#mcp-access)). That token opens `/mcp` only, and a session
+  does not open `/mcp`.
 
 ## Origin check
 
@@ -189,6 +192,9 @@ request needs one.
 | GET    | `/api/admin/label-presets/{id}`    | yes                      |
 | PUT    | `/api/admin/label-presets/{id}`    | yes                      |
 | GET    | `/api/admin/list-backups`          | yes                      |
+| DELETE | `/api/admin/mcp-token`             | yes                      |
+| POST   | `/api/admin/mcp-token`             | yes                      |
+| PUT    | `/api/admin/mcp-token`             | yes                      |
 | GET    | `/api/admin/next-barcode`          | yes                      |
 | POST   | `/api/admin/restore`               | yes                      |
 | PUT    | `/api/admin/upgrade-actions`       | yes                      |
@@ -2151,6 +2157,59 @@ curl -fsS -X POST -H 'Authorization: Bearer <token>' -H 'Content-Type: applicati
   "timestamp": "2026-10-17T03:00:00.410Z"
 }
 ```
+
+## MCP access
+
+Cellar serves an MCP server at `$CELLAR/mcp`, for the AI assistants of your network: a local model,
+a command-line tool, a desktop app. It has its own token, created in Admin › Settings › MCP access
+or with the routes below. Only its hash is stored, and a restore keeps the token of the instance.
+
+- The assistant sends the token as `Authorization: Bearer <token>`, with every request to `/mcp`. A
+  missing, wrong or revoked token gets `401 unauthenticated`, with a `WWW-Authenticate: Bearer`
+  header. A session cookie does not open `/mcp`.
+- The token opens `/mcp` only: sent to a route of this API, it counts for nothing, so a write or a
+  route of `/api/admin` answers `401`.
+- The token is read-only unless changes are allowed (`PUT /api/admin/mcp-token`). A read-only token
+  may call the tools that read, and every tool that writes refuses. The admin (backups, restore,
+  wipe, imports, access code) stays out of the MCP server.
+- A write sent with an `Origin` header other than Cellar's URL gets `403 cross_site_request`, as on
+  the API (see [Origin check](#origin-check)).
+
+### `POST /api/admin/mcp-token`
+
+Creates the MCP token, which replaces the earlier one, and returns it. It is shown this once: only
+its hash is stored. The choice to allow changes stays as it was.
+
+- **Session:** required.
+- **Body:** none.
+- **Response:** `200` with `{ "token": "<43 characters>" }`.
+- **Errors:** none besides the common ones.
+
+### `PUT /api/admin/mcp-token`
+
+Allows or forbids the changes through the MCP server. It applies to the next request of the
+assistant, and to a token created later.
+
+- **Session:** required.
+- **Body:** JSON:
+  - `write`: boolean, required: `true` lets the token write, `false` makes it read-only (the
+    default).
+- **Response:** `200` with `{ "hasToken", "write" }`: whether a token exists, never the token itself,
+  and the choice as saved.
+- **Errors:** none besides the common ones.
+
+```json
+{ "write": true }
+```
+
+### `DELETE /api/admin/mcp-token`
+
+Revokes the MCP token: `/mcp` refuses every request until a new one is created.
+
+- **Session:** required.
+- **Body:** none. As for any write without a body, send the `Origin` header.
+- **Response:** `204` with no body.
+- **Errors:** none besides the common ones.
 
 ## CSV import and export
 

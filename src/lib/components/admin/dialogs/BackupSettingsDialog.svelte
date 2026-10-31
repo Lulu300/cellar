@@ -10,7 +10,7 @@
     import { m } from '#lib/paraglide/messages.js';
     import { toasts } from '#lib/stores/toast.svelte.js';
     import { errorMessage, request } from '#lib/api/client.js';
-    import type { BackupSettingsDTO, BackupTokenDTO } from '#lib/shared/dto.js';
+    import type { BackupSettingsDTO, NewTokenDTO } from '#lib/shared/dto.js';
 
     let {
         open = $bindable(false),
@@ -54,11 +54,10 @@
         error = '';
         isGeneratingToken = true;
         try {
-            cronToken = (
-                await request<BackupTokenDTO>('/api/admin/backup-token', { method: 'POST' })
-            ).token;
+            cronToken = (await request<NewTokenDTO>('/api/admin/backup-token', { method: 'POST' }))
+                .token;
         } catch {
-            error = m['admin.cron_token_failed']();
+            error = m['admin.token_failed']();
         } finally {
             isGeneratingToken = false;
         }
@@ -182,8 +181,8 @@
                                     disabled={isGeneratingToken}
                                 >
                                     {hasBackupToken
-                                        ? m['admin.regenerate_cron_token']()
-                                        : m['admin.generate_cron_token']()}
+                                        ? m['admin.regenerate_token']()
+                                        : m['admin.generate_token']()}
                                 </Button>
                             </div>
                         {/if}

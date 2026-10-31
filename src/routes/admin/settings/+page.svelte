@@ -4,6 +4,7 @@
     import { m } from '#lib/paraglide/messages.js';
     import { Button } from '#lib/components/ui/button/index.js';
     import { Card, CardContent, CardHeader, CardTitle } from '#lib/components/ui/card/index.js';
+    import McpTokenCard from '#lib/components/admin/McpTokenCard.svelte';
     import AccessCodeDialog from '#lib/components/admin/dialogs/AccessCodeDialog.svelte';
     import BarcodeInfoDialog from '#lib/components/admin/dialogs/BarcodeInfoDialog.svelte';
     import BarcodeSettingsDialog from '#lib/components/admin/dialogs/BarcodeSettingsDialog.svelte';
@@ -83,6 +84,8 @@
             </Button>
         </CardContent>
     </Card>
+
+    <McpTokenCard mcpToken={data.mcpToken} />
 </div>
 
 <SessionTimeoutDialog bind:open={showSessionTimeout} hours={data.settings.sessionTimeoutHours} />

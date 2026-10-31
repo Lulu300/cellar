@@ -13,15 +13,19 @@
     import { m } from '#lib/paraglide/messages.js';
     import { toasts } from '#lib/stores/toast.svelte.js';
     import { errorMessage, request } from '#lib/api/client.js';
+    import {
+        isValidSessionTimeout,
+        MAX_SESSION_TIMEOUT_HOURS
+    } from '#lib/shared/session-timeout.js';
 
     let { open = $bindable(false), hours }: { open: boolean; hours: number } = $props();
 
     let newHours = $state(24);
     let error = $state('');
     let saving = $state(false);
-    // Save is greyed while the field is empty: a line under it says what it takes.
-    const hoursMissing = $derived(!newHours);
-    const hoursMissingId = $props.id();
+    // Save is greyed while the field is empty or out of range: a line under it says what it takes.
+    const hoursInvalid = $derived(!isValidSessionTimeout(newHours));
+    const hoursInvalidId = $props.id();
 
     $effect(() => {
         if (!open) return;
@@ -29,7 +33,6 @@
         error = '';
     });
 
-    // The server checks the range (1 to 168 hours) and says what is wrong.
     async function save() {
         error = '';
         saving = true;
@@ -73,14 +76,17 @@
                                 type="number"
                                 bind:value={newHours}
                                 min="1"
-                                max="168"
+                                max={MAX_SESSION_TIMEOUT_HOURS}
                                 placeholder={m['placeholders.session_timeout_example']()}
                                 class="w-full"
-                                aria-describedby={hoursMissing ? hoursMissingId : undefined}
+                                aria-describedby={hoursInvalid ? hoursInvalidId : undefined}
                             />
-                            {#if hoursMissing}
-                                <p id={hoursMissingId} class="text-xs text-muted-foreground">
-                                    {m['form_errors.whole_number_between']({ min: 1, max: 168 })}
+                            {#if hoursInvalid}
+                                <p id={hoursInvalidId} class="text-xs text-muted-foreground">
+                                    {m['form_errors.whole_number_between']({
+                                        min: 1,
+                                        max: MAX_SESSION_TIMEOUT_HOURS
+                                    })}
                                 </p>
                             {/if}
                             <p class="text-xs text-muted-foreground">
@@ -99,8 +105,8 @@
                 </Button>
                 <Button
                     onclick={save}
-                    disabled={saving || hoursMissing}
-                    aria-describedby={hoursMissing ? hoursMissingId : undefined}
+                    disabled={saving || hoursInvalid}
+                    aria-describedby={hoursInvalid ? hoursInvalidId : undefined}
                 >
                     {m['common.save']()}
                 </Button>

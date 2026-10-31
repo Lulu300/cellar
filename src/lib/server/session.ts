@@ -8,11 +8,11 @@ import { SAFE_METHODS } from '#lib/server/csrf.js';
 import { getAppSetting } from '#lib/server/features/settings/repository.js';
 import { ApiError } from '#lib/server/http/errors.js';
 import { apiErrorResponse } from '#lib/server/http/handler.js';
+import { isValidSessionTimeout } from '#lib/shared/session-timeout.js';
 
 const SESSION_COOKIE = 'cellar_session';
 export const SESSION_TIMEOUT_KEY = 'session_timeout_hours';
 const DEFAULT_SESSION_TIMEOUT_HOURS = 24;
-export const MAX_SESSION_TIMEOUT_HOURS = 168;
 
 /** How a random token is stored: a session's, or the cron job's (backup/token.ts). */
 export function hashToken(token: string): string {
@@ -32,14 +32,6 @@ function cookieOptions(url: URL) {
         // url already honours ORIGIN and PROTOCOL_HEADER, so this follows how the browser reaches us.
         secure: url.protocol === 'https:'
     } as const;
-}
-
-export function isValidSessionTimeout(hours: unknown): hours is number {
-    return (
-        Number.isInteger(hours) &&
-        (hours as number) >= 1 &&
-        (hours as number) <= MAX_SESSION_TIMEOUT_HOURS
-    );
 }
 
 /** The setting, or the default when it is missing or holds a value saved before it was validated. */

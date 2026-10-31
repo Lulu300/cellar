@@ -695,8 +695,8 @@ check its documentation:
 }
 ```
 
-The server speaks Streamable HTTP, without sessions, in the 2025 revisions of the protocol and the
-2026-07-28 one. An app that only starts local (stdio) servers needs a bridge to HTTP.
+The server speaks Streamable HTTP, without sessions, in the revisions of the protocol from
+2024-11-05 to 2026-07-28. An app that only starts local (stdio) servers needs a bridge to HTTP.
 
 **Limit: local network or VPN only.** Cellar is meant for your home network, and so is its MCP
 server: an assistant that runs on your network (a local model, a command-line tool, a desktop app)

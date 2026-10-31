@@ -2205,7 +2205,8 @@ README-Docker says how to set up an assistant (see
 
 - **Transport:** Streamable HTTP, at `$CELLAR/mcp`. Every message is a `POST`; there are no
   sessions, so each request stands alone, and `GET` answers `405`. It serves the 2026-07-28
-  revision of the protocol and the 2025 ones (2025-03-26, 2025-06-18, 2025-11-25): the client picks.
+  revision of the protocol and the earlier ones (2024-10-07, 2024-11-05, 2025-03-26, 2025-06-18,
+  2025-11-25): the client picks.
 - **Answers:** a tool answers one text item that holds JSON. The fields that are empty are left out.
   Prices are in the currency of the cellar, dates are `YYYY-MM-DD`. A bottle's `availability` is
   `available` (in the cellar), `out_of_cellar` or `consumed`, and its `optimum` is the year it is at
@@ -2228,10 +2229,11 @@ The tools:
     and out of it (`outOfCellar`), and the `vintages` of those in the cellar.
 - `get_wine`: a wine with its bottles.
   - **Parameters:** `wineId`: string, required, as `search_wines` gives it.
-  - **Answer:** the wine as above, with `description`, `website` and `targetQuantity`, its bottles
-    still owned in `bottles` and those drunk in `consumed`. Each bottle has `id`, `availability`,
-    `vintage`, `optimum`, `format`, `location` (`container`, `case`), `barcode`, `origin`,
-    `purchasePrice`, `purchaseDate`, `currentValue`, `consumedDate` and `notes`.
+  - **Answer:** the fields of a wine of `search_wines` from `id` to `grapes`, with `description`,
+    `website` and `targetQuantity`, its bottles still owned in `bottles` and those drunk in
+    `consumed`. Each bottle has `id`, `availability`, `vintage`, `optimum`, `format`, `location`
+    (`container`, `case`), `barcode`, `origin`, `purchasePrice`, `purchaseDate`, `currentValue`,
+    `consumedDate` and `notes`.
 - `find_bottle_by_barcode`: the bottles of a barcode, whatever their availability.
   - **Parameters:** `barcode`: string, required, 1 to 1000 characters.
   - **Answer:** an array of bottles as in `get_wine`, each with its `wine` (`id`, `name`,

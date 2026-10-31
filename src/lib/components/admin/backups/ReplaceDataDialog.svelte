@@ -1,12 +1,8 @@
 <script lang="ts">
     import { CircleAlert, FileUp, Upload } from '@lucide/svelte';
     import { m } from '#lib/paraglide/messages.js';
-    import {
-        Dialog,
-        DialogContent,
-        DialogHeader,
-        DialogTitle
-    } from '#lib/components/ui/dialog/index.js';
+    import { Dialog } from '#lib/components/ui/dialog/index.js';
+    import ScrollingDialogContent from '#lib/components/layout/ScrollingDialogContent.svelte';
     import { Button } from '#lib/components/ui/button/index.js';
     import { formatFileSize } from '#lib/utils/format.js';
 
@@ -34,16 +30,12 @@
 </script>
 
 <Dialog bind:open>
-    <DialogContent class="max-w-md">
-        <!-- Padded at the end, so that a long title wraps before the close cross of the corner. -->
-        <DialogHeader class="pe-6">
-            <DialogTitle class="flex items-center gap-2">
-                <CircleAlert class="h-5 w-5 text-warning" />
-                {kind === 'restore'
-                    ? m['admin.database_restore']()
-                    : m['admin.import_from_export']()}
-            </DialogTitle>
-        </DialogHeader>
+    <ScrollingDialogContent
+        title={kind === 'restore' ? m['admin.database_restore']() : m['admin.import_from_export']()}
+        icon={CircleAlert}
+        iconClass="text-warning"
+        class="max-w-md"
+    >
         <div class="flex items-start gap-3 py-4">
             <div
                 class="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-warning/10"
@@ -71,7 +63,7 @@
                 </div>
             </div>
         </div>
-        <div class="flex justify-end gap-2">
+        {#snippet footer()}
             <Button variant="outline" onclick={() => (open = false)}>{m['common.cancel']()}</Button>
             <Button variant="destructive" onclick={onConfirm} disabled={busy}>
                 {#if kind === 'restore'}
@@ -80,6 +72,6 @@
                     {busy ? m['admin.importing']() : m['admin.import_data']()}
                 {/if}
             </Button>
-        </div>
-    </DialogContent>
+        {/snippet}
+    </ScrollingDialogContent>
 </Dialog>

@@ -1,10 +1,6 @@
 <script lang="ts">
-    import {
-        Dialog,
-        DialogContent,
-        DialogHeader,
-        DialogTitle
-    } from '#lib/components/ui/dialog/index.js';
+    import { Dialog } from '#lib/components/ui/dialog/index.js';
+    import ScrollingDialogContent from '#lib/components/layout/ScrollingDialogContent.svelte';
     import { Button } from '#lib/components/ui/button/index.js';
     import { CircleAlert, Trash } from '@lucide/svelte';
     import { m } from '#lib/paraglide/messages.js';
@@ -18,14 +14,12 @@
 </script>
 
 <Dialog bind:open>
-    <DialogContent class="max-w-md">
-        <!-- Padded at the end, so that a long title wraps before the close cross of the corner. -->
-        <DialogHeader class="pe-6">
-            <DialogTitle class="flex items-center gap-2">
-                <CircleAlert class="h-5 w-5 text-destructive" />
-                {m['admin.complete_database_wipe']()}
-            </DialogTitle>
-        </DialogHeader>
+    <ScrollingDialogContent
+        title={m['admin.complete_database_wipe']()}
+        icon={CircleAlert}
+        iconClass="text-destructive"
+        class="max-w-md"
+    >
         <div class="py-4">
             <div class="flex items-start gap-3">
                 <div
@@ -61,11 +55,11 @@
                 </div>
             </div>
         </div>
-        <div class="flex justify-end gap-2 mt-6">
+        {#snippet footer()}
             <Button variant="outline" onclick={() => (open = false)}>{m['common.cancel']()}</Button>
             <Button variant="destructive" onclick={onConfirm} disabled={busy}>
                 {busy ? m['admin.wiping_database']() : m['admin.wipe_all_data']()}
             </Button>
-        </div>
-    </DialogContent>
+        {/snippet}
+    </ScrollingDialogContent>
 </Dialog>

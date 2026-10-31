@@ -1,17 +1,13 @@
 <script lang="ts">
-    import {
-        Dialog,
-        DialogContent,
-        DialogDescription,
-        DialogHeader,
-        DialogTitle
-    } from '#lib/components/ui/dialog/index.js';
+    import { Dialog } from '#lib/components/ui/dialog/index.js';
     import { Button } from '#lib/components/ui/button/index.js';
     import { Checkbox } from '#lib/components/ui/checkbox/index.js';
     import { Label } from '#lib/components/ui/label/index.js';
     import OptionSelect from '#lib/components/forms/OptionSelect.svelte';
     import { Textarea } from '#lib/components/ui/textarea/index.js';
     import QrScannerDialog from '#lib/components/barcode/QrScannerDialog.svelte';
+    import ScrollingDialogContent from '#lib/components/layout/ScrollingDialogContent.svelte';
+    import ScrollRegion from '#lib/components/layout/ScrollRegion.svelte';
     import { ArrowRightLeft, Camera, LogIn, LogOut, Wine } from '@lucide/svelte';
     import { BottleAvailability } from '#lib/shared/bottle-availability.js';
     import { auth } from '#lib/stores/auth.svelte.js';
@@ -49,6 +45,9 @@
         /** Called after a change to the bottles, for the parent to reload them. */
         onBottlesChanged: () => Promise<void> | void;
     } = $props();
+
+    // The summary of the check names the list of its rows.
+    const summaryId = $props.id();
 
     type BulkAction = 'consume' | 'take_out' | 'return' | 'move';
 
@@ -260,14 +259,13 @@
 </script>
 
 <Dialog bind:open={() => open, setOpen}>
-    <DialogContent class="!max-w-3xl sm:!max-w-3xl max-h-[90vh] overflow-hidden flex flex-col">
-        <DialogHeader>
-            <DialogTitle>{m['bulk.title']()}</DialogTitle>
-            <DialogDescription>{m['bulk.description']()}</DialogDescription>
-        </DialogHeader>
-
+    <ScrollingDialogContent
+        title={m['bulk.title']()}
+        description={m['bulk.description']()}
+        class="max-w-3xl sm:max-w-3xl"
+    >
         {#if step === 'input'}
-            <div class="flex-1 overflow-auto space-y-2">
+            <div class="space-y-2">
                 <Label for="bulk-codes">{m['bulk.codes_label']()}</Label>
                 <Textarea
                     id="bulk-codes"
@@ -282,204 +280,212 @@
                     >
                 </div>
             </div>
-
-            <div class="flex flex-wrap justify-between gap-2">
-                <Button variant="outline" onclick={() => (showScanner = true)}>
-                    <Camera class="h-4 w-4 mr-2" />
-                    {m['bulk.scan']()}
-                </Button>
-                <Button onclick={checkCodes} disabled={codes.length === 0}>
-                    {m['bulk.check']()}
-                </Button>
-            </div>
         {:else}
-            <p class="text-sm text-muted-foreground">
-                {m['bulk.summary']({ found: foundCount, issues: issueCount })}
-            </p>
+            <div class="space-y-4">
+                <p id={summaryId} class="text-sm text-muted-foreground">
+                    {m['bulk.summary']({ found: foundCount, issues: issueCount })}
+                </p>
 
-            <div class="flex-1 min-h-[120px] overflow-auto rounded-md border divide-y">
-                {#each rows as row (row.index)}
-                    <div
-                        class="flex items-start gap-3 px-3 py-2 text-sm {row.state === 'found' &&
-                        row.included
-                            ? ''
-                            : 'bg-muted/40'}"
-                    >
-                        <div class="w-4 pt-0.5 shrink-0">
-                            {#if row.state === 'found'}
-                                <Checkbox
-                                    checked={row.included}
-                                    onCheckedChange={() => toggleLine(row.index)}
-                                    disabled={changes.sending}
-                                />
-                            {/if}
-                        </div>
-                        <span class="font-mono w-28 shrink-0 break-all">{row.code}</span>
-                        <div class="flex-1 min-w-0 space-y-1">
-                            {#if row.state === 'not_found'}
-                                <span class="text-destructive font-medium"
-                                    >{m['bulk.not_found']()}</span
-                                >
-                            {/if}
-
-                            {#if row.matches.length > 1}
-                                <!-- Named with the code of its row, the one thing that tells the rows apart. -->
-                                <OptionSelect
-                                    value={row.chosenId}
-                                    aria-label={m['bulk.choose_bottle_for']({ code: row.code })}
-                                    size="sm"
-                                    placeholder="{m['bulk.ambiguous']({
-                                        count: row.matches.length
-                                    })} — {m['bulk.choose_bottle']()}"
-                                    options={row.matches.map((match) => ({
-                                        value: match.id,
-                                        label: matchLabel(match)
-                                    }))}
-                                    onValueChange={(id) => chooseBottle(row.index, id)}
-                                    disabled={changes.sending}
-                                />
-                            {/if}
-
-                            {#if row.bottle}
-                                <div class="flex flex-wrap items-center gap-x-2 gap-y-1">
-                                    <span class="font-medium">{bottleName(row.bottle)}</span>
-                                    <span class="text-muted-foreground"
-                                        >{row.bottle.definition?.producer || ''}</span
-                                    >
-                                    {#if row.bottle.barcode !== row.code}
-                                        <span class="font-mono text-muted-foreground"
-                                            >{row.bottle.barcode}</span
-                                        >
-                                    {/if}
-                                    <span class="text-muted-foreground"
-                                        >· {row.bottle.storageCase?.name ||
-                                            m['bulk.no_location']()}</span
-                                    >
-                                    <AvailabilityBadge availability={row.bottle.availability} />
-                                </div>
-                            {/if}
-
-                            {#if row.state === 'duplicate'}
-                                <span class="text-muted-foreground italic"
-                                    >{m['bulk.duplicate']()}</span
-                                >
-                            {:else if row.state === 'found' && action}
-                                {#if row.locationIgnored}
-                                    <span class="text-muted-foreground italic"
-                                        >{m['bulk.consumed_cannot_move']()}</span
-                                    >
-                                {:else if !row.willChange}
-                                    <span class="text-muted-foreground italic"
-                                        >{m['bulk.no_change']()}</span
+                <!-- Its own scroll, so that a long list leaves the action in view on a desktop. -->
+                <ScrollRegion
+                    labelledby={summaryId}
+                    class="max-h-60 p-0 rounded-md border divide-y"
+                >
+                    {#each rows as row (row.index)}
+                        <div
+                            class="flex items-start gap-3 px-3 py-2 text-sm {row.state ===
+                                'found' && row.included
+                                ? ''
+                                : 'bg-muted/40'}"
+                        >
+                            <div class="w-4 pt-0.5 shrink-0">
+                                {#if row.state === 'found'}
+                                    <Checkbox
+                                        checked={row.included}
+                                        onCheckedChange={() => toggleLine(row.index)}
+                                        disabled={changes.sending}
+                                    />
+                                {/if}
+                            </div>
+                            <span class="font-mono w-28 shrink-0 break-all">{row.code}</span>
+                            <div class="flex-1 min-w-0 space-y-1">
+                                {#if row.state === 'not_found'}
+                                    <span class="text-destructive font-medium"
+                                        >{m['bulk.not_found']()}</span
                                     >
                                 {/if}
-                            {/if}
+
+                                {#if row.matches.length > 1}
+                                    <!-- Named with the code of its row, the one thing that tells the rows apart. -->
+                                    <OptionSelect
+                                        value={row.chosenId}
+                                        aria-label={m['bulk.choose_bottle_for']({ code: row.code })}
+                                        size="sm"
+                                        placeholder="{m['bulk.ambiguous']({
+                                            count: row.matches.length
+                                        })} — {m['bulk.choose_bottle']()}"
+                                        options={row.matches.map((match) => ({
+                                            value: match.id,
+                                            label: matchLabel(match)
+                                        }))}
+                                        onValueChange={(id) => chooseBottle(row.index, id)}
+                                        disabled={changes.sending}
+                                    />
+                                {/if}
+
+                                {#if row.bottle}
+                                    <div class="flex flex-wrap items-center gap-x-2 gap-y-1">
+                                        <span class="font-medium">{bottleName(row.bottle)}</span>
+                                        <span class="text-muted-foreground"
+                                            >{row.bottle.definition?.producer || ''}</span
+                                        >
+                                        {#if row.bottle.barcode !== row.code}
+                                            <span class="font-mono text-muted-foreground"
+                                                >{row.bottle.barcode}</span
+                                            >
+                                        {/if}
+                                        <span class="text-muted-foreground"
+                                            >· {row.bottle.storageCase?.name ||
+                                                m['bulk.no_location']()}</span
+                                        >
+                                        <AvailabilityBadge availability={row.bottle.availability} />
+                                    </div>
+                                {/if}
+
+                                {#if row.state === 'duplicate'}
+                                    <span class="text-muted-foreground italic"
+                                        >{m['bulk.duplicate']()}</span
+                                    >
+                                {:else if row.state === 'found' && action}
+                                    {#if row.locationIgnored}
+                                        <span class="text-muted-foreground italic"
+                                            >{m['bulk.consumed_cannot_move']()}</span
+                                        >
+                                    {:else if !row.willChange}
+                                        <span class="text-muted-foreground italic"
+                                            >{m['bulk.no_change']()}</span
+                                        >
+                                    {/if}
+                                {/if}
+                            </div>
                         </div>
-                    </div>
-                {/each}
-            </div>
+                    {/each}
+                </ScrollRegion>
 
-            <div class="space-y-4 rounded-md border p-3">
-                <div class="space-y-2">
-                    <Label>{m['bulk.action_label']()}</Label>
-                    <div class="grid grid-cols-2 sm:grid-cols-4 gap-2">
-                        {#each actionOptions as option (option.value)}
-                            {@const Icon = option.icon}
-                            <button
-                                type="button"
-                                class="flex flex-col items-start gap-1 rounded-md border p-3 text-left transition-colors disabled:opacity-50 {action ===
-                                option.value
-                                    ? 'border-primary bg-primary/10'
-                                    : 'hover:bg-accent'}"
-                                onclick={() => selectAction(option.value)}
-                                aria-pressed={action === option.value}
-                                disabled={changes.sending}
-                            >
-                                <Icon
-                                    class="h-4 w-4 {action === option.value
-                                        ? 'text-primary'
-                                        : 'text-muted-foreground'}"
-                                />
-                                <span class="text-sm font-medium">{option.label}</span>
-                                <span class="text-xs text-muted-foreground">{option.hint}</span>
-                            </button>
-                        {/each}
-                    </div>
-                </div>
-
-                {#if action === 'consume'}
-                    <ConsumptionFields
-                        bind:date={consumedDate}
-                        bind:note={consumedNote}
-                        disabled={changes.sending}
-                        class="grid gap-3 sm:grid-cols-2"
-                    />
-                {:else if action === 'take_out'}
-                    <p class="text-xs text-muted-foreground">{m['bulk.take_out_info']()}</p>
-                {:else if action === 'return'}
+                <div class="space-y-4 rounded-md border p-3">
                     <div class="space-y-2">
-                        <Label>{m['common.location']()}</Label>
-                        <div class="flex flex-wrap gap-2">
-                            <Button
-                                size="sm"
-                                variant={returnToNewLocation ? 'outline' : 'default'}
-                                onclick={() => setReturnToNewLocation(false)}
-                                disabled={changes.sending}
-                            >
-                                {m['bulk.keep_location']()}
-                            </Button>
-                            <Button
-                                size="sm"
-                                variant={returnToNewLocation ? 'default' : 'outline'}
-                                onclick={() => setReturnToNewLocation(true)}
-                                disabled={changes.sending}
-                            >
-                                {m['bulk.store_elsewhere']()}
-                            </Button>
+                        <Label>{m['bulk.action_label']()}</Label>
+                        <div class="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                            {#each actionOptions as option (option.value)}
+                                {@const Icon = option.icon}
+                                <button
+                                    type="button"
+                                    class="flex flex-col items-start gap-1 rounded-md border p-3 text-left transition-colors disabled:opacity-50 {action ===
+                                    option.value
+                                        ? 'border-primary bg-primary/10'
+                                        : 'hover:bg-accent'}"
+                                    onclick={() => selectAction(option.value)}
+                                    aria-pressed={action === option.value}
+                                    disabled={changes.sending}
+                                >
+                                    <Icon
+                                        class="h-4 w-4 {action === option.value
+                                            ? 'text-primary'
+                                            : 'text-muted-foreground'}"
+                                    />
+                                    <span class="text-sm font-medium">{option.label}</span>
+                                    <span class="text-xs text-muted-foreground">{option.hint}</span>
+                                </button>
+                            {/each}
                         </div>
                     </div>
-                {/if}
 
-                {#if asksLocation}
-                    <CaseTargetPicker
-                        bind:caseId={selectedCaseId}
-                        incoming={incomingCount}
-                        label={action === 'move' ? m['bulk.move_location_label']() : undefined}
-                        disabled={changes.sending}
-                    />
-                {/if}
-
-                {#if withoutLocationCount > 0}
-                    <p class="text-xs text-warning">
-                        {m['bulk.without_location_warning']({ count: withoutLocationCount })}
-                    </p>
-                {/if}
-            </div>
-
-            <div class="flex flex-wrap justify-between gap-2">
-                <Button variant="outline" onclick={backToInput} disabled={changes.sending}>
-                    {m['bulk.edit_list']()}
-                </Button>
-                <Button
-                    onclick={applyChanges}
-                    disabled={changes.sending ||
-                        !action ||
-                        missingLocation ||
-                        selectedRows.length === 0}
-                >
-                    {#if changes.sending}
-                        {m['common.updating']()}
-                    {:else if !action}
-                        {m['bulk.choose_action']()}
-                    {:else if missingLocation}
-                        {m['bulk.choose_location']()}
-                    {:else}
-                        {APPLY_LABELS[action]({ count: selectedRows.length })}
+                    {#if action === 'consume'}
+                        <ConsumptionFields
+                            bind:date={consumedDate}
+                            bind:note={consumedNote}
+                            disabled={changes.sending}
+                            class="grid gap-3 sm:grid-cols-2"
+                        />
+                    {:else if action === 'take_out'}
+                        <p class="text-xs text-muted-foreground">{m['bulk.take_out_info']()}</p>
+                    {:else if action === 'return'}
+                        <div class="space-y-2">
+                            <Label>{m['common.location']()}</Label>
+                            <div class="flex flex-wrap gap-2">
+                                <Button
+                                    size="sm"
+                                    variant={returnToNewLocation ? 'outline' : 'default'}
+                                    onclick={() => setReturnToNewLocation(false)}
+                                    disabled={changes.sending}
+                                >
+                                    {m['bulk.keep_location']()}
+                                </Button>
+                                <Button
+                                    size="sm"
+                                    variant={returnToNewLocation ? 'default' : 'outline'}
+                                    onclick={() => setReturnToNewLocation(true)}
+                                    disabled={changes.sending}
+                                >
+                                    {m['bulk.store_elsewhere']()}
+                                </Button>
+                            </div>
+                        </div>
                     {/if}
-                </Button>
+
+                    {#if asksLocation}
+                        <CaseTargetPicker
+                            bind:caseId={selectedCaseId}
+                            incoming={incomingCount}
+                            label={action === 'move' ? m['bulk.move_location_label']() : undefined}
+                            disabled={changes.sending}
+                        />
+                    {/if}
+
+                    {#if withoutLocationCount > 0}
+                        <p class="text-xs text-warning">
+                            {m['bulk.without_location_warning']({ count: withoutLocationCount })}
+                        </p>
+                    {/if}
+                </div>
             </div>
         {/if}
-    </DialogContent>
+
+        {#snippet footer()}
+            <div class="flex flex-1 flex-wrap justify-between gap-2">
+                {#if step === 'input'}
+                    <Button variant="outline" onclick={() => (showScanner = true)}>
+                        <Camera class="h-4 w-4 mr-2" />
+                        {m['bulk.scan']()}
+                    </Button>
+                    <Button onclick={checkCodes} disabled={codes.length === 0}>
+                        {m['bulk.check']()}
+                    </Button>
+                {:else}
+                    <Button variant="outline" onclick={backToInput} disabled={changes.sending}>
+                        {m['bulk.edit_list']()}
+                    </Button>
+                    <Button
+                        onclick={applyChanges}
+                        disabled={changes.sending ||
+                            !action ||
+                            missingLocation ||
+                            selectedRows.length === 0}
+                    >
+                        {#if changes.sending}
+                            {m['common.updating']()}
+                        {:else if !action}
+                            {m['bulk.choose_action']()}
+                        {:else if missingLocation}
+                            {m['bulk.choose_location']()}
+                        {:else}
+                            {APPLY_LABELS[action]({ count: selectedRows.length })}
+                        {/if}
+                    </Button>
+                {/if}
+            </div>
+        {/snippet}
+    </ScrollingDialogContent>
 </Dialog>
 
 <QrScannerDialog bind:open={showScanner} continuous={true} onScan={handleScan} />

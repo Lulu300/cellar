@@ -1,12 +1,8 @@
 <script lang="ts">
     import { untrack, type ComponentProps } from 'svelte';
     import { invalidate } from '$app/navigation';
-    import {
-        Dialog,
-        DialogContent,
-        DialogHeader,
-        DialogTitle
-    } from '#lib/components/ui/dialog/index.js';
+    import { Dialog } from '#lib/components/ui/dialog/index.js';
+    import ScrollingDialogContent from '#lib/components/layout/ScrollingDialogContent.svelte';
     import { Input } from '#lib/components/ui/input/index.js';
     import { Label } from '#lib/components/ui/label/index.js';
     import * as Select from '#lib/components/ui/select/index.js';
@@ -122,147 +118,139 @@
 </script>
 
 <Dialog bind:open>
-    <DialogContent class="!max-w-6xl sm:!max-w-6xl max-h-[80vh] overflow-hidden flex flex-col">
-        <DialogHeader>
-            <DialogTitle>
-                {m['common.all_bottles']()}
-            </DialogTitle>
-        </DialogHeader>
-
-        <div class="flex-1 overflow-auto">
-            <!-- Filters -->
-            <div class="mb-4 space-y-4">
-                <div class="flex gap-4 items-end flex-wrap">
-                    <!-- Search input -->
-                    <div class="flex-1 min-w-[200px]">
-                        <Label for="search-wine">{m['storage.search_wine_name']()}</Label>
-                        <Input
-                            id="search-wine"
-                            type="text"
-                            placeholder={m['storage.search_placeholder']()}
-                            bind:value={searchQuery}
-                            oninput={() => (page = 1)}
-                            class="w-full"
-                        />
-                    </div>
-
-                    <!-- Barcode filter -->
-                    <div class="flex items-center gap-2">
-                        <Label for="barcode-filter" class="text-sm font-medium"
-                            >{m['storage.barcode_filter']()}</Label
-                        >
-                        <Select.Root
-                            type="single"
-                            bind:value={barcodeFilter}
-                            onValueChange={() => (page = 1)}
-                        >
-                            <Select.Trigger id="barcode-filter" class="w-[200px]">
-                                {#if barcodeFilter === 'all'}
-                                    {m['storage.all_bottles']()}
-                                {:else if barcodeFilter === 'with'}
-                                    {m['storage.with_barcode']()}
-                                {:else if barcodeFilter === 'without'}
-                                    {m['storage.without_barcode']()}
-                                {/if}
-                            </Select.Trigger>
-                            <Select.Content>
-                                <Select.Item value="all" label={m['storage.all_bottles']()}
-                                    >{m['storage.all_bottles']()}</Select.Item
-                                >
-                                <Select.Item value="with" label={m['storage.with_barcode']()}
-                                    >{m['storage.with_barcode']()}</Select.Item
-                                >
-                                <Select.Item value="without" label={m['storage.without_barcode']()}
-                                    >{m['storage.without_barcode']()}</Select.Item
-                                >
-                            </Select.Content>
-                        </Select.Root>
-                    </div>
-
-                    <!-- Storage case filter -->
-                    <div class="flex items-center gap-2">
-                        <Label for="case-filter" class="text-sm font-medium"
-                            >{m['common.label']({
-                                label: m['storage.storage_case_filter']()
-                            })}</Label
-                        >
-                        <Select.Root
-                            type="single"
-                            bind:value={storageCaseFilter}
-                            onValueChange={() => (page = 1)}
-                        >
-                            <Select.Trigger id="case-filter" class="w-[200px]">
-                                {#if storageCaseFilter === 'all'}
-                                    {m['storage.all_cases']()}
-                                {:else if storageCaseFilter === 'none'}
-                                    {m['storage.no_storage_case']()}
-                                {:else}
-                                    {storageCases.find((c) => c.id === storageCaseFilter)?.name ||
-                                        m['storage.all_cases']()}
-                                {/if}
-                            </Select.Trigger>
-                            <Select.Content>
-                                <Select.Item value="all" label={m['storage.all_cases']()}
-                                    >{m['storage.all_cases']()}</Select.Item
-                                >
-                                <Select.Item value="none" label={m['storage.no_storage_case']()}
-                                    >{m['storage.no_storage_case']()}</Select.Item
-                                >
-                                {#each storageCases as storageCase (storageCase.id)}
-                                    <Select.Item value={storageCase.id} label={storageCase.name}>
-                                        {storageCase.name}
-                                    </Select.Item>
-                                {/each}
-                            </Select.Content>
-                        </Select.Root>
-                    </div>
+    <ScrollingDialogContent title={m['common.all_bottles']()} class="max-w-6xl sm:max-w-6xl">
+        <!-- Filters -->
+        <div class="mb-4 space-y-4">
+            <div class="flex gap-4 items-end flex-wrap">
+                <!-- Search input -->
+                <div class="flex-1 min-w-[200px]">
+                    <Label for="search-wine">{m['storage.search_wine_name']()}</Label>
+                    <Input
+                        id="search-wine"
+                        type="text"
+                        placeholder={m['storage.search_placeholder']()}
+                        bind:value={searchQuery}
+                        oninput={() => (page = 1)}
+                        class="w-full"
+                    />
                 </div>
 
-                <p class="text-sm text-muted-foreground">
-                    {m['admin.showing_bottles']({ count: sortedBottles.length })}
-                </p>
+                <!-- Barcode filter -->
+                <div class="flex items-center gap-2">
+                    <Label for="barcode-filter" class="text-sm font-medium"
+                        >{m['storage.barcode_filter']()}</Label
+                    >
+                    <Select.Root
+                        type="single"
+                        bind:value={barcodeFilter}
+                        onValueChange={() => (page = 1)}
+                    >
+                        <Select.Trigger id="barcode-filter" class="w-[200px]">
+                            {#if barcodeFilter === 'all'}
+                                {m['storage.all_bottles']()}
+                            {:else if barcodeFilter === 'with'}
+                                {m['storage.with_barcode']()}
+                            {:else if barcodeFilter === 'without'}
+                                {m['storage.without_barcode']()}
+                            {/if}
+                        </Select.Trigger>
+                        <Select.Content>
+                            <Select.Item value="all" label={m['storage.all_bottles']()}
+                                >{m['storage.all_bottles']()}</Select.Item
+                            >
+                            <Select.Item value="with" label={m['storage.with_barcode']()}
+                                >{m['storage.with_barcode']()}</Select.Item
+                            >
+                            <Select.Item value="without" label={m['storage.without_barcode']()}
+                                >{m['storage.without_barcode']()}</Select.Item
+                            >
+                        </Select.Content>
+                    </Select.Root>
+                </div>
+
+                <!-- Storage case filter -->
+                <div class="flex items-center gap-2">
+                    <Label for="case-filter" class="text-sm font-medium"
+                        >{m['common.label']({
+                            label: m['storage.storage_case_filter']()
+                        })}</Label
+                    >
+                    <Select.Root
+                        type="single"
+                        bind:value={storageCaseFilter}
+                        onValueChange={() => (page = 1)}
+                    >
+                        <Select.Trigger id="case-filter" class="w-[200px]">
+                            {#if storageCaseFilter === 'all'}
+                                {m['storage.all_cases']()}
+                            {:else if storageCaseFilter === 'none'}
+                                {m['storage.no_storage_case']()}
+                            {:else}
+                                {storageCases.find((c) => c.id === storageCaseFilter)?.name ||
+                                    m['storage.all_cases']()}
+                            {/if}
+                        </Select.Trigger>
+                        <Select.Content>
+                            <Select.Item value="all" label={m['storage.all_cases']()}
+                                >{m['storage.all_cases']()}</Select.Item
+                            >
+                            <Select.Item value="none" label={m['storage.no_storage_case']()}
+                                >{m['storage.no_storage_case']()}</Select.Item
+                            >
+                            {#each storageCases as storageCase (storageCase.id)}
+                                <Select.Item value={storageCase.id} label={storageCase.name}>
+                                    {storageCase.name}
+                                </Select.Item>
+                            {/each}
+                        </Select.Content>
+                    </Select.Root>
+                </div>
             </div>
 
-            {#if loading}
-                <div class="text-center py-8">
-                    <p class="text-muted-foreground">{m['storage.loading_bottles']()}</p>
-                </div>
-            {:else if failed}
-                <div class="text-center py-8">
-                    <p class="text-destructive">{m['storage.failed_to_load_bottles']()}</p>
-                </div>
-            {:else}
-                <div class="space-y-4">
-                    <BottleTable
-                        bottles={pageOfBottles}
-                        columns={[
-                            'definition',
-                            'location',
-                            'availability',
-                            'vintage',
-                            'format',
-                            'purchaseDate',
-                            'origin',
-                            'purchasePrice',
-                            'barcode',
-                            'notes'
-                        ]}
-                        {sort}
-                        onSort={(next) => (sort = next)}
-                        emptyMessage={m['storage.no_bottles_found']()}
-                        onEdit={editBottle}
-                        linkWine
-                    />
-                    <Pagination
-                        page={shownPage}
-                        {perPage}
-                        total={sortedBottles.length}
-                        onPageChange={(next) => (page = next)}
-                    />
-                </div>
-            {/if}
+            <p class="text-sm text-muted-foreground">
+                {m['admin.showing_bottles']({ count: sortedBottles.length })}
+            </p>
         </div>
-    </DialogContent>
+
+        {#if loading}
+            <div class="text-center py-8">
+                <p class="text-muted-foreground">{m['storage.loading_bottles']()}</p>
+            </div>
+        {:else if failed}
+            <div class="text-center py-8">
+                <p class="text-destructive">{m['storage.failed_to_load_bottles']()}</p>
+            </div>
+        {:else}
+            <div class="space-y-4">
+                <BottleTable
+                    bottles={pageOfBottles}
+                    columns={[
+                        'definition',
+                        'location',
+                        'availability',
+                        'vintage',
+                        'format',
+                        'purchaseDate',
+                        'origin',
+                        'purchasePrice',
+                        'barcode',
+                        'notes'
+                    ]}
+                    {sort}
+                    onSort={(next) => (sort = next)}
+                    emptyMessage={m['storage.no_bottles_found']()}
+                    onEdit={editBottle}
+                    linkWine
+                />
+                <Pagination
+                    page={shownPage}
+                    {perPage}
+                    total={sortedBottles.length}
+                    onPageChange={(next) => (page = next)}
+                />
+            </div>
+        {/if}
+    </ScrollingDialogContent>
 </Dialog>
 
 <!-- Edit Bottle Dialog -->

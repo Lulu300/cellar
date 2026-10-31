@@ -2,12 +2,8 @@
     import type { ComponentProps } from 'svelte';
     import { goto } from '$app/navigation';
     import { SvelteSet } from 'svelte/reactivity';
-    import {
-        Dialog,
-        DialogContent,
-        DialogHeader,
-        DialogTitle
-    } from '#lib/components/ui/dialog/index.js';
+    import { Dialog } from '#lib/components/ui/dialog/index.js';
+    import ScrollingDialogContent from '#lib/components/layout/ScrollingDialogContent.svelte';
     import BottleTable from '#lib/components/bottles/BottleTable.svelte';
     import { ownedBottles } from '#lib/utils/wine-group-sort.js';
     import { sortBottles, type BottleSort } from '#lib/utils/bottle-sort.js';
@@ -112,100 +108,104 @@
 </script>
 
 <Dialog bind:open onOpenChange={(open) => !open && handleClose()}>
-    <DialogContent class="!max-w-6xl sm:!max-w-6xl max-h-[80vh] overflow-hidden flex flex-col">
-        <DialogHeader>
-            <DialogTitle>
-                {#if wineDefinition}
-                    <button
-                        type="button"
-                        class="text-left hover:underline hover:text-primary-text cursor-pointer transition-colors"
-                        onclick={goToWinePage}
-                        title={m['wine_details.view_wine_page']()}
-                    >
-                        {wineDefinition.name} - {wineDefinition.producer}
-                    </button>
-                {/if}
-            </DialogTitle>
-        </DialogHeader>
+    <ScrollingDialogContent class="max-w-6xl sm:max-w-6xl">
+        {#snippet title()}
+            {#if wineDefinition}
+                <button
+                    type="button"
+                    class="text-left hover:underline hover:text-primary-text cursor-pointer transition-colors"
+                    onclick={goToWinePage}
+                    title={m['wine_details.view_wine_page']()}
+                >
+                    {wineDefinition.name} - {wineDefinition.producer}
+                </button>
+            {/if}
+        {/snippet}
 
         <!-- Outside the scrolling table, and wrapping: the actions stay in view on a narrow screen. -->
-        <div class="flex flex-wrap justify-between items-center gap-2">
-            <div class="flex flex-wrap items-center gap-x-4 gap-y-2">
-                <p class="text-sm text-muted-foreground">
-                    {m['admin.showing_bottles']({ count: sortedBottles.length })}
-                </p>
-                {#if selectedBottles.size > 0}
-                    <span class="text-sm font-medium text-primary-text">
-                        {m['admin.bottles_selected']({ count: selectedBottles.size })}
-                    </span>
-                    <Button variant="ghost" size="sm" onclick={() => selectedBottles.clear()}>
-                        {m['common.clear_selection']()}
-                    </Button>
-                {/if}
-            </div>
-            {#if selectedBottles.size > 0}
-                <div class="flex flex-wrap gap-2">
-                    {#if auth.isAuthenticated}
-                        <Button
-                            variant="outline"
-                            size="sm"
-                            onclick={() => (movingBottles = chosenBottles())}
-                        >
-                            {m['admin.change_storage_location']()}
-                        </Button>
-                        <Button
-                            variant="default"
-                            size="sm"
-                            onclick={() => (statusBottles = chosenBottles())}
-                        >
-                            {m['admin.change_bottle_availability']()}
-                        </Button>
-                    {:else}
-                        <Button
-                            variant="outline"
-                            size="sm"
-                            onclick={() =>
-                                toasts.add(m['bottles.log_in_to_change_availability'](), 'warning')}
-                        >
-                            {m['admin.change_storage_location']()}
-                        </Button>
-                        <Button
-                            variant="outline"
-                            size="sm"
-                            onclick={() =>
-                                toasts.add(m['bottles.log_in_to_change_availability'](), 'warning')}
-                        >
-                            {m['admin.change_bottle_availability']()}
+        {#snippet toolbar()}
+            <div class="flex flex-wrap justify-between items-center gap-2">
+                <div class="flex flex-wrap items-center gap-x-4 gap-y-2">
+                    <p class="text-sm text-muted-foreground">
+                        {m['admin.showing_bottles']({ count: sortedBottles.length })}
+                    </p>
+                    {#if selectedBottles.size > 0}
+                        <span class="text-sm font-medium text-primary-text">
+                            {m['admin.bottles_selected']({ count: selectedBottles.size })}
+                        </span>
+                        <Button variant="ghost" size="sm" onclick={() => selectedBottles.clear()}>
+                            {m['common.clear_selection']()}
                         </Button>
                     {/if}
                 </div>
-            {/if}
-        </div>
+                {#if selectedBottles.size > 0}
+                    <div class="flex flex-wrap gap-2">
+                        {#if auth.isAuthenticated}
+                            <Button
+                                variant="outline"
+                                size="sm"
+                                onclick={() => (movingBottles = chosenBottles())}
+                            >
+                                {m['admin.change_storage_location']()}
+                            </Button>
+                            <Button
+                                variant="default"
+                                size="sm"
+                                onclick={() => (statusBottles = chosenBottles())}
+                            >
+                                {m['admin.change_bottle_availability']()}
+                            </Button>
+                        {:else}
+                            <Button
+                                variant="outline"
+                                size="sm"
+                                onclick={() =>
+                                    toasts.add(
+                                        m['bottles.log_in_to_change_availability'](),
+                                        'warning'
+                                    )}
+                            >
+                                {m['admin.change_storage_location']()}
+                            </Button>
+                            <Button
+                                variant="outline"
+                                size="sm"
+                                onclick={() =>
+                                    toasts.add(
+                                        m['bottles.log_in_to_change_availability'](),
+                                        'warning'
+                                    )}
+                            >
+                                {m['admin.change_bottle_availability']()}
+                            </Button>
+                        {/if}
+                    </div>
+                {/if}
+            </div>
+        {/snippet}
 
-        <div class="flex-1 overflow-auto">
-            <BottleTable
-                bottles={sortedBottles}
-                columns={[
-                    'location',
-                    'availability',
-                    'vintage',
-                    'format',
-                    'purchaseDate',
-                    'origin',
-                    'purchasePrice',
-                    'barcode',
-                    'notes'
-                ]}
-                {sort}
-                onSort={(next) => (sort = next)}
-                emptyMessage={m['wine_details.no_available_bottles']()}
-                selection={selectedBottles}
-                onToggle={toggleBottleSelection}
-                onToggleAll={selectAll}
-                onEdit={editBottle}
-            />
-        </div>
-    </DialogContent>
+        <BottleTable
+            bottles={sortedBottles}
+            columns={[
+                'location',
+                'availability',
+                'vintage',
+                'format',
+                'purchaseDate',
+                'origin',
+                'purchasePrice',
+                'barcode',
+                'notes'
+            ]}
+            {sort}
+            onSort={(next) => (sort = next)}
+            emptyMessage={m['wine_details.no_available_bottles']()}
+            selection={selectedBottles}
+            onToggle={toggleBottleSelection}
+            onToggleAll={selectAll}
+            onEdit={editBottle}
+        />
+    </ScrollingDialogContent>
 </Dialog>
 
 {#if statusBottles.length > 0}

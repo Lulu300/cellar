@@ -12,6 +12,7 @@
     import { Input } from '#lib/components/ui/input/index.js';
     import { Label } from '#lib/components/ui/label/index.js';
     import OptionSelect from '#lib/components/forms/OptionSelect.svelte';
+    import ScrollingDialogContent from '#lib/components/layout/ScrollingDialogContent.svelte';
     import { confirm } from '#lib/components/layout/confirm.svelte.js';
     import { LABEL_PRESETS } from '#lib/shared/dependencies.js';
     import type { LabelPreset } from '#lib/shared/dto.js';
@@ -228,11 +229,8 @@
 </Dialog>
 
 <Dialog open={dialog === 'manage'} onOpenChange={(open) => !open && (dialog = null)}>
-    <DialogContent class="max-w-2xl max-h-[80vh] overflow-hidden flex flex-col">
-        <DialogHeader>
-            <DialogTitle>{m['barcode.manage_label_presets']()}</DialogTitle>
-        </DialogHeader>
-        <div class="space-y-2 overflow-y-auto flex-1 min-h-0">
+    <ScrollingDialogContent title={m['barcode.manage_label_presets']()} class="max-w-2xl">
+        <div class="space-y-2">
             {#each presets as preset (preset.id)}
                 <div class="flex items-center justify-between gap-2 p-3 border rounded-lg">
                     <div class="min-w-0">
@@ -278,5 +276,5 @@
                 <p class="text-center py-6 text-muted-foreground">{m['barcode.no_presets']()}</p>
             {/each}
         </div>
-    </DialogContent>
+    </ScrollingDialogContent>
 </Dialog>

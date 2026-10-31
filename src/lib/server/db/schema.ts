@@ -140,6 +140,37 @@ export const winePhotos = sqliteTable(
     ]
 );
 
+/**
+ * The wishlist: a wine of the cellar, at most once, or a text with a photo if wanted, for a wine
+ * not in it yet. A text wish that becomes a wine keeps its quantity and note, and gives its photo
+ * to the wine.
+ */
+export const wishes = sqliteTable(
+    'wishes',
+    {
+        id: id(),
+        definitionId: text('definition_id').references(() => wineDefinitions.id, {
+            onDelete: 'cascade'
+        }),
+        text: text('text'),
+        imageId: text('image_id').references(() => wineImages.id, { onDelete: 'set null' }),
+        quantity: integer('quantity'),
+        note: text('note'),
+        createdAt: timestamp('created_at'),
+        updatedAt: timestamp('updated_at')
+    },
+    (table) => [
+        uniqueIndex('wishes_definition_id_unique').on(table.definitionId),
+        index('wishes_image_id_idx').on(table.imageId),
+        check(
+            'wishes_wine_or_text_check',
+            sql.raw(
+                '(definition_id IS NULL) <> (text IS NULL) AND (definition_id IS NULL OR image_id IS NULL)'
+            )
+        )
+    ]
+);
+
 // Wine types table
 export const wineTypes = sqliteTable('wine_types', {
     id: id(),
@@ -335,3 +366,4 @@ export type LabelPreset = typeof labelPresets.$inferSelect;
 export type NewLabelPreset = typeof labelPresets.$inferInsert;
 export type Session = typeof sessions.$inferSelect;
 export type WineImage = typeof wineImages.$inferSelect;
+export type Wish = typeof wishes.$inferSelect;

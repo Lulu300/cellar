@@ -33,6 +33,8 @@ const SAFETY_FILE = /^cellar-(?:backup|export)-pre-(restore|reset|import)-/;
 // Custom names never start with it, so that retention, which goes by name, deletes only
 // automatic files.
 const AUTOMATIC_PREFIX = 'auto-';
+/** Whether a custom name is kept for automatic files: `auto`, or a name that starts with `auto-`. */
+const isReservedName = (customName: string) => `${customName}-`.startsWith(AUTOMATIC_PREFIX);
 // A file name holds 255 bytes at most. A backup adds about 60 to the custom name: the prefix, the
 // timestamp, `.zip.db.partial` for its snapshot, and `-journal` that SQLite may add to that.
 const MAX_NAME_BYTES = 150;
@@ -62,7 +64,7 @@ export function manualBackupPath(
     timestamp: string
 ): string | null {
     if (!customName) return resolveInDir(DATA_DIR, `${backupFilePrefix(kind)}${timestamp}.zip`);
-    if (`${customName}-`.startsWith(AUTOMATIC_PREFIX) || !fitsNameLimit(customName)) return null;
+    if (isReservedName(customName) || !fitsNameLimit(customName)) return null;
     return resolveInDir(DATA_DIR, `${backupFilePrefix(kind)}${customName}-${timestamp}.zip`);
 }
 
@@ -81,11 +83,18 @@ export function checkedManualBackupPath(
     customName: string | undefined,
     timestamp: string
 ): string {
+    if (customName && isReservedName(customName)) {
+        throw new ValidationError(
+            'invalid_file_name',
+            `Invalid ${kind} name: "auto" and the names that start with "auto-" are kept for automatic backups and exports`,
+            { kind: 'reserved' }
+        );
+    }
     const backupPath = manualBackupPath(kind, customName || undefined, timestamp);
     if (!backupPath) {
         throw new ValidationError(
             'invalid_file_name',
-            `Invalid ${kind} name: it cannot start with "auto-", hold a "/" or be longer than ${MAX_NAME_BYTES} bytes`
+            `Invalid ${kind} name: it cannot hold a "/" or be longer than ${MAX_NAME_BYTES} bytes`
         );
     }
     return backupPath;

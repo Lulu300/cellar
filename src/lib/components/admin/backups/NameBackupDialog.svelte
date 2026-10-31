@@ -31,7 +31,7 @@
 
     function create(event: SubmitEvent) {
         event.preventDefault();
-        // The server alone checks the name, which is free apart from "auto-", "/" and its length.
+        // The server alone checks the name, which is free apart from "auto", "auto-…", "/" and its length.
         onCreate(name.trim());
     }
 </script>

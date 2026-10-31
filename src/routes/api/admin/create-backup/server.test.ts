@@ -52,13 +52,20 @@ describe('POST /api/admin/create-backup', () => {
         expect(countryNamesInDbFile(path.join(extractDir, 'cellar.db'))).toEqual(['France']);
     });
 
-    it('refuses a name that retention would take for an automatic backup', async () => {
-        const response = await createBackup({ name: 'auto-internal' });
+    // The details tell the page to say why: the name is kept, not too long or holding a "/".
+    it.each(['auto', 'auto-internal'])(
+        'refuses %s, a name that retention would take for an automatic backup',
+        async (name) => {
+            const response = await createBackup({ name });
 
-        expect(response.status).toBe(422);
-        expect((await response.json()).error.code).toBe('invalid_file_name');
-        expect(readdirSync(DATA_DIR).filter((name) => name.includes('auto-'))).toEqual([]);
-    });
+            expect(response.status).toBe(422);
+            expect((await response.json()).error).toMatchObject({
+                code: 'invalid_file_name',
+                details: { kind: 'reserved' }
+            });
+            expect(readdirSync(DATA_DIR).filter((file) => file.includes('auto'))).toEqual([]);
+        }
+    );
 
     // The files that a backup writes add about 60 bytes to the name, within the 255 of a file name.
     it('takes a name of up to 150 bytes in UTF-8, and refuses a longer one with 422', async () => {

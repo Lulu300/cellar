@@ -99,6 +99,18 @@ describe('apiErrorMessage', () => {
         );
     });
 
+    it('says that a backup name is kept for automatic backups, rather than what it is not', () => {
+        const reserved = body('invalid_file_name', { kind: 'reserved' });
+
+        expect(apiErrorMessage(reserved)).toBe(
+            'The name "auto" and the names that start with "auto-" are kept for automatic backups and exports: choose another name.'
+        );
+        useLocale('fr');
+        expect(apiErrorMessage(reserved)).toBe(
+            'Le nom « auto » et les noms qui commencent par « auto- » sont réservés aux sauvegardes et aux exports automatiques : choisissez un autre nom.'
+        );
+    });
+
     it('counts the rows that still use a row that cannot be deleted', () => {
         expect(apiErrorMessage(body('in_use', { count: 3, usedBy: 'wine_definitions' }))).toBe(
             'This item is still used by 3 wines, so it cannot be deleted.'

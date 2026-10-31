@@ -119,7 +119,10 @@ const VARIANTS: Partial<
     },
     invalid_file_name: {
         field: 'kind',
-        messages: { image: m['errors.invalid_file_name_image'] }
+        messages: {
+            image: m['errors.invalid_file_name_image'],
+            reserved: m['errors.invalid_file_name_reserved']
+        }
     },
     backup_refused: {
         field: 'kind',

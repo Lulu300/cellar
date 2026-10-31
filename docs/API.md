@@ -1794,7 +1794,8 @@ Writes a backup of the database and the images in the data folder.
   (bytes) of the new file, and `restorable`: `false` when the backup is larger than a restore
   accepts (2 GiB uncompressed or 10,000 files). Such a backup is written anyway, as it holds the
   data, and can be restored by hand (see README-Docker).
-- **Errors:** `422 invalid_file_name` for a name that cannot be used.
+- **Errors:** `422 invalid_file_name` for a name that cannot be used, with
+  `details: { "kind": "reserved" }` when it is kept for automatic backups.
 
 ```json
 {
@@ -1819,7 +1820,8 @@ it back.
   `size` of the new file), `recordCount`, the number of rows exported, and `restorable`: `false`
   when the export is larger than an import accepts (2 GiB uncompressed or 10,000 files), which
   cannot then import it.
-- **Errors:** `422 invalid_file_name` for a name that cannot be used.
+- **Errors:** `422 invalid_file_name` for a name that cannot be used, with
+  `details: { "kind": "reserved" }` when it is kept for automatic exports.
 
 ```json
 {

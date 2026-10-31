@@ -158,7 +158,7 @@ export const phases = [
 		id: 'P15',
 		version: '1.3.0',
 		title: 'Navigation, photos et achats',
-		goal: 'Pour la 1.3.0 (décision « Versions de 1.3.0 à 1.7.0 ») : le menu par sections d’abord, parce que les pages qui suivent s’y rangent, puis les photos d’étiquette et la page Achats, dont les envies réutilisent l’envoi de photo. Lots, chacun mergé avant le suivant, résumé 1.3.0 : 1. UI-28 et FEAT-01 en parallèle (le menu et les photos ne touchent pas les mêmes fichiers) ; 2. FEAT-02, qui a besoin des deux ; 3. DEP-09 ; puis REL-09. Si la phase traîne, la page Achats peut partir d’abord avec des envies en texte seul.'
+		goal: 'Pour la 1.3.0 (décision « Versions de 1.3.0 à 1.7.0 ») : le menu par sections d’abord, parce que les pages qui suivent s’y rangent, puis les photos d’étiquette et la page Achats, dont les envies réutilisent l’envoi de photo. Lots, chacun mergé avant le suivant, résumé 1.3.0 : 1. UI-28 et FEAT-01 en parallèle (faits le 2026-10-31) (le menu et les photos ne touchent pas les mêmes fichiers) ; 2. FEAT-02, qui a besoin des deux ; 3. DEP-09 ; puis REL-09. Si la phase traîne, la page Achats peut partir d’abord avec des envies en texte seul.'
 	},
 	{
 		id: 'P16',
@@ -2402,7 +2402,9 @@ export const tasks = [
 			'Décision « Navigation (UI-28) » : sections au survol (Cave, Achats, Statistiques, Outils), engrenage, onglets des pages de section, signal d’Achats, lien « N hors cave » sous les filtres de Mes vins, menu ☰ par sections, barre d’onglets dans l’app installée seulement (`display-mode: standalone`).',
 			'Les menus s’ouvrent au survol, au clavier et au toucher (un appui sur une section sans survol ouvre sa première page) ; Échap les ferme ; noms accessibles justes.',
 			'Les adresses d’aujourd’hui continuent de marcher (redirections quand une page change d’adresse) ; les e2e suivent.',
-			'Maquette de référence : https://claude.ai/artifact/VTtcWTR5pnofZW3i7kCEkr (variante B, sans Producteurs dans Outils). Captures en clair et en sombre, ordinateur et téléphone, montrées au mainteneur avant le merge.'
+			'Maquette de référence : https://claude.ai/artifact/VTtcWTR5pnofZW3i7kCEkr (variante B, sans Producteurs dans Outils). Captures en clair et en sombre, ordinateur et téléphone, montrées au mainteneur avant le merge.',
+			'Fait en P15 (2026-10-31, 18f05048..d3745b78) : modèle du menu dans `layout/navigation.ts` (Cave avec le nombre hors cave, Achats avec la pénurie en rouge, Statistiques en lien direct, Outils › Codes-barres, engrenage Préférences, Admin, Déconnexion), composants `NavSectionMenu`, `NavRow`, `NavCount`, `NavList`, `SectionTabs` (partagé avec l’admin) et `TabBar` (app installée, sous 768 px) ; barre du haut dès 768 px avec une souris, menu ☰ sur tout écran tactile ; pénurie sous `/purchases/shortage` (308 depuis `/wine-shortage`) ; lien « N hors cave » sur Mes vins ; « Codes-barres » au pluriel. Captures validées par le mainteneur, avec ses choix pour les sections d’une page ; pas de changement d’API ni de MCP.',
+			'Trouvé pendant UI-28 : les toasts (en haut à droite, z-index 9999, `ToastContainer.svelte`) couvrent les menus ouverts quelques secondes après une action ; le cache Vitest d’un worktree cache des routes arrivées par un rebase (le script des portes le vide désormais avant les tests).'
 		],
 		done: 'Chaque page s’atteint depuis le menu au survol, au clavier et au toucher ; Achats montre le compteur, le point ou rien selon les cas ; l’app installée a sa barre d’onglets et le navigateur du téléphone n’en a pas ; les anciennes adresses répondent ; captures validées par le mainteneur.',
 		deps: ['REL-08'], src: ['Décision « Navigation (UI-28) »']
@@ -2416,7 +2418,9 @@ export const tasks = [
 			'Décision « Photos des vins (FEAT-01) » : plusieurs photos par vin, dont une principale ; migration qui garde l’image actuelle comme principale ; sauvegardes, exports et imports suivent.',
 			'« Prendre une photo » (`capture`) et « Choisir un fichier » ; aperçu avec rotation et recadrage ; réduction, orientation et retrait des métadonnées dans le navigateur, avant l’envoi.',
 			'Le recadrage : écrit à la main sur un canvas, ou une bibliothèque proposée au mainteneur avec sa taille et sa licence ; aucune dépendance sans son accord.',
-			'Le même envoi servira aux photos des envies (FEAT-02) : un composant partagé.'
+			'Le même envoi servira aux photos des envies (FEAT-02) : un composant partagé.',
+			'Fait en P15 (2026-10-31) : `wine_definitions.image_id` reste la photo principale et la table `wine_photos` garde les autres (migration générée, aucune ligne déplacée) ; champ « Photo principale » ; page du vin avec vignettes, « En faire la photo principale » et « Supprimer la photo » ; `PhotoCapture.svelte` (prendre ou choisir, aperçu, rotation, recadrage écrit à la main, JPEG d’environ 1 600 px sans métadonnées) et `ImagePicker.svelte` ; sauvegardes et exports gardent toutes les photos, l’import CSV la principale, l’import ZIP d’images reconnaît chaque photo par son nom ; une photo de 6,1 Mo avec GPS envoyée en 449 Ko sans EXIF ; une base 1.2.0 se met à jour, se restaure et s’importe avec son image devenue principale. `get_wine` du MCP inchangé (pas d’images). Captures validées par le mainteneur. Pas encore essayé sur un vrai téléphone.',
+			'Trouvé pendant FEAT-01 : une erreur pendant le rendu d’une page répond 500 sans rien journaliser (`hooks.server.ts`, `+error.svelte`) ; `node server.js` sans `BODY_SIZE_LIMIT` limite les envois à 512 Ko (seulement hors de l’image Docker).'
 		],
 		done: 'Sur un téléphone (Chromium en émulation, puis un vrai téléphone si possible), une photo prise est pivotée, recadrée, envoyée réduite et sans métadonnées GPS ; un vin garde plusieurs photos, la principale dans la liste ; une sauvegarde de la version précédente se restaure et se met à jour ; testé.',
 		deps: ['REL-08'], src: ['Décision « Photos des vins (FEAT-01) »']
@@ -2430,7 +2434,8 @@ export const tasks = [
 			'Décision « Liste d’envies et achats (FEAT-02) » : table des envies (texte ou vin, quantité, note, photo) par migration ; API, sauvegardes, exports et imports suivent.',
 			'Onglets « Liste d’envies » et « Pénurie » sous Achats (UI-28), avec leur nombre ; signal du menu.',
 			'Envie liée à un vin : « Ajouter une bouteille », enchaînement habituel, retrait proposé au dernier enregistrement ; envie en texte : « Créer la fiche du vin », photo reprise, puis les bouteilles ; bouteille ajoutée ailleurs d’un vin de la liste : même proposition.',
-			'Ajouter une envie depuis la liste des vins (un petit bouton) ou en tapant un nom (proposé s’il existe).'
+			'Ajouter une envie depuis la liste des vins (un petit bouton) ou en tapant un nom (proposé s’il existe).',
+			'À reprendre (rapports d’UI-28 et de FEAT-01) : l’onglet « Liste d’envies » s’ajoute à `purchasesSection()` de `layout/navigation.ts` (menu, onglets, ☰, « Plus » et barre d’onglets suivent) ; s’il devient le premier onglet, changer la redirection de `src/routes/purchases/+page.server.ts` ; le point des envies demande un mode « point » dans `NavCount` et un repli dans `alertOf` quand aucun vin n’est en pénurie ; le nombre d’envies se charge dans le load de la mise en page racine ; la photo d’une envie passe par `PhotoCapture.svelte` et `uploadImage`, et son identifiant d’image devient l’`imageId` du vin créé.'
 		],
 		done: 'Une envie en texte avec photo devient un vin puis des bouteilles, et sort de la liste seulement si l’utilisateur le choisit ; une bouteille ajoutée hors de la liste propose le retrait ; les deux onglets et le signal du menu donnent les bons nombres ; une sauvegarde de la version précédente se restaure ; testé, e2e compris.',
 		deps: ['UI-28', 'FEAT-01'], src: ['Décision « Liste d’envies et achats (FEAT-02) »']

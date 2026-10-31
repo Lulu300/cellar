@@ -151,7 +151,7 @@ export const phases = [
 		id: 'P14',
 		version: '1.2.0',
 		title: 'Serveur MCP',
-		goal: 'Pour la 1.2.0, enchaînée juste après la 1.1.0 : un serveur MCP intégré à Cellar, pour les assistants d’IA du réseau local (décision « Serveur MCP (P14) »), et la description OpenAPI de l’API, tirée des mêmes schémas zod. Lots : 1. SEC-11, API-14 (faits le 2026-10-31) ; 2. API-10, API-15 ; 3. API-11, DOC-06 ; puis REL-08.'
+		goal: 'Pour la 1.2.0, enchaînée juste après la 1.1.0 : un serveur MCP intégré à Cellar, pour les assistants d’IA du réseau local (décision « Serveur MCP (P14) »), et la description OpenAPI de l’API, tirée des mêmes schémas zod. Lots : 1. SEC-11, API-14 (faits le 2026-10-31) ; 2. API-10, API-15 (faits le 2026-10-31) ; 3. API-11, DOC-06 ; puis REL-08.'
 	},
 	{
 		id: 'P15',
@@ -2316,7 +2316,9 @@ export const tasks = [
 			'Décision « Serveur MCP (P14) » : `@modelcontextprotocol/server` v2 (version publiée depuis au moins 7 jours, en `dependencies`), transport HTTP « streamable » à `/mcp`, monté dans une route SvelteKit ; vérifier ce que le SDK ajoute à l’image et qu’il s’intègre au contrôle d’origine de `hooks.server.ts`.',
 			'Outils de lecture, qui appellent les services (jamais les repositories) et décrivent leurs paramètres à partir des schémas zod partagés : chercher des vins, voir un vin avec ses bouteilles et leurs emplacements, retrouver une bouteille par son code-barres, statistiques, pénurie, place libre dans les rangements.',
 			'Documenter la configuration d’un client (Claude Code, une application de bureau, un modèle local) et la limite : réseau local ou VPN seulement.',
-			'Pour brancher le MCP (rapport de SEC-11) : la route est `src/routes/mcp/+server.ts`, exactement à `/mcp`, jamais dans un groupe de routes ; elle lit `locals.mcpAccess` par une aide qui refuse `undefined` ; chaque POST passe par `runWrite`, si bien qu’une lecture reçoit aussi 503 pendant une restauration, un import ou un effacement, et qu’une réponse en flux sort du verrou avant la fin : à trancher ici ; vérifier que le SDK ne journalise jamais les en-têtes ; une route ajoutée sous `/api` entre dans `server/openapi.ts`, puis `pnpm openapi`.'
+			'Pour brancher le MCP (rapport de SEC-11) : la route est `src/routes/mcp/+server.ts`, exactement à `/mcp`, jamais dans un groupe de routes ; elle lit `locals.mcpAccess` par une aide qui refuse `undefined` ; chaque POST passe par `runWrite`, si bien qu’une lecture reçoit aussi 503 pendant une restauration, un import ou un effacement, et qu’une réponse en flux sort du verrou avant la fin : à trancher ici ; vérifier que le SDK ne journalise jamais les en-têtes ; une route ajoutée sous `/api` entre dans `server/openapi.ts`, puis `pnpm openapi`.',
+			'Fait en P14 (2026-10-31, c318671a..315b3a82) : `@modelcontextprotocol/server` 2.4.0 (+2 paquets, +8,5 Mo) ; `createMcpHandler(...).fetch` reçoit directement `event.request` dans `src/routes/mcp/+server.ts` (POST seulement), sans session, protocole 2026-07-28 et repli pour 2024-10-07 à 2025-11-25 ; six outils de lecture (`search_wines`, `get_wine`, `find_bottle_by_barcode`, `get_statistics`, `get_wine_shortage`, `get_free_space`) dans `features/mcp/`, réponses JSON compactes par les services ; `/mcp` sort de `runWrite` (les lectures continuent pendant une restauration, un import ou un effacement, comme les GET de l’API ; décision du coordinateur) ; prouvé avec le client du SDK, l’Inspector et Claude Code ; 401 sans jeton, avec un mauvais jeton ou un cookie seul ; jamais de jeton dans les journaux, `DEBUG=mcp` compris. docs/API.md « The MCP server », README-Docker « AI assistants (MCP) ».',
+			'Trouvé pendant API-10 : un DELETE sans `Content-Type` ni `Origin` reçoit le 403 de SvelteKit sur toutes les routes (pas sur `/mcp`) ; le test « pas de jeton dans les journaux » de SEC-11 sérialise par `JSON.stringify`, qui imprime une `Error` comme `{}` (`hooks.server.test.ts`) ; le cache Vitest cache encore une route arrivée par un rebase ; `find_bottle_by_barcode` avec un suffixe très court et `get_wine` pour un vin à longue histoire n’ont pas de taille maximale de réponse.'
 		],
 		done: 'Un client MCP réel, configuré avec l’adresse et le jeton, liste les outils et obtient des réponses justes sur des données inventées ; sans jeton, `/mcp` répond 401 ; les portes et les parcours passent.',
 		deps: ['SEC-11'], src: ['Décision « Serveur MCP (P14) »']
@@ -2328,7 +2330,8 @@ export const tasks = [
 		where: ['src/lib/server/features/mcp/', 'docs/API.md'],
 		todo: [
 			'Décision « Serveur MCP (P14) » : ajouter des bouteilles (ou un vin et ses bouteilles), marquer des bouteilles bues (date, note, commentaire), déplacer des bouteilles, modifier les notes ; mêmes règles et mêmes validations que l’API, par les services.',
-			'Outils marqués comme écritures pour le client (annotations du protocole), refusés quand le jeton est en lecture seule ; aucun outil d’admin.'
+			'Outils marqués comme écritures pour le client (annotations du protocole), refusés quand le jeton est en lecture seule ; aucun outil d’admin.',
+			'Pour brancher les écritures (rapport d’API-10, accord du coordinateur) : `runAsWrite(task)` dans `server/write-gate.ts`, sur lequel `runWrite` s’appuie (un seul verrou) ; chaque outil d’écriture, annoté `readOnlyHint: false` (et `destructiveHint`, `idempotentHint` selon le cas), appelle `assertMcpWrite(access)` puis `runAsWrite(() => appel du service)` dans `answer()`, le verrou couvrant l’écriture seulement ; l’accès vient de `requireMcpAccess(locals)` et passe par requête (`authInfo` de `mcpHandler.fetch` ou un serveur par requête) ; tests : refus avec un jeton en lecture seule, refus pendant `holdWrites`, `holdWrites` attend une écriture en cours ; le test « tous les outils sont en lecture » change ; docs/API.md suit.'
 		],
 		done: 'Avec un jeton en écriture, un client MCP réel ajoute des bouteilles, en marque une bue et la déplace, et l’interface montre le résultat ; avec un jeton en lecture seule, chaque écriture est refusée ; testé.',
 		deps: ['API-10'], src: ['Décision « Serveur MCP (P14) »']
@@ -2340,7 +2343,8 @@ export const tasks = [
 		where: ['src/routes/api/', 'src/lib/server/openapi.ts', 'docs/API.md', 'docs/openapi.json'],
 		todo: [
 			'`GET /api/openapi.json` renvoie la description de la version installée, en lecture sans session comme les autres lectures ; elle se décrit elle-même dans docs/API.md et dans la description (accord du mainteneur, 2026-10-31).',
-			'Lot 2 de P14.'
+			'Lot 2 de P14.',
+			'Fait en P14 (2026-10-31, b1eeec7c..56076766) : `GET /api/openapi.json`, sans session, sert `openApiDocument()` calculé au chargement du module (`docs/` n’entre pas dans l’image) ; un test le compare à `docs/openapi.json` ; 107 opérations ; docs/API.md, README et AGENTS.md suivent.'
 		],
 		done: 'Sur l’app compilée, `GET /api/openapi.json` renvoie le même document que `docs/openapi.json` ; les tests de couverture le voient ; testé.',
 		deps: ['API-14'], src: ['Trouvé pendant API-14', 'Décision « Doc de l’API (DOC-05, API-14) »']
@@ -2353,7 +2357,8 @@ export const tasks = [
 		todo: [
 			'Exemples complets et commentés pour nginx, SWAG (fichier `proxy-confs` de linuxserver), Caddy et Traefik (labels Docker), plus une ligne pour Nginx Proxy Manager et le reverse proxy de Synology si leurs réglages diffèrent : HTTPS, `ORIGIN` ou en-têtes, taille des envois (import ZIP, restauration), délais des longues opérations, et la règle de `/mcp` (Authorization transmis, pas de mise en tampon, délai long).',
 			'Chaque exemple rejoué avec l’image officielle du proxy devant une app compilée, sur des ports à part : page, écriture (contrôle d’origine), envoi d’un gros fichier et une requête MCP ; SWAG et Synology, s’ils ne se rejouent pas sans domaine, sont dits « non rejoués » avec la raison.',
-			'Lot 3 de P14, après API-10, pour que la règle de `/mcp` soit la vraie.'
+			'Lot 3 de P14, après API-10, pour que la règle de `/mcp` soit la vraie.',
+			'Ce que `/mcp` demande au proxy (rapport d’API-10) : transmettre tels quels `Authorization`, `Accept`, `Content-Type`, `MCP-Protocol-Version`, `Mcp-Method`, `Mcp-Name` ; accepter POST ; couper la mise en tampon (`proxy_buffering off`), les réponses aux clients 2025 étant en `text/event-stream` ; HTTP/1.1 vers l’app et un délai de lecture d’au moins 60 s (un flux `subscriptions/listen` reste ouvert, avec un signe de vie toutes les 15 s) ; corps limité à 4 Mio par le SDK ; les clients MCP n’envoient pas d’`Origin`.'
 		],
 		done: 'README-Docker (ou un fichier lié) donne une configuration à copier pour nginx, SWAG, Caddy et Traefik ; celles qui se rejouent servent l’app, ses écritures, un gros envoi et le MCP ; testé à la main, preuves gardées.',
 		deps: ['API-10'], src: ['Demande du mainteneur (2026-10-31)']

@@ -1,18 +1,36 @@
 import {
+    createBottles,
     getWineShortages,
-    listBottlesWithDefinitions
+    listBottlesWithDefinitions,
+    updateBottles,
+    type WineBottleWithFormat
 } from '#lib/server/features/bottles/service.js';
-import { getDefinitionDetails, listWines } from '#lib/server/features/catalog/service.js';
+import {
+    createDefinition,
+    getDefinitionDetails,
+    listWines,
+    originHandlers,
+    rateDefinition,
+    wineClassificationHandlers,
+    wineColorHandlers,
+    wineFormatHandlers,
+    wineTypeHandlers
+} from '#lib/server/features/catalog/service.js';
+import { appellationHandlers } from '#lib/server/features/geography/service.js';
 import { storageOverview } from '#lib/server/features/storage/service.js';
 import { findBarcodeMatches } from '#lib/shared/barcode.js';
 import { BottleAvailability } from '#lib/shared/bottle-availability.js';
 import type { BottleWithDefinitionDTO, WineGroupDTO } from '#lib/shared/dto.js';
+import type { BottleInput } from '#lib/shared/schemas/bottle.js';
+import type { WineDefinitionInput } from '#lib/shared/schemas/wine.js';
 import { containerLabel } from '#lib/shared/storage.js';
 import { compareText } from '#lib/utils/compare.js';
+import { today } from '#lib/utils/format.js';
 
-// What the read tools of the MCP server answer. An assistant reads every word of an answer: each
-// one keeps the fields that help it answer a question about the cellar, flat, and leaves out the
-// ids of references, the images and the timestamps that the API gives.
+// What the tools of the MCP server answer. An assistant reads every word of an answer: each one
+// keeps the fields that help it answer a question about the cellar, flat, and leaves out the
+// images, the timestamps and the ids of references that the API gives, but those a write tool
+// takes.
 
 /** A wine as the wine list and the wine page give it. */
 type Wine = Pick<
@@ -76,6 +94,15 @@ const searchable = (text: string) =>
         .replace(/\p{Diacritic}/gu, '')
         .toLowerCase();
 
+/** Whether the texts of `fields` hold every word of `query` between them, capitals and accents aside. */
+function matching(query: string) {
+    const words = searchable(query).split(/\s+/).filter(Boolean);
+    return (fields: (string | null | undefined)[]) => {
+        const text = searchable(fields.join(' '));
+        return words.every((word) => text.includes(word));
+    };
+}
+
 export interface WineSearch {
     query?: string;
     inCellarOnly: boolean;
@@ -88,7 +115,7 @@ export interface WineSearch {
  * `limit`.
  */
 export function searchWines({ query = '', inCellarOnly, limit }: WineSearch) {
-    const words = searchable(query).split(/\s+/).filter(Boolean);
+    const matches = matching(query);
     const found = listWines({ ownedOnly: true })
         .map(({ definition, bottles }) => {
             const inCellar = bottles.filter(isIn(BottleAvailability.AVAILABLE));
@@ -103,20 +130,17 @@ export function searchWines({ query = '', inCellarOnly, limit }: WineSearch) {
         })
         .filter((wine) => {
             if (inCellarOnly && wine.inCellar === 0) return false;
-            const text = searchable(
-                [
-                    wine.name,
-                    wine.producer,
-                    wine.color,
-                    wine.type,
-                    wine.classification,
-                    wine.appellation,
-                    wine.region,
-                    wine.country,
-                    ...wine.grapes
-                ].join(' ')
-            );
-            return words.every((word) => text.includes(word));
+            return matches([
+                wine.name,
+                wine.producer,
+                wine.color,
+                wine.type,
+                wine.classification,
+                wine.appellation,
+                wine.region,
+                wine.country,
+                ...wine.grapes
+            ]);
         })
         .sort((a, b) => compareText(a.name, b.name));
     return { total: found.length, wines: found.slice(0, limit) };
@@ -197,7 +221,8 @@ function totalOf(loads: Load[]): Load {
  */
 export function freeSpace() {
     const containers = storageOverview().map(({ name: container, cases }) => {
-        const loads = cases.map(({ name, capacity, bottles }) => ({
+        const loads = cases.map(({ id, name, capacity, bottles }) => ({
+            id,
             name,
             capacity,
             bottles,
@@ -206,4 +231,123 @@ export function freeSpace() {
         return { name: containerLabel(container), ...totalOf(loads), cases: loads };
     });
     return { ...totalOf(containers), containers };
+}
+
+/** The id and name of each row of a reference list. */
+const named = (rows: { id: string; name: string }[]) => rows.map(({ id, name }) => ({ id, name }));
+
+/** The lists that the write tools take ids from, but the appellations, which are too many. */
+export function choices() {
+    return {
+        formats: named(wineFormatHandlers.list()),
+        colors: named(wineColorHandlers.list()),
+        types: named(wineTypeHandlers.list()),
+        classifications: named(wineClassificationHandlers.list()),
+        origins: named(originHandlers.list())
+    };
+}
+
+/** The most appellations that one search returns. */
+export const MAX_APPELLATIONS = 50;
+
+/**
+ * The appellations whose name, region and country hold every word of `query`, by name, with their
+ * region and country. `total` counts them all, beyond MAX_APPELLATIONS.
+ */
+export function searchAppellations(query: string) {
+    const matches = matching(query);
+    const found = appellationHandlers
+        .list()
+        .map((row) => ({
+            id: row.id,
+            name: row.name,
+            region: row.regionName as string,
+            country: row.countryName as string
+        }))
+        .filter(({ name, region, country }) => matches([name, region, country]));
+    return { total: found.length, appellations: found.slice(0, MAX_APPELLATIONS) };
+}
+
+/** A bottle as a write tool answers it, once written. */
+function writtenBottle(bottle: WineBottleWithFormat) {
+    return {
+        id: bottle.id,
+        wineId: bottle.definitionId,
+        availability: bottle.availability,
+        vintage: bottle.vintage,
+        format: bottle.format,
+        caseId: bottle.storageCaseId,
+        barcode: bottle.barcode,
+        consumedDate: day(bottle.consumedDate),
+        notes: bottle.notes
+    };
+}
+
+/** Creates the wine, and answers it as get_wine does: without bottles yet. */
+export function addWine(wine: WineDefinitionInput) {
+    return wineWithBottles(createDefinition(wine).id);
+}
+
+/** The fields of the bottles that add_bottles creates: those of a purchase. */
+export type NewBottles = Pick<
+    BottleInput,
+    | 'formatId'
+    | 'originId'
+    | 'vintage'
+    | 'optimum'
+    | 'purchasePrice'
+    | 'purchaseDate'
+    | 'storageCaseId'
+    | 'barcode'
+    | 'notes'
+> & { wineId: string; quantity: number };
+
+/** Creates `quantity` bottles of the wine in the cellar, all or none, as POST /api/bottles does. */
+export function addBottles({ wineId, quantity, ...bottle }: NewBottles) {
+    const created = createBottles(
+        {
+            ...bottle,
+            definitionId: wineId,
+            availability: BottleAvailability.AVAILABLE,
+            consumedDate: null,
+            currentValue: null,
+            currentValueDate: null
+        },
+        quantity
+    );
+    return created.map(writtenBottle);
+}
+
+/**
+ * Marks the bottles drunk on `date`, today when null, as the status dialog does: they leave their
+ * case, and `note` goes after their notes.
+ */
+export function markDrunk(ids: string[], date: Date | null, note: string | null) {
+    const changes = {
+        availability: BottleAvailability.CONSUMED,
+        // Today on the server's calendar, stored as its midnight in UTC like a date of the forms.
+        consumedDate: date ?? new Date(today())
+    };
+    return updateBottles(ids, changes, note).map(writtenBottle);
+}
+
+/** Puts the bottles in the case: a drunk bottle stays out of any case. */
+export function moveBottles(ids: string[], caseId: string) {
+    return updateBottles(ids, { storageCaseId: caseId }).map(writtenBottle);
+}
+
+/** Replaces the notes of the bottles when `notes` is given, then adds `addedNote` after them. */
+export function changeBottleNotes(
+    ids: string[],
+    notes: string | null | undefined,
+    addedNote: string | null
+) {
+    const changes = notes === undefined ? {} : { notes };
+    return updateBottles(ids, changes, addedNote).map(writtenBottle);
+}
+
+/** Gives the wine `rating`, or none with null, and answers the wine without its bottles. */
+export function rateWine(id: string, rating: number | null) {
+    rateDefinition(id, rating);
+    return wineSummary(getDefinitionDetails(id));
 }

@@ -79,10 +79,13 @@ export function requireMcpAccess(locals: App.Locals): McpAccess {
     return locals.mcpAccess;
 }
 
+/** A write tool called with a read-only token: its message tells the assistant where to allow it. */
+export class ReadOnlyTokenError extends Error {}
+
 /** For each write tool of the MCP server: refuses the call when the token is read-only. */
 export function assertMcpWrite(access: McpAccess): void {
     if (!access.write) {
-        throw new Error(
+        throw new ReadOnlyTokenError(
             'This MCP token is read-only: changes can be allowed in Cellar, under Admin › Settings › MCP access.'
         );
     }

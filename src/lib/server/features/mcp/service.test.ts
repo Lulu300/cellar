@@ -1,4 +1,5 @@
-import { beforeAll, beforeEach, describe, expect, it } from 'vitest';
+import { beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
+import { eq, like } from 'drizzle-orm';
 import { db } from '#lib/server/db/index.js';
 import {
     appellations,
@@ -9,12 +10,22 @@ import {
     wineBottles,
     wineDefinitions
 } from '#lib/server/db/schema.js';
+import { listBottlesWithDefinitions } from '#lib/server/features/bottles/service.js';
+import { getDefinitionDetails } from '#lib/server/features/catalog/service.js';
 import { createContainer } from '#lib/server/features/storage/service.js';
 import { NotFoundError } from '#lib/server/http/errors.js';
 import { insertBottles, insertWineDefinition } from '../../../../test/wine';
 import {
+    addBottles,
+    addWine,
     bottlesByBarcode,
+    changeBottleNotes,
+    choices,
     freeSpace,
+    markDrunk,
+    moveBottles,
+    rateWine,
+    searchAppellations,
     searchWines,
     wineShortages,
     wineWithBottles
@@ -205,11 +216,224 @@ describe('freeSpace', () => {
                     bottles: 4,
                     free: 5,
                     cases: [
-                        { name: 'Column A1', capacity: 2, bottles: 3, free: 0 },
-                        { name: 'Column A2', capacity: 6, bottles: 1, free: 5 }
+                        { id: cases[0].id, name: 'Column A1', capacity: 2, bottles: 3, free: 0 },
+                        { id: cases[1].id, name: 'Column A2', capacity: 6, bottles: 1, free: 5 }
                     ]
                 }
             ]
         });
+    });
+});
+
+describe('choices', () => {
+    it('gives the id and name of each row of the lists that the write tools take ids from', () => {
+        expect(choices()).toEqual({
+            formats: [{ id: 'bottle', name: 'Bottle' }],
+            colors: [{ id: 'red', name: 'Red' }],
+            types: [{ id: 'still', name: 'Still' }],
+            classifications: [],
+            origins: []
+        });
+    });
+});
+
+describe('searchAppellations', () => {
+    it('finds the appellations whose name, region and country hold every word', () => {
+        expect(searchAppellations('piemont')).toEqual({
+            total: 1,
+            appellations: [{ id: 'bar', name: 'Barolo', region: 'Piémont', country: 'Italie' }]
+        });
+        expect(searchAppellations('FRANCE margaux').appellations.map(({ id }) => id)).toEqual([
+            'mgx'
+        ]);
+        expect(searchAppellations('margaux italie')).toEqual({ total: 0, appellations: [] });
+    });
+
+    it('returns at most 50 appellations, and counts them all', () => {
+        const timestamps = { createdAt: new Date(), updatedAt: new Date() };
+        db.insert(appellations)
+            .values(
+                Array.from({ length: 60 }, (_, i) => ({
+                    id: `lot-${i}`,
+                    name: `Lot ${i}`,
+                    regionId: 'bdx',
+                    ...timestamps
+                }))
+            )
+            .run();
+
+        const { total, appellations: found } = searchAppellations('lot');
+        expect(total).toBe(60);
+        expect(found).toHaveLength(50);
+        db.delete(appellations).where(like(appellations.id, 'lot-%')).run();
+    });
+});
+
+describe('addWine', () => {
+    it('creates the wine and answers it with its appellation, region and country', () => {
+        const wine = addWine({
+            name: 'Barbaresco',
+            producer: null,
+            appellationId: 'bar',
+            typeId: 'still',
+            colorId: 'red',
+            classificationId: null,
+            rating: 4.5,
+            website: null,
+            description: null,
+            imageId: null,
+            grapeVarieties: ['Nebbiolo'],
+            targetQuantity: null
+        });
+
+        expect(wine).toMatchObject({
+            name: 'Barbaresco',
+            appellation: 'Barolo',
+            region: 'Piémont',
+            country: 'Italie',
+            rating: 4.5,
+            grapes: ['Nebbiolo'],
+            bottles: [],
+            consumed: []
+        });
+        db.delete(wineDefinitions).where(eq(wineDefinitions.id, wine.id)).run();
+    });
+});
+
+const purchase = {
+    wineId: 'margaux',
+    quantity: 1,
+    formatId: 'bottle',
+    originId: null,
+    vintage: 2018,
+    optimum: null,
+    purchasePrice: 40,
+    purchaseDate: null,
+    storageCaseId: null,
+    barcode: null,
+    notes: null
+};
+
+describe('addBottles', () => {
+    it('adds the bottles in the cellar, each with its own id', () => {
+        const { cases } = createContainer({ name: 'Rack', cases: ['1'], caseCapacities: [6] });
+
+        const added = addBottles({ ...purchase, quantity: 2, storageCaseId: cases[0].id });
+
+        expect(added).toEqual([
+            expect.objectContaining({
+                wineId: margaux,
+                availability: 'available',
+                vintage: 2018,
+                format: 'Bottle',
+                caseId: cases[0].id
+            }),
+            expect.objectContaining({ caseId: cases[0].id })
+        ]);
+        expect(new Set(added.map((bottle) => bottle.id)).size).toBe(2);
+    });
+
+    it('adds none when the case has no room for them all', () => {
+        const { cases } = createContainer({ name: 'Rack', cases: ['1'], caseCapacities: [1] });
+
+        expect(() => addBottles({ ...purchase, quantity: 2, storageCaseId: cases[0].id })).toThrow(
+            expect.objectContaining({ code: 'case_full' })
+        );
+        expect(listBottlesWithDefinitions(margaux)).toEqual([]);
+    });
+});
+
+describe('markDrunk', () => {
+    it('marks the bottles drunk on the day given, out of their case, the note after their notes', async () => {
+        const { cases } = createContainer({ name: 'Rack', cases: ['1'], caseCapacities: [6] });
+        await insertBottles(margaux, [
+            { id: 'a', storageCaseId: cases[0].id, notes: 'Gift from Anna' },
+            { id: 'b', storageCaseId: cases[0].id }
+        ]);
+
+        const drunk = markDrunk(['a', 'b'], new Date('2026-10-30'), 'With roast chicken');
+
+        expect(drunk).toEqual([
+            expect.objectContaining({
+                id: 'a',
+                availability: 'consumed',
+                caseId: null,
+                consumedDate: '2026-10-30',
+                notes: 'Gift from Anna\nWith roast chicken'
+            }),
+            expect.objectContaining({ id: 'b', notes: 'With roast chicken' })
+        ]);
+    });
+
+    it("takes today on the server's calendar when no day is given", async () => {
+        vi.useFakeTimers({ toFake: ['Date'] });
+        // Past midnight in the local time, still the day before in UTC east of Greenwich.
+        vi.setSystemTime(new Date(2026, 9, 31, 0, 30));
+        await insertBottles(margaux, [{ id: 'a' }]);
+
+        expect(markDrunk(['a'], null, null)).toEqual([
+            expect.objectContaining({ consumedDate: '2026-10-31', notes: null })
+        ]);
+        vi.useRealTimers();
+    });
+
+    it('changes none of the bottles when one does not exist', async () => {
+        await insertBottles(margaux, [{ id: 'a' }]);
+
+        expect(() => markDrunk(['a', 'gone'], null, null)).toThrow(NotFoundError);
+        expect(listBottlesWithDefinitions(margaux)[0].availability).toBe('available');
+    });
+});
+
+describe('moveBottles', () => {
+    it('puts the bottles in the case, or none when it has no room for them all', async () => {
+        const { cases } = createContainer({
+            name: 'Rack',
+            cases: ['1', '2'],
+            caseCapacities: [6, 1]
+        });
+        await insertBottles(margaux, [
+            { id: 'a', storageCaseId: cases[0].id },
+            { id: 'b', storageCaseId: cases[0].id }
+        ]);
+
+        expect(moveBottles(['a'], cases[1].id)).toEqual([
+            expect.objectContaining({ id: 'a', caseId: cases[1].id })
+        ]);
+        expect(() => moveBottles(['b'], cases[1].id)).toThrow(
+            expect.objectContaining({ code: 'case_full' })
+        );
+    });
+});
+
+describe('changeBottleNotes', () => {
+    it('replaces the notes, adds a note after them, or both', async () => {
+        await insertBottles(margaux, [
+            { id: 'a', notes: 'Old note' },
+            { id: 'b', notes: 'Old note' },
+            { id: 'c', notes: 'Old note' }
+        ]);
+
+        expect(changeBottleNotes(['a'], 'New note', null)[0].notes).toBe('New note');
+        expect(changeBottleNotes(['b'], undefined, 'Added')[0].notes).toBe('Old note\nAdded');
+        expect(changeBottleNotes(['c'], null, 'Added')[0].notes).toBe('Added');
+    });
+});
+
+describe('rateWine', () => {
+    it('changes the rating of the wine only', () => {
+        const before = getDefinitionDetails(barolo);
+
+        expect(rateWine(barolo, 3.5)).toMatchObject({ id: barolo, name: 'Cannubi', rating: 3.5 });
+        expect(rateWine(barolo, null).rating).toBeNull();
+        expect(getDefinitionDetails(barolo)).toEqual({
+            ...before,
+            rating: null,
+            updatedAt: expect.any(Date)
+        });
+    });
+
+    it('refuses an unknown wine', () => {
+        expect(() => rateWine('nothing', 4)).toThrow(NotFoundError);
     });
 });

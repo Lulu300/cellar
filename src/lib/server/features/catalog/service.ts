@@ -95,11 +95,19 @@ export function getDefinitionDetails(id: string) {
 // One statement each, which SQLite runs all or nothing.
 export const createDefinition = (data: WineDefinitionInput) => insertDefinition(data);
 
-export function replaceDefinition(id: string, data: WineDefinitionInput) {
+/** Changes the fields of `data` on the wine. Throws a NotFoundError for an unknown wine. */
+function changeDefinition(id: string, data: Partial<WineDefinitionInput>) {
     const wine = updateDefinition(id, data);
     if (!wine) throw wineNotFound();
     return wine;
 }
+
+export const replaceDefinition = (id: string, data: WineDefinitionInput) =>
+    changeDefinition(id, data);
+
+/** Gives the wine `rating`, or none with null, and leaves its other fields as they are. */
+export const rateDefinition = (id: string, rating: WineDefinitionInput['rating']) =>
+    changeDefinition(id, { rating });
 
 /**
  * Deletes the wine, with its bottles when `withBottles` is set. Without it, throws a ConflictError

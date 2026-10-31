@@ -8,8 +8,11 @@ import {
 } from '#lib/shared/barcode.js';
 import { ApiError, ConflictError } from './errors.js';
 
-/** The ApiError that `error` stands for, or undefined for an unexpected error. */
-function apiErrorOf(error: unknown, method: string): ApiError | undefined {
+/**
+ * The ApiError that `error` stands for, or undefined for an unexpected error. `method` tells what a
+ * foreign key refused: a DELETE of a row still in use, or another write naming a missing row.
+ */
+export function apiErrorOf(error: unknown, method: string): ApiError | undefined {
     if (error instanceof ApiError) return error;
     // A sequence that ran out; a route where the client chose the number answers 422 itself.
     if (error instanceof BarcodeRangeError) {

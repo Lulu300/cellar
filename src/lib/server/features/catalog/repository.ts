@@ -66,8 +66,8 @@ export function insertDefinition(data: WineDefinitionInput): WineDefinition {
     return db.insert(wineDefinitions).values(data).returning().get();
 }
 
-/** Replaces every field of the wine; undefined when there is no such wine. */
-export function updateDefinition(id: string, data: WineDefinitionInput) {
+/** Changes the fields of `data` on the wine; undefined when there is no such wine. */
+export function updateDefinition(id: string, data: Partial<WineDefinitionInput>) {
     return db
         .update(wineDefinitions)
         .set({ ...data, updatedAt: new Date() })

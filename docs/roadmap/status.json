@@ -109,6 +109,7 @@
   "UI-23": {"state":"done","note":"bcd62570..950e848a","updatedAt":"2026-10-30T20:28:53.930Z"},
   "UI-24": {"state":"done","note":"d035629a..0bc1e599","updatedAt":"2026-10-31T12:24:07.164Z"},
   "UI-25": {"state":"done","note":"881bd286..4ff030c4","updatedAt":"2026-10-31T13:03:32.359Z"},
+  "UI-26": {"state":"done","note":"3e2c2f08..d411e522","updatedAt":"2026-10-31T14:00:20.497Z"},
   "UI-27": {"state":"done","note":"90ae1d6e..abe7196f","updatedAt":"2026-10-31T10:20:27.990Z"},
   "audit-A7-m1": {"state":"done","note":"Réglé avec R1 : exception Paraglide et son commentaire retirés le 2026-10-17 (0b8318d0).","updatedAt":"2026-10-28T15:22:15.705Z"},
   "audit-A7-m12": {"state":"done","note":"Réglé par REL-05 : le prune --no-optional écarte kysely de l’image (5ba8e8c4).","updatedAt":"2026-10-28T15:22:15.812Z"},

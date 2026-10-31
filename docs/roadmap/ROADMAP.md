@@ -126,7 +126,18 @@ Revue du code du 2026-10-08, commit `556c7bb`. Ce fichier est la version pour le
 - **Doc de l’API (DOC-05, API-14)** : `docs/API.md` reste la référence, liée depuis le README et la page d’admin (1.1.0). Une description OpenAPI générée depuis les schémas zod de l’API (zod 4 sait les convertir, sans dépendance) s’y ajoute en 1.2.0, pour les outils ; une interface comme Swagger UI demanderait une dépendance, à proposer au mainteneur (décision du 2026-10-30).
 - **Logo et icônes (UI-27)** : Le logo est le verre du pack que le mainteneur a fait faire (`cellar-logo-pack`, tracé P10, 2026-10-31) ; on en importe ce dont l’app a besoin, sans le script de génération du pack. L’icône de l’écran d’accueil et du manifeste est le verre blanc sur fond bordeaux `#582634`. Le verre remplace aussi le logo de Svelte du favicon et l’icône générique de l’en-tête, où il prend la couleur du texte du thème (décision du 2026-10-31).
 - **Page de suivi par version** : Depuis la 1.0.0, la page de suivi (`roadmap.html`) s’ouvre sur la version en cours, puis les suivantes ; tout ce qui a mené à la 1.0.0 (P0 à P12) et l’audit d’avant 1.0 passent dans un historique replié. La feuille de route reste en français (décision du 2026-10-31).
-- **Idées après la 1.0** : À discuter une par une avant toute tâche (2026-10-30). « À boire » : mettre en avant les bouteilles à boire, pas seulement par l’année de consommation ; pouvoir marquer une bouteille à boire cette année ou ce mois-ci, idée à étoffer. Plan de la cave : les conteneurs en grille, un clic sur une case montre ses bouteilles ; avec une vraie couleur choisie pour chaque couleur de vin (blanc, rouge…), affichée partout dans l’app, pour voir d’un coup d’œil ce que contient un casier. Liste d’envies : la page Pénurie se partage entre le stock minimum (« j’en veux toujours une, préviens-moi ») et une liste d’envies ou d’achats ; on y ajoute un vin depuis la liste des vins (un petit bouton), ou en tapant son nom (proposé s’il existe, sinon créé dans la base et ajouté) ; le retrait automatique une fois acheté reste à décider. Compte rendu d’import (voir « Après la 1.0 : compte rendu de l’import »). Fiche producteur : facultative, créée d’elle-même quand on ajoute un producteur comme aujourd’hui, complétée si on le souhaite. Fiche de dégustation : à chaque bouteille bue, une appréciation sur 5, l’occasion, l’accord avec le plat et une note, relues sur la fiche du vin et utiles au MCP ; la fiche et chacun de ses champs restent facultatifs, mais l’interface la met en avant pour donner envie de la remplir. Photo de l’étiquette : sur le téléphone, le formulaire du vin ouvre l’appareil photo et réduit l’image avant l’envoi. Notifications par ntfy ou webhook (sauvegarde ratée, bouteilles à boire), avec le choix de ce qu’on reçoit. Écartée : la valeur de la cave dans le temps, car personne ne met ses prix à jour.
+- **Versions de 1.3.0 à 1.7.0** : Après la 1.2.0 (MCP) : 1.3.0 la navigation, les photos d’étiquette et la page Achats, la liste d’envies étant ce que les utilisateurs demandent le plus ; 1.4.0 les couleurs des vins et le plan de la cave ; 1.5.0 « À boire » et la fiche de dégustation ; 1.6.0 les producteurs et la revue de l’import CSV ; 1.7.0 les notifications. Chaque fonctionnalité a été détaillée avec le mainteneur avant ce découpage (décision du 2026-10-31).
+- **Navigation (UI-28)** : Choisie sur maquette : des sections au survol, Cave (Mes vins, Producteurs, Stockage, Hors cave, Historique), Achats (Liste d’envies, Pénurie), Statistiques (ses sous-pages), Outils (Codes-barres) ; survoler ou viser au clavier une section montre ses pages, un clic ouvre sa première page, et ses sous-pages y sont des onglets, comme l’admin. Une icône d’engrenage regroupe Préférences, Admin (avec le signal « mise à jour disponible ») et Déconnexion. Achats porte un compteur rouge des vins en pénurie, ou à défaut un point sans chiffre de la couleur du thème quand la liste d’envies n’est pas vide, ou rien ; son menu donne le nombre de chaque onglet. Hors cave reste à portée : un lien « N hors cave » sous les filtres de Mes vins. Sur téléphone, l’app installée a une barre d’onglets en bas (Vins, Stockage, Hors cave, Achats, Plus) ; dans le navigateur, le menu ☰ reprend les sections avec leurs titres (décision du 2026-10-31).
+- **Photos des vins (FEAT-01)** : Un vin peut avoir plusieurs photos : une principale, montrée dans la liste des vins, les autres seulement sur la page du vin. Sur téléphone, le champ propose « Prendre une photo » (appareil photo, sans HTTPS) et « Choisir un fichier ». Avant l’envoi, un aperçu permet de pivoter et de recadrer ; l’image est réduite (environ 1 600 px au plus grand côté, JPEG), tournée dans le bon sens, et ses métadonnées, dont la position GPS, sont retirées ; partout, ordinateur compris. Les images déjà enregistrées restent telles quelles. Une bibliothèque de recadrage serait une dépendance, à proposer au mainteneur (décision du 2026-10-31).
+- **Liste d’envies et achats (FEAT-02)** : La page Pénurie devient « Achats », avec deux onglets, « Liste d’envies » et « Pénurie » (le stock minimum d’aujourd’hui), chacun avec son nombre. Une envie est soit un simple texte, avec une photo si on veut, soit un vin complet créé tout de suite ; toutes deux ont une quantité facultative et une note libre. Depuis une envie liée à un vin, « Ajouter une bouteille » ouvre le formulaire avec l’enchaînement habituel ; au dernier enregistrement, on choisit de retirer le vin de la liste ou non. Depuis une envie en texte, « Créer la fiche du vin » ouvre le formulaire du vin, avec la photo de l’envie reprise, puis enchaîne sur les bouteilles. Une bouteille ajoutée ailleurs, d’un vin de la liste, propose le même retrait au dernier enregistrement. Rien ne sort de la liste sans l’accord de l’utilisateur (décision du 2026-10-31).
+- **Couleurs des vins (FEAT-03)** : Chaque couleur de vin a une vraie couleur, enregistrée en base ; les couleurs de départ reçoivent celles des étiquettes d’aujourd’hui. Créée depuis un formulaire, une couleur reçoit une teinte par défaut ou neutre ; dans Admin › Data, le sélecteur s’affiche dès la création ou la modification. Choisi sur maquette : sur la page Stockage, chaque place occupée prend la couleur de son vin, avec un fin contour de la même teinte, plus foncée ou plus claire, seulement quand la couleur manque de contraste avec le fond ; les camemberts des statistiques prennent les vraies couleurs ; la liste des vins garde l’étiquette, colorée, et ajoute une bande à gauche de la carte ; les listes de bouteilles montrent l’étiquette colorée à côté du nom du vin. Pas de carte teintée (décision du 2026-10-31).
+- **Plan de la cave (FEAT-04)** : La page Stockage devient le plan : un clic sur une case ouvre la liste de ses bouteilles (vin, millésime, couleur), d’où l’on ouvre une bouteille, la marque bue ou la déplace ; on en coche plusieurs puis « Déplacer vers… » une autre case, sans glisser-déposer. Une case reste un bac, sans place précise. La page d’un vin a un bouton « Voir dans la cave », qui met en évidence les cases où il est. La disposition des conteneurs ne change pas (décision du 2026-10-31).
+- **À boire (FEAT-05)** : Une bouteille, et jamais un vin, peut porter « À boire avant » (une année, un mois facultatif), posé en un clic par « Ce mois-ci », « Cette année » ou « Choisir… », sur une ou plusieurs bouteilles d’un coup. L’année optimale reste facultative et prend le relais quand rien n’est posé. Ordre : date dépassée (signalée, gardée jusqu’à ce que l’utilisateur change ou retire la date), ce mois-ci, cette année, année optimale atteinte, puis par date. Pas d’entrée de menu : un bandeau sur l’accueil (« 3 bouteilles à boire bientôt, dont 1 en retard »), qui déplie la liste ; à revoir sur captures avant le merge. Sur la page Stockage, un repère sur les bouteilles à boire dans un horizon réglé dans les préférences, affiché par un interrupteur dont la valeur par défaut, éteinte, se règle aussi dans les préférences. Une bouteille bue quitte la liste et garde ses valeurs dans son historique (décision du 2026-10-31).
+- **Fiche de dégustation (FEAT-06)** : Une seule fiche par bouteille bue : une note sur 5, l’occasion, le plat et une note libre, tous facultatifs ; l’occasion et le plat en texte libre, avec les valeurs déjà saisies proposées. Marquer une bouteille bue ouvre la fiche dans le même dialogue, avec « Enregistrer » et « Plus tard » ; une fiche laissée pour plus tard se signale dans l’historique, d’où on la complète. La note du vin reste l’avis global de l’utilisateur ; la moyenne des dégustations s’affiche à côté. La page du vin liste ses dégustations, la plus récente en premier ; le MCP pourra les lire (décision du 2026-10-31).
+- **Producteurs (FEAT-07)** : Le producteur devient une vraie liste : la migration crée un producteur par nom déjà saisi, en regroupant les noms égaux à la casse, aux accents et aux espaces près, et Admin › Data propose « Fusionner deux producteurs » pour les autres doublons, au choix de l’utilisateur. Seul le nom est obligatoire ; la fiche peut porter pays et région, site web, adresse ou contact, description et photo. Elle montre ses vins, les bouteilles en cave et bues, et la moyenne des dégustations. Le champ du formulaire du vin devient une liste avec recherche, qui crée le producteur comme aujourd’hui, comme l’import CSV. Le nom d’un producteur mène à sa fiche ; une page liste les producteurs (Cave › Producteurs) ; la suppression est refusée tant que des vins l’utilisent (décision du 2026-10-31).
+- **Revue de l’import CSV (FEAT-08)** : Remplace « Après la 1.0 : compte rendu de l’import ». L’import CSV vérifie d’abord, puis montre trois parties, « Prêt à importer », « Déjà en cave » et « À régler », où l’on règle chaque ligne : choisir parmi plusieurs vins, choisir ou créer une valeur inconnue, corriger une cellule invalide, passer ou importer une ligne déjà en cave, ou ignorer la ligne ; « Importer » écrit tout d’un coup. Les choix des imports précédents ne sont que des suggestions, signalées « pré-rempli d’après vos imports précédents ». À la fin, les lignes ignorées se téléchargent en CSV. L’import d’un export (JSON) reste sans revue (décision du 2026-10-31).
+- **Notifications (FEAT-09)** : Admin › Notifications : ntfy (adresse du sujet, jeton facultatif) et un webhook JSON générique, un bouton « Envoyer un test », un jeton jamais réaffiché, la langue des messages (français ou anglais). Chaque événement s’active à part : sauvegarde automatique ratée (actif par défaut), récapitulatif « À boire » chaque semaine ou chaque mois au choix (rien s’il est vide), vin passé sous son stock minimum, récapitulatif hebdomadaire des bouteilles hors cave depuis plus de N jours (N réglable), mise à jour disponible. Cellar vérifie une fois par jour les versions publiées sur GitHub et l’affiche dans l’admin, notification ou pas. D’autres canaux seulement à la demande (décision du 2026-10-31).
+- **Idées après la 1.0** : Discutées une par une le 2026-10-31 : chacune a maintenant sa décision et sa tâche (décision « Versions de 1.3.0 à 1.7.0 ») ; le texte ci-dessous garde les premières idées (2026-10-30). « À boire » : mettre en avant les bouteilles à boire, pas seulement par l’année de consommation ; pouvoir marquer une bouteille à boire cette année ou ce mois-ci, idée à étoffer. Plan de la cave : les conteneurs en grille, un clic sur une case montre ses bouteilles ; avec une vraie couleur choisie pour chaque couleur de vin (blanc, rouge…), affichée partout dans l’app, pour voir d’un coup d’œil ce que contient un casier. Liste d’envies : la page Pénurie se partage entre le stock minimum (« j’en veux toujours une, préviens-moi ») et une liste d’envies ou d’achats ; on y ajoute un vin depuis la liste des vins (un petit bouton), ou en tapant son nom (proposé s’il existe, sinon créé dans la base et ajouté) ; le retrait automatique une fois acheté reste à décider. Compte rendu d’import (voir « Après la 1.0 : compte rendu de l’import »). Fiche producteur : facultative, créée d’elle-même quand on ajoute un producteur comme aujourd’hui, complétée si on le souhaite. Fiche de dégustation : à chaque bouteille bue, une appréciation sur 5, l’occasion, l’accord avec le plat et une note, relues sur la fiche du vin et utiles au MCP ; la fiche et chacun de ses champs restent facultatifs, mais l’interface la met en avant pour donner envie de la remplir. Photo de l’étiquette : sur le téléphone, le formulaire du vin ouvre l’appareil photo et réduit l’image avant l’envoi. Notifications par ntfy ou webhook (sauvegarde ratée, bouteilles à boire), avec le choix de ce qu’on reçoit. Écartée : la valeur de la cave dans le temps, car personne ne met ses prix à jour.
 - **Après la 1.0 : compte rendu de l’import** : Idée du mainteneur pour la première version après la 1.0, une fois tout ce qu’il faut pour la 1.0 terminé : au lieu de refuser les lignes qui ne s’importent pas, l’import finit par un compte rendu de ce qui est importé et de ce qui ne l’est pas, et permet de refaire à la main les correspondances des lignes refusées, par exemple les bouteilles qui correspondent à plusieurs vins (2026-10-18).
 
 ## Vue d’ensemble
@@ -147,7 +158,12 @@ Revue du code du 2026-10-08, commit `556c7bb`. Ce fichier est la version pour le
 | 1.0.0 | P11 · Rangement des composants | Deux petites corrections trouvées en P10, puis le rangement des composants par domaine, à la toute fin, comme le veut la décision « Architecture (revue 7) ». Lots : 1. UI-20, BUG-21 ; 2. UI-19, seule, qui déplace presque tous les composants. Prévue pour la 1.0.0, après la vérification de P12. Terminée le 2026-10-29 (develop 70d9e148), publiée en 1.0.0 le 2026-10-30. | UI-20, BUG-21, UI-19 | 3 / 3 |
 | 1.0.0 | P12 · Vérification d’avant 1.0 | Une revue complète en lecture seule après P11, comme l’audit d’avant 1.0 puis sa vérification : tout ce que l’audit demandait est fait, et le nettoyage n’a pas créé de nouveaux problèmes. Le mainteneur juge chaque constat : à corriger avant la 1.0 (tâches ajoutées ici) ou acceptable en l’état. Puis la 1.0.0, avec R2 de l’audit au tag : dépôt et image publics, protection de `main`. Revue faite le 2026-10-30 (QA-06). Lots des corrections, chacun mergé avant le suivant, résumé 1.0.0 : 1. SEC-12, API-12, BUG-22, BUG-23 ; 2. UI-21, UI-22, DEP-07 ; 3. DOC-04 (documentation d’après les deux premiers lots) ; 4. UI-23 ; puis REL-06, la publication, avec le mainteneur. Terminée le 2026-10-30 (develop 89d2c4c1), publiée en 1.0.0 le 2026-10-30. Lots 1 à 4 faits le 2026-10-30, puis la 1.0.0 publiée le même jour (tag v1.0.0 sur 8ad43dff) ; depuis le lot 2, le dépôt public repart d’un nouveau commit racine (décision « Nouveau départ à la 1.0 (REL-06) »). | QA-06, SEC-12, API-12, BUG-22, BUG-23, UI-21, UI-22, DEP-07, DOC-04, UI-23, REL-06 | 11 / 11 |
 | 1.1.0 | P13 · Finitions et installation | Pour la 1.1.0, juste après la 1.0.0 : ce que voit d’abord un nouveau visiteur (installation dans le README, liens vers la doc de l’API), l’app installable sur le téléphone (PWA), et les finitions notées pendant P12 (décision « Versions après la 1.0 »). Lots, chacun mergé avant le suivant, résumé 1.1.0 (lot 1 fait le 2026-10-31) : 1. DOC-05, UI-27, SEC-13, BUG-24 ; 2. UI-24, UI-25, API-13 ; 3. UI-26, DEP-08 ; puis REL-07. | DOC-05, UI-27, SEC-13, BUG-24, UI-24, UI-25, API-13, UI-26, DEP-08, REL-07 | 6 / 10 |
-| 1.2.0 | P14 · Serveur MCP | Pour la 1.2.0, enchaînée juste après la 1.1.0 : un serveur MCP intégré à Cellar, pour les assistants d’IA du réseau local (décision « Serveur MCP (P14) »), et la description OpenAPI de l’API, tirée des mêmes schémas zod. Lots : 1. SEC-11, API-14 ; 2. API-10 ; 3. API-11 ; puis la release. | SEC-11, API-14, API-10, API-11 | 0 / 4 |
+| 1.2.0 | P14 · Serveur MCP | Pour la 1.2.0, enchaînée juste après la 1.1.0 : un serveur MCP intégré à Cellar, pour les assistants d’IA du réseau local (décision « Serveur MCP (P14) »), et la description OpenAPI de l’API, tirée des mêmes schémas zod. Lots : 1. SEC-11, API-14 ; 2. API-10 ; 3. API-11 ; puis REL-08. | SEC-11, API-14, API-10, API-11, REL-08 | 0 / 5 |
+| 1.3.0 | P15 · Navigation, photos et achats | Pour la 1.3.0 (décision « Versions de 1.3.0 à 1.7.0 ») : le menu par sections d’abord, parce que les pages qui suivent s’y rangent, puis les photos d’étiquette et la page Achats, dont les envies réutilisent l’envoi de photo. Ordre : UI-28 ; FEAT-01 ; FEAT-02 ; puis REL-09. Les lots se fixent au début de la phase. Si la phase traîne, la page Achats peut partir d’abord avec des envies en texte seul. | UI-28, FEAT-01, FEAT-02, REL-09 | 0 / 4 |
+| 1.4.0 | P16 · Couleurs et plan de la cave | Pour la 1.4.0 : les couleurs des vins, puis le plan de la cave, qui s’appuie dessus. Ordre : FEAT-03 ; FEAT-04 ; puis REL-10. | FEAT-03, FEAT-04, REL-10 | 0 / 3 |
+| 1.5.0 | P17 · À boire et dégustation | Pour la 1.5.0 : la vie d’une bouteille jusqu’à ce qu’on la boive. Les deux tâches ajoutent leur repère et leur fiche à la liste d’une case du plan (FEAT-04). Ordre : FEAT-05 et FEAT-06 ; puis REL-11. | FEAT-05, FEAT-06, REL-11 | 0 / 3 |
+| 1.6.0 | P18 · Producteurs et revue de l’import | Pour la 1.6.0 : les producteurs d’abord, parce que la revue de l’import doit savoir relier ou créer un producteur. Ordre : FEAT-07 ; FEAT-08 ; puis REL-12. | FEAT-07, FEAT-08, REL-12 | 0 / 3 |
+| 1.7.0 | P19 · Notifications | Pour la 1.7.0 : les notifications, qui utilisent « À boire » (FEAT-05), le statut hors cave et la vérification des mises à jour. Ordre : FEAT-09 ; puis REL-13. | FEAT-09, REL-13 | 0 / 2 |
 
 ## P0 · Sécurité urgente (1.0.0)
 
@@ -2887,7 +2903,7 @@ Sévérité **évolution** · effort **S** · dépend de DOC-05, UI-27, SEC-13, 
 
 ## P14 · Serveur MCP (1.2.0)
 
-Pour la 1.2.0, enchaînée juste après la 1.1.0 : un serveur MCP intégré à Cellar, pour les assistants d’IA du réseau local (décision « Serveur MCP (P14) »), et la description OpenAPI de l’API, tirée des mêmes schémas zod. Lots : 1. SEC-11, API-14 ; 2. API-10 ; 3. API-11 ; puis la release.
+Pour la 1.2.0, enchaînée juste après la 1.1.0 : un serveur MCP intégré à Cellar, pour les assistants d’IA du réseau local (décision « Serveur MCP (P14) »), et la description OpenAPI de l’API, tirée des mêmes schémas zod. Lots : 1. SEC-11, API-14 ; 2. API-10 ; 3. API-11 ; puis REL-08.
 
 ### SEC-11 · Jeton d’accès du MCP
 
@@ -2958,3 +2974,301 @@ Sévérité **évolution** · effort **M** · dépend de API-10 · statut **À f
 **Critère d’acceptation** : Avec un jeton en écriture, un client MCP réel ajoute des bouteilles, en marque une bue et la déplace, et l’interface montre le résultat ; avec un jeton en lecture seule, chaque écriture est refusée ; testé.
 
 **Sources** : Décision « Serveur MCP (P14) »
+
+### REL-08 · Publication de la 1.2.0
+
+Sévérité **évolution** · effort **S** · dépend de SEC-11, API-14, API-10, API-11 · statut **À faire**
+
+**Problème** : La 1.2.0 apporte aux utilisateurs ce que sa phase a livré.
+
+**Fichiers** : `releases.json`, `CHANGELOG.md`, `UPGRADING.md`
+
+**À faire**
+
+- Résumé 1.2.0 complété à chaque tâche ; banc depuis la version précédente ; release selon RELEASING.md, avec le mainteneur.
+
+**Critère d’acceptation** : v1.2.0 est publiée sur `main` et son image se télécharge sans connexion ; develop passe à la rc suivante.
+
+**Sources** : Décision « Versions après la 1.0 »
+
+## P15 · Navigation, photos et achats (1.3.0)
+
+Pour la 1.3.0 (décision « Versions de 1.3.0 à 1.7.0 ») : le menu par sections d’abord, parce que les pages qui suivent s’y rangent, puis les photos d’étiquette et la page Achats, dont les envies réutilisent l’envoi de photo. Ordre : UI-28 ; FEAT-01 ; FEAT-02 ; puis REL-09. Les lots se fixent au début de la phase. Si la phase traîne, la page Achats peut partir d’abord avec des envies en texte seul.
+
+### UI-28 · Menu par sections et barre d’onglets
+
+Sévérité **évolution** · effort **M** · dépend de REL-08 · statut **À faire**
+
+**Problème** : Le menu a neuf entrées et ne peut plus en accueillir : Achats et Producteurs arrivent. Sur téléphone, l’app installée n’a qu’un menu ☰.
+
+**Fichiers** : `src/routes/+layout.svelte`, `src/lib/components/layout/`, `src/routes/`, `src/lib/i18n/locales/`, `e2e/`
+
+**À faire**
+
+- Décision « Navigation (UI-28) » : sections au survol (Cave, Achats, Statistiques, Outils), engrenage, onglets des pages de section, signal d’Achats, lien « N hors cave » sous les filtres de Mes vins, menu ☰ par sections, barre d’onglets dans l’app installée seulement (`display-mode: standalone`).
+- Les menus s’ouvrent au survol, au clavier et au toucher (un appui sur une section sans survol ouvre sa première page) ; Échap les ferme ; noms accessibles justes.
+- Les adresses d’aujourd’hui continuent de marcher (redirections quand une page change d’adresse) ; les e2e suivent.
+- Maquette de référence : https://claude.ai/artifact/VTtcWTR5pnofZW3i7kCEkr (variante B, sans Producteurs dans Outils). Captures en clair et en sombre, ordinateur et téléphone, montrées au mainteneur avant le merge.
+
+**Critère d’acceptation** : Chaque page s’atteint depuis le menu au survol, au clavier et au toucher ; Achats montre le compteur, le point ou rien selon les cas ; l’app installée a sa barre d’onglets et le navigateur du téléphone n’en a pas ; les anciennes adresses répondent ; captures validées par le mainteneur.
+
+**Sources** : Décision « Navigation (UI-28) »
+
+### FEAT-01 · Photos des vins : plusieurs photos, prises au téléphone, recadrées et allégées
+
+Sévérité **évolution** · effort **L** · dépend de UI-28 · statut **À faire**
+
+**Problème** : Un vin n’a qu’une image, envoyée telle quelle, jusqu’à 20 Mo, avec ses métadonnées (dont la position GPS) ; sur téléphone, rien n’invite à photographier l’étiquette.
+
+**Fichiers** : `src/lib/server/db/schema.ts`, `drizzle/`, `src/lib/server/features/images/`, `src/lib/components/forms/ImagePicker.svelte`, `src/routes/wines/`, `src/lib/i18n/locales/`, `docs/API.md`
+
+**À faire**
+
+- Décision « Photos des vins (FEAT-01) » : plusieurs photos par vin, dont une principale ; migration qui garde l’image actuelle comme principale ; sauvegardes, exports et imports suivent.
+- « Prendre une photo » (`capture`) et « Choisir un fichier » ; aperçu avec rotation et recadrage ; réduction, orientation et retrait des métadonnées dans le navigateur, avant l’envoi.
+- Le recadrage : écrit à la main sur un canvas, ou une bibliothèque proposée au mainteneur avec sa taille et sa licence ; aucune dépendance sans son accord.
+- Le même envoi servira aux photos des envies (FEAT-02) : un composant partagé.
+
+**Critère d’acceptation** : Sur un téléphone (Chromium en émulation, puis un vrai téléphone si possible), une photo prise est pivotée, recadrée, envoyée réduite et sans métadonnées GPS ; un vin garde plusieurs photos, la principale dans la liste ; une sauvegarde de la version précédente se restaure et se met à jour ; testé.
+
+**Sources** : Décision « Photos des vins (FEAT-01) »
+
+### FEAT-02 · Page Achats : liste d’envies et pénurie
+
+Sévérité **évolution** · effort **L** · dépend de UI-28, FEAT-01 · statut **À faire**
+
+**Problème** : La page Pénurie ne connaît que le stock minimum. Les utilisateurs veulent noter les vins qu’ils ont envie d’acheter, puis passer de l’envie à la bouteille sans tout ressaisir.
+
+**Fichiers** : `src/lib/server/db/schema.ts`, `drizzle/`, `src/lib/server/features/`, `src/routes/wine-shortage/`, `src/routes/`, `src/lib/components/`, `src/lib/i18n/locales/`, `docs/API.md`
+
+**À faire**
+
+- Décision « Liste d’envies et achats (FEAT-02) » : table des envies (texte ou vin, quantité, note, photo) par migration ; API, sauvegardes, exports et imports suivent.
+- Onglets « Liste d’envies » et « Pénurie » sous Achats (UI-28), avec leur nombre ; signal du menu.
+- Envie liée à un vin : « Ajouter une bouteille », enchaînement habituel, retrait proposé au dernier enregistrement ; envie en texte : « Créer la fiche du vin », photo reprise, puis les bouteilles ; bouteille ajoutée ailleurs d’un vin de la liste : même proposition.
+- Ajouter une envie depuis la liste des vins (un petit bouton) ou en tapant un nom (proposé s’il existe).
+
+**Critère d’acceptation** : Une envie en texte avec photo devient un vin puis des bouteilles, et sort de la liste seulement si l’utilisateur le choisit ; une bouteille ajoutée hors de la liste propose le retrait ; les deux onglets et le signal du menu donnent les bons nombres ; une sauvegarde de la version précédente se restaure ; testé, e2e compris.
+
+**Sources** : Décision « Liste d’envies et achats (FEAT-02) »
+
+### REL-09 · Publication de la 1.3.0
+
+Sévérité **évolution** · effort **S** · dépend de UI-28, FEAT-01, FEAT-02 · statut **À faire**
+
+**Problème** : La 1.3.0 apporte aux utilisateurs ce que sa phase a livré.
+
+**Fichiers** : `releases.json`, `CHANGELOG.md`, `UPGRADING.md`
+
+**À faire**
+
+- Résumé 1.3.0 complété à chaque tâche ; banc depuis la version précédente ; release selon RELEASING.md, avec le mainteneur.
+
+**Critère d’acceptation** : v1.3.0 est publiée sur `main` et son image se télécharge sans connexion ; develop passe à la rc suivante.
+
+**Sources** : Décision « Versions après la 1.0 »
+
+## P16 · Couleurs et plan de la cave (1.4.0)
+
+Pour la 1.4.0 : les couleurs des vins, puis le plan de la cave, qui s’appuie dessus. Ordre : FEAT-03 ; FEAT-04 ; puis REL-10.
+
+### FEAT-03 · Une vraie couleur pour chaque couleur de vin
+
+Sévérité **évolution** · effort **M** · dépend de REL-09 · statut **À faire**
+
+**Problème** : Les couleurs de vin ne sont que des noms ; les étiquettes et les graphiques tirent leur teinte d’une palette fixe (`wine-badges.ts`) où le Blanc sort brun et le Rosé magenta, et la page Stockage montre toutes les bouteilles en rouge.
+
+**Fichiers** : `src/lib/server/db/schema.ts`, `drizzle/`, `src/lib/server/db/seed.ts`, `src/lib/utils/wine-badges.ts`, `src/lib/components/storage/`, `src/routes/statistics/`, `src/lib/components/wines/`, `src/lib/components/table/`, `src/routes/admin/`
+
+**À faire**
+
+- Décision « Couleurs des vins (FEAT-03) » : colonne de couleur (migration), valeurs de départ, sélecteur dans Admin › Data, teinte par défaut à la création rapide ; exports et imports suivent.
+- Stockage (places occupées, contour seulement quand le contraste manque, calculé depuis la couleur), statistiques, étiquette et bande des cartes de vin, étiquette à côté du nom dans les listes de bouteilles.
+- Maquette de référence : https://claude.ai/artifact/NiDbVPAQ4f4FS76h4QuTjn ; diff de la maquette dans les notes du coordinateur. La requête de la vue du stockage reste légère (une requête à part plutôt que dans `caseLoads`).
+
+**Critère d’acceptation** : Une couleur choisie dans l’admin se voit sur le stockage, les statistiques, les cartes et les listes de bouteilles, en clair, en sombre et avec une coloration des préférences ; un blanc pâle et un rouge foncé restent visibles grâce au contour ; captures avant et après ; testé.
+
+**Sources** : Décision « Couleurs des vins (FEAT-03) »
+
+### FEAT-04 · Plan de la cave : les bouteilles d’une case
+
+Sévérité **évolution** · effort **M** · dépend de FEAT-03 · statut **À faire**
+
+**Problème** : Sur la page Stockage, une case montre combien de bouteilles elle contient, mais pas lesquelles ; un clic ne fait rien, et déplacer une bouteille passe par son formulaire.
+
+**Fichiers** : `src/routes/storage/`, `src/lib/components/storage/`, `src/routes/wines/[id]/`, `src/lib/server/features/storage/`, `src/lib/i18n/locales/`
+
+**À faire**
+
+- Décision « Plan de la cave (FEAT-04) » : un clic sur une case ouvre ses bouteilles (dialogue `layout/ScrollingDialogContent`), avec ouvrir, marquer bue et déplacer ; sélection multiple et « Déplacer vers… » ; une case pleine refuse avec un message clair.
+- « Voir dans la cave » sur la page d’un vin : la page Stockage met en évidence ses cases.
+
+**Critère d’acceptation** : Depuis la page Stockage, on voit les bouteilles d’une case et on en déplace trois d’un coup vers une autre case, au doigt comme à la souris ; « Voir dans la cave » met en évidence les bonnes cases ; testé, e2e compris.
+
+**Sources** : Décision « Plan de la cave (FEAT-04) »
+
+### REL-10 · Publication de la 1.4.0
+
+Sévérité **évolution** · effort **S** · dépend de FEAT-03, FEAT-04 · statut **À faire**
+
+**Problème** : La 1.4.0 apporte aux utilisateurs ce que sa phase a livré.
+
+**Fichiers** : `releases.json`, `CHANGELOG.md`, `UPGRADING.md`
+
+**À faire**
+
+- Résumé 1.4.0 complété à chaque tâche ; banc depuis la version précédente ; release selon RELEASING.md, avec le mainteneur.
+
+**Critère d’acceptation** : v1.4.0 est publiée sur `main` et son image se télécharge sans connexion ; develop passe à la rc suivante.
+
+**Sources** : Décision « Versions après la 1.0 »
+
+## P17 · À boire et dégustation (1.5.0)
+
+Pour la 1.5.0 : la vie d’une bouteille jusqu’à ce qu’on la boive. Les deux tâches ajoutent leur repère et leur fiche à la liste d’une case du plan (FEAT-04). Ordre : FEAT-05 et FEAT-06 ; puis REL-11.
+
+### FEAT-05 · À boire : les bouteilles à boire bientôt
+
+Sévérité **évolution** · effort **L** · dépend de REL-10 · statut **À faire**
+
+**Problème** : Seule l’année optimale, souvent inconnue, dit quand boire une bouteille ; rien ne la met en avant, et une bouteille peut passer son heure sans qu’on s’en rende compte.
+
+**Fichiers** : `src/lib/server/db/schema.ts`, `drizzle/`, `src/lib/server/features/bottles/`, `src/routes/+page.svelte`, `src/routes/wines/`, `src/lib/components/bottles/`, `src/lib/components/storage/`, `src/routes/preferences/`, `src/lib/i18n/locales/`, `docs/API.md`
+
+**À faire**
+
+- Décision « À boire (FEAT-05) » : champ « À boire avant » (migration), boutons en un clic, sélection multiple ; ordre et date dépassée ; API, exports et imports suivent.
+- Bandeau de l’accueil qui déplie la liste ; captures sur téléphone et ordinateur montrées au mainteneur, qui n’est pas encore convaincu par la forme, avant le merge.
+- Repère sur la page Stockage et dans la liste d’une case (FEAT-04), horizon et interrupteur réglés dans les préférences.
+
+**Critère d’acceptation** : Des bouteilles marquées « ce mois-ci », une date dépassée et une année optimale atteinte apparaissent dans le bon ordre dans le bandeau et sur le stockage quand l’interrupteur est allumé ; une bouteille bue disparaît de la liste et garde sa date ; le mainteneur a validé les captures ; testé.
+
+**Sources** : Décision « À boire (FEAT-05) »
+
+### FEAT-06 · Fiche de dégustation
+
+Sévérité **évolution** · effort **M** · dépend de REL-10 · statut **À faire**
+
+**Problème** : Marquer une bouteille bue ne garde que sa date : rien sur l’occasion, le plat ou ce qu’on en a pensé, alors que c’est ce qu’on veut relire avant d’en racheter, et ce qu’un assistant pourrait utiliser par le MCP.
+
+**Fichiers** : `src/lib/server/db/schema.ts`, `drizzle/`, `src/lib/server/features/bottles/`, `src/lib/components/bottles/`, `src/routes/wines/[id]/`, `src/routes/cellar-history/`, `src/lib/server/mcp/`, `docs/API.md`
+
+**À faire**
+
+- Décision « Fiche de dégustation (FEAT-06) » : table des dégustations (migration), une par bouteille ; fiche dans le dialogue « bue », « Plus tard » et signal dans l’historique ; liste et moyenne sur la page du vin ; API, sauvegardes, exports et imports suivent.
+- La fiche dans la liste d’une case (FEAT-04) ; les dégustations lisibles par les outils de lecture du MCP (API-10).
+- Mise en avant sans contrainte : la fiche s’ouvre déjà dépliée, aucun champ n’est obligatoire.
+
+**Critère d’acceptation** : Une bouteille bue avec sa fiche montre la note, l’occasion, le plat et la note libre sur la page du vin, et la moyenne à côté de la note du vin ; une fiche laissée pour plus tard se complète depuis l’historique ; un client MCP lit les dégustations ; testé.
+
+**Sources** : Décision « Fiche de dégustation (FEAT-06) »
+
+### REL-11 · Publication de la 1.5.0
+
+Sévérité **évolution** · effort **S** · dépend de FEAT-05, FEAT-06 · statut **À faire**
+
+**Problème** : La 1.5.0 apporte aux utilisateurs ce que sa phase a livré.
+
+**Fichiers** : `releases.json`, `CHANGELOG.md`, `UPGRADING.md`
+
+**À faire**
+
+- Résumé 1.5.0 complété à chaque tâche ; banc depuis la version précédente ; release selon RELEASING.md, avec le mainteneur.
+
+**Critère d’acceptation** : v1.5.0 est publiée sur `main` et son image se télécharge sans connexion ; develop passe à la rc suivante.
+
+**Sources** : Décision « Versions après la 1.0 »
+
+## P18 · Producteurs et revue de l’import (1.6.0)
+
+Pour la 1.6.0 : les producteurs d’abord, parce que la revue de l’import doit savoir relier ou créer un producteur. Ordre : FEAT-07 ; FEAT-08 ; puis REL-12.
+
+### FEAT-07 · Producteurs : une liste et une fiche
+
+Sévérité **évolution** · effort **L** · dépend de REL-11 · statut **À faire**
+
+**Problème** : Le producteur n’est qu’un texte sur chaque vin : pas de fiche, des doublons à la casse près, et aucun moyen de voir d’un coup les vins d’un producteur.
+
+**Fichiers** : `src/lib/server/db/schema.ts`, `drizzle/`, `src/lib/server/features/`, `src/routes/`, `src/lib/components/`, `src/lib/server/features/csv-import/`, `src/lib/i18n/locales/`, `docs/API.md`
+
+**À faire**
+
+- Décision « Producteurs (FEAT-07) » : table des producteurs et migration des noms existants (regroupés à la casse, aux accents et aux espaces près), testée sur une base réelle de la version précédente faite de données inventées ; fusion dans Admin › Data.
+- Fiche, page Cave › Producteurs, lien depuis la carte et la page du vin, champ avec recherche et création dans le formulaire, import CSV ; API, sauvegardes, exports et imports suivent, sans casser les scripts qui envoient `producer` en texte (sinon action de mise à jour, à faire valider).
+- Statistiques par producteur (UI-28) branchées sur la nouvelle table.
+
+**Critère d’acceptation** : Après la mise à jour, chaque vin a son producteur, les variantes de casse sont fusionnées et les autres doublons se fusionnent dans l’admin ; la fiche montre ses vins, ses bouteilles en cave et bues, et la moyenne des dégustations ; testé, migration comprise.
+
+**Sources** : Décision « Producteurs (FEAT-07) »
+
+### FEAT-08 · Revue de l’import CSV avant d’écrire
+
+Sévérité **évolution** · effort **L** · dépend de FEAT-07 · statut **À faire**
+
+**Problème** : Une ligne que l’import ne sait pas placer (plusieurs vins possibles, valeur inconnue ou invalide) est refusée pour de bon : il faut corriger le fichier et recommencer.
+
+**Fichiers** : `src/lib/server/features/csv-import/`, `src/routes/api/admin/`, `src/lib/components/admin/dialogs/CsvImportDialog.svelte`, `src/lib/i18n/locales/`, `docs/API.md`
+
+**À faire**
+
+- Décision « Revue de l’import CSV (FEAT-08) » : écran de revue en trois parties, chaque cas réglable à la main, puis un import en une transaction ; suggestions des imports précédents signalées ; téléchargement des lignes ignorées.
+- Les producteurs (FEAT-07) se relient ou se créent comme les autres valeurs ; l’import d’un export JSON ne change pas.
+- Le compte rendu garde l’API de vérification (`dryRun`) utilisable par les scripts ; tout changement de réponse est documenté.
+
+**Critère d’acceptation** : Un fichier avec une bouteille qui correspond à deux vins, une appellation inconnue et un millésime invalide s’importe entièrement après trois choix à l’écran, sans retoucher le fichier ; une suggestion d’un import précédent est signalée comme telle ; les lignes ignorées se téléchargent ; testé, e2e compris.
+
+**Sources** : Décision « Revue de l’import CSV (FEAT-08) », Décision « Après la 1.0 : compte rendu de l’import »
+
+### REL-12 · Publication de la 1.6.0
+
+Sévérité **évolution** · effort **S** · dépend de FEAT-07, FEAT-08 · statut **À faire**
+
+**Problème** : La 1.6.0 apporte aux utilisateurs ce que sa phase a livré.
+
+**Fichiers** : `releases.json`, `CHANGELOG.md`, `UPGRADING.md`
+
+**À faire**
+
+- Résumé 1.6.0 complété à chaque tâche ; banc depuis la version précédente ; release selon RELEASING.md, avec le mainteneur.
+
+**Critère d’acceptation** : v1.6.0 est publiée sur `main` et son image se télécharge sans connexion ; develop passe à la rc suivante.
+
+**Sources** : Décision « Versions après la 1.0 »
+
+## P19 · Notifications (1.7.0)
+
+Pour la 1.7.0 : les notifications, qui utilisent « À boire » (FEAT-05), le statut hors cave et la vérification des mises à jour. Ordre : FEAT-09 ; puis REL-13.
+
+### FEAT-09 · Notifications par ntfy ou webhook
+
+Sévérité **évolution** · effort **L** · dépend de REL-12 · statut **À faire**
+
+**Problème** : Une sauvegarde automatique ratée ne se voit que dans les journaux du conteneur ; rien ne rappelle les bouteilles à boire, les vins à racheter ou les bouteilles restées hors cave, ni qu’une nouvelle version existe.
+
+**Fichiers** : `src/lib/server/`, `src/routes/admin/`, `src/routes/api/admin/`, `src/lib/components/admin/`, `src/lib/i18n/locales/`, `README-Docker.md`, `docs/API.md`
+
+**À faire**
+
+- Décision « Notifications (FEAT-09) » : onglet Admin › Notifications, ntfy et webhook, test, jeton jamais réaffiché, langue ; chaque événement activable ; récapitulatifs planifiés comme les sauvegardes automatiques.
+- Vérification quotidienne des versions publiées sur GitHub, affichée dans l’admin et sur l’engrenage (UI-28) ; README-Docker dit comment la couper, pour un serveur sans accès à Internet.
+- Les adresses et jetons ne sortent jamais dans les journaux ; un échec d’envoi est journalisé sans bloquer l’app.
+
+**Critère d’acceptation** : Un serveur ntfy de test et un webhook de test reçoivent chacun des événements activés, dans la langue choisie, et rien des événements coupés ; une sauvegarde ratée envoie son message ; la mise à jour disponible s’affiche dans l’admin ; testé.
+
+**Sources** : Décision « Notifications (FEAT-09) »
+
+### REL-13 · Publication de la 1.7.0
+
+Sévérité **évolution** · effort **S** · dépend de FEAT-09 · statut **À faire**
+
+**Problème** : La 1.7.0 apporte aux utilisateurs ce que sa phase a livré.
+
+**Fichiers** : `releases.json`, `CHANGELOG.md`, `UPGRADING.md`
+
+**À faire**
+
+- Résumé 1.7.0 complété à chaque tâche ; banc depuis la version précédente ; release selon RELEASING.md, avec le mainteneur.
+
+**Critère d’acceptation** : v1.7.0 est publiée sur `main` et son image se télécharge sans connexion ; develop passe à la rc suivante.
+
+**Sources** : Décision « Versions après la 1.0 »

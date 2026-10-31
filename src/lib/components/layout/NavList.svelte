@@ -11,7 +11,8 @@
 <ul class="flex flex-col gap-0.5">
     {#each sections as section, index (section.label)}
         {#if section.direct}
-            <li><NavRow item={section.items[0]} {onchoose} /></li>
+            <!-- Set apart like a section, so that it does not read as a page of the one above -->
+            <li class="pt-3"><NavRow item={section.items[0]} {onchoose} /></li>
         {:else}
             <li>
                 <span

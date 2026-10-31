@@ -77,11 +77,12 @@
                 ? 'page'
                 : undefined}
         >
-            <span class="relative">
+            <!-- The name comes first, for screen readers to say it before the count -->
+            <span>{tab.label}</span>
+            <span class="relative order-first">
                 <tab.icon class="h-[22px] w-[22px]" aria-hidden="true" />
                 {#if tab.href === '/purchases' && shortage}<NavCount count={shortage} badge />{/if}
             </span>
-            {tab.label}
         </a>
     {/each}
     <button

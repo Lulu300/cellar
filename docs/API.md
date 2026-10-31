@@ -24,7 +24,7 @@ which is also the value of `ORIGIN` (see
 - In request bodies, names and optional texts are trimmed, and an optional text or id that is empty
   is stored as `null`.
 - A `GET` route also answers `HEAD`.
-- Every answer of the server, static files and errors included, carries
+- Every answer of the app, static files and error pages included, carries
   `Content-Security-Policy: frame-ancestors 'none'` and `X-Frame-Options: DENY`: no web page can show
   Cellar in a frame.
 - The JSON examples may leave fields out: the text of each section lists them.

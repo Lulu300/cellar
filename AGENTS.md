@@ -23,7 +23,7 @@ Use pnpm 10 (`npx -y pnpm@10 …` if it is not installed) and Node 24. `packageM
 ## Map
 
 - `vite.config.ts`: Vite and SvelteKit configuration (there is no `svelte.config.js`).
-- `server.js`: starts the built app and applies the `ORIGIN` variable, which adapter-node no longer reads.
+- `server.js`: starts the built app, applies the `ORIGIN` variable, which adapter-node no longer reads, and sends the headers that forbid framing on every answer.
 - `src/routes/`: pages, and the API under `src/routes/api/` (admin endpoints in `api/admin/`).
 - `src/hooks.server.ts`: CSRF check, migrations, backup scheduler.
 - `src/lib/server/`: server-only code. Put new server code here.

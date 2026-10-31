@@ -101,7 +101,7 @@ pnpm test:e2e                   # end-to-end journeys in Chromium, against the b
 
 `pnpm i18n:check` fails on a translation key that is missing, defined twice, in one locale only, unused or not written out (`m['key']`), on a value that is not text (a nested object or a number in a locale file), on a plural made by hand, on the same text under two keys, on text with `...` instead of …, in either locale, on French text with `'` or `"` instead of ’ and « », and on text written in a component instead of the locale files. `pnpm test:e2e` needs Chromium once: `pnpm exec playwright install chromium`. CI also builds the Docker image and waits until it is healthy (`scripts/check-image.sh <image>`).
 
-Start the built server with `ORIGIN=http://localhost:3000 BODY_SIZE_LIMIT=512M node server.js`. `node build` alone ignores `ORIGIN`, so every save would fail with 403. Without `BODY_SIZE_LIMIT`, which the Docker image sets to `512M`, the server refuses any request body over 512 KB with 413, such as a backup to restore, a ZIP to import or an image to upload.
+Start the built server with `ORIGIN=http://localhost:3000 BODY_SIZE_LIMIT=512M node server.js`. `node build` alone ignores `ORIGIN`, so every save would fail with 403, and sends no header that forbids framing. Without `BODY_SIZE_LIMIT`, which the Docker image sets to `512M`, the server refuses any request body over 512 KB with 413, such as a backup to restore, a ZIP to import or an image to upload.
 
 After a change to `src/lib/server/db/schema.ts`, create a migration with `pnpm db:generate`.
 

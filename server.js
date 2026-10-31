@@ -1,4 +1,5 @@
-// Starts the built app (`node server.js`): adapter-node's build/index.js, plus the ORIGIN variable.
+// Starts the built app (`node server.js`): adapter-node's build/index.js, plus the ORIGIN variable
+// and the headers that forbid framing.
 //
 // adapter-node 6 no longer reads ORIGIN. The origin it trusts, `paths.origin`, is fixed when the app
 // is built, but one Docker image serves every installation. Without it, adapter-node takes the

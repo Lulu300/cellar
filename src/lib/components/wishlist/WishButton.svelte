@@ -1,15 +1,11 @@
 <script lang="ts">
     import { Bookmark } from '@lucide/svelte';
-    import { invalidate } from '$app/navigation';
     import { page } from '$app/state';
-    import { errorMessage } from '#lib/api/client.js';
     import { m } from '#lib/paraglide/messages.js';
-    import { CELLAR } from '#lib/shared/dependencies.js';
-    import { toasts } from '#lib/stores/toast.svelte.js';
-    import { addWish, removeWish } from './wishes.js';
+    import { toggleWish } from './wishes.js';
 
     /**
-     * The bookmark of a wine, on its card and its page, filled while the wine is on the wishlist:
+     * The bookmark of a wine, on its card, its row and its page, filled while the wine is on the wishlist:
      * a press puts the wine on the list, and another takes it off. `class` styles the button; the
      * filled bookmark, in the theme's colour, takes the button's own hover colour.
      */
@@ -25,19 +21,8 @@
 
     async function toggle() {
         busy = true;
-        try {
-            if (wishId) {
-                await removeWish(wishId);
-            } else {
-                await addWish({ definitionId: wineId });
-                toasts.add(m['wishlist.added'](), 'success');
-                await invalidate(CELLAR);
-            }
-        } catch (error) {
-            toasts.add(errorMessage(error), 'error');
-        } finally {
-            busy = false;
-        }
+        await toggleWish(wineId, wishId);
+        busy = false;
     }
 </script>
 

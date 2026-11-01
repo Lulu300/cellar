@@ -16,10 +16,9 @@
     import { m } from '#lib/paraglide/messages.js';
     import type { WineGroupDTO } from '#lib/shared/dto.js';
     import { auth } from '#lib/stores/auth.svelte.js';
-    import { formatPriceRange, formatRating, formatVintageRange } from '#lib/utils/format.js';
     import { colorBadgeClass, typeBadgeClass } from '#lib/utils/wine-badges.js';
-    import { priceStats, vintageRange } from '#lib/utils/wine-group-sort.js';
     import ScrollingText from './ScrollingText.svelte';
+    import { wineFacts } from './wine-facts.js';
 
     type Wine = WineGroupDTO['definition'];
 
@@ -45,6 +44,8 @@
         onShowBottles: (wine: Wine) => void;
     } = $props();
 
+    const summary = $derived(wineFacts({ definition: wine, bottles }));
+
     // Every card has the same size and each field the same place: one line per field, each
     // behind its icon, whose label screen readers and the icon's tooltip give.
     const facts = $derived([
@@ -56,9 +57,9 @@
         {
             icon: Calendar,
             label: m['common.vintage'](),
-            value: formatVintageRange(vintageRange(bottles))
+            value: summary.vintage
         },
-        { icon: Coins, label: m['common.price'](), value: formatPriceRange(priceStats(bottles)) }
+        { icon: Coins, label: m['common.price'](), value: summary.price }
     ]);
 
     // Above the link that covers the card
@@ -105,7 +106,7 @@
                     </a>
                 </h2>
                 <ScrollingText class="text-sm text-muted-foreground">
-                    {wine.producer || m['wines.unknown_producer']()} · {wine.region}, {wine.country}
+                    {summary.producer} · {summary.place}
                 </ScrollingText>
             </div>
             <!-- Without the text line's own height, which would push the badges down -->
@@ -113,17 +114,13 @@
                 <span class="inline-flex gap-1">
                     <Badge class="{typeBadgeClass(wine.type)} text-xs">{wine.type}</Badge>
                     <Badge class="{colorBadgeClass(wine.color)} text-xs">{wine.color}</Badge>
-                    {#if wine.rating}
-                        <Badge variant="outline" class="text-xs">
-                            <Star size={14} />
-                            {formatRating(wine.rating)}
-                        </Badge>
-                    {:else}
-                        <Badge variant="secondary" class="text-xs text-muted-foreground">
-                            <Star size={14} />
-                            {m['common.no_rating']()}
-                        </Badge>
-                    {/if}
+                    <Badge
+                        variant={wine.rating ? 'outline' : 'secondary'}
+                        class="text-xs {wine.rating ? '' : 'text-muted-foreground'}"
+                    >
+                        <Star size={14} />
+                        {summary.rating}
+                    </Badge>
                 </span>
             </ScrollingText>
             <dl
@@ -156,7 +153,7 @@
             onclick={() => onShowBottles(wine)}
             title={m['wines.view_bottle_details']()}
         >
-            {m['common.n_bottles']({ count: bottles.length })}
+            {m['common.n_bottles']({ count: summary.bottleCount })}
         </Button>
         {#if auth.isAuthenticated}
             <button

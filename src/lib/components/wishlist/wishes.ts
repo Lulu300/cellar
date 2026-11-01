@@ -64,6 +64,24 @@ export async function removeWish(id: string): Promise<boolean> {
     return true;
 }
 
+/**
+ * Puts a wine on the wishlist, or takes off its wish (`wishId`), then reloads the pages and the
+ * menu; a toast says which, or the refusal.
+ */
+export async function toggleWish(wineId: string, wishId: string | undefined): Promise<void> {
+    try {
+        if (wishId) {
+            await removeWish(wishId);
+        } else {
+            await addWish({ definitionId: wineId });
+            toasts.add(m['wishlist.added'](), 'success');
+            await invalidate(CELLAR);
+        }
+    } catch (error) {
+        toasts.add(errorMessage(error), 'error');
+    }
+}
+
 /** Whether a save of the bottle dialog adds bottles: a new bottle or a copy, never an edit. */
 export const addsBottles = (editing: boolean, duplicate: boolean) => !editing || duplicate;
 

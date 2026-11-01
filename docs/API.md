@@ -1088,7 +1088,7 @@ Gives the figures of the statistics page.
     `null` when none does).
   - `bottlesByAvailability`: `[{ "availability", "count" }]`, over every bottle.
   - `winesByType` (`type`), `winesByColor` (`color`, and its colour value `hex`):
-    `[{ <name>, "count" }]`.
+    `[{ <name>, "count" }]`; `winesByColor` by name, upper case before lower case.
   - `winesByCountry` (`country`), `winesByRegion` (`id`, `region`, and the name of its `country`),
     `topProducers` (`producer`): at most 10, largest first. Two regions of the same name in two
     countries are two rows, told apart by their `id` and `country`.

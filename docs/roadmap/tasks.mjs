@@ -49,9 +49,14 @@ export const versions = [
 		goal: 'Les retouches demandées par le mainteneur après la 1.3.0 : l’écart entre les sections du menu et le badge toujours au premier plan, et le bouton de la liste d’envies (icône, curseur, survol en thème sombre).'
 	},
 	{
+		id: '1.3.2',
+		title: 'Cartes de vin',
+		goal: 'Des cartes de vin toutes identiques, où rien n’est coupé pour de bon : photo en portrait, une ligne par champ, défilement au survol, et une grille qui retire une colonne plutôt que de serrer les cartes.'
+	},
+	{
 		id: '1.4.0',
 		title: 'Couleurs et plan de la cave',
-		goal: 'Une vraie couleur pour chaque couleur de vin, et la page Stockage qui devient un plan de la cave.'
+		goal: 'Une vue liste à côté des cartes, une vraie couleur pour chaque couleur de vin, et la page Stockage qui devient un plan de la cave.'
 	},
 	{
 		id: '1.5.0',
@@ -174,10 +179,16 @@ export const phases = [
 		goal: 'Pour la 1.3.1, avant P16 (décision « Version corrective 1.3.1 ») : UI-31 (fait le 2026-11-01) ; puis REL-14. Publiée en 1.3.1 le 2026-11-01.'
 	},
 	{
+		id: 'P15c',
+		version: '1.3.2',
+		title: 'Cartes de vin',
+		goal: 'Pour la 1.3.2, avant P16 (décisions « Cartes de vin (UI-32) » et « Version corrective 1.3.1 », qui vaut aussi pour la 1.3.2) : UI-32 ; puis REL-15.'
+	},
+	{
 		id: 'P16',
 		version: '1.4.0',
 		title: 'Couleurs et plan de la cave',
-		goal: 'Pour la 1.4.0 : les couleurs des vins, puis le plan de la cave, qui s’appuie dessus. Ordre : FEAT-03 ; FEAT-04 ; DEP-10 ; puis REL-10.'
+		goal: 'Pour la 1.4.0 : les couleurs des vins, puis le plan de la cave, qui s’appuie dessus. Ordre : FEAT-10 (vue liste, demandée avec UI-32) ; FEAT-03 ; FEAT-04 ; DEP-10 ; puis REL-10.'
 	},
 	{
 		id: 'P17',
@@ -320,6 +331,8 @@ export const decisions = [
 	{ topic: 'Liste d’envies et achats (FEAT-02)', choice: 'La page Pénurie devient « Achats », avec deux onglets, « Liste d’envies » et « Pénurie » (le stock minimum d’aujourd’hui), chacun avec son nombre. Une envie est soit un simple texte, avec une photo si on veut, soit un vin complet créé tout de suite ; toutes deux ont une quantité facultative et une note libre. Depuis une envie liée à un vin, « Ajouter une bouteille » ouvre le formulaire avec l’enchaînement habituel ; au dernier enregistrement, on choisit de retirer le vin de la liste ou non. Depuis une envie en texte, « Créer la fiche du vin » ouvre le formulaire du vin, avec la photo de l’envie reprise, puis enchaîne sur les bouteilles. Une bouteille ajoutée ailleurs, d’un vin de la liste, propose le même retrait au dernier enregistrement. Rien ne sort de la liste sans l’accord de l’utilisateur (décision du 2026-10-31).' },
 	{ topic: 'Version corrective 1.3.1', choice: 'Le mainteneur veut ses retouches de la 1.3.0 dans une 1.3.1, avant P16 (2026-11-01). develop était passé à 1.4.0-rc.0, mais aucune image ni base n’a tourné sous ce numéro hors de la CI : develop repasse donc à 1.3.1-rc.0, l’entrée 1.4.0 de `releases.json` laisse la place à 1.3.1, puis revient au démarrage de la 1.4.0. Exception à la règle de RELEASING.md (« une version de correctifs après X.Y.0 est X.Y+1.0 ») : elle ne vaut que parce que rien n’a tourné en 1.4.0-rc.0.' },
 	{ topic: 'Icône de la liste d’envies (1.3.1)', choice: 'Le cœur reste libre pour de futurs favoris : la liste d’envies prend le signet de la bibliothèque d’icônes (`Bookmark` de `@lucide/svelte`), en couleur du thème ; vide hors de la liste, plein quand le vin y est. Choix du mainteneur (2026-11-01), à revoir sur les captures si le signet se lit mal.' },
+	{ topic: 'Cartes de vin (UI-32)', choice: 'Choisie sur maquette (https://claude.ai/artifact/9GrYNvpP1LUCF8jfT3Rwze, planche « C3 », 2026-11-01) : la carte devient horizontale, photo en portrait de 100 × 140 px à gauche. Règle de base, à ne jamais rompre : toutes les cartes ont la même taille et chaque élément est au même endroit ; chaque champ tient sur une ligne, la description a deux lignes réservées. Un texte coupé défile au survol (le mainteneur préfère ce mouvement sur les cartes). Le classement, le millésime et le prix sont précédés d’icônes, pas de libellés. La grille garde des cartes de 340 px au moins. Densité estimée sur un écran de 1 920 px : 4 cartes par ligne au lieu de 6, mais 8 cartes entières à l’écran au lieu de 6.' },
+	{ topic: 'Vue liste (FEAT-10)', choice: 'Choisie sur maquette (planche « D3 ») : une vue liste à côté des cartes, sans défilement (le mainteneur n’en veut pas dans la liste) ; un texte long passe à la ligne. Un sélecteur « Cartes / Liste » sur la page et la vue par défaut dans les préférences. Demandée avec UI-32, placée en tête de la 1.4.0 parce que c’est une nouvelle fonction et non un correctif.' },
 	{ topic: 'Couleurs des vins (FEAT-03)', choice: 'Chaque couleur de vin a une vraie couleur, enregistrée en base ; les couleurs de départ reçoivent celles des étiquettes d’aujourd’hui. Créée depuis un formulaire, une couleur reçoit une teinte par défaut ou neutre ; dans Admin › Data, le sélecteur s’affiche dès la création ou la modification. Choisi sur maquette : sur la page Stockage, chaque place occupée prend la couleur de son vin, avec un fin contour de la même teinte, plus foncée ou plus claire, seulement quand la couleur manque de contraste avec le fond ; les camemberts des statistiques prennent les vraies couleurs ; la liste des vins garde l’étiquette, colorée, et ajoute une bande à gauche de la carte ; les listes de bouteilles montrent l’étiquette colorée à côté du nom du vin. Pas de carte teintée (décision du 2026-10-31).' },
 	{ topic: 'Plan de la cave (FEAT-04)', choice: 'La page Stockage devient le plan : un clic sur une case ouvre la liste de ses bouteilles (vin, millésime, couleur), d’où l’on ouvre une bouteille, la marque bue ou la déplace ; on en coche plusieurs puis « Déplacer vers… » une autre case, sans glisser-déposer. Une case reste un bac, sans place précise. La page d’un vin a un bouton « Voir dans la cave », qui met en évidence les cases où il est. La disposition des conteneurs ne change pas (décision du 2026-10-31).' },
 	{ topic: 'À boire (FEAT-05)', choice: 'Une bouteille, et jamais un vin, peut porter « À boire avant » (une année, un mois facultatif), posé en un clic par « Ce mois-ci », « Cette année » ou « Choisir… », sur une ou plusieurs bouteilles d’un coup. L’année optimale reste facultative et prend le relais quand rien n’est posé. Ordre : date dépassée (signalée, gardée jusqu’à ce que l’utilisateur change ou retire la date), ce mois-ci, cette année, année optimale atteinte, puis par date. Pas d’entrée de menu : un bandeau sur l’accueil (« 3 bouteilles à boire bientôt, dont 1 en retard »), qui déplie la liste ; à revoir sur captures avant le merge. Sur la page Stockage, un repère sur les bouteilles à boire dans un horizon réglé dans les préférences, affiché par un interrupteur dont la valeur par défaut, éteinte, se règle aussi dans les préférences. Une bouteille bue quitte la liste et garde ses valeurs dans son historique (décision du 2026-10-31).' },
@@ -2513,7 +2526,45 @@ export const tasks = [
 		done: 'v1.3.1 est publiée sur `main` et son image se télécharge sans connexion ; develop repasse à 1.4.0-rc.0.',
 		deps: ['UI-31'], src: ['Décision « Version corrective 1.3.1 »']
 	},
+	// ───────── P15c Cartes de vin
+	{
+		id: 'UI-32', phase: 'P15c', size: 'M', sev: 'mineur',
+		title: 'Cartes de vin identiques, sans texte coupé pour de bon',
+		why: 'Retours du mainteneur sur la 1.3.1 : le nom d’une carte est coupé dès qu’il est un peu long, sans autre moyen de le lire qu’une infobulle sur ordinateur ; quand la fenêtre rétrécit, les cartes se serrent au lieu de perdre une colonne (la grille ajoute des colonnes par paliers et garde des cartes de 230 à 260 px) ; « modifier » et « dupliquer » prennent la place du nom ; seuls les boutons d’envie montrent la main au survol.',
+		where: ['src/lib/components/wines/WineCard.svelte', 'src/lib/components/wines/WineListView.svelte', 'src/app.css', 'src/lib/components/ui/button/button.svelte', 'src/lib/i18n/locales/', 'e2e/'],
+		todo: [
+			'Carte horizontale de la maquette C3 (https://claude.ai/artifact/9GrYNvpP1LUCF8jfT3Rwze, planche « C3 ») : photo principale en portrait, 100 × 140 px, à gauche ; à droite, le nom, puis producteur · région sur une ligne, puis les badges (type, couleur, note), puis la fiche classement, millésime et prix, chacun derrière une icône (`Award`, `Calendar`, `Coins` de `@lucide/svelte`) avec son libellé pour les lecteurs d’écran et au survol de l’icône ; dessous, deux lignes réservées à la description, « Aucune description » sinon ; en bas, une barre : nombre de bouteilles, ajouter une bouteille, signet, modifier, dupliquer.',
+			'Toutes les cartes ont exactement la même taille : chaque champ tient sur une ligne, la description a toujours deux lignes réservées. Un texte réellement coupé (mesuré, pas deviné) s’estompe à droite et défile au survol de la carte ; aucun mouvement avec `prefers-reduced-motion`. Sur un écran sans survol, le nom a deux lignes réservées. Images masquées : la photo disparaît, les cartes restent identiques entre elles.',
+			'Grille : des cartes de 340 px au moins (`auto-fill`), une colonne sur téléphone ; plus de paliers de colonnes fixes. Retirer les règles `.wine-cards-grid` et `.wine-card-*` de `app.css` si plus rien ne s’en sert.',
+			'Curseur main sur tous les boutons de l’app (Trouvé pendant UI-31) : une règle de base, comme le recommande Tailwind 4, plutôt que bouton par bouton.'
+		],
+		done: 'Captures avant et après, téléphone et ordinateur, clair et sombre, avec et sans images : cartes de même hauteur avec des noms, classements et descriptions de longueurs différentes ; défilement au survol d’un texte coupé seulement ; grille qui perd une colonne en rétrécissant ; main sur les boutons ; testé.',
+		deps: ['REL-14'], src: ['Décision « Cartes de vin (UI-32) »']
+	},
+	{
+		id: 'REL-15', phase: 'P15c', size: 'S', sev: 'evolution',
+		title: 'Publication de la 1.3.2',
+		why: 'La 1.3.2 apporte les nouvelles cartes de vin sans attendre la 1.4.0.',
+		where: ['releases.json', 'CHANGELOG.md', 'UPGRADING.md', 'package.json'],
+		todo: [
+			'Résumé 1.3.2 ; bancs depuis la 1.3.1 et la 1.0.0 ; release selon RELEASING.md, avec le mainteneur ; puis develop repasse à 1.4.0-rc.0 avec l’entrée 1.4.0 de `releases.json`.'
+		],
+		done: 'v1.3.2 est publiée sur `main` et son image se télécharge sans connexion ; develop repasse à 1.4.0-rc.0.',
+		deps: ['UI-32'], src: ['Décision « Version corrective 1.3.1 »']
+	},
 	// ───────── P16 Couleurs et plan de la cave
+	{
+		id: 'FEAT-10', phase: 'P16', size: 'M', sev: 'evolution',
+		title: 'Vue liste des vins, au choix avec les cartes',
+		why: 'Le mainteneur veut pouvoir parcourir la cave en liste, une ligne par vin, à côté de la vue en cartes, et choisir dans les préférences la vue qui s’ouvre par défaut.',
+		where: ['src/lib/components/wines/', 'src/lib/stores/preferences.svelte.ts', 'src/routes/preferences/', 'src/lib/i18n/locales/', 'e2e/'],
+		todo: [
+			'Maquette D3 (https://claude.ai/artifact/9GrYNvpP1LUCF8jfT3Rwze, planche « D3 ») : sur ordinateur, un tableau (vignette, vin avec producteur · classement dessous, région, couleur, millésime, prix, bouteilles, note, actions) ; sur téléphone, une ligne par vin (nom, producteur · région, couleur, millésime, bouteilles, prix, menu d’actions). Rien n’est coupé : un texte long passe à la ligne et la ligne grandit. Les mêmes actions que la carte, au clavier aussi.',
+			'Un sélecteur « Cartes / Liste » sur la page, comme l’interrupteur des images ; dans les préférences, la vue qui s’ouvre par défaut. Tri, filtres et pagination identiques dans les deux vues.'
+		],
+		done: 'La vue liste montre tous les vins filtrés sans texte coupé, sur téléphone et ordinateur, en clair et en sombre ; le sélecteur change de vue et la préférence choisit celle d’arrivée ; captures ; testé.',
+		deps: ['REL-15'], src: ['Décision « Vue liste (FEAT-10) »']
+	},
 	{
 		id: 'FEAT-03', phase: 'P16', size: 'M', sev: 'evolution',
 		title: 'Une vraie couleur pour chaque couleur de vin',
@@ -2523,10 +2574,10 @@ export const tasks = [
 			'Décision « Couleurs des vins (FEAT-03) » : colonne de couleur (migration), valeurs de départ, sélecteur dans Admin › Data, teinte par défaut à la création rapide ; exports et imports suivent.',
 			'Stockage (places occupées, contour seulement quand le contraste manque, calculé depuis la couleur), statistiques, étiquette et bande des cartes de vin, étiquette à côté du nom dans les listes de bouteilles.',
 			'Maquette de référence : https://claude.ai/artifact/NiDbVPAQ4f4FS76h4QuTjn ; diff de la maquette dans les notes du coordinateur. La requête de la vue du stockage reste légère (une requête à part plutôt que dans `caseLoads`).',
-			'Trouvé pendant FEAT-02 : sur ordinateur à 1 280 px, le nom d’une carte de vin est coupé au-delà d’environ 9 lettres, parce que « modifier » et « dupliquer » partagent la ligne du titre (`wines/WineCard.svelte`) ; à régler avec la bande de couleur, en montrant les captures au mainteneur.'
+			'Trouvé pendant FEAT-02 : sur ordinateur à 1 280 px, le nom d’une carte de vin est coupé au-delà d’environ 9 lettres, parce que « modifier » et « dupliquer » partagent la ligne du titre (`wines/WineCard.svelte`) ; à régler avec la bande de couleur, en montrant les captures au mainteneur. Réglé par UI-32 (1.3.2) : la bande de couleur s’adapte à la carte C3.'
 		],
 		done: 'Une couleur choisie dans l’admin se voit sur le stockage, les statistiques, les cartes et les listes de bouteilles, en clair, en sombre et avec une coloration des préférences ; un blanc pâle et un rouge foncé restent visibles grâce au contour ; captures avant et après ; testé.',
-		deps: ['REL-14'], src: ['Décision « Couleurs des vins (FEAT-03) »']
+		deps: ['FEAT-10'], src: ['Décision « Couleurs des vins (FEAT-03) »']
 	},
 	{
 		id: 'FEAT-04', phase: 'P16', size: 'M', sev: 'evolution',

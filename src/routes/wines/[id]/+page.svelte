@@ -21,7 +21,8 @@
     import BackButton from '#lib/components/layout/BackButton.svelte';
     import { BottleAvailability } from '#lib/shared/bottle-availability.js';
     import type { BottleWithDefinitionDTO } from '#lib/shared/dto.js';
-    import { colorBadgeClass, typeBadgeClass } from '#lib/utils/wine-badges.js';
+    import { typeBadgeClass } from '#lib/utils/wine-badges.js';
+    import WineColorBadge from '#lib/components/wines/WineColorBadge.svelte';
     import { ownedBottles, vintageRange } from '#lib/utils/wine-group-sort.js';
     import { sortBottles } from '#lib/utils/bottle-sort.js';
 
@@ -131,9 +132,7 @@
                     <Badge class={typeBadgeClass(wineDefinition.type)}>
                         {wineDefinition.type}
                     </Badge>
-                    <Badge class={colorBadgeClass(wineDefinition.color)}>
-                        {wineDefinition.color}
-                    </Badge>
+                    <WineColorBadge name={wineDefinition.color} hex={wineDefinition.colorHex} />
                     <!-- Edit Button -->
                     {#if auth.isAuthenticated}
                         <div class="ml-auto flex">

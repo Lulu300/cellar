@@ -1,7 +1,7 @@
 import { expect, test } from '@playwright/test';
 import { addWine, logIn, openFromMenu, pick } from './helpers.js';
 
-test('add a container on the storage page, then put a bottle in one of its cases', async ({
+test('add a container on the storage page, put a bottle in one of its cases, then colour it from the admin', async ({
     page
 }) => {
     await logIn(page);
@@ -58,4 +58,23 @@ test('add a container on the storage page, then put a bottle in one of its cases
     await page.goForward();
     await expect(page.getByRole('cell', { name: 'Rack1 1/5' })).toBeVisible();
     await expect(confirmation).toBeHidden();
+
+    // A colour picked in the admin fills the place of the wine's bottle (FEAT-03).
+    await openFromMenu(page, 'Settings', 'Admin');
+    await page.getByRole('link', { name: 'Data', exact: true }).click();
+    await page.getByRole('link', { name: 'Wine Colors' }).click();
+    await page
+        .getByRole('listitem')
+        .filter({ hasText: 'Rouge' })
+        .getByRole('button', { name: 'Edit' })
+        .click();
+    const colorDialog = page.getByRole('dialog', { name: 'Edit Wine Color' });
+    await colorDialog.getByLabel('Shade').fill('#123456');
+    await colorDialog.getByRole('button', { name: 'Save' }).click();
+    await expect(colorDialog).toBeHidden();
+    await openFromMenu(page, 'Cellar', 'Storage');
+    await expect(page.getByRole('cell', { name: 'Rack1 1/5' }).locator('svg.wine-color')).toHaveCSS(
+        'fill',
+        'rgb(18, 52, 86)'
+    );
 });

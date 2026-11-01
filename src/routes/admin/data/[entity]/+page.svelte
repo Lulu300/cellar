@@ -4,6 +4,7 @@
     import { Badge } from '#lib/components/ui/badge/index.js';
     import EntityListPanel from '#lib/components/admin/EntityListPanel.svelte';
     import EntityFormDialog from '#lib/components/admin/EntityFormDialog.svelte';
+    import WineColorBadge from '#lib/components/wines/WineColorBadge.svelte';
     import { confirm } from '#lib/components/layout/confirm.svelte.js';
     import { EntityCollection } from '#lib/components/admin/entity-collection.svelte.js';
     import {
@@ -69,7 +70,11 @@
     onDelete={remove}
 >
     {#snippet entry(row)}
-        <Badge variant="outline">{row.name}</Badge>
+        {#if row.hex}
+            <WineColorBadge name={row.name} hex={row.hex} />
+        {:else}
+            <Badge variant="outline">{row.name}</Badge>
+        {/if}
         {#if referenceDetail(row)}
             <p class="mt-1 text-xs text-muted-foreground">{referenceDetail(row)}</p>
         {/if}

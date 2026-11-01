@@ -4,7 +4,8 @@
     import { TrendingUp, DollarSign, BottleWine, ChartColumn } from '@lucide/svelte';
     import BarChart from '#lib/components/statistics/BarChart.svelte';
     import PieChart from '#lib/components/statistics/PieChart.svelte';
-    import { colorFill, typeFill } from '#lib/utils/wine-badges.js';
+    import { typeFill } from '#lib/utils/wine-badges.js';
+    import { wineColorStyle } from '#lib/utils/wine-color.js';
     import { m } from '#lib/paraglide/messages.js';
     import { formatCurrency } from '#lib/utils/format.js';
     import { nameIsShared } from '#lib/utils/compare.js';
@@ -260,7 +261,7 @@
                             <PieChart
                                 slices={statsData.winesByColor.map((color) => ({
                                     count: color.count,
-                                    color: colorFill(color.color)
+                                    color: color.hex
                                 }))}
                             />
                         </div>
@@ -270,8 +271,8 @@
                             {#each statsData.winesByColor as color (color.color)}
                                 <div class="flex items-center gap-2">
                                     <div
-                                        class="w-4 h-4 rounded-sm"
-                                        style="background-color: {colorFill(color.color)}"
+                                        class="wine-color w-4 h-4 rounded-sm border border-(--wine-edge) bg-(--wine)"
+                                        style={wineColorStyle(color.hex)}
                                     ></div>
                                     <span class="text-sm font-medium">{color.color}</span>
                                     <span class="text-sm text-muted-foreground"

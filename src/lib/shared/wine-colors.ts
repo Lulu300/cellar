@@ -8,7 +8,7 @@ export const NEUTRAL_HEX = '#9ca3af';
  * A name as the palettes compare it: neither case, accents nor blanks count, so that `Rosé` and
  * ` rose ` match.
  */
-function paletteKey(name: string | null | undefined): string {
+export function paletteKey(name: string | null | undefined): string {
     return (name ?? '')
         .normalize('NFD')
         .replace(/\p{Diacritic}/gu, '')

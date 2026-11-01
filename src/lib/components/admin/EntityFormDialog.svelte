@@ -11,10 +11,12 @@
     import { Input } from '#lib/components/ui/input/index.js';
     import { Label } from '#lib/components/ui/label/index.js';
     import OptionSelect from '#lib/components/forms/OptionSelect.svelte';
+    import WineColorBadge from '#lib/components/wines/WineColorBadge.svelte';
     import { errorMessage, request } from '#lib/api/client.js';
     import { toasts } from '#lib/stores/toast.svelte.js';
     import type { ReferenceEntity } from '#lib/components/admin/entities.js';
     import type { ReferenceRow } from '#lib/shared/reference-tables.js';
+    import { NEUTRAL_HEX } from '#lib/shared/wine-colors.js';
 
     /** Adds an entry of a reference table, or edits `editing`. */
     let {
@@ -36,6 +38,7 @@
     const labels = $derived(entity.labels());
     let name = $state('');
     let parentId = $state('');
+    let hex = $state(NEUTRAL_HEX);
     let saving = $state(false);
     // Save is greyed until the form is complete: a line by the button says what is missing.
     const nameMissing = $derived(name.trim() === '');
@@ -48,6 +51,7 @@
         if (!open) return;
         name = editing?.name ?? '';
         parentId = (entity.parent && editing?.[entity.parent]) || '';
+        hex = editing?.hex ?? NEUTRAL_HEX;
     });
 
     async function save(event: SubmitEvent) {
@@ -60,7 +64,11 @@
                 editing ? `${endpoint}/${editing.id}` : endpoint,
                 {
                     method: editing ? 'PUT' : 'POST',
-                    json: { name: name.trim(), ...(entity.parent && { [entity.parent]: parentId }) }
+                    json: {
+                        name: name.trim(),
+                        ...(entity.parent && { [entity.parent]: parentId }),
+                        ...(entity.hasColor && { hex })
+                    }
                 }
             );
             // A POST answers the entry that already has this name, and adds nothing.
@@ -89,6 +97,23 @@
                 <Label for="entity-name">{labels.name}</Label>
                 <Input id="entity-name" bind:value={name} placeholder={labels.namePlaceholder} />
             </div>
+            {#if entity.hasColor}
+                <div class="space-y-2">
+                    <Label for="entity-hex">{m['admin.color_value']()}</Label>
+                    <!-- The badge shows the name as the lists will, in the colour picked -->
+                    <div class="flex items-center gap-3">
+                        <input
+                            id="entity-hex"
+                            type="color"
+                            bind:value={hex}
+                            class="h-9 w-14 cursor-pointer rounded-md border border-input bg-background p-1"
+                        />
+                        {#if name.trim()}
+                            <WineColorBadge name={name.trim()} {hex} />
+                        {/if}
+                    </div>
+                </div>
+            {/if}
             {#if labels.parent}
                 <div class="space-y-2">
                     <Label for="entity-parent">{labels.parent.label}</Label>

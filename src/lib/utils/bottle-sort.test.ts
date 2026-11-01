@@ -19,7 +19,7 @@ const ids = (bottles: TableBottle[]) => bottles.map((b) => b.id);
 
 describe('sortBottles', () => {
     const named = (id: string, name: string) =>
-        bottle(id, { definition: { id, name, producer: null } });
+        bottle(id, { definition: { id, name, producer: null, color: 'Red', colorHex: '#7b1e2b' } });
 
     it('sorts names by the rules of the language, not by character codes', () => {
         const bottles = [named('z', 'Zéphyr'), named('e', 'étoile'), named('c', 'Château')];

@@ -2,6 +2,7 @@
     import { BottleWine } from '@lucide/svelte';
     import type { StorageContainerDTO } from '#lib/shared/dto.js';
     import { formatNumber, formatPercent } from '#lib/utils/format.js';
+    import { wineColorStyle } from '#lib/utils/wine-color.js';
     import { utilization, utilizationColor } from './storage.js';
 
     /**
@@ -23,12 +24,19 @@
 </script>
 
 {#snippet icons(size: string)}
-    <!-- A filled place keeps the wine red of a bottle in every theme. -->
+    <!-- A filled place takes the colour of its bottle's wine, drawn with an edge of the same hue
+         where the colour alone would not stand out; an empty place is a faint outline. -->
     {#each { length: places }, place (place)}
-        <BottleWine
-            class="{size} {place < bottles ? 'text-red-600' : 'text-muted-foreground/40'}"
-            fill={place < bottles ? 'currentColor' : 'none'}
-        />
+        {@const hex = storageCase.colors[place]}
+        {#if hex}
+            <BottleWine
+                class="wine-color {size} text-(--wine-edge)"
+                style={wineColorStyle(hex)}
+                fill="var(--wine)"
+            />
+        {:else}
+            <BottleWine class="{size} text-muted-foreground/40" fill="none" />
+        {/if}
     {/each}
 {/snippet}
 

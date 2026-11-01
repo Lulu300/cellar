@@ -9,7 +9,6 @@
         Wine as WineIcon
     } from '@lucide/svelte';
     import { page } from '$app/state';
-    import { Badge } from '#lib/components/ui/badge/index.js';
     import { Button } from '#lib/components/ui/button/index.js';
     import { Card } from '#lib/components/ui/card/index.js';
     import * as DropdownMenu from '#lib/components/ui/dropdown-menu/index.js';
@@ -19,7 +18,7 @@
     import { m } from '#lib/paraglide/messages.js';
     import type { WineGroupDTO } from '#lib/shared/dto.js';
     import { auth } from '#lib/stores/auth.svelte.js';
-    import { colorBadgeClass } from '#lib/utils/wine-badges.js';
+    import WineColorBadge from './WineColorBadge.svelte';
     import { wineFacts } from './wine-facts.js';
     import { iconButton } from './wine-list.js';
 
@@ -80,9 +79,13 @@
      table, its name is at most 6rem wide: a long word breaks there rather than widen the column,
      and a shorter one stays whole. On a phone, the row bounds the badge. -->
 {#snippet colorBadge(wine: Wine, className: string, nameClass = '')}
-    <Badge class={[colorBadgeClass(wine.color), className, 'text-xs whitespace-normal']}>
+    <WineColorBadge
+        name={wine.color}
+        hex={wine.colorHex}
+        class={[className, 'text-xs whitespace-normal']}
+    >
         <span class={nameClass}>{wine.color}</span>
-    </Badge>
+    </WineColorBadge>
 {/snippet}
 
 <!-- On a phone, the menu holds every action of the row; on a computer, the row shows the bottles,

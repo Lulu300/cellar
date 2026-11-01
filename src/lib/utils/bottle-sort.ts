@@ -14,7 +14,13 @@ export interface TableBottle {
     notes: string | null;
     storageCase?: { name: string } | null;
     origin?: { name: string } | null;
-    definition?: { id: string; name: string; producer: string | null } | null;
+    definition?: {
+        id: string;
+        name: string;
+        producer: string | null;
+        color: string;
+        colorHex: string;
+    } | null;
 }
 
 /** The columns that the bottle tables sort on: those of the server, and the vintage. */

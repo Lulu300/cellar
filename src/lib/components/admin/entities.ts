@@ -24,6 +24,8 @@ export interface ReferenceEntity {
     slug: ReferenceSlug;
     /** The field holding the id of the parent row, chosen in the form among `parents`. */
     parent?: 'countryId' | 'regionId';
+    /** Whether its rows have a colour value (`hex`), which the form picks: the wine colours. */
+    hasColor?: boolean;
     /**
      * Its texts in the current language. Read once by a page: the language only changes on the
      * preferences page, which the admin is left for.
@@ -111,6 +113,7 @@ export const REFERENCE_ENTITIES: Record<ReferenceSlug, ReferenceEntity> = {
     },
     'wine-colors': {
         slug: 'wine-colors',
+        hasColor: true,
         labels: () => ({
             title: m['admin.wine_colors'](),
             add: m['admin.add_wine_color'](),

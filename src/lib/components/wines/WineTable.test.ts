@@ -15,6 +15,7 @@ const wine = {
         region: 'Bourgogne',
         country: 'France',
         color: 'Rouge',
+        colorHex: '#7b1e2b',
         classification: null,
         rating: null,
         imageId: 'i1'

@@ -711,6 +711,7 @@
   "admin.select_region": "Select a region…",
   "admin.type_name": "Type Name",
   "admin.color_name": "Color Name",
+  "admin.color_value": "Shade",
   "admin.classification_name": "Classification Name",
   "admin.format_name": "Format Name",
   "admin.origin_name": "Origin Name",

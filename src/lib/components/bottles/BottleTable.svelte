@@ -13,6 +13,7 @@
         TableRow
     } from '#lib/components/ui/table/index.js';
     import SortableHeader from '#lib/components/table/SortableHeader.svelte';
+    import WineColorBadge from '#lib/components/wines/WineColorBadge.svelte';
     import AvailabilityBadge from './AvailabilityBadge.svelte';
     import { nextSort, type BottleColumn } from './bottle-table.js';
     import type { BottleSort, TableBottle } from '#lib/utils/bottle-sort.js';
@@ -120,19 +121,27 @@
                         {#if column === 'definition'}
                             <TableCell>
                                 <div class="flex flex-col">
-                                    {#if linkWine && bottle.definition}
-                                        <a
-                                            href="/wines/{bottle.definition.id}"
-                                            class="font-medium hover:underline hover:text-primary-text"
-                                            title={m['wine_details.view_wine_page']()}
-                                        >
-                                            {bottle.definition.name}
-                                        </a>
-                                    {:else}
-                                        <span class="font-medium">
-                                            {bottle.definition?.name ?? notAvailable}
-                                        </span>
-                                    {/if}
+                                    <div class="flex flex-wrap items-center gap-x-2 gap-y-1">
+                                        {#if linkWine && bottle.definition}
+                                            <a
+                                                href="/wines/{bottle.definition.id}"
+                                                class="font-medium hover:underline hover:text-primary-text"
+                                                title={m['wine_details.view_wine_page']()}
+                                            >
+                                                {bottle.definition.name}
+                                            </a>
+                                        {:else}
+                                            <span class="font-medium">
+                                                {bottle.definition?.name ?? notAvailable}
+                                            </span>
+                                        {/if}
+                                        {#if bottle.definition}
+                                            <WineColorBadge
+                                                name={bottle.definition.color}
+                                                hex={bottle.definition.colorHex}
+                                            />
+                                        {/if}
+                                    </div>
                                     <span class="text-sm text-muted-foreground">
                                         {bottle.definition?.producer ?? ''}
                                         {vintageInWineCell ? (bottle.vintage ?? '') : ''}

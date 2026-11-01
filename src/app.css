@@ -152,6 +152,15 @@
     }
 }
 
+/* An element drawn in a wine colour, whose CSS variables wineColorStyle (wine-color.ts) sets:
+   `--wine-edge` is its edge on the surface of the current mode. */
+@utility wine-color {
+    --wine-edge: var(--wine-edge-light);
+    &:where(.dark *) {
+        --wine-edge: var(--wine-edge-dark);
+    }
+}
+
 @layer utilities {
     /* Storage container grids */
     .storage-containers-grid {

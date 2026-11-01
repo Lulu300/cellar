@@ -16,8 +16,10 @@
     import { m } from '#lib/paraglide/messages.js';
     import type { WineGroupDTO } from '#lib/shared/dto.js';
     import { auth } from '#lib/stores/auth.svelte.js';
-    import { colorBadgeClass, typeBadgeClass } from '#lib/utils/wine-badges.js';
+    import { typeBadgeClass } from '#lib/utils/wine-badges.js';
+    import { wineColorStyle } from '#lib/utils/wine-color.js';
     import ScrollingText from './ScrollingText.svelte';
+    import WineColorBadge from './WineColorBadge.svelte';
     import { wineFacts } from './wine-facts.js';
     import { iconButton } from './wine-list.js';
 
@@ -69,6 +71,12 @@
 <Card
     class="scroll-text-host group/card relative h-full gap-2.5 p-3.5 transition-shadow hover:shadow-lg"
 >
+    <!-- The colour of the wine, a straight bar inside the left edge: the badge names it -->
+    <div
+        class="wine-color absolute inset-y-3.5 left-0 w-1.5 border border-(--wine-edge) bg-(--wine)"
+        style={wineColorStyle(wine.colorHex)}
+        aria-hidden="true"
+    ></div>
     <div class="flex min-w-0 gap-3">
         {#if showImage}
             {#if imageUrl}
@@ -107,7 +115,7 @@
             <ScrollingText class="leading-none">
                 <span class="inline-flex gap-1">
                     <Badge class="{typeBadgeClass(wine.type)} text-xs">{wine.type}</Badge>
-                    <Badge class="{colorBadgeClass(wine.color)} text-xs">{wine.color}</Badge>
+                    <WineColorBadge name={wine.color} hex={wine.colorHex} class="text-xs" />
                     <Badge
                         variant={wine.rating ? 'outline' : 'secondary'}
                         class="text-xs {wine.rating ? '' : 'text-muted-foreground'}"

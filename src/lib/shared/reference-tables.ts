@@ -24,4 +24,6 @@ export interface ReferenceRow {
     countryName?: string | null;
     regionId?: string;
     regionName?: string | null;
+    /** The colour value of a wine colour. */
+    hex?: string;
 }

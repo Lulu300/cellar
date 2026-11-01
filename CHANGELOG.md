@@ -4,6 +4,35 @@
 
 Upgrade actions are also collected in [UPGRADING.md](UPGRADING.md).
 
+## 1.3.1
+
+1.3.1 polishes the menu and the wishlist button of 1.3.0.
+
+The sections of the menu sit a little further apart, and the red count or the dot of Purchases now stays in front when you point at the section next to it. The wishlist now shows a bookmark instead of a heart: empty when a wine is not on the list, filled when it is. The bookmark now shows the hand pointer and always changes when you point at it: on the photo of a wine card, or the placeholder of a wine without one, its disc takes the theme's colour, in dark mode too.
+
+### Upgrade actions
+
+None.
+
+### Changes
+
+#### Bug fixes
+
+- **nav:** Keep the menu badge above the neighbouring sections (815bc1b)
+- **wishlist:** Mark the wishlist with a bookmark instead of the heart (aae9ef8)
+- **wishlist:** Show the hand cursor and a visible hover on the wish button (23ab4d4)
+- **wishlist:** Show the hover of a filled bookmark beside the bottles and on the wine page (866bdb8)
+
+#### Refactoring
+
+- **wishlist:** Let the filled bookmark follow the button's hover colour (ac42464)
+
+#### Documentation
+
+- **release:** Describe the menu and wishlist fixes in 1.3.1 (30bed9f)
+- **release:** Describe the wish button of 1.3.1 accurately (985b377)
+- **release:** Reword the wish button sentence of 1.3.1 (a1f3170)
+
 ## 1.3.0
 
 1.3.0 reorganises the menu into sections, lets you take and crop several photos of a wine, and adds a wishlist next to the wines to buy again.

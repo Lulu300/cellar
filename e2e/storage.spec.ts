@@ -63,6 +63,13 @@ test('add a container on the storage page, put a bottle in one of its cases, the
     await openFromMenu(page, 'Settings', 'Admin');
     await page.getByRole('link', { name: 'Data', exact: true }).click();
     await page.getByRole('link', { name: 'Wine Colors' }).click();
+    // A new colour's picker starts on the colour of its name, as the API gives it.
+    await page.getByRole('button', { name: 'Add Wine Color' }).click();
+    const addDialog = page.getByRole('dialog', { name: 'Add Wine Color' });
+    await addDialog.getByLabel('Color Name').fill('Red');
+    await expect(addDialog.getByLabel('Shade')).toHaveValue('#7b1e2b');
+    await addDialog.getByRole('button', { name: 'Cancel' }).click();
+    await expect(addDialog).toBeHidden();
     await page
         .getByRole('listitem')
         .filter({ hasText: 'Rouge' })

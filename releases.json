@@ -1,7 +1,7 @@
 [
   {
-    "version": "1.4.0",
-    "summary": "1.4.0 gives each wine colour a real colour, shown on the storage page, in the statistics and on the wine cards, and turns the storage page into a map of the cellar.",
+    "version": "1.3.1",
+    "summary": "1.3.1 polishes the menu and the wishlist button of 1.3.0.",
     "mandatoryStop": false,
     "actions": []
   },

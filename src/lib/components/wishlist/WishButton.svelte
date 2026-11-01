@@ -11,8 +11,9 @@
     /**
      * The bookmark of a wine, on its card and its page, filled while the wine is on the wishlist:
      * a press puts the wine on the list, and another takes it off. `overlay` lays it over a photo,
-     * as a white bookmark on a dark disc that stays readable over any photo, in every theme;
-     * `class` styles it otherwise.
+     * as a white bookmark on a dark disc that stays readable over any photo, in every theme; the
+     * disc takes the theme's colour on hover, which shows on the dark placeholder of a wine
+     * without a photo too. `class` styles it otherwise.
      */
     let {
         wineId,
@@ -45,9 +46,9 @@
 
 <button
     type="button"
-    class={overlay
-        ? 'absolute top-2 right-2 z-10 flex h-9 w-9 items-center justify-center rounded-full bg-black/60 text-white shadow-md ring-1 ring-white/40 transition-colors hover:bg-black/75'
-        : className}
+    class="enabled:cursor-pointer {overlay
+        ? 'absolute top-2 right-2 z-10 flex h-9 w-9 items-center justify-center rounded-full bg-black/60 text-white shadow-md ring-1 ring-white/40 transition-colors hover:bg-primary hover:text-primary-foreground'
+        : className}"
     aria-pressed={!!wishId}
     aria-label={m['navigation.wishlist']()}
     title={wishId ? m['wishlist.remove_from_wishlist']() : m['wishlist.add_to_wishlist']()}

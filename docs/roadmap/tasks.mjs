@@ -57,7 +57,7 @@ export const versions = [
 	{
 		id: '1.4.0',
 		title: 'Couleurs et plan de la cave',
-		goal: 'Une vue liste à côté des cartes, une vraie couleur pour chaque couleur de vin, et la page Stockage qui devient un plan de la cave.'
+		goal: 'Une vue liste à côté des cartes, une vraie couleur pour chaque couleur de vin, de nouvelles actions pour les assistants (MCP), et la page Stockage qui devient un plan de la cave.'
 	},
 	{
 		id: '1.5.0',
@@ -189,7 +189,7 @@ export const phases = [
 		id: 'P16',
 		version: '1.4.0',
 		title: 'Couleurs et plan de la cave',
-		goal: 'Pour la 1.4.0 : les couleurs des vins, puis le plan de la cave, qui s’appuie dessus. Ordre : FEAT-10 (vue liste, demandée avec UI-32) ; FEAT-03 ; FEAT-04 ; DEP-10 ; puis REL-10.'
+		goal: 'Pour la 1.4.0 : les couleurs des vins, puis le plan de la cave, qui s’appuie dessus. Ordre : FEAT-10 (vue liste, demandée avec UI-32) ; FEAT-03 ; FEAT-11 (actions MCP, demandées après l’essai d’un utilisateur) ; FEAT-04 ; DEP-10 ; puis REL-10.'
 	},
 	{
 		id: 'P17',
@@ -333,6 +333,7 @@ export const decisions = [
 	{ topic: 'Version corrective 1.3.1', choice: 'Le mainteneur veut ses retouches de la 1.3.0 dans une 1.3.1, avant P16 (2026-11-01). develop était passé à 1.4.0-rc.0, mais aucune image ni base n’a tourné sous ce numéro hors de la CI : develop repasse donc à 1.3.1-rc.0, l’entrée 1.4.0 de `releases.json` laisse la place à 1.3.1, puis revient au démarrage de la 1.4.0. Exception à la règle de RELEASING.md (« une version de correctifs après X.Y.0 est X.Y+1.0 ») : elle ne vaut que parce que rien n’a tourné en 1.4.0-rc.0.' },
 	{ topic: 'Icône de la liste d’envies (1.3.1)', choice: 'Le cœur reste libre pour de futurs favoris : la liste d’envies prend le signet de la bibliothèque d’icônes (`Bookmark` de `@lucide/svelte`), en couleur du thème ; vide hors de la liste, plein quand le vin y est. Choix du mainteneur (2026-11-01), à revoir sur les captures si le signet se lit mal.' },
 	{ topic: 'Cartes de vin (UI-32)', choice: 'Choisie sur maquette (https://claude.ai/artifact/9GrYNvpP1LUCF8jfT3Rwze, planche « C3 », 2026-11-01) : la carte devient horizontale, photo en portrait de 100 × 140 px à gauche. Règle de base, à ne jamais rompre : toutes les cartes ont la même taille et chaque élément est au même endroit ; chaque champ tient sur une ligne, la description a deux lignes réservées. Un texte coupé défile au survol (le mainteneur préfère ce mouvement sur les cartes). Le classement, le millésime et le prix sont précédés d’icônes, pas de libellés. La grille garde des cartes de 340 px au moins. Densité estimée sur un écran de 1 920 px : 4 cartes par ligne au lieu de 6, mais 8 cartes entières à l’écran au lieu de 6.' },
+	{ topic: 'Actions MCP (FEAT-11)', choice: 'Un utilisateur a essayé le MCP : il a demandé un vin pour son repas, puis voulu sortir la bouteille de la cave, et seul « marquer bue » existait. Le mainteneur ajoute à la 1.4.0 quatre groupes d’actions : sortir des bouteilles de la cave, les y remettre dans une case et annuler un « bu » fait par erreur ; modifier un vin (quantité cible, description, producteur…) et les champs des bouteilles (prix, valeur, millésime, apogée, code-barres) ; lister les bouteilles de toute la cave par état et par date ; changer la quantité ou la note d’un souhait, et supprimer une bouteille ajoutée par erreur (action destructive, annoncée comme telle au client). L’admin reste hors du MCP. Les applications Claude web et mobile ne l’atteignent pas : leurs connecteurs partent d’Internet et attendent OAuth ; Claude Code et les clients locaux, avec l’en-tête du jeton, fonctionnent (décision du 2026-11-01).' },
 	{ topic: 'Vue liste (FEAT-10)', choice: 'Choisie sur maquette (planche « D3 ») : une vue liste à côté des cartes, sans défilement (le mainteneur n’en veut pas dans la liste) ; un texte long passe à la ligne. Un sélecteur « Cartes / Liste » sur la page et la vue par défaut dans les préférences. Demandée avec UI-32, placée en tête de la 1.4.0 parce que c’est une nouvelle fonction et non un correctif.' },
 	{ topic: 'Couleurs des vins (FEAT-03)', choice: 'Chaque couleur de vin a une vraie couleur, enregistrée en base ; les couleurs de départ reçoivent celles des étiquettes d’aujourd’hui. Créée depuis un formulaire, une couleur reçoit une teinte par défaut ou neutre ; dans Admin › Data, le sélecteur s’affiche dès la création ou la modification. Choisi sur maquette : sur la page Stockage, chaque place occupée prend la couleur de son vin, avec un fin contour de la même teinte, plus foncée ou plus claire, seulement quand la couleur manque de contraste avec le fond ; les camemberts des statistiques prennent les vraies couleurs ; la liste des vins garde l’étiquette, colorée, et ajoute une bande à gauche de la carte ; les listes de bouteilles montrent l’étiquette colorée à côté du nom du vin. Pas de carte teintée (décision du 2026-10-31).' },
 	{ topic: 'Plan de la cave (FEAT-04)', choice: 'La page Stockage devient le plan : un clic sur une case ouvre la liste de ses bouteilles (vin, millésime, couleur), d’où l’on ouvre une bouteille, la marque bue ou la déplace ; on en coche plusieurs puis « Déplacer vers… » une autre case, sans glisser-déposer. Une case reste un bac, sans place précise. La page d’un vin a un bouton « Voir dans la cave », qui met en évidence les cases où il est. La disposition des conteneurs ne change pas (décision du 2026-10-31).' },
@@ -2586,6 +2587,18 @@ export const tasks = [
 		deps: ['FEAT-10'], src: ['Décision « Couleurs des vins (FEAT-03) »']
 	},
 	{
+		id: 'FEAT-11', phase: 'P16', size: 'M', sev: 'evolution',
+		title: 'Nouvelles actions du serveur MCP',
+		why: 'Un assistant peut recommander une bouteille mais pas la sortir de la cave : le MCP ne sait que la marquer bue. Il ne peut pas non plus changer un vin ou une bouteille au-delà des notes, ni parcourir l’historique de toute la cave.',
+		where: ['src/lib/server/features/mcp/', 'src/lib/server/features/bottles/', 'src/lib/server/features/catalog/', 'src/lib/server/features/wishlist/', 'docs/API.md', 'README-Docker.md'],
+		todo: [
+			'Décision « Actions MCP (FEAT-11) » : sortir des bouteilles de la cave, les remettre dans une case, annuler un « bu » ; modifier un vin et les champs des bouteilles ; lister les bouteilles par état et par date ; modifier un souhait ; supprimer une bouteille. Chaque action passe par les services et les règles de l’API (case pleine, code-barres en double, écritures suspendues pendant une restauration), refuse un argument inconnu et donne ses annotations (`readOnlyHint`, `destructiveHint`, `idempotentHint`).',
+			'Documentation : la liste des outils dans `docs/API.md`, la phrase de README-Docker qui dit ce qu’un assistant peut faire, et une ligne sur les applications Claude web et mobile, dont les connecteurs partent d’Internet et ne joignent pas un serveur du réseau local (passer par Claude Code ou un client local avec l’en-tête du jeton).'
+		],
+		done: 'Depuis un client MCP réel (Claude Code), on demande un vin, on sort la bouteille de la cave, on la remet dans une case, on change la quantité cible du vin et le prix d’une bouteille, on liste ce qui a été bu dans le mois ; un jeton en lecture seule refuse chaque écriture ; testé.',
+		deps: ['FEAT-03'], src: ['Décision « Actions MCP (FEAT-11) »']
+	},
+	{
 		id: 'FEAT-04', phase: 'P16', size: 'M', sev: 'evolution',
 		title: 'Plan de la cave : les bouteilles d’une case',
 		why: 'Sur la page Stockage, une case montre combien de bouteilles elle contient, mais pas lesquelles ; un clic ne fait rien, et déplacer une bouteille passe par son formulaire.',
@@ -2595,7 +2608,7 @@ export const tasks = [
 			'« Voir dans la cave » sur la page d’un vin : la page Stockage met en évidence ses cases.'
 		],
 		done: 'Depuis la page Stockage, on voit les bouteilles d’une case et on en déplace trois d’un coup vers une autre case, au doigt comme à la souris ; « Voir dans la cave » met en évidence les bonnes cases ; testé, e2e compris.',
-		deps: ['FEAT-03'], src: ['Décision « Plan de la cave (FEAT-04) »']
+		deps: ['FEAT-11'], src: ['Décision « Plan de la cave (FEAT-04) »']
 	},
 	{
 		id: 'DEP-10', phase: 'P16', size: 'S', sev: 'mineur',

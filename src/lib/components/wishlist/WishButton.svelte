@@ -13,7 +13,8 @@
      * a press puts the wine on the list, and another takes it off. `overlay` lays it over a photo,
      * as a white bookmark on a dark disc that stays readable over any photo, in every theme; the
      * disc takes the theme's colour on hover, which shows on the dark placeholder of a wine
-     * without a photo too. `class` styles it otherwise.
+     * without a photo too. `class` styles it otherwise; the filled bookmark, in the theme's
+     * colour there, turns to the text colour on hover, as the other icon buttons do.
      */
     let {
         wineId,
@@ -46,7 +47,7 @@
 
 <button
     type="button"
-    class="enabled:cursor-pointer {overlay
+    class="group/wish enabled:cursor-pointer {overlay
         ? 'absolute top-2 right-2 z-10 flex h-9 w-9 items-center justify-center rounded-full bg-black/60 text-white shadow-md ring-1 ring-white/40 transition-colors hover:bg-primary hover:text-primary-foreground'
         : className}"
     aria-pressed={!!wishId}
@@ -59,7 +60,7 @@
         class="{iconClass} {wishId
             ? overlay
                 ? 'fill-current'
-                : 'fill-current text-primary-text'
+                : 'fill-current text-primary-text group-hover/wish:text-foreground'
             : ''}"
         aria-hidden="true"
     />

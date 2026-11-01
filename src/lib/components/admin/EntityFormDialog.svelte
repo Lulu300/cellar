@@ -16,7 +16,7 @@
     import { toasts } from '#lib/stores/toast.svelte.js';
     import type { ReferenceEntity } from '#lib/components/admin/entities.js';
     import type { ReferenceRow } from '#lib/shared/reference-tables.js';
-    import { NEUTRAL_HEX } from '#lib/shared/wine-colors.js';
+    import { startingHex } from '#lib/shared/wine-colors.js';
 
     /** Adds an entry of a reference table, or edits `editing`. */
     let {
@@ -38,7 +38,10 @@
     const labels = $derived(entity.labels());
     let name = $state('');
     let parentId = $state('');
-    let hex = $state(NEUTRAL_HEX);
+    // The colour picked, if any: until then, the row's own, or for a new row the one that its name
+    // gets from the API (startingHex), so that the picker shows what a save gives.
+    let pickedHex = $state<string | null>(null);
+    const hex = $derived(pickedHex ?? editing?.hex ?? startingHex(name));
     let saving = $state(false);
     // Save is greyed until the form is complete: a line by the button says what is missing.
     const nameMissing = $derived(name.trim() === '');
@@ -51,7 +54,7 @@
         if (!open) return;
         name = editing?.name ?? '';
         parentId = (entity.parent && editing?.[entity.parent]) || '';
-        hex = editing?.hex ?? NEUTRAL_HEX;
+        pickedHex = null;
     });
 
     async function save(event: SubmitEvent) {
@@ -105,7 +108,8 @@
                         <input
                             id="entity-hex"
                             type="color"
-                            bind:value={hex}
+                            value={hex}
+                            oninput={(event) => (pickedHex = event.currentTarget.value)}
                             class="h-9 w-14 cursor-pointer rounded-md border border-input bg-background p-1"
                         />
                         {#if name.trim()}

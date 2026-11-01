@@ -134,6 +134,8 @@ Revue du code du 2026-10-08, commit `556c7bb`. Ce fichier est la version pour le
 - **Navigation (UI-28)** : Choisie sur maquette : des sections au survol, Cave (Mes vins, Producteurs, Stockage, Hors cave, Historique), Achats (Liste d’envies, Pénurie), Statistiques (ses sous-pages), Outils (Codes-barres) ; survoler ou viser au clavier une section montre ses pages, un clic ouvre sa première page, et ses sous-pages y sont des onglets, comme l’admin. Une icône d’engrenage regroupe Préférences, Admin (avec le signal « mise à jour disponible ») et Déconnexion. Achats porte un compteur rouge des vins en pénurie, ou à défaut un point sans chiffre de la couleur du thème quand la liste d’envies n’est pas vide, ou rien ; son menu donne le nombre de chaque onglet. Hors cave reste à portée : un lien « N hors cave » sous les filtres de Mes vins. Sur téléphone, l’app installée a une barre d’onglets en bas (Vins, Stockage, Hors cave, Achats, Plus) ; dans le navigateur, le menu ☰ reprend les sections avec leurs titres (décision du 2026-10-31).
 - **Photos des vins (FEAT-01)** : Un vin peut avoir plusieurs photos : une principale, montrée dans la liste des vins, les autres seulement sur la page du vin. Sur téléphone, le champ propose « Prendre une photo » (appareil photo, sans HTTPS) et « Choisir un fichier ». Avant l’envoi, un aperçu permet de pivoter et de recadrer ; l’image est réduite (environ 1 600 px au plus grand côté, JPEG), tournée dans le bon sens, et ses métadonnées, dont la position GPS, sont retirées ; partout, ordinateur compris. Les images déjà enregistrées restent telles quelles. Une bibliothèque de recadrage serait une dépendance, à proposer au mainteneur (décision du 2026-10-31).
 - **Liste d’envies et achats (FEAT-02)** : La page Pénurie devient « Achats », avec deux onglets, « Liste d’envies » et « Pénurie » (le stock minimum d’aujourd’hui), chacun avec son nombre. Une envie est soit un simple texte, avec une photo si on veut, soit un vin complet créé tout de suite ; toutes deux ont une quantité facultative et une note libre. Depuis une envie liée à un vin, « Ajouter une bouteille » ouvre le formulaire avec l’enchaînement habituel ; au dernier enregistrement, on choisit de retirer le vin de la liste ou non. Depuis une envie en texte, « Créer la fiche du vin » ouvre le formulaire du vin, avec la photo de l’envie reprise, puis enchaîne sur les bouteilles. Une bouteille ajoutée ailleurs, d’un vin de la liste, propose le même retrait au dernier enregistrement. Rien ne sort de la liste sans l’accord de l’utilisateur (décision du 2026-10-31).
+- **Version corrective 1.3.1** : Le mainteneur veut ses retouches de la 1.3.0 dans une 1.3.1, avant P16 (2026-11-01). develop était passé à 1.4.0-rc.0, mais aucune image ni base n’a tourné sous ce numéro hors de la CI : develop repasse donc à 1.3.1-rc.0, l’entrée 1.4.0 de `releases.json` laisse la place à 1.3.1, puis revient au démarrage de la 1.4.0. Exception à la règle de RELEASING.md (« une version de correctifs après X.Y.0 est X.Y+1.0 ») : elle ne vaut que parce que rien n’a tourné en 1.4.0-rc.0.
+- **Icône de la liste d’envies (1.3.1)** : Le cœur reste libre pour de futurs favoris : la liste d’envies prend le signet de la bibliothèque d’icônes (`Bookmark` de `@lucide/svelte`), en couleur du thème ; vide hors de la liste, plein quand le vin y est. Choix du mainteneur (2026-11-01), à revoir sur les captures si le signet se lit mal.
 - **Couleurs des vins (FEAT-03)** : Chaque couleur de vin a une vraie couleur, enregistrée en base ; les couleurs de départ reçoivent celles des étiquettes d’aujourd’hui. Créée depuis un formulaire, une couleur reçoit une teinte par défaut ou neutre ; dans Admin › Data, le sélecteur s’affiche dès la création ou la modification. Choisi sur maquette : sur la page Stockage, chaque place occupée prend la couleur de son vin, avec un fin contour de la même teinte, plus foncée ou plus claire, seulement quand la couleur manque de contraste avec le fond ; les camemberts des statistiques prennent les vraies couleurs ; la liste des vins garde l’étiquette, colorée, et ajoute une bande à gauche de la carte ; les listes de bouteilles montrent l’étiquette colorée à côté du nom du vin. Pas de carte teintée (décision du 2026-10-31).
 - **Plan de la cave (FEAT-04)** : La page Stockage devient le plan : un clic sur une case ouvre la liste de ses bouteilles (vin, millésime, couleur), d’où l’on ouvre une bouteille, la marque bue ou la déplace ; on en coche plusieurs puis « Déplacer vers… » une autre case, sans glisser-déposer. Une case reste un bac, sans place précise. La page d’un vin a un bouton « Voir dans la cave », qui met en évidence les cases où il est. La disposition des conteneurs ne change pas (décision du 2026-10-31).
 - **À boire (FEAT-05)** : Une bouteille, et jamais un vin, peut porter « À boire avant » (une année, un mois facultatif), posé en un clic par « Ce mois-ci », « Cette année » ou « Choisir… », sur une ou plusieurs bouteilles d’un coup. L’année optimale reste facultative et prend le relais quand rien n’est posé. Ordre : date dépassée (signalée, gardée jusqu’à ce que l’utilisateur change ou retire la date), ce mois-ci, cette année, année optimale atteinte, puis par date. Pas d’entrée de menu : un bandeau sur l’accueil (« 3 bouteilles à boire bientôt, dont 1 en retard »), qui déplie la liste ; à revoir sur captures avant le merge. Sur la page Stockage, un repère sur les bouteilles à boire dans un horizon réglé dans les préférences, affiché par un interrupteur dont la valeur par défaut, éteinte, se règle aussi dans les préférences. Une bouteille bue quitte la liste et garde ses valeurs dans son historique (décision du 2026-10-31).
@@ -164,6 +166,7 @@ Revue du code du 2026-10-08, commit `556c7bb`. Ce fichier est la version pour le
 | 1.1.0 | P13 · Finitions et installation | Pour la 1.1.0, juste après la 1.0.0 : ce que voit d’abord un nouveau visiteur (installation dans le README, liens vers la doc de l’API), l’app installable sur le téléphone (PWA), et les finitions notées pendant P12 (décision « Versions après la 1.0 »). Lots, chacun mergé avant le suivant, résumé 1.1.0 (lots 1 à 3 faits le 2026-10-31, publiée en 1.1.0 le même jour) : 1. DOC-05, UI-27, SEC-13, BUG-24 ; 2. UI-24, UI-25, API-13 ; 3. UI-26, UI-29, DEP-08 ; UI-30 ; puis REL-07. | DOC-05, UI-27, SEC-13, BUG-24, UI-24, UI-25, API-13, UI-26, UI-29, UI-30, DEP-08, REL-07 | 12 / 12 |
 | 1.2.0 | P14 · Serveur MCP | Pour la 1.2.0, enchaînée juste après la 1.1.0 : un serveur MCP intégré à Cellar, pour les assistants d’IA du réseau local (décision « Serveur MCP (P14) »), et la description OpenAPI de l’API, tirée des mêmes schémas zod. Lots : 1. SEC-11, API-14 (faits le 2026-10-31) ; 2. API-10, API-15 (faits le 2026-10-31) ; 3. API-11, DOC-06 (faits le 2026-10-31) ; BUG-25 ; puis REL-08. Publiée en 1.2.0 le 2026-10-31. | SEC-11, API-14, API-10, API-11, API-15, DOC-06, BUG-25, REL-08 | 8 / 8 |
 | 1.3.0 | P15 · Navigation, photos et achats | Pour la 1.3.0 (décision « Versions de 1.3.0 à 1.7.0 ») : le menu par sections d’abord, parce que les pages qui suivent s’y rangent, puis les photos d’étiquette et la page Achats, dont les envies réutilisent l’envoi de photo. Lots, chacun mergé avant le suivant, résumé 1.3.0 : 1. UI-28 et FEAT-01 en parallèle (faits le 2026-10-31) (le menu et les photos ne touchent pas les mêmes fichiers) ; 2. FEAT-02, qui a besoin des deux (fait le 2026-11-01) ; 3. DEP-09 ; puis REL-09. Publiée en 1.3.0 le 2026-11-01. Si la phase traîne, la page Achats peut partir d’abord avec des envies en texte seul. | UI-28, FEAT-01, FEAT-02, DEP-09, REL-09 | 5 / 5 |
+| 1.3.1 | P15b · Correctifs de la 1.3.0 | Pour la 1.3.1, avant P16 (décision « Version corrective 1.3.1 ») : UI-31 ; puis REL-14. | UI-31, REL-14 | 0 / 2 |
 | 1.4.0 | P16 · Couleurs et plan de la cave | Pour la 1.4.0 : les couleurs des vins, puis le plan de la cave, qui s’appuie dessus. Ordre : FEAT-03 ; FEAT-04 ; DEP-10 ; puis REL-10. | FEAT-03, FEAT-04, DEP-10, REL-10 | 0 / 4 |
 | 1.5.0 | P17 · À boire et dégustation | Pour la 1.5.0 : la vie d’une bouteille jusqu’à ce qu’on la boive. Les deux tâches ajoutent leur repère et leur fiche à la liste d’une case du plan (FEAT-04). Ordre : FEAT-05 et FEAT-06 ; puis REL-11. | FEAT-05, FEAT-06, REL-11 | 0 / 3 |
 | 1.6.0 | P18 · Producteurs et revue de l’import | Pour la 1.6.0 : les producteurs d’abord, parce que la revue de l’import doit savoir relier ou créer un producteur. Ordre : FEAT-07 ; FEAT-08 ; puis REL-12. | FEAT-07, FEAT-08, REL-12 | 0 / 3 |
@@ -3257,13 +3260,51 @@ Sévérité **évolution** · effort **S** · dépend de UI-28, FEAT-01, FEAT-02
 
 **Sources** : Décision « Versions après la 1.0 »
 
+## P15b · Correctifs de la 1.3.0 (1.3.1)
+
+Pour la 1.3.1, avant P16 (décision « Version corrective 1.3.1 ») : UI-31 ; puis REL-14.
+
+### UI-31 · Menu et bouton d’envie : écarts, badge, icône et survol
+
+Sévérité **mineur** · effort **S** · dépend de REL-09 · statut **À faire**
+
+**Problème** : Retours du mainteneur sur la 1.3.0 : au survol de la section voisine, le fond de survol recouvre le badge rouge de « Achats », et les sections du menu ne sont séparées que de quelques pixels ; le cœur de la liste d’envies prendra le sens de « favori » le jour où les favoris existeront ; sur une carte de vin, le bouton d’envie garde le curseur par défaut, et en thème sombre, sans photo, son survol ne change rien de visible.
+
+**Fichiers** : `src/lib/components/layout/NavCount.svelte`, `src/lib/components/layout/NavSectionMenu.svelte`, `src/lib/components/layout/`, `src/lib/components/wishlist/WishButton.svelte`, `src/lib/components/layout/navigation.ts`, `src/routes/purchases/wishlist/+page.svelte`, `src/lib/components/wines/WineCard.svelte`
+
+**À faire**
+
+- Menu : un peu plus d’écart entre les sections de la barre du haut, et le badge (nombre rouge ou point) toujours au-dessus du fond de survol ou de sélection des sections voisines ; la barre d’onglets du téléphone garde le même ordre d’empilement.
+- Liste d’envies : le signet de la bibliothèque d’icônes (`@lucide/svelte`) remplace le cœur partout (bouton des cartes et de la page d’un vin, menu, onglet et page vide de la liste), en couleur du thème comme les autres icônes ; vide hors de la liste, plein quand le vin y est (décision « Icône de la liste d’envies (1.3.1) »).
+- Bouton d’envie : curseur main au survol, et un survol visible dans tous les cas : clair et sombre, avec et sans photo.
+
+**Critère d’acceptation** : Captures avant et après, ordinateur et téléphone, clair et sombre : badge au premier plan au survol de la section voisine, signet vide et plein, survol visible sans photo en sombre ; testé.
+
+**Sources** : Retours du mainteneur, 2026-11-01
+
+### REL-14 · Publication de la 1.3.1
+
+Sévérité **évolution** · effort **S** · dépend de UI-31 · statut **À faire**
+
+**Problème** : La 1.3.1 apporte les retouches de UI-31 sans attendre la 1.4.0.
+
+**Fichiers** : `releases.json`, `CHANGELOG.md`, `UPGRADING.md`, `package.json`
+
+**À faire**
+
+- Résumé 1.3.1 ; bancs depuis la 1.3.0 et la 1.0.0 ; release selon RELEASING.md, publiée sans repasser par le mainteneur (son accord du 2026-11-01) ; puis develop repasse à 1.4.0-rc.0 avec l’entrée 1.4.0 de `releases.json`.
+
+**Critère d’acceptation** : v1.3.1 est publiée sur `main` et son image se télécharge sans connexion ; develop repasse à 1.4.0-rc.0.
+
+**Sources** : Décision « Version corrective 1.3.1 »
+
 ## P16 · Couleurs et plan de la cave (1.4.0)
 
 Pour la 1.4.0 : les couleurs des vins, puis le plan de la cave, qui s’appuie dessus. Ordre : FEAT-03 ; FEAT-04 ; DEP-10 ; puis REL-10.
 
 ### FEAT-03 · Une vraie couleur pour chaque couleur de vin
 
-Sévérité **évolution** · effort **M** · dépend de REL-09 · statut **À faire**
+Sévérité **évolution** · effort **M** · dépend de REL-14 · statut **À faire**
 
 **Problème** : Les couleurs de vin ne sont que des noms ; les étiquettes et les graphiques tirent leur teinte d’une palette fixe (`wine-badges.ts`) où le Blanc sort brun et le Rosé magenta, et la page Stockage montre toutes les bouteilles en rouge.
 

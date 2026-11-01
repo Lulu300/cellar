@@ -43,6 +43,11 @@ export const versions = [
 		goal: 'Le menu par sections, dont dépend tout ce qui suit, les photos d’étiquette, et la liste d’envies, la fonctionnalité la plus demandée.'
 	},
 	{
+		id: '1.3.1',
+		title: 'Correctifs de la 1.3.0',
+		goal: 'Les retouches demandées par le mainteneur après la 1.3.0 : l’écart entre les sections du menu et le badge toujours au premier plan, et le bouton de la liste d’envies (icône, curseur, survol en thème sombre).'
+	},
+	{
 		id: '1.4.0',
 		title: 'Couleurs et plan de la cave',
 		goal: 'Une vraie couleur pour chaque couleur de vin, et la page Stockage qui devient un plan de la cave.'
@@ -160,6 +165,12 @@ export const phases = [
 		version: '1.3.0',
 		title: 'Navigation, photos et achats',
 		goal: 'Pour la 1.3.0 (décision « Versions de 1.3.0 à 1.7.0 ») : le menu par sections d’abord, parce que les pages qui suivent s’y rangent, puis les photos d’étiquette et la page Achats, dont les envies réutilisent l’envoi de photo. Lots, chacun mergé avant le suivant, résumé 1.3.0 : 1. UI-28 et FEAT-01 en parallèle (faits le 2026-10-31) (le menu et les photos ne touchent pas les mêmes fichiers) ; 2. FEAT-02, qui a besoin des deux (fait le 2026-11-01) ; 3. DEP-09 ; puis REL-09. Publiée en 1.3.0 le 2026-11-01. Si la phase traîne, la page Achats peut partir d’abord avec des envies en texte seul.'
+	},
+	{
+		id: 'P15b',
+		version: '1.3.1',
+		title: 'Correctifs de la 1.3.0',
+		goal: 'Pour la 1.3.1, avant P16 (décision « Version corrective 1.3.1 ») : UI-31 ; puis REL-14.'
 	},
 	{
 		id: 'P16',
@@ -306,6 +317,8 @@ export const decisions = [
 	{ topic: 'Navigation (UI-28)', choice: 'Choisie sur maquette : des sections au survol, Cave (Mes vins, Producteurs, Stockage, Hors cave, Historique), Achats (Liste d’envies, Pénurie), Statistiques (ses sous-pages), Outils (Codes-barres) ; survoler ou viser au clavier une section montre ses pages, un clic ouvre sa première page, et ses sous-pages y sont des onglets, comme l’admin. Une icône d’engrenage regroupe Préférences, Admin (avec le signal « mise à jour disponible ») et Déconnexion. Achats porte un compteur rouge des vins en pénurie, ou à défaut un point sans chiffre de la couleur du thème quand la liste d’envies n’est pas vide, ou rien ; son menu donne le nombre de chaque onglet. Hors cave reste à portée : un lien « N hors cave » sous les filtres de Mes vins. Sur téléphone, l’app installée a une barre d’onglets en bas (Vins, Stockage, Hors cave, Achats, Plus) ; dans le navigateur, le menu ☰ reprend les sections avec leurs titres (décision du 2026-10-31).' },
 	{ topic: 'Photos des vins (FEAT-01)', choice: 'Un vin peut avoir plusieurs photos : une principale, montrée dans la liste des vins, les autres seulement sur la page du vin. Sur téléphone, le champ propose « Prendre une photo » (appareil photo, sans HTTPS) et « Choisir un fichier ». Avant l’envoi, un aperçu permet de pivoter et de recadrer ; l’image est réduite (environ 1 600 px au plus grand côté, JPEG), tournée dans le bon sens, et ses métadonnées, dont la position GPS, sont retirées ; partout, ordinateur compris. Les images déjà enregistrées restent telles quelles. Une bibliothèque de recadrage serait une dépendance, à proposer au mainteneur (décision du 2026-10-31).' },
 	{ topic: 'Liste d’envies et achats (FEAT-02)', choice: 'La page Pénurie devient « Achats », avec deux onglets, « Liste d’envies » et « Pénurie » (le stock minimum d’aujourd’hui), chacun avec son nombre. Une envie est soit un simple texte, avec une photo si on veut, soit un vin complet créé tout de suite ; toutes deux ont une quantité facultative et une note libre. Depuis une envie liée à un vin, « Ajouter une bouteille » ouvre le formulaire avec l’enchaînement habituel ; au dernier enregistrement, on choisit de retirer le vin de la liste ou non. Depuis une envie en texte, « Créer la fiche du vin » ouvre le formulaire du vin, avec la photo de l’envie reprise, puis enchaîne sur les bouteilles. Une bouteille ajoutée ailleurs, d’un vin de la liste, propose le même retrait au dernier enregistrement. Rien ne sort de la liste sans l’accord de l’utilisateur (décision du 2026-10-31).' },
+	{ topic: 'Version corrective 1.3.1', choice: 'Le mainteneur veut ses retouches de la 1.3.0 dans une 1.3.1, avant P16 (2026-11-01). develop était passé à 1.4.0-rc.0, mais aucune image ni base n’a tourné sous ce numéro hors de la CI : develop repasse donc à 1.3.1-rc.0, l’entrée 1.4.0 de `releases.json` laisse la place à 1.3.1, puis revient au démarrage de la 1.4.0. Exception à la règle de RELEASING.md (« une version de correctifs après X.Y.0 est X.Y+1.0 ») : elle ne vaut que parce que rien n’a tourné en 1.4.0-rc.0.' },
+	{ topic: 'Icône de la liste d’envies (1.3.1)', choice: 'Le cœur reste libre pour de futurs favoris : la liste d’envies prend le signet de la bibliothèque d’icônes (`Bookmark` de `@lucide/svelte`), en couleur du thème ; vide hors de la liste, plein quand le vin y est. Choix du mainteneur (2026-11-01), à revoir sur les captures si le signet se lit mal.' },
 	{ topic: 'Couleurs des vins (FEAT-03)', choice: 'Chaque couleur de vin a une vraie couleur, enregistrée en base ; les couleurs de départ reçoivent celles des étiquettes d’aujourd’hui. Créée depuis un formulaire, une couleur reçoit une teinte par défaut ou neutre ; dans Admin › Data, le sélecteur s’affiche dès la création ou la modification. Choisi sur maquette : sur la page Stockage, chaque place occupée prend la couleur de son vin, avec un fin contour de la même teinte, plus foncée ou plus claire, seulement quand la couleur manque de contraste avec le fond ; les camemberts des statistiques prennent les vraies couleurs ; la liste des vins garde l’étiquette, colorée, et ajoute une bande à gauche de la carte ; les listes de bouteilles montrent l’étiquette colorée à côté du nom du vin. Pas de carte teintée (décision du 2026-10-31).' },
 	{ topic: 'Plan de la cave (FEAT-04)', choice: 'La page Stockage devient le plan : un clic sur une case ouvre la liste de ses bouteilles (vin, millésime, couleur), d’où l’on ouvre une bouteille, la marque bue ou la déplace ; on en coche plusieurs puis « Déplacer vers… » une autre case, sans glisser-déposer. Une case reste un bac, sans place précise. La page d’un vin a un bouton « Voir dans la cave », qui met en évidence les cases où il est. La disposition des conteneurs ne change pas (décision du 2026-10-31).' },
 	{ topic: 'À boire (FEAT-05)', choice: 'Une bouteille, et jamais un vin, peut porter « À boire avant » (une année, un mois facultatif), posé en un clic par « Ce mois-ci », « Cette année » ou « Choisir… », sur une ou plusieurs bouteilles d’un coup. L’année optimale reste facultative et prend le relais quand rien n’est posé. Ordre : date dépassée (signalée, gardée jusqu’à ce que l’utilisateur change ou retire la date), ce mois-ci, cette année, année optimale atteinte, puis par date. Pas d’entrée de menu : un bandeau sur l’accueil (« 3 bouteilles à boire bientôt, dont 1 en retard »), qui déplie la liste ; à revoir sur captures avant le merge. Sur la page Stockage, un repère sur les bouteilles à boire dans un horizon réglé dans les préférences, affiché par un interrupteur dont la valeur par défaut, éteinte, se règle aussi dans les préférences. Une bouteille bue quitte la liste et garde ses valeurs dans son historique (décision du 2026-10-31).' },
@@ -2471,6 +2484,31 @@ export const tasks = [
 		done: 'v1.3.0 est publiée sur `main` et son image se télécharge sans connexion ; develop passe à la rc suivante.',
 		deps: ['UI-28', 'FEAT-01', 'FEAT-02', 'DEP-09'], src: ['Décision « Versions après la 1.0 »']
 	},
+	// ───────── P15b Correctifs de la 1.3.0
+	{
+		id: 'UI-31', phase: 'P15b', size: 'S', sev: 'mineur',
+		title: 'Menu et bouton d’envie : écarts, badge, icône et survol',
+		why: 'Retours du mainteneur sur la 1.3.0 : au survol de la section voisine, le fond de survol recouvre le badge rouge de « Achats », et les sections du menu ne sont séparées que de quelques pixels ; le cœur de la liste d’envies prendra le sens de « favori » le jour où les favoris existeront ; sur une carte de vin, le bouton d’envie garde le curseur par défaut, et en thème sombre, sans photo, son survol ne change rien de visible.',
+		where: ['src/lib/components/layout/NavCount.svelte', 'src/lib/components/layout/NavSectionMenu.svelte', 'src/lib/components/layout/', 'src/lib/components/wishlist/WishButton.svelte', 'src/lib/components/layout/navigation.ts', 'src/routes/purchases/wishlist/+page.svelte', 'src/lib/components/wines/WineCard.svelte'],
+		todo: [
+			'Menu : un peu plus d’écart entre les sections de la barre du haut, et le badge (nombre rouge ou point) toujours au-dessus du fond de survol ou de sélection des sections voisines ; la barre d’onglets du téléphone garde le même ordre d’empilement.',
+			'Liste d’envies : le signet de la bibliothèque d’icônes (`@lucide/svelte`) remplace le cœur partout (bouton des cartes et de la page d’un vin, menu, onglet et page vide de la liste), en couleur du thème comme les autres icônes ; vide hors de la liste, plein quand le vin y est (décision « Icône de la liste d’envies (1.3.1) »).',
+			'Bouton d’envie : curseur main au survol, et un survol visible dans tous les cas : clair et sombre, avec et sans photo.'
+		],
+		done: 'Captures avant et après, ordinateur et téléphone, clair et sombre : badge au premier plan au survol de la section voisine, signet vide et plein, survol visible sans photo en sombre ; testé.',
+		deps: ['REL-09'], src: ['Retours du mainteneur, 2026-11-01']
+	},
+	{
+		id: 'REL-14', phase: 'P15b', size: 'S', sev: 'evolution',
+		title: 'Publication de la 1.3.1',
+		why: 'La 1.3.1 apporte les retouches de UI-31 sans attendre la 1.4.0.',
+		where: ['releases.json', 'CHANGELOG.md', 'UPGRADING.md', 'package.json'],
+		todo: [
+			'Résumé 1.3.1 ; bancs depuis la 1.3.0 et la 1.0.0 ; release selon RELEASING.md, publiée sans repasser par le mainteneur (son accord du 2026-11-01) ; puis develop repasse à 1.4.0-rc.0 avec l’entrée 1.4.0 de `releases.json`.'
+		],
+		done: 'v1.3.1 est publiée sur `main` et son image se télécharge sans connexion ; develop repasse à 1.4.0-rc.0.',
+		deps: ['UI-31'], src: ['Décision « Version corrective 1.3.1 »']
+	},
 	// ───────── P16 Couleurs et plan de la cave
 	{
 		id: 'FEAT-03', phase: 'P16', size: 'M', sev: 'evolution',
@@ -2484,7 +2522,7 @@ export const tasks = [
 			'Trouvé pendant FEAT-02 : sur ordinateur à 1 280 px, le nom d’une carte de vin est coupé au-delà d’environ 9 lettres, parce que « modifier » et « dupliquer » partagent la ligne du titre (`wines/WineCard.svelte`) ; à régler avec la bande de couleur, en montrant les captures au mainteneur.'
 		],
 		done: 'Une couleur choisie dans l’admin se voit sur le stockage, les statistiques, les cartes et les listes de bouteilles, en clair, en sombre et avec une coloration des préférences ; un blanc pâle et un rouge foncé restent visibles grâce au contour ; captures avant et après ; testé.',
-		deps: ['REL-09'], src: ['Décision « Couleurs des vins (FEAT-03) »']
+		deps: ['REL-14'], src: ['Décision « Couleurs des vins (FEAT-03) »']
 	},
 	{
 		id: 'FEAT-04', phase: 'P16', size: 'M', sev: 'evolution',

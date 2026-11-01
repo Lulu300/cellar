@@ -304,7 +304,8 @@ export async function cellarStatistics() {
         .innerJoin(wineDefinitions, eq(wineBottles.definitionId, wineDefinitions.id))
         .innerJoin(wineColors, eq(wineDefinitions.colorId, wineColors.id))
         .where(eq(wineBottles.availability, 'available'))
-        .groupBy(wineColors.id);
+        .groupBy(wineColors.id)
+        .orderBy(wineColors.color);
 
     // Wine distribution by country (top 10)
     const winesByCountry = await db

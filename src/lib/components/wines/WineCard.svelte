@@ -4,7 +4,7 @@
         Calendar,
         Coins,
         Copy,
-        Image,
+        ImageIcon,
         SquarePen,
         SquarePlus,
         Star
@@ -86,7 +86,7 @@
                 <div
                     class="flex h-35 w-25 shrink-0 flex-col items-center justify-center gap-1 rounded-md bg-muted p-1 text-center text-[10px] text-muted-foreground"
                 >
-                    <Image class="size-5" aria-hidden="true" />
+                    <ImageIcon class="size-5" aria-hidden="true" />
                     {m['wine_details.no_image_available']()}
                 </div>
             {/if}
@@ -108,26 +108,29 @@
                     {wine.producer || m['wines.unknown_producer']()} · {wine.region}, {wine.country}
                 </ScrollingText>
             </div>
-            <div class="flex gap-1 overflow-hidden">
-                <Badge class="{typeBadgeClass(wine.type)} text-xs">{wine.type}</Badge>
-                <Badge class="{colorBadgeClass(wine.color)} text-xs">{wine.color}</Badge>
-                {#if wine.rating}
-                    <Badge variant="outline" class="text-xs">
-                        <Star size={14} />
-                        {formatRating(wine.rating)}
-                    </Badge>
-                {:else}
-                    <Badge variant="secondary" class="text-xs text-muted-foreground">
-                        <Star size={14} />
-                        {m['common.no_rating']()}
-                    </Badge>
-                {/if}
-            </div>
+            <ScrollingText>
+                <span class="inline-flex gap-1">
+                    <Badge class="{typeBadgeClass(wine.type)} text-xs">{wine.type}</Badge>
+                    <Badge class="{colorBadgeClass(wine.color)} text-xs">{wine.color}</Badge>
+                    {#if wine.rating}
+                        <Badge variant="outline" class="text-xs">
+                            <Star size={14} />
+                            {formatRating(wine.rating)}
+                        </Badge>
+                    {:else}
+                        <Badge variant="secondary" class="text-xs text-muted-foreground">
+                            <Star size={14} />
+                            {m['common.no_rating']()}
+                        </Badge>
+                    {/if}
+                </span>
+            </ScrollingText>
             <dl
                 class="grid grid-cols-[1rem_minmax(0,1fr)] items-center gap-x-2 gap-y-0.5 border-t pt-1.5 text-sm"
             >
                 {#each facts as { icon: Icon, label, value } (label)}
-                    <!-- Above the card's link, so that the icon shows its tooltip -->
+                    <!-- Above the card's link, so that the icon shows its tooltip: the icon alone
+                         does not open the wine -->
                     <dt class="relative z-10 text-muted-foreground" title={label}>
                         <span class="sr-only">{label}</span>
                         <Icon class="size-4" aria-hidden="true" />

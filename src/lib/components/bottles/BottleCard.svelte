@@ -52,7 +52,7 @@
 {#snippet statusPill(colour: string, text: string)}
     {#if auth.isAuthenticated}
         <button
-            class="{colour} {pill} cursor-pointer transition-colors"
+            class="{colour} {pill} transition-colors"
             onclick={() => onStatus(bottle)}
             title={m['wine_details.click_to_mark_consumed']()}
         >
@@ -123,7 +123,7 @@
 
         <div class="flex flex-wrap gap-1 min-h-[3rem]">
             <button
-                class="bg-secondary text-secondary-foreground hover:bg-secondary/80 rounded-lg cursor-pointer transition-colors p-2 sm:p-3 min-h-[36px] sm:min-h-[42px] min-w-[36px] sm:min-w-[42px] flex items-center justify-center"
+                class="bg-secondary text-secondary-foreground hover:bg-secondary/80 rounded-lg transition-colors p-2 sm:p-3 min-h-[36px] sm:min-h-[42px] min-w-[36px] sm:min-w-[42px] flex items-center justify-center"
                 onclick={() => onBarcode(bottle)}
                 title={m['wine_details.view_barcode']()}
                 aria-label={m['wine_details.view_barcode']()}

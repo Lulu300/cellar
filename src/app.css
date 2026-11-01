@@ -140,6 +140,12 @@
     body {
         @apply bg-background text-foreground;
     }
+    /* Tailwind 4 left buttons with the browser's arrow; every button of the app shows the hand,
+       except while disabled */
+    button:not(:disabled),
+    [role='button']:not(:disabled) {
+        cursor: pointer;
+    }
     /* In italics, so that an example in an empty field does not pass for a value already typed */
     ::placeholder {
         @apply italic;

@@ -113,7 +113,7 @@
             {#if wineDefinition}
                 <button
                     type="button"
-                    class="text-left hover:underline hover:text-primary-text cursor-pointer transition-colors"
+                    class="text-left hover:underline hover:text-primary-text transition-colors"
                     onclick={goToWinePage}
                     title={m['wine_details.view_wine_page']()}
                 >

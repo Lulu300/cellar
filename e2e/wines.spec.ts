@@ -28,8 +28,7 @@ test('log in, add a wine and two bottles from the wine list, and buy a wine of t
     await addWine(page, 'Château Journey', 2);
 
     // Every card has the same size, whatever the length of its texts: a name that does not fit
-    // is measured as cut and fades out, and the card still opens from anywhere. With reduced
-    // motion the fade stays on hover, over the card's link.
+    // is measured as cut and fades out.
     const longName = 'Clos des Grandes Vignes « Les Perrières » Vieilles Vignes';
     await addWine(page, longName, 1);
     const card = (name: string) =>
@@ -38,10 +37,25 @@ test('log in, add a wine and two bottles from the wine list, and buy a wine of t
     expect((await long.boundingBox())!.height).toBe((await short.boundingBox())!.height);
     await expect(long.getByRole('heading').locator('.cut')).toHaveCount(1);
     await expect(short.getByRole('heading').locator('.cut')).toHaveCount(0);
-    await page.emulateMedia({ reducedMotion: 'reduce' });
-    await long.click({ position: { x: 20, y: 100 } });
-    await expect(page.getByRole('heading', { level: 1, name: longName })).toBeVisible();
+    // A cut text opens the wine like the rest of the card, while it scrolls on hover and, with
+    // reduced motion, while its fade stays: on a narrow card, the producer and region are cut.
+    await page.setViewportSize({ width: 390, height: 844 });
+    const producer = long.locator('.scrolling-text', { hasText: 'Unknown Producer · ' });
+    await expect(producer).toHaveClass(/\bcut\b/);
+    for (const reducedMotion of ['no-preference', 'reduce'] as const) {
+        await page.emulateMedia({ reducedMotion });
+        // A click where the text shows: the text lets the pointer through to the link, so a
+        // click on the element itself would wait for it to take the pointer.
+        await producer.scrollIntoViewIfNeeded();
+        const box = (await producer.boundingBox())!;
+        await page.mouse.move(box.x + box.width / 2, box.y + box.height / 2);
+        await page.mouse.down();
+        await page.mouse.up();
+        await expect(page.getByRole('heading', { level: 1, name: longName })).toBeVisible();
+        await page.goBack();
+    }
     await page.emulateMedia({ reducedMotion: null });
+    await page.setViewportSize({ width: 1280, height: 720 });
 
     // A name typed on the wishlist, with a photo of its label, becomes a wine, then a bottle; the
     // wine leaves the wishlist only when the user says so (FEAT-02).

@@ -6,8 +6,8 @@
      * (measured, not guessed from its length), it fades out on the right and, while the pointer is
      * over the card (an ancestor with the `scroll-text-host` class), scrolls to its end and back.
      * No movement with reduced motion, nor on a screen without hover, where `wrap` gives the text
-     * two lines instead. The fade masks whatever the text holds, so a link that covers the card
-     * goes around it, never inside.
+     * two lines instead. The pointer goes through it, to the link that covers the card; that link
+     * goes around it, never inside, since the fade would mask it too.
      */
     let {
         children,
@@ -44,7 +44,9 @@
 </span>
 
 <style>
+    /* Its fade or its moving text paints it above the card's link, whose clicks it must not take */
     .scrolling-text {
+        pointer-events: none;
         display: block;
         overflow: hidden;
         white-space: nowrap;

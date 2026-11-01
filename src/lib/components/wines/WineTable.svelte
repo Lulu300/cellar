@@ -76,13 +76,15 @@
     {/if}
 {/snippet}
 
-<!-- A colour of many words wraps inside its badge, which otherwise keeps its text on one line -->
+<!-- A long colour wraps inside its badge, which otherwise keeps its text on one line. A long word
+     breaks anywhere rather than widen the table; there, a least width keeps a short colour whole
+     however narrow the table is. -->
 {#snippet colorBadge(wine: Wine, className = '')}
     <Badge
         class={[
             colorBadgeClass(wine.color),
             className,
-            'text-xs whitespace-normal [overflow-wrap:break-word]'
+            'text-xs whitespace-normal [overflow-wrap:anywhere]'
         ]}
     >
         {wine.color}
@@ -178,7 +180,7 @@
                     </Table.Cell>
                     <Table.Cell class="text-muted-foreground {wrapping}">{facts.place}</Table.Cell>
                     <Table.Cell>
-                        {@render colorBadge(wine)}
+                        {@render colorBadge(wine, 'min-w-16')}
                     </Table.Cell>
                     <Table.Cell>{facts.vintage}</Table.Cell>
                     <Table.Cell class="whitespace-normal">{facts.price}</Table.Cell>

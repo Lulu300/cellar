@@ -7,6 +7,7 @@
     import { Badge } from '#lib/components/ui/badge/index.js';
     import ChoiceGroup from '#lib/components/preferences/ChoiceGroup.svelte';
     import { moveChoice } from '#lib/components/preferences/radio-group.js';
+    import { viewOptions } from '#lib/components/wines/wine-list.js';
     import { Check, Palette, Languages } from '@lucide/svelte';
     import { themes } from '#lib/utils/theme-colors.js';
     import { preferences, type ThemeId } from '#lib/stores/preferences.svelte.js';
@@ -194,10 +195,7 @@
                 <ChoiceGroup
                     label={m['preferences.default_wine_list_view']()}
                     description={m['preferences.default_wine_list_view_description']()}
-                    options={[
-                        { value: 'cards', label: m['common.cards']() },
-                        { value: 'list', label: m['common.list']() }
-                    ]}
+                    options={viewOptions()}
                     value={preferences.wineListView}
                     onchange={(view) => preferences.set('wineListView', view)}
                 />

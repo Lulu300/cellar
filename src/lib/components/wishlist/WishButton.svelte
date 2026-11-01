@@ -5,9 +5,9 @@
     import { toggleWish } from './wishes.js';
 
     /**
-     * The bookmark of a wine, on its card, its row and its page, filled while the wine is on the wishlist:
-     * a press puts the wine on the list, and another takes it off. `class` styles the button; the
-     * filled bookmark, in the theme's colour, takes the button's own hover colour.
+     * The bookmark of a wine, on its card, its row and its page, filled while the wine is on the
+     * wishlist: a press puts the wine on the list, and another takes it off. `class` styles the
+     * button; the filled bookmark, in the theme's colour, takes the button's own hover colour.
      */
     let {
         wineId,

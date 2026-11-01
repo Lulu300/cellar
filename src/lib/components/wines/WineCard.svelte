@@ -10,7 +10,7 @@
         Star
     } from '@lucide/svelte';
     import { Badge } from '#lib/components/ui/badge/index.js';
-    import { Button, buttonVariants } from '#lib/components/ui/button/index.js';
+    import { Button } from '#lib/components/ui/button/index.js';
     import { Card } from '#lib/components/ui/card/index.js';
     import WishButton from '#lib/components/wishlist/WishButton.svelte';
     import { m } from '#lib/paraglide/messages.js';
@@ -19,6 +19,7 @@
     import { colorBadgeClass, typeBadgeClass } from '#lib/utils/wine-badges.js';
     import ScrollingText from './ScrollingText.svelte';
     import { wineFacts } from './wine-facts.js';
+    import { iconButton } from './wine-list.js';
 
     type Wine = WineGroupDTO['definition'];
 
@@ -61,13 +62,6 @@
         },
         { icon: Coins, label: m['common.price'](), value: summary.price }
     ]);
-
-    // Above the link that covers the card
-    const iconButton = buttonVariants({
-        variant: 'ghost',
-        size: 'icon',
-        class: 'relative z-10 text-muted-foreground'
-    });
 </script>
 
 <!-- The link of the title covers the whole card (its ::after); the buttons sit above it,

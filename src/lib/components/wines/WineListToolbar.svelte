@@ -4,6 +4,7 @@
     import * as Select from '#lib/components/ui/select/index.js';
     import ChoiceButtons from '#lib/components/preferences/ChoiceButtons.svelte';
     import DebouncedInput from '#lib/components/wines/DebouncedInput.svelte';
+    import { viewOptions } from '#lib/components/wines/wine-list.js';
     import { m } from '#lib/paraglide/messages.js';
     import type { BottleCountMode, WineListQuery, WineListView } from '#lib/utils/wine-filters.js';
     import type { WineGroupSortKey } from '#lib/utils/wine-group-sort.js';
@@ -178,10 +179,7 @@
             aria-label={m['wines.view']()}
             class="p-0.5"
             buttonClass="h-7"
-            options={[
-                { value: 'cards', label: m['common.cards']() },
-                { value: 'list', label: m['common.list']() }
-            ]}
+            options={viewOptions()}
             value={view}
             onchange={(view) => onChange({ view })}
         />

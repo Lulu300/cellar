@@ -14,7 +14,7 @@
      * as a white bookmark on a dark disc that stays readable over any photo, in every theme; the
      * disc takes the theme's colour on hover, which shows on the dark placeholder of a wine
      * without a photo too. `class` styles it otherwise; the filled bookmark, in the theme's
-     * colour there, turns to the text colour on hover, as the other icon buttons do.
+     * colour there, takes the button's own hover colour.
      */
     let {
         wineId,
@@ -60,7 +60,7 @@
         class="{iconClass} {wishId
             ? overlay
                 ? 'fill-current'
-                : 'fill-current text-primary-text group-hover/wish:text-foreground'
+                : 'fill-current text-primary-text transition-colors group-hover/wish:text-inherit'
             : ''}"
         aria-hidden="true"
     />

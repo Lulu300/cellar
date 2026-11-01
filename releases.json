@@ -1,7 +1,7 @@
 [
   {
     "version": "1.3.1",
-    "summary": "1.3.1 polishes the menu and the wishlist button of 1.3.0.",
+    "summary": "1.3.1 polishes the menu and the wishlist button of 1.3.0.\n\nThe sections of the menu sit a little further apart, and the red count or the dot of Purchases now stays in front when you point at the section next to it. The wishlist now uses a bookmark instead of the heart, which stays free for favourites: empty when a wine is not on the list, filled when it is. On a wine card, the bookmark shows the hand pointer, and pointing at it now colours it in the theme's colour, in dark mode too, on a wine without a photo.",
     "mandatoryStop": false,
     "actions": []
   },

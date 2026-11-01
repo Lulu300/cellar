@@ -119,7 +119,7 @@
                 <div class="flex items-center gap-2">
                     <!-- Where a mouse can hover it; touch screens get the ☰ menu, touch laptops both -->
                     <nav class="hidden md:pointer-fine:block" aria-label={m['navigation.menu']()}>
-                        <ul class="flex items-center gap-0.5">
+                        <ul class="flex items-center gap-1.5">
                             {#each sections as section (section.label)}
                                 <li><NavSectionMenu {section} /></li>
                             {/each}

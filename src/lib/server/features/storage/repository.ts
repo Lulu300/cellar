@@ -171,7 +171,10 @@ export function bottleColorsByCase(): Map<string, string[]> {
         .orderBy(wineColors.color)
         .all();
     const colors = new Map<string, string[]>();
-    for (const { caseId, hex } of rows) colors.set(caseId!, [...(colors.get(caseId!) ?? []), hex]);
+    for (const { caseId, hex } of rows) {
+        const ofCase = colors.get(caseId!) ?? colors.set(caseId!, []).get(caseId!)!;
+        ofCase.push(hex);
+    }
     return colors;
 }
 

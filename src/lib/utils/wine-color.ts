@@ -2,7 +2,11 @@
 // colour the user picks has to stay visible on the light and the dark surfaces, and readable as
 // the background of a badge.
 
-/** The surfaces a colour is drawn on: the card of the light mode, and that of the dark mode. */
+/**
+ * The surfaces a colour is drawn on, in sRGB: the card of the light mode, and `--card` of `.dark` in
+ * app.css, oklch(0.15 0.035 228). The dark cards of theme-colors.ts, from L 0.13 to 0.15, and the
+ * dark page background give an edge drawn for this one at least 3:1 too.
+ */
 const SURFACES = { light: '#ffffff', dark: '#000e17' } as const;
 
 /** The least contrast of a shape with its surface (WCAG 1.4.11). */

@@ -156,7 +156,7 @@
    `--wine-edge` is its edge on the surface of the current mode. */
 @utility wine-color {
     --wine-edge: var(--wine-edge-light);
-    &:where(.dark *) {
+    @variant dark {
         --wine-edge: var(--wine-edge-dark);
     }
 }

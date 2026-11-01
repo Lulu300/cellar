@@ -30,9 +30,8 @@
         {@const hex = storageCase.colors[place]}
         {#if hex}
             <BottleWine
-                class="wine-color {size} text-(--wine-edge)"
+                class="wine-color {size} fill-(--wine) text-(--wine-edge)"
                 style={wineColorStyle(hex)}
-                fill="var(--wine)"
             />
         {:else}
             <BottleWine class="{size} text-muted-foreground/40" fill="none" />

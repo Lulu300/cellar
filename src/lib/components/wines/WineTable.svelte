@@ -76,18 +76,12 @@
     {/if}
 {/snippet}
 
-<!-- A long colour wraps inside its badge, which otherwise keeps its text on one line. A long word
-     breaks anywhere rather than widen the table; there, a least width keeps a short colour whole
-     however narrow the table is. -->
-{#snippet colorBadge(wine: Wine, className = '')}
-    <Badge
-        class={[
-            colorBadgeClass(wine.color),
-            className,
-            'text-xs whitespace-normal [overflow-wrap:anywhere]'
-        ]}
-    >
-        {wine.color}
+<!-- A long colour wraps inside its badge, which otherwise keeps its text on one line. In the
+     table, its name is at most 6rem wide: a long word breaks there rather than widen the column,
+     and a shorter one stays whole. On a phone, the row bounds the badge. -->
+{#snippet colorBadge(wine: Wine, className: string, nameClass = '')}
+    <Badge class={[colorBadgeClass(wine.color), className, 'text-xs whitespace-normal']}>
+        <span class={nameClass}>{wine.color}</span>
     </Badge>
 {/snippet}
 
@@ -180,7 +174,7 @@
                     </Table.Cell>
                     <Table.Cell class="text-muted-foreground {wrapping}">{facts.place}</Table.Cell>
                     <Table.Cell>
-                        {@render colorBadge(wine, 'min-w-16')}
+                        {@render colorBadge(wine, '', 'max-w-24 [overflow-wrap:break-word]')}
                     </Table.Cell>
                     <Table.Cell>{facts.vintage}</Table.Cell>
                     <Table.Cell class="whitespace-normal">{facts.price}</Table.Cell>
@@ -241,7 +235,7 @@
                     <p class="text-xs text-muted-foreground">{facts.producer} · {facts.place}</p>
                     <!-- Inline, so that the facts wrap next to the badge rather than below it -->
                     <p class="mt-0.5 text-xs/6 text-muted-foreground">
-                        {@render colorBadge(wine, 'me-1')}
+                        {@render colorBadge(wine, 'me-1 [overflow-wrap:anywhere]')}
                         {facts.vintage} · {m['common.n_bottles']({ count: facts.bottleCount })} ·
                         {facts.price}
                     </p>

@@ -169,7 +169,7 @@ Revue du code du 2026-10-08, commit `556c7bb`. Ce fichier est la version pour le
 | 1.2.0 | P14 · Serveur MCP | Pour la 1.2.0, enchaînée juste après la 1.1.0 : un serveur MCP intégré à Cellar, pour les assistants d’IA du réseau local (décision « Serveur MCP (P14) »), et la description OpenAPI de l’API, tirée des mêmes schémas zod. Lots : 1. SEC-11, API-14 (faits le 2026-10-31) ; 2. API-10, API-15 (faits le 2026-10-31) ; 3. API-11, DOC-06 (faits le 2026-10-31) ; BUG-25 ; puis REL-08. Publiée en 1.2.0 le 2026-10-31. | SEC-11, API-14, API-10, API-11, API-15, DOC-06, BUG-25, REL-08 | 8 / 8 |
 | 1.3.0 | P15 · Navigation, photos et achats | Pour la 1.3.0 (décision « Versions de 1.3.0 à 1.7.0 ») : le menu par sections d’abord, parce que les pages qui suivent s’y rangent, puis les photos d’étiquette et la page Achats, dont les envies réutilisent l’envoi de photo. Lots, chacun mergé avant le suivant, résumé 1.3.0 : 1. UI-28 et FEAT-01 en parallèle (faits le 2026-10-31) (le menu et les photos ne touchent pas les mêmes fichiers) ; 2. FEAT-02, qui a besoin des deux (fait le 2026-11-01) ; 3. DEP-09 ; puis REL-09. Publiée en 1.3.0 le 2026-11-01. Si la phase traîne, la page Achats peut partir d’abord avec des envies en texte seul. | UI-28, FEAT-01, FEAT-02, DEP-09, REL-09 | 5 / 5 |
 | 1.3.1 | P15b · Correctifs de la 1.3.0 | Pour la 1.3.1, avant P16 (décision « Version corrective 1.3.1 ») : UI-31 (fait le 2026-11-01) ; puis REL-14. Publiée en 1.3.1 le 2026-11-01. | UI-31, REL-14 | 2 / 2 |
-| 1.3.2 | P15c · Cartes de vin | Pour la 1.3.2, avant P16 (décisions « Cartes de vin (UI-32) » et « Version corrective 1.3.1 », qui vaut aussi pour la 1.3.2) : UI-32 ; puis REL-15. | UI-32, REL-15 | 1 / 2 |
+| 1.3.2 | P15c · Cartes de vin | Pour la 1.3.2, avant P16 (décisions « Cartes de vin (UI-32) » et « Version corrective 1.3.1 », qui vaut aussi pour la 1.3.2) : UI-32 (fait le 2026-11-01) ; puis REL-15. Publiée en 1.3.2 le 2026-11-01. | UI-32, REL-15 | 2 / 2 |
 | 1.4.0 | P16 · Couleurs et plan de la cave | Pour la 1.4.0 : les couleurs des vins, puis le plan de la cave, qui s’appuie dessus. Ordre : FEAT-10 (vue liste, demandée avec UI-32) ; FEAT-03 ; FEAT-04 ; DEP-10 ; puis REL-10. | FEAT-10, FEAT-03, FEAT-04, DEP-10, REL-10 | 0 / 5 |
 | 1.5.0 | P17 · À boire et dégustation | Pour la 1.5.0 : la vie d’une bouteille jusqu’à ce qu’on la boive. Les deux tâches ajoutent leur repère et leur fiche à la liste d’une case du plan (FEAT-04). Ordre : FEAT-05 et FEAT-06 ; puis REL-11. | FEAT-05, FEAT-06, REL-11 | 0 / 3 |
 | 1.6.0 | P18 · Producteurs et revue de l’import | Pour la 1.6.0 : les producteurs d’abord, parce que la revue de l’import doit savoir relier ou créer un producteur. Ordre : FEAT-07 ; FEAT-08 ; puis REL-12. | FEAT-07, FEAT-08, REL-12 | 0 / 3 |
@@ -3310,7 +3310,7 @@ Sévérité **évolution** · effort **S** · dépend de UI-31 · statut **Fait*
 
 ## P15c · Cartes de vin (1.3.2)
 
-Pour la 1.3.2, avant P16 (décisions « Cartes de vin (UI-32) » et « Version corrective 1.3.1 », qui vaut aussi pour la 1.3.2) : UI-32 ; puis REL-15.
+Pour la 1.3.2, avant P16 (décisions « Cartes de vin (UI-32) » et « Version corrective 1.3.1 », qui vaut aussi pour la 1.3.2) : UI-32 (fait le 2026-11-01) ; puis REL-15. Publiée en 1.3.2 le 2026-11-01.
 
 ### UI-32 · Cartes de vin identiques, sans texte coupé pour de bon
 
@@ -3328,6 +3328,8 @@ Sévérité **mineur** · effort **M** · dépend de REL-14 · statut **Fait**
 - Toutes les cartes ont exactement la même taille : chaque champ tient sur une ligne, la description a toujours deux lignes réservées. Un texte réellement coupé (mesuré, pas deviné) s’estompe à droite et défile au survol de la carte ; aucun mouvement avec `prefers-reduced-motion`. Sur un écran sans survol, le nom a deux lignes réservées. Images masquées : la photo disparaît, les cartes restent identiques entre elles.
 - Grille : des cartes de 340 px au moins (`auto-fill`), une colonne sur téléphone ; plus de paliers de colonnes fixes. Retirer les règles `.wine-cards-grid` et `.wine-card-*` de `app.css` si plus rien ne s’en sert.
 - Curseur main sur tous les boutons de l’app (Trouvé pendant UI-31) : une règle de base, comme le recommande Tailwind 4, plutôt que bouton par bouton.
+- Fait en P15c (2026-11-01, 1a00c279..6137093a) : carte C3 dans `WineCard.svelte` avec un composant `ScrollingText` (mesure du texte coupé, dégradé, défilement au survol, rien avec `prefers-reduced-motion`, clics transmis au lien de la carte) ; toutes les cartes à 272 px de haut (292 px sur écran tactile), avec ou sans images, dans 12 vues mesurées ; grille de 340 px au moins ; main sur tous les boutons par une règle de base. Écarts validés par le mainteneur : badges dans l’ordre type, couleur, note ; « Aucune description disponible » ; pas d’infobulle sur la description. Deux revues, tout réglé sauf l’infobulle du nom qui couvre toute la carte (antérieure, gardée) ; CI 41313969577 verte.
+- Trouvé pendant UI-32 : l’infobulle du nom (`title`) s’affiche au survol de toute la carte, parce que le lien du nom la couvre (`wines/WineCard.svelte`) ; antérieur à la 1.3.2.
 
 **Critère d’acceptation** : Captures avant et après, téléphone et ordinateur, clair et sombre, avec et sans images : cartes de même hauteur avec des noms, classements et descriptions de longueurs différentes ; défilement au survol d’un texte coupé seulement ; grille qui perd une colonne en rétrécissant ; main sur les boutons ; testé.
 
@@ -3335,7 +3337,9 @@ Sévérité **mineur** · effort **M** · dépend de REL-14 · statut **Fait**
 
 ### REL-15 · Publication de la 1.3.2
 
-Sévérité **évolution** · effort **S** · dépend de UI-32 · statut **À faire**
+Sévérité **évolution** · effort **S** · dépend de UI-32 · statut **Fait**
+
+**Suivi** (2026-11-01) : 856f70ee
 
 **Problème** : La 1.3.2 apporte les nouvelles cartes de vin sans attendre la 1.4.0.
 
@@ -3344,6 +3348,7 @@ Sévérité **évolution** · effort **S** · dépend de UI-32 · statut **À fa
 **À faire**
 
 - Résumé 1.3.2 ; bancs depuis la 1.3.1 et la 1.0.0 ; release selon RELEASING.md, avec le mainteneur ; puis develop repasse à 1.4.0-rc.0 avec l’entrée 1.4.0 de `releases.json`.
+- Fait en P15c (2026-11-01) : bancs de la 1.3.1 et de la 1.0.0 vers la 1.3.2, 176 sur 176 chacun ; CI 41314278090 verte ; `main` avancée, tag v1.3.2, release 41314659498 verte ; image publique sans connexion (`1.3.2`, `1.3`, `latest`, amd64 et arm64). develop repasse à 1.4.0-rc.0 (80ea8300), avec l’entrée 1.4.0 qui annonce aussi la vue liste.
 
 **Critère d’acceptation** : v1.3.2 est publiée sur `main` et son image se télécharge sans connexion ; develop repasse à 1.4.0-rc.0.
 

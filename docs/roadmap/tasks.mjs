@@ -51,6 +51,7 @@ export const versions = [
 	{
 		id: '1.3.2',
 		title: 'Cartes de vin',
+		released: '2026-11-01',
 		goal: 'Des cartes de vin toutes identiques, où rien n’est coupé pour de bon : photo en portrait, une ligne par champ, défilement au survol, et une grille qui retire une colonne plutôt que de serrer les cartes.'
 	},
 	{
@@ -182,7 +183,7 @@ export const phases = [
 		id: 'P15c',
 		version: '1.3.2',
 		title: 'Cartes de vin',
-		goal: 'Pour la 1.3.2, avant P16 (décisions « Cartes de vin (UI-32) » et « Version corrective 1.3.1 », qui vaut aussi pour la 1.3.2) : UI-32 ; puis REL-15.'
+		goal: 'Pour la 1.3.2, avant P16 (décisions « Cartes de vin (UI-32) » et « Version corrective 1.3.1 », qui vaut aussi pour la 1.3.2) : UI-32 (fait le 2026-11-01) ; puis REL-15. Publiée en 1.3.2 le 2026-11-01.'
 	},
 	{
 		id: 'P16',
@@ -2536,7 +2537,9 @@ export const tasks = [
 			'Carte horizontale de la maquette C3 (https://claude.ai/artifact/9GrYNvpP1LUCF8jfT3Rwze, planche « C3 ») : photo principale en portrait, 100 × 140 px, à gauche ; à droite, le nom, puis producteur · région sur une ligne, puis les badges (type, couleur, note), puis la fiche classement, millésime et prix, chacun derrière une icône (`Award`, `Calendar`, `Coins` de `@lucide/svelte`) avec son libellé pour les lecteurs d’écran et au survol de l’icône ; dessous, deux lignes réservées à la description, « Aucune description » sinon ; en bas, une barre : nombre de bouteilles, ajouter une bouteille, signet, modifier, dupliquer.',
 			'Toutes les cartes ont exactement la même taille : chaque champ tient sur une ligne, la description a toujours deux lignes réservées. Un texte réellement coupé (mesuré, pas deviné) s’estompe à droite et défile au survol de la carte ; aucun mouvement avec `prefers-reduced-motion`. Sur un écran sans survol, le nom a deux lignes réservées. Images masquées : la photo disparaît, les cartes restent identiques entre elles.',
 			'Grille : des cartes de 340 px au moins (`auto-fill`), une colonne sur téléphone ; plus de paliers de colonnes fixes. Retirer les règles `.wine-cards-grid` et `.wine-card-*` de `app.css` si plus rien ne s’en sert.',
-			'Curseur main sur tous les boutons de l’app (Trouvé pendant UI-31) : une règle de base, comme le recommande Tailwind 4, plutôt que bouton par bouton.'
+			'Curseur main sur tous les boutons de l’app (Trouvé pendant UI-31) : une règle de base, comme le recommande Tailwind 4, plutôt que bouton par bouton.',
+			'Fait en P15c (2026-11-01, 1a00c279..6137093a) : carte C3 dans `WineCard.svelte` avec un composant `ScrollingText` (mesure du texte coupé, dégradé, défilement au survol, rien avec `prefers-reduced-motion`, clics transmis au lien de la carte) ; toutes les cartes à 272 px de haut (292 px sur écran tactile), avec ou sans images, dans 12 vues mesurées ; grille de 340 px au moins ; main sur tous les boutons par une règle de base. Écarts validés par le mainteneur : badges dans l’ordre type, couleur, note ; « Aucune description disponible » ; pas d’infobulle sur la description. Deux revues, tout réglé sauf l’infobulle du nom qui couvre toute la carte (antérieure, gardée) ; CI 41313969577 verte.',
+			'Trouvé pendant UI-32 : l’infobulle du nom (`title`) s’affiche au survol de toute la carte, parce que le lien du nom la couvre (`wines/WineCard.svelte`) ; antérieur à la 1.3.2.'
 		],
 		done: 'Captures avant et après, téléphone et ordinateur, clair et sombre, avec et sans images : cartes de même hauteur avec des noms, classements et descriptions de longueurs différentes ; défilement au survol d’un texte coupé seulement ; grille qui perd une colonne en rétrécissant ; main sur les boutons ; testé.',
 		deps: ['REL-14'], src: ['Décision « Cartes de vin (UI-32) »']
@@ -2547,7 +2550,8 @@ export const tasks = [
 		why: 'La 1.3.2 apporte les nouvelles cartes de vin sans attendre la 1.4.0.',
 		where: ['releases.json', 'CHANGELOG.md', 'UPGRADING.md', 'package.json'],
 		todo: [
-			'Résumé 1.3.2 ; bancs depuis la 1.3.1 et la 1.0.0 ; release selon RELEASING.md, avec le mainteneur ; puis develop repasse à 1.4.0-rc.0 avec l’entrée 1.4.0 de `releases.json`.'
+			'Résumé 1.3.2 ; bancs depuis la 1.3.1 et la 1.0.0 ; release selon RELEASING.md, avec le mainteneur ; puis develop repasse à 1.4.0-rc.0 avec l’entrée 1.4.0 de `releases.json`.',
+			'Fait en P15c (2026-11-01) : bancs de la 1.3.1 et de la 1.0.0 vers la 1.3.2, 176 sur 176 chacun ; CI 41314278090 verte ; `main` avancée, tag v1.3.2, release 41314659498 verte ; image publique sans connexion (`1.3.2`, `1.3`, `latest`, amd64 et arm64). develop repasse à 1.4.0-rc.0 (80ea8300), avec l’entrée 1.4.0 qui annonce aussi la vue liste.'
 		],
 		done: 'v1.3.2 est publiée sur `main` et son image se télécharge sans connexion ; develop repasse à 1.4.0-rc.0.',
 		deps: ['UI-32'], src: ['Décision « Version corrective 1.3.1 »']

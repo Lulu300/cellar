@@ -108,7 +108,8 @@
                     {wine.producer || m['wines.unknown_producer']()} · {wine.region}, {wine.country}
                 </ScrollingText>
             </div>
-            <ScrollingText>
+            <!-- Without the text line's own height, which would push the badges down -->
+            <ScrollingText class="leading-none">
                 <span class="inline-flex gap-1">
                     <Badge class="{typeBadgeClass(wine.type)} text-xs">{wine.type}</Badge>
                     <Badge class="{colorBadgeClass(wine.color)} text-xs">{wine.color}</Badge>

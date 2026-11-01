@@ -15,6 +15,7 @@ import {
     wineTypes
 } from './schema';
 import { blockingIssues } from '#lib/shared/labels.js';
+import { startingHex } from '#lib/shared/wine-colors.js';
 import { labelPresetSchema } from '#lib/shared/schemas/label.js';
 import { CSV_IMPORTS_DIR, DEFAULT_CSV_DIR } from '#lib/server/paths.js';
 import type { Tx } from './connection';
@@ -77,12 +78,23 @@ type Lookup =
     | [typeof wineClassifications, typeof wineClassifications.name]
     | [typeof wineFormats, typeof wineFormats.name];
 
-/** Inserts the names that `table` lacks in `column`, from the `name` column of `filename`. */
-function importLookupCsv(db: Tx, [table, column]: Lookup, filename: string) {
+/**
+ * Inserts the names that `table` lacks in `column`, from the `name` column of `filename`, each
+ * with the other columns that `more` gives its name.
+ */
+function importLookupCsv(
+    db: Tx,
+    [table, column]: Lookup,
+    filename: string,
+    more: (name: string) => object = () => ({})
+) {
     const records = readCsvRecords(filename, ['name']);
     if (!records?.length) return;
     const [key] = Object.entries(getTableColumns(table)).find(([, each]) => each === column)!;
-    const rows = records.map((record) => ({ [key]: record.name.trim() }));
+    const rows = records.map((record) => {
+        const name = record.name.trim();
+        return { ...more(name), [key]: name };
+    });
     // The names are unique: those already there are kept.
     const { changes } = db.insert(table).values(rows).onConflictDoNothing().run();
     console.log(`✓ ${filename}: ${changes} added`);
@@ -210,7 +222,10 @@ const CSV_SEEDS: [string, (db: Tx, filename: string) => unknown][] = [
     ],
     [
         'wine_colors.csv',
-        (db, filename) => importLookupCsv(db, [wineColors, wineColors.color], filename)
+        (db, filename) =>
+            importLookupCsv(db, [wineColors, wineColors.color], filename, (name) => ({
+                hex: startingHex(name)
+            }))
     ],
     [
         'classification.csv',

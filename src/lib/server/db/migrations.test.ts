@@ -8,13 +8,13 @@ import {
     countries,
     labelPresets,
     regions,
-    wineColors,
     wineDefinitions,
     wineTypes
 } from '#lib/server/db/schema.js';
 import { migrationsBefore, openOldDatabase } from '../../../test/database';
 import { LABEL_PRESETS_0_8_0, locationNames, writeUserCsv } from '../../../test/seed-files';
 import { DEFAULT_CSV_DIR } from '#lib/server/paths.js';
+import { NEUTRAL_HEX, startingHex } from '#lib/shared/wine-colors.js';
 import { seed } from './seed';
 
 type Db = typeof db;
@@ -80,7 +80,10 @@ describe('migration removing the appellation seeded from the CSV header', () => 
     it('keeps them when a wine uses the appellation', async () => {
         const { database, migrateSchema } = await seededBeforeTheFix();
         await database.insert(wineTypes).values({ id: 'still', type: 'Still', ...timestamps });
-        await database.insert(wineColors).values({ id: 'red', color: 'Red', ...timestamps });
+        // In SQL: the colours of older versions have no hex, which Drizzle's insert would give.
+        database.$client.exec(
+            "INSERT INTO wine_colors (id, color, created_at, updated_at) VALUES ('red', 'Red', 0, 0)"
+        );
         await database.insert(wineDefinitions).values({
             id: 'wine',
             name: 'Cuvée',
@@ -690,6 +693,8 @@ describe('migration fixing the shipped label presets', () => {
         // seed() now leaves aside the presets that the PDF refuses, which 0.8.0 seeded: they go
         // in as QR codes, then turn back into the barcodes they were.
         writeUserCsv('label_presets.csv', SHIPPED_BEFORE.replaceAll(',barcode,', ',qrcode,'));
+        // The colours of 0.8.0 have no hex, which seed() now gives them: the presets need none.
+        writeUserCsv('wine_colors.csv', 'name\n');
         seed(database);
         database.update(labelPresets).set({ codeType: 'barcode' }).run();
         for (const [name, choice] of Object.entries(CHOICES)) {
@@ -1051,5 +1056,46 @@ describe('migration removing the negative prices and values', () => {
             { id: 'full', purchase_price: null, notes: 'f'.repeat(5_000) },
             { id: 'near', purchase_price: null, notes: `${'n'.repeat(4_991)}\nPurchase` }
         ]);
+    });
+});
+
+describe('migration giving the wine colours their colour value', () => {
+    const TAG = '0018_wine_color_hex';
+    let migrationsFolder = '';
+    beforeAll(() => {
+        migrationsFolder = migrationsBefore(TAG);
+    });
+    afterAll(() => rmSync(migrationsFolder, { recursive: true, force: true }));
+
+    // The seeded names, translated or written otherwise, and colours the user made.
+    const NAMES = [
+        'Rouge',
+        'Blanc',
+        'Rosé',
+        'Jaune',
+        'N/A',
+        'red',
+        ' WHITE ',
+        'ROSÉ',
+        'rose',
+        'Yellow',
+        'Orange',
+        'Effervescent'
+    ];
+
+    it('gives each colour the one that startingHex gives its name, the neutral grey to the others', () => {
+        const database = openOldDatabase(':memory:', migrationsFolder);
+        const insert = database.$client.prepare('INSERT INTO wine_colors VALUES (?, ?, 0, 0)');
+        NAMES.forEach((name, index) => insert.run(`c${index}`, name));
+
+        migrateSchema(database);
+
+        const rows = database.$client
+            .prepare('SELECT color, hex FROM wine_colors ORDER BY rowid')
+            .all() as { color: string; hex: string }[];
+        expect(rows).toEqual(NAMES.map((name) => ({ color: name, hex: startingHex(name) })));
+        expect(rows.find((row) => row.color === 'Orange')?.hex).toBe(NEUTRAL_HEX);
+        expect(rows.find((row) => row.color === 'ROSÉ')?.hex).toBe(startingHex('Rosé'));
+        expect(new Set(rows.map((row) => row.hex)).size).toBe(5);
     });
 });

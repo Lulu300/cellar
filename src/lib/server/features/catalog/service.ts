@@ -13,7 +13,8 @@ import { listBottlesWithoutDefinitions } from '#lib/server/features/bottles/serv
 import { followMainPhotoChange } from '#lib/server/features/images/service.js';
 import { createLookupCrud } from '#lib/server/features/shared/lookup-crud.js';
 import { ConflictError, NotFoundError } from '#lib/server/http/errors.js';
-import { namedSchema } from '#lib/shared/schemas/reference.js';
+import { namedSchema, wineColorBodySchema } from '#lib/shared/schemas/reference.js';
+import { startingHex } from '#lib/shared/wine-colors.js';
 import type { WineDefinitionInput } from '#lib/shared/schemas/wine.js';
 import {
     countBottlesOf,
@@ -41,7 +42,8 @@ export const wineTypeHandlers = createLookupCrud({
 export const wineColorHandlers = createLookupCrud({
     table: wineColors,
     nameColumn: 'color',
-    schema: namedSchema,
+    schema: wineColorBodySchema,
+    defaults: ({ name }) => ({ hex: startingHex(name) }),
     usage: { column: wineDefinitions.colorId, usedBy: 'wine_definitions' }
 });
 

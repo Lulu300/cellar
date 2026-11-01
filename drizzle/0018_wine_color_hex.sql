@@ -1,0 +1,1 @@
+ALTER TABLE `wine_colors` ADD `hex` text DEFAULT '#9ca3af' NOT NULL;

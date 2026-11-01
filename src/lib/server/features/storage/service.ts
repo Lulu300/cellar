@@ -7,6 +7,7 @@ import { containerLabel } from '#lib/shared/storage.js';
 import { compareText } from '#lib/utils/compare.js';
 import {
     allContainers,
+    bottleColorsByCase,
     caseIdsOf,
     caseLoads,
     containerNamed,
@@ -54,10 +55,14 @@ function byContainer<T extends { containerId: string }>(cases: T[]) {
 
 /**
  * What the storage page shows: every container, by the name it shows, with its cases in their order and the
- * bottles each one holds, as CaseLoad counts them.
+ * bottles each one holds, as CaseLoad counts them, with the colour value of each in `colors`.
  */
 export function storageOverview() {
-    return byContainer(caseLoads()).map(({ container, cases }) => ({ ...container, cases }));
+    const colors = bottleColorsByCase();
+    return byContainer(caseLoads()).map(({ container, cases }) => ({
+        ...container,
+        cases: cases.map((load) => ({ ...load, colors: colors.get(load.id) ?? [] }))
+    }));
 }
 
 /** Every case, in the order of the storage page. */

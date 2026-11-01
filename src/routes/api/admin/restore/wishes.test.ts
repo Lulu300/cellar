@@ -2,6 +2,7 @@ import { readFileSync, rmSync } from 'node:fs';
 import path from 'node:path';
 import { afterAll, beforeEach, describe, expect, it, vi } from 'vitest';
 import type { Db } from '#lib/server/db/connection.js';
+import { db } from '#lib/server/db/index.js';
 import {
     appellations,
     countries,
@@ -15,6 +16,7 @@ import {
 import { createWish, listWishes } from '#lib/server/features/wishlist/service.js';
 import { IMAGES_DIR } from '#lib/server/paths.js';
 import { wishSchema } from '#lib/shared/schemas/wish.js';
+import { startingHex } from '#lib/shared/wine-colors.js';
 import { migrationsBefore } from '../../../../test/database';
 import { jpegBytes } from '../../../../test/image';
 import { backupZip, restore } from '../../../../test/restore';
@@ -50,10 +52,10 @@ function fillCellar(backup: Db) {
         .insert(wineTypes)
         .values({ id: 'still', type: 'Still', ...timestamps })
         .run();
-    backup
-        .insert(wineColors)
-        .values({ id: 'red', color: 'Red', ...timestamps })
-        .run();
+    // In SQL: the colours of older versions have no hex, which Drizzle's insert would give.
+    backup.$client.exec(
+        "INSERT INTO wine_colors (id, color, created_at, updated_at) VALUES ('red', 'Red', 0, 0)"
+    );
     backup
         .insert(wineImages)
         .values({ id: 'label', filename: 'label.jpg', ...timestamps })
@@ -82,6 +84,10 @@ describe('POST /api/admin/restore and the wishlist', () => {
 
         expect((await restore(file)).status).toBe(200);
 
+        // Its colours get the colour value of their name (FEAT-03, migration 0019).
+        expect(db.select().from(wineColors).all()).toMatchObject([
+            { color: 'Red', hex: startingHex('Red') }
+        ]);
         expect(listWishes()).toEqual([]);
         createWish(wishSchema.parse({ definitionId: 'margaux', quantity: 3 }));
         expect(listWishes()).toMatchObject([

@@ -20,6 +20,7 @@ import { namedSchema, wineColorSchema, wineTypeSchema } from '#lib/shared/schema
 import { caseCapacitySchema, caseName, casePosition } from '#lib/shared/schemas/storage.js';
 import { GRAPE_MAX_LENGTH, wineDefinitionSchema } from '#lib/shared/schemas/wine.js';
 import { wishSchema } from '#lib/shared/schemas/wish.js';
+import { startingHex } from '#lib/shared/wine-colors.js';
 
 /**
  * The columns of a row of each table that an import takes, with the rules of the API: any other
@@ -32,7 +33,11 @@ const ROW_SCHEMAS = {
     appellations: appellationSchema,
     wineClassifications: namedSchema,
     wineTypes: wineTypeSchema,
-    wineColors: wineColorSchema,
+    // Exports made before 1.4.0 lack the colour value: a colour gets the one of its name.
+    wineColors: wineColorSchema.transform((color) => ({
+        ...color,
+        hex: color.hex ?? startingHex(color.color)
+    })),
     wineFormats: namedSchema,
     origins: namedSchema,
     storageContainers: z.object({ name, parentContainerId: optionalId }),
@@ -59,7 +64,7 @@ export type ImportedRow = Record<string, unknown>;
 /** The columns that an import takes from a row of `table`, each with its rule. */
 export function rowColumns(table: ExportTableName): Record<string, z.ZodType> {
     const schema = ROW_SCHEMAS[table];
-    // The image rows are a pipe that adds the path to the object read.
+    // The image and colour rows are a pipe that adds to the object read.
     return (schema instanceof z.ZodPipe ? schema.in : schema).shape;
 }
 

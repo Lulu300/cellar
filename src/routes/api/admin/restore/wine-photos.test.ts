@@ -5,7 +5,6 @@ import {
     appellations,
     countries,
     regions,
-    wineColors,
     wineDefinitions,
     wineImages,
     wineTypes
@@ -48,10 +47,10 @@ describe('POST /api/admin/restore of a backup made before wines had several phot
                     .insert(wineTypes)
                     .values({ id: 'still', type: 'Still', ...timestamps })
                     .run();
-                backup
-                    .insert(wineColors)
-                    .values({ id: 'red', color: 'Red', ...timestamps })
-                    .run();
+                // In SQL: the colours of older versions have no hex, which Drizzle's insert would give.
+                backup.$client.exec(
+                    "INSERT INTO wine_colors (id, color, created_at, updated_at) VALUES ('red', 'Red', 0, 0)"
+                );
                 backup
                     .insert(wineImages)
                     .values({ id: 'label', filename: 'label.jpg', ...timestamps })

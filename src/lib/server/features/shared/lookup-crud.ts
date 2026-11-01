@@ -14,8 +14,11 @@ import { normalized } from '#lib/server/features/shared/names.js';
 /** A row of a reference table as the API answers it: its name is `name` in every table. */
 type LookupRow = { id: string; name: string } & Record<string, unknown>;
 
-/** The fields of a POST or PUT body: the name, and the id of the parent row when there is one. */
-type Fields = { name: string } & Record<string, string>;
+/**
+ * The fields of a POST or PUT body: the name, the id of the parent row when there is one, and the
+ * table's other columns, such as the hex of a wine colour.
+ */
+type Fields = { name: string } & Record<string, string | undefined>;
 
 type RowsQuery = SQLiteSelect<string, 'sync', Database.RunResult>;
 
@@ -37,6 +40,8 @@ export interface LookupConfig<Table extends SQLiteTable> {
      * selects the name as `name` itself. By default, the table's columns with the name renamed.
      */
     rows?: (tx: Tx) => RowsQuery;
+    /** The values that a new row gets for the columns its body leaves out, from its fields. */
+    defaults?: (fields: Fields) => Partial<Table['$inferInsert']>;
     /** The foreign key of the rows that use this table, which keeps a used row from deletion. */
     usage: {
         column: AnySQLiteColumn;
@@ -103,7 +108,10 @@ export function createLookupCrud<Table extends SQLiteTable>(config: LookupConfig
 
             const { id } = tx
                 .insert(table)
-                .values(valuesOf(fields) as Table['$inferInsert'])
+                .values({
+                    ...config.defaults?.(fields),
+                    ...valuesOf(fields)
+                } as Table['$inferInsert'])
                 .returning({ id: idColumn })
                 .get() as { id: string };
             return { row: getRow(id, tx)!, created: true };

@@ -1,10 +1,11 @@
-import { and, asc, count, eq, inArray, sql } from 'drizzle-orm';
+import { and, asc, count, eq, inArray, isNotNull, sql } from 'drizzle-orm';
 import type { Tx } from '#lib/server/db/connection.js';
 import { db } from '#lib/server/db/index.js';
 import {
     storageCases,
     storageContainers,
     wineBottles,
+    wineColors,
     wineDefinitions,
     type StorageCase,
     type StorageContainer
@@ -154,6 +155,24 @@ export function caseLoads(caseIds?: string[], tx: Tx = db): CaseLoad[] {
         .groupBy(storageCases.id)
         .orderBy(...caseOrder)
         .all();
+}
+
+/**
+ * The colour value of each available bottle in a case, by case, the bottles of one wine colour
+ * together. Apart from caseLoads, which the writes run too: only the storage page needs it.
+ */
+export function bottleColorsByCase(): Map<string, string[]> {
+    const rows = db
+        .select({ caseId: wineBottles.storageCaseId, hex: wineColors.hex })
+        .from(wineBottles)
+        .innerJoin(wineDefinitions, eq(wineBottles.definitionId, wineDefinitions.id))
+        .innerJoin(wineColors, eq(wineDefinitions.colorId, wineColors.id))
+        .where(and(isAvailable, isNotNull(wineBottles.storageCaseId)))
+        .orderBy(wineColors.color)
+        .all();
+    const colors = new Map<string, string[]>();
+    for (const { caseId, hex } of rows) colors.set(caseId!, [...(colors.get(caseId!) ?? []), hex]);
+    return colors;
 }
 
 /**

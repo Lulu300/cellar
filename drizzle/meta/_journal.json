@@ -127,6 +127,20 @@
       "when": 1793482905456,
       "tag": "0017_wishes",
       "breakpoints": true
+    },
+    {
+      "idx": 18,
+      "version": "6",
+      "when": 1793570588275,
+      "tag": "0018_wine_color_hex",
+      "breakpoints": true
+    },
+    {
+      "idx": 19,
+      "version": "6",
+      "when": 1793570592282,
+      "tag": "0019_starting_wine_color_hex",
+      "breakpoints": true
     }
   ]
 }

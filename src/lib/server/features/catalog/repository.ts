@@ -45,6 +45,7 @@ function withLocation(row: DefinitionRow) {
         ...row.wine_definitions,
         type: row.wine_types.type,
         color: row.wine_colors.color,
+        colorHex: row.wine_colors.hex,
         classification: row.wine_classifications?.name ?? null,
         appellation: { ...row.appellations, region: { ...row.regions, country: row.countries } }
     };

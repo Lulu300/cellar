@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { createBottles } from '#lib/server/features/bottles/service.js';
+import { NEUTRAL_HEX } from '#lib/shared/wine-colors.js';
 import { fakeEvent } from '../../../../test/event';
 import { bottleData, insertWineDefinition } from '../../../../test/wine';
 import { GET } from './+server';
@@ -29,7 +30,9 @@ describe('GET /api/bottles/non-consumed', () => {
             id: 'margaux',
             name: 'Château Margaux',
             producer: null,
-            appellation: 'Margaux'
+            appellation: 'Margaux',
+            color: 'Red',
+            colorHex: NEUTRAL_HEX
         });
         expect(bottle).not.toHaveProperty('wineDefinition');
     });

@@ -106,6 +106,7 @@ function toBottleWithDefinition(row: BottleWithDefinitionRow) {
             ...row.wine_definitions,
             type: row.wine_types.type,
             color: row.wine_colors.color,
+            colorHex: row.wine_colors.hex,
             classification: row.wine_classifications?.name ?? null
         }
     };
@@ -154,6 +155,7 @@ export function listBottlesNotConsumed() {
         .select()
         .from(wineBottles)
         .innerJoin(wineDefinitions, eq(wineBottles.definitionId, wineDefinitions.id))
+        .innerJoin(wineColors, eq(wineDefinitions.colorId, wineColors.id))
         .leftJoin(storageCases, eq(wineBottles.storageCaseId, storageCases.id))
         .innerJoin(wineFormats, eq(wineBottles.formatId, wineFormats.id))
         .innerJoin(appellations, eq(wineDefinitions.appellationId, appellations.id))
@@ -172,6 +174,7 @@ export function listBottlesNotConsumed() {
             wine_formats,
             origins,
             wine_definitions,
+            wine_colors,
             appellations,
             storage_cases
         }) => ({
@@ -194,7 +197,9 @@ export function listBottlesNotConsumed() {
                 id: wine_definitions.id,
                 name: wine_definitions.name,
                 producer: wine_definitions.producer,
-                appellation: appellations.name
+                appellation: appellations.name,
+                color: wine_colors.color,
+                colorHex: wine_colors.hex
             },
             storageCase: storage_cases ? { id: storage_cases.id, name: storage_cases.name } : null
         })
@@ -292,13 +297,14 @@ export async function cellarStatistics() {
     const winesByColor = await db
         .select({
             color: wineColors.color,
+            hex: wineColors.hex,
             count: sql<number>`COUNT(DISTINCT ${wineBottles.id})`
         })
         .from(wineBottles)
         .innerJoin(wineDefinitions, eq(wineBottles.definitionId, wineDefinitions.id))
         .innerJoin(wineColors, eq(wineDefinitions.colorId, wineColors.id))
         .where(eq(wineBottles.availability, 'available'))
-        .groupBy(wineColors.color);
+        .groupBy(wineColors.id);
 
     // Wine distribution by country (top 10)
     const winesByCountry = await db

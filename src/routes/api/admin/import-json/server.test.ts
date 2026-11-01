@@ -32,6 +32,7 @@ import { backupTimestamp } from '#lib/server/features/backup/archive.js';
 import { listWinePhotos } from '#lib/server/features/images/service.js';
 import { storageOverview } from '#lib/server/features/storage/service.js';
 import { DATA_DIR, IMAGES_DIR, IMAGES_URL_PATH } from '#lib/server/paths.js';
+import { NEUTRAL_HEX, startingHex } from '#lib/shared/wine-colors.js';
 import { fakeEvent } from '../../../../test/event';
 import { failWrites } from '../../../../test/failing-write';
 import { insertWineDefinition } from '../../../../test/wine';
@@ -526,6 +527,26 @@ describe('POST /api/admin/import-json', () => {
         const [bottle] = await db.select().from(wineBottles);
         expect(wine.description).toBe(`${'a'.repeat(4_998)}\nb`);
         expect(bottle.notes).toBe('a'.repeat(4_999));
+    });
+
+    it('keeps the colour value of a wine colour, and gives one to a colour of an export before 1.4.0', async () => {
+        await db.update(wineColors).set({ hex: '#123456' });
+        const zip = await exportZip();
+        await db.update(wineColors).set({ hex: '#000000' });
+
+        expect((await importZip(zip)).status).toBe(200);
+        expect((await db.select().from(wineColors)).map(({ hex }) => hex)).toEqual(['#123456']);
+
+        const data = JSON.parse(JSON.stringify(await snapshot()));
+        delete data.wineColors[0].hex;
+        data.wineColors.push({ id: 'orange', color: 'Orange', ...timestamps });
+
+        expect((await importZip(craftedZip(data))).status).toBe(200);
+        const colors = await db.select().from(wineColors);
+        expect(Object.fromEntries(colors.map(({ color, hex }) => [color, hex]))).toEqual({
+            Red: startingHex('Red'),
+            Orange: NEUTRAL_HEX
+        });
     });
 
     // Versions before 1.1.0 counted an emoji as one character in a name, a producer or a grape

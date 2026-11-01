@@ -16,7 +16,8 @@ function container(name: string, cases: [id: string, name: string][]): StorageCo
             name: caseName,
             capacity: 6,
             containerId: 'rack',
-            bottles: 0
+            bottles: 0,
+            colors: []
         }))
     };
 }

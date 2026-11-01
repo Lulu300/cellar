@@ -19,6 +19,7 @@ import {
     writeUserCsv
 } from '../../../test/seed-files';
 import { CSV_IMPORTS_DIR, DEFAULT_CSV_DIR } from '#lib/server/paths.js';
+import { NEUTRAL_HEX } from '#lib/shared/wine-colors.js';
 import { seed, SeedingError } from './seed';
 
 describe('seed', () => {
@@ -48,6 +49,17 @@ describe('seed', () => {
                 showCodeValue: true
             })
         );
+    });
+
+    it('gives each seeded wine colour its starting colour', async () => {
+        const colors = await db.select().from(wineColors);
+        expect(Object.fromEntries(colors.map(({ color, hex }) => [color, hex]))).toEqual({
+            Rouge: '#7b1e2b',
+            Blanc: '#ead98b',
+            Rosé: '#f2a08c',
+            Jaune: '#d4952a',
+            'N/A': NEUTRAL_HEX
+        });
     });
 
     it('does not import the header line of appellations.csv', async () => {
@@ -278,8 +290,10 @@ describe('seed', () => {
         seed(db, { force: true });
 
         expect(readFileSync(editedFile, 'utf8')).toBe('name\nOrange\n');
-        const colors = (await db.select().from(wineColors)).map((color) => color.color);
-        expect(colors).toContain('Orange');
+        const colors = await db.select().from(wineColors);
+        expect(colors).toContainEqual(
+            expect.objectContaining({ color: 'Orange', hex: NEUTRAL_HEX })
+        );
     });
 
     // Only the user's copies can be fixed or deleted to get the defaults back. Root ignores the

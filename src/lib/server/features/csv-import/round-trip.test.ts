@@ -19,6 +19,7 @@ import {
 import { EXPORT_TABLE_NAMES, EXPORT_TABLES } from '#lib/server/features/backup/export.js';
 import { setAppSetting } from '#lib/server/features/settings/repository.js';
 import { IMAGES_URL_PATH } from '#lib/server/paths.js';
+import { NEUTRAL_HEX, startingHex } from '#lib/shared/wine-colors.js';
 import { exportCsvFiles } from '../../../../test/csv-export';
 import { fakeEvent } from '../../../../test/event';
 import { POST as importCsv } from '../../../../routes/api/admin/import-csv/+server';
@@ -51,7 +52,8 @@ beforeEach(() => {
         .run();
     db.insert(wineColors)
         .values([
-            { id: 'red', color: 'Red', ...timestamps },
+            // A colour value the user picked, which no name gives.
+            { id: 'red', color: 'Red', hex: '#aa0000', ...timestamps },
             { id: 'white', color: 'White', ...timestamps }
         ])
         .run();
@@ -203,6 +205,26 @@ describe('CSV export then import', () => {
 
         expect(summary).toMatchObject({ totalSkipped: 0, totalFailed: 0 });
         expect(await contents(await exportAll())).toEqual(await contents(files));
+    });
+
+    it('gives the colours of a file exported before 1.4.0, without hex, the colour of their name', async () => {
+        const files = await exportAll();
+        const colorFile = files.find((file) => file.name.includes('wineColors'))!;
+        expect(await colorFile.text()).toContain('#aa0000');
+        emptyCellar();
+
+        const { summary } = await importAll([
+            ...files.filter((file) => file !== colorFile),
+            new File(['color\nRed\nWhite\nOrange\n'], colorFile.name)
+        ]);
+
+        expect(summary).toMatchObject({ totalFailed: 0 });
+        const colors = db.select().from(wineColors).all();
+        expect(Object.fromEntries(colors.map(({ color, hex }) => [color, hex]))).toEqual({
+            Red: startingHex('Red'),
+            White: startingHex('White'),
+            Orange: NEUTRAL_HEX
+        });
     });
 
     it('reads a wine file given twice in one import as one, whatever the case', async () => {

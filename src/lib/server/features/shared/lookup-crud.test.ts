@@ -16,6 +16,7 @@ import {
     regionHandlers
 } from '#lib/server/features/geography/service.js';
 import { requiresSession } from '#lib/server/session.js';
+import { NEUTRAL_HEX, startingHex } from '#lib/shared/wine-colors.js';
 import { fakeEvent } from '../../../../test/event';
 import { bottleData, insertWineDefinition } from '../../../../test/wine';
 
@@ -369,6 +370,39 @@ describe('a row with a parent', () => {
             status: 200,
             body: { name: 'bordeaux', countryName: 'Spain' }
         });
+    });
+});
+
+describe('the colour of a wine colour', () => {
+    const path = '/api/wine-colors';
+    const create = (body: object) => send(wineColorHandlers, { method: 'POST', path, body });
+
+    it('starts with the colour of its name, or grey for a name the app does not know', async () => {
+        expect((await create({ name: 'Rosé' })).body.hex).toBe(startingHex('Rosé'));
+        expect((await create({ name: 'Orange' })).body.hex).toBe(NEUTRAL_HEX);
+    });
+
+    it('takes the colour of the body, in lower case', async () => {
+        const { status, body } = await create({ name: 'Gris', hex: '#C0FFEE' });
+        expect(status).toBe(201);
+        expect(body).toMatchObject({ name: 'Gris', hex: '#c0ffee' });
+    });
+
+    it('refuses a colour that is not #rrggbb with 422', async () => {
+        for (const hex of ['red', '#fff', '#12345g', '#1234567', '']) {
+            const { status, body } = await create({ name: `Bad ${hex}`, hex });
+            expect(status).toBe(422);
+            expect(body.error.details[0].path).toBe('hex');
+        }
+    });
+
+    it('keeps its colour when renamed without one, and takes a new one', async () => {
+        const { body: created } = await create({ name: 'Paille', hex: '#e6c86e' });
+        const rename = (body: object) =>
+            send(wineColorHandlers, { method: 'PUT', path, id: created.id, body });
+
+        expect((await rename({ name: 'Vin de paille' })).body.hex).toBe('#e6c86e');
+        expect((await rename({ name: 'Vin de paille', hex: '#aa7733' })).body.hex).toBe('#aa7733');
     });
 });
 

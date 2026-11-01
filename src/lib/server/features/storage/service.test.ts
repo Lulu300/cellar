@@ -1,7 +1,14 @@
 import { randomUUID } from 'node:crypto';
 import { beforeAll, beforeEach, describe, expect, it } from 'vitest';
+import { eq } from 'drizzle-orm';
 import { db } from '#lib/server/db/index.js';
-import { storageCases, storageContainers, wineBottles } from '#lib/server/db/schema.js';
+import {
+    storageCases,
+    storageContainers,
+    wineBottles,
+    wineColors,
+    wineDefinitions
+} from '#lib/server/db/schema.js';
 import type { BottleAvailability } from '#lib/shared/bottle-availability.js';
 import { failWrites } from '../../../../test/failing-write';
 import { insertWineDefinition } from '../../../../test/wine';
@@ -255,6 +262,45 @@ describe('the cases of a container', () => {
             ],
             ['A1', [['A11', 3]]]
         ]);
+    });
+
+    it('come with the colour value of each bottle in the cellar, those of a colour together', () => {
+        const now = new Date();
+        db.insert(wineColors)
+            .values({ id: 'white', color: 'White', hex: '#eeddaa', createdAt: now })
+            .onConflictDoNothing()
+            .run();
+        db.insert(wineDefinitions)
+            .values({
+                id: 'blanc',
+                name: 'Blanc',
+                appellationId: 'mgx',
+                typeId: 'still',
+                colorId: 'white',
+                createdAt: now
+            })
+            .onConflictDoNothing()
+            .run();
+        const { caseId } = rack(6);
+        const red = db.select().from(wineColors).where(eq(wineColors.id, 'red')).get()!.hex;
+        putBottles(caseId, 1);
+        for (const availability of ['available', 'consumed'] as const) {
+            db.insert(wineBottles)
+                .values({
+                    definitionId: 'blanc',
+                    formatId: 'bottle',
+                    storageCaseId: caseId,
+                    availability
+                })
+                .run();
+        }
+        putBottles(caseId, 1);
+        putBottles(caseId, 1, 'out_of_cellar');
+
+        const [load] = storageOverview()[0].cases;
+
+        expect(load.bottles).toBe(3);
+        expect(load.colors).toEqual([red, red, '#eeddaa']);
     });
 
     // Up to 0.7.0, the page sorted them by the name it shows, without "Column ".

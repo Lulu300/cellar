@@ -30,7 +30,7 @@ import {
     labelRangeSchema,
     labelSheetSchema
 } from '#lib/shared/schemas/label.js';
-import { namedSchema } from '#lib/shared/schemas/reference.js';
+import { namedSchema, wineColorBodySchema } from '#lib/shared/schemas/reference.js';
 import { containerSchema, newContainerSchema } from '#lib/shared/schemas/storage.js';
 import { wineDefinitionSchema } from '#lib/shared/schemas/wine.js';
 import { wishSchema } from '#lib/shared/schemas/wish.js';
@@ -246,7 +246,7 @@ const operations: Record<string, Operation> = {
         description: 'Only the appellations of this region.'
     }),
     ...referenceTable('/api/wine-types', namedSchema),
-    ...referenceTable('/api/wine-colors', namedSchema),
+    ...referenceTable('/api/wine-colors', wineColorBodySchema),
     ...referenceTable('/api/wine-classifications', namedSchema),
     ...referenceTable('/api/wine-formats', namedSchema),
     ...referenceTable('/api/origins', namedSchema),

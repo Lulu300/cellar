@@ -12,6 +12,7 @@ import {
 } from 'drizzle-orm/sqlite-core';
 import { BottleAvailability } from '#lib/shared/bottle-availability.js';
 import type { CodeType, PageFormat } from '#lib/shared/labels.js';
+import { NEUTRAL_HEX } from '#lib/shared/wine-colors.js';
 
 const AVAILABILITIES = Object.values(BottleAvailability)
     .map((value) => `'${value}'`)
@@ -183,6 +184,9 @@ export const wineTypes = sqliteTable('wine_types', {
 export const wineColors = sqliteTable('wine_colors', {
     id: id(),
     color: text('color').notNull().unique(),
+    // `#rrggbb`. SQLite's default fills the rows of earlier versions; migration 0019 then gives
+    // the seeded ones their colour (startingHex).
+    hex: text('hex').notNull().default(NEUTRAL_HEX),
     createdAt: timestamp('created_at'),
     updatedAt: timestamp('updated_at')
 });

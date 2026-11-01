@@ -448,9 +448,10 @@ entries with only the bottles still owned.
 - **Response:** `200` with an array, one entry per wine, in no particular order. Each entry has two
   fields:
   - `definition`: the wine, with its [wine fields](#wine-fields), `id`, `createdAt`, `updatedAt`,
-    the names `type` and `color`, the nested `appellation` (with its `region`, and the region's
-    `country`), and the flat names `appellationName`, `region` and `country`. `classification`,
-    `website` and `description` are left out when empty.
+    the names `type` and `color`, `colorHex` (the colour value of its color, see
+    [reference tables](#reference-tables)), the nested `appellation` (with its `region`, and the
+    region's `country`), and the flat names `appellationName`, `region` and `country`.
+    `classification`, `website` and `description` are left out when empty.
   - `bottles`: every bottle of the wine, whatever its availability, each as
     [`GET /api/bottles`](#get-apibottles) lists it but without its wine (`definition`), which the
     entry already gives. A wine without bottles has `bottles: []`.
@@ -469,6 +470,7 @@ entries with only the bottles still owned.
       "name": "Château Margaux",
       "type": "Still",
       "color": "Red",
+      "colorHex": "#7b1e2b",
       "appellationName": "Margaux",
       "region": "Bordeaux",
       "country": "France"
@@ -531,9 +533,9 @@ Lists every wine, without its bottles.
 - **Body:** none.
 - **Response:** `200` with an array of wines, in no particular order. Each has its
   [wine fields](#wine-fields) (empty ones as `null`, `grapeVarieties` as `[]`), `id`, `createdAt`,
-  `updatedAt`, the names `type`, `color` and `classification` (`null` when none), the nested
-  `appellation` (with its `region`, and the region's `country`), and the flat names
-  `appellationName`, `region` and `country`.
+  `updatedAt`, the names `type`, `color` and `classification` (`null` when none), `colorHex` (the
+  colour value of its color), the nested `appellation` (with its `region`, and the region's
+  `country`), and the flat names `appellationName`, `region` and `country`.
 - **Errors:** none besides the common ones.
 
 ```json
@@ -551,6 +553,7 @@ Lists every wine, without its bottles.
     "targetQuantity": 6,
     "type": "Still",
     "color": "Red",
+    "colorHex": "#7b1e2b",
     "classification": null,
     "appellation": {
       "id": "mgx",
@@ -746,7 +749,8 @@ Lists every bottle, whatever its availability, with its wine, format, case and o
     `updatedAt`) with its `container` (`id`, `name`, `parentContainerId`, `createdAt`, `updatedAt`),
     or `null`;
   - `definition`: the wine, with its [wine fields](#wine-fields), `id`, `createdAt`, `updatedAt` and
-    the names `type`, `color` and `classification`, but not its location;
+    the names `type`, `color` and `classification`, and `colorHex` (the colour value of its color),
+    but not its location;
   - `origin`: `{ "id", "name", "createdAt" }`, or `null`.
 - **Errors:** none besides the common ones.
 
@@ -777,6 +781,7 @@ Lists every bottle, whatever its availability, with its wine, format, case and o
       "name": "Château Margaux",
       "type": "Still",
       "color": "Red",
+      "colorHex": "#7b1e2b",
       "classification": null
     },
     "origin": null
@@ -921,7 +926,8 @@ them.
   `id`, `vintage`, `optimum`, `formatId`, `format` (name), `purchasePrice`, `purchaseDate`,
   `currentValue`, `currentValueDate`, `originId`, `origin` (`{ "id", "name" }` or `null`),
   `barcode`, `notes`, `availability`, `definition`, the wine
-  (`{ "id", "name", "producer", "appellation" }`, `appellation` being its name), and `storageCase`
+  (`{ "id", "name", "producer", "appellation", "color", "colorHex" }`, `appellation` and `color`
+  being names and `colorHex` the colour value of its color), and `storageCase`
   (`{ "id", "name" }` or `null`). It has no `storageCaseId` nor `consumedDate`.
 - **Errors:** none besides the common ones.
 
@@ -946,7 +952,9 @@ them.
       "id": "margaux",
       "name": "Château Margaux",
       "producer": null,
-      "appellation": "Margaux"
+      "appellation": "Margaux",
+      "color": "Red",
+      "colorHex": "#7b1e2b"
     },
     "storageCase": { "id": "5da8a7f8-…", "name": "A1" }
   }
@@ -963,7 +971,7 @@ The lists that wines and bottles pick from. They share one set of routes, with `
 | `regions`              | regions of a country      | `countryId`      | `countryName`                            | `?countryId=`   | `appellations`     |
 | `appellations`         | appellations of a region  | `regionId`       | `regionName`, `countryId`, `countryName` | `?regionId=`    | `wine_definitions` |
 | `wine-types`           | types (still, sparkling…) |                  |                                          |                 | `wine_definitions` |
-| `wine-colors`          | colors                    |                  |                                          |                 | `wine_definitions` |
+| `wine-colors`          | colors                    | `hex`            |                                          |                 | `wine_definitions` |
 | `wine-classifications` | classifications           |                  |                                          |                 | `wine_definitions` |
 | `wine-formats`         | bottle formats            |                  |                                          |                 | `bottles`          |
 | `origins`              | where bottles come from   |                  |                                          |                 | `bottles`          |
@@ -973,6 +981,13 @@ body field of its table. Every table calls its name `name` in the API, wine type
 included. Names are unique per table, and for regions and appellations per parent: two countries may
 each have a region called the same. Names are compared after trimming and without case: `Shop` and
 `shop` are the same name. Rows that an earlier version stored in two cases are kept as they are.
+
+A wine color also has `hex`, the colour that the app draws it in (storage places, badges, charts):
+`#rrggbb`, which the API takes in either case and stores in lower case. A new color sent without it
+gets the one of its name: the colors that Cellar installs (Rouge, Blanc, Rosé, Jaune and N/A, or
+their English names Red, White and Yellow, whatever their case and accents) get their own, any other
+name a neutral grey (`#9ca3af`). The colors of a cellar made before 1.4.0 got theirs the same way
+on the upgrade.
 
 ### `GET /api/{table}`
 
@@ -1010,6 +1025,7 @@ Adds a row to a reference table, or finds the row that already has the name.
 - **Body:** JSON:
   - `name`: string, required, 1-500 characters.
   - `countryId` (regions) or `regionId` (appellations): id of the parent, required.
+  - `hex` (wine colors): `#rrggbb`, optional: see the [table above](#reference-tables).
 - **Response:** `201` with the new row, or `200` with the existing row when one already has this
   name, whatever its case (`france` gives `France`), under this parent for regions and
   appellations, as `GET /api/{table}` lists it.
@@ -1022,11 +1038,12 @@ Adds a row to a reference table, or finds the row that already has the name.
 
 ### `PUT /api/{table}/{id}`
 
-Renames a row of a reference table, and for regions and appellations, sets its parent.
+Renames a row of a reference table, for regions and appellations sets its parent, and for wine
+colors its colour.
 
 - **Session:** required.
 - **Body:** JSON, as for [`POST /api/{table}`](#post-apitable): every field required, the parent id
-  included.
+  included, but the `hex` of a wine color, which keeps its colour when left out.
 - **Response:** `200` with the row as saved, as `GET /api/{table}` lists it.
 - **Errors:** `404 not_found` when the row does not exist; `409 duplicate_name` when another row of
   the table has the name, whatever its case (`FRANCE` when `France` exists; a row can still change
@@ -1070,7 +1087,8 @@ Gives the figures of the statistics page.
     price), `avgPurchasePrice` and `avgCurrentValue` (averages over the bottles that have one,
     `null` when none does).
   - `bottlesByAvailability`: `[{ "availability", "count" }]`, over every bottle.
-  - `winesByType` (`type`), `winesByColor` (`color`): `[{ <name>, "count" }]`.
+  - `winesByType` (`type`), `winesByColor` (`color`, and its colour value `hex`):
+    `[{ <name>, "count" }]`.
   - `winesByCountry` (`country`), `winesByRegion` (`id`, `region`, and the name of its `country`),
     `topProducers` (`producer`): at most 10, largest first. Two regions of the same name in two
     countries are two rows, told apart by their `id` and `country`.
@@ -1098,7 +1116,7 @@ Gives the figures of the statistics page.
     { "availability": "consumed", "count": 1 }
   ],
   "winesByType": [{ "type": "Still", "count": 2 }],
-  "winesByColor": [{ "color": "Red", "count": 2 }],
+  "winesByColor": [{ "color": "Red", "hex": "#7b1e2b", "count": 2 }],
   "winesByCountry": [{ "country": "France", "count": 2 }],
   "winesByRegion": [{ "id": "bdx", "region": "Bordeaux", "country": "France", "count": 2 }],
   "winesByVintage": [
@@ -2229,7 +2247,9 @@ pre-import export.
   container of more than 275 emoji, which 1.0.0 took, refuses the import (`422 invalid_export`,
   `invalid_row`): restore a backup zip instead, which keeps it whole. A negative purchase price or
   current value is removed and written into the bottle's notes, as the upgrade of an older database
-  does. While the import runs, other writes get `503 writes_held`.
+  does. A wine color without `hex`, from an export of a version before 1.4.0, gets the colour of
+  its name, as the upgrade gives it (see [reference tables](#reference-tables)). While the import
+  runs, other writes get `503 writes_held`.
 - **Errors:**
   - `422 invalid_export` when the file is not an export this version can import. `details` has
     `problem` (`unreadable`, `incomplete` with `tables`, the missing ones as one comma-separated
@@ -2656,6 +2676,10 @@ an earlier row of the import that was imported has the same values, whatever the
 rows that share these columns but differ in another one, such as the rating, each add a wine; a
 bottle row that names such a wine is reported with `several_wines`, in this import or a later one,
 since the bottle file cannot tell these wines apart.
+
+A wine color row without `hex`, from a file of a version before 1.4.0, gets the colour of its name
+(see [reference tables](#reference-tables)). A color already in the cellar keeps its own colour,
+as any row already there keeps its fields.
 
 A case row without `position`, added to a container that already has cases, goes after them. In a
 container that had none, the cases without `position` keep the order of the versions that did not

@@ -45,6 +45,7 @@ export const versions = [
 	{
 		id: '1.3.1',
 		title: 'Correctifs de la 1.3.0',
+		released: '2026-11-01',
 		goal: 'Les retouches demandées par le mainteneur après la 1.3.0 : l’écart entre les sections du menu et le badge toujours au premier plan, et le bouton de la liste d’envies (icône, curseur, survol en thème sombre).'
 	},
 	{
@@ -170,7 +171,7 @@ export const phases = [
 		id: 'P15b',
 		version: '1.3.1',
 		title: 'Correctifs de la 1.3.0',
-		goal: 'Pour la 1.3.1, avant P16 (décision « Version corrective 1.3.1 ») : UI-31 ; puis REL-14.'
+		goal: 'Pour la 1.3.1, avant P16 (décision « Version corrective 1.3.1 ») : UI-31 (fait le 2026-11-01) ; puis REL-14. Publiée en 1.3.1 le 2026-11-01.'
 	},
 	{
 		id: 'P16',
@@ -2493,7 +2494,9 @@ export const tasks = [
 		todo: [
 			'Menu : un peu plus d’écart entre les sections de la barre du haut, et le badge (nombre rouge ou point) toujours au-dessus du fond de survol ou de sélection des sections voisines ; la barre d’onglets du téléphone garde le même ordre d’empilement.',
 			'Liste d’envies : le signet de la bibliothèque d’icônes (`@lucide/svelte`) remplace le cœur partout (bouton des cartes et de la page d’un vin, menu, onglet et page vide de la liste), en couleur du thème comme les autres icônes ; vide hors de la liste, plein quand le vin y est (décision « Icône de la liste d’envies (1.3.1) »).',
-			'Bouton d’envie : curseur main au survol, et un survol visible dans tous les cas : clair et sombre, avec et sans photo.'
+			'Bouton d’envie : curseur main au survol, et un survol visible dans tous les cas : clair et sombre, avec et sans photo.',
+			'Fait en P15b (2026-11-01, 2b08f1f6..9a3668df) : badge du menu en z-10 et écart entre sections de 2 à 6 px ; `Bookmark` à la place de `Heart` (bouton, menu, page vide de la liste, texte d’aide) ; curseur main ; pastille de la photo couleur du thème au survol, signet plein avec un survol visible hors de la photo. Planche des vraies icônes montrée au mainteneur (le carré vert de la première venait de la photo factice). Deux revues, toutes leurs remarques réglées ; CI 41297343082 verte.',
+			'Trouvé pendant UI-31 : avec les réglages par défaut de Tailwind 4, tous les autres boutons gardent la flèche au survol : `iconButton` et `smallIconButton` de `wines/WineCard.svelte`, « Modifier » de `routes/wines/[id]/+page.svelte`, et le `Button` de shadcn (`components/ui/button/button.svelte`), donc tous les boutons de l’app.'
 		],
 		done: 'Captures avant et après, ordinateur et téléphone, clair et sombre : badge au premier plan au survol de la section voisine, signet vide et plein, survol visible sans photo en sombre ; testé.',
 		deps: ['REL-09'], src: ['Retours du mainteneur, 2026-11-01']
@@ -2504,7 +2507,8 @@ export const tasks = [
 		why: 'La 1.3.1 apporte les retouches de UI-31 sans attendre la 1.4.0.',
 		where: ['releases.json', 'CHANGELOG.md', 'UPGRADING.md', 'package.json'],
 		todo: [
-			'Résumé 1.3.1 ; bancs depuis la 1.3.0 et la 1.0.0 ; release selon RELEASING.md, publiée sans repasser par le mainteneur (son accord du 2026-11-01) ; puis develop repasse à 1.4.0-rc.0 avec l’entrée 1.4.0 de `releases.json`.'
+			'Résumé 1.3.1 ; bancs depuis la 1.3.0 et la 1.0.0 ; release selon RELEASING.md, publiée sans repasser par le mainteneur (son accord du 2026-11-01) ; puis develop repasse à 1.4.0-rc.0 avec l’entrée 1.4.0 de `releases.json`.',
+			'Fait en P15b (2026-11-01, 2c3defa7) : bancs de la 1.3.0 et de la 1.0.0 vers la 1.3.1, 176 sur 176 chacun ; CI 41297833466 verte ; `main` avancée, tag v1.3.1, release 41298096554 verte ; image publique sans connexion (`1.3.1`, `1.3`, `latest`, amd64 et arm64). develop repasse à 1.4.0-rc.0 (efc0c725), avec l’entrée 1.4.0 de `releases.json`.'
 		],
 		done: 'v1.3.1 est publiée sur `main` et son image se télécharge sans connexion ; develop repasse à 1.4.0-rc.0.',
 		deps: ['UI-31'], src: ['Décision « Version corrective 1.3.1 »']

@@ -4,6 +4,79 @@
 
 Upgrade actions are also collected in [UPGRADING.md](UPGRADING.md).
 
+## 1.3.0
+
+1.3.0 reorganises the menu into sections, lets you take and crop several photos of a wine, and adds a wishlist next to the wines to buy again.
+
+A wine can now have several photos. The wine list shows its main photo; the wine page shows them all, adds one, makes another the main photo or deletes one. On a phone, "Take a photo" opens the camera, and "Choose a file" picks an image, on a computer too. Before a photo is sent, a preview turns and crops it; it is then shrunk to about 1,600 pixels on its longest side and sent as JPEG, without its metadata, such as the position where it was taken. Images already stored stay as they are, each the main photo of its wines. Backups and data exports keep every photo; the CSV files still name only the main photo of a wine. Scripts find the new photo routes in docs/API.md.
+
+The menu now has four sections: Cellar (My Wines, Storage, Out of Cellar, History), Purchases, Statistics and Tools. Hovering a section, or reaching it with the keyboard, shows its pages, and a click opens its first one. Preferences, Admin and Logout are behind the gear. The shortage page is now Purchases › Shortage; its old address still leads there. Purchases shows the number of wines in shortage, and the wine list links to the bottles out of the cellar. On touch screens, the ☰ menu lists the sections, and on a phone, the app installed on the home screen has a tab bar at the bottom.
+
+Purchases now opens on a wishlist, next to the shortage, each tab with its count. Add a wine of your cellar with the heart on its card or its page, or type a name on the wishlist: a wine of the cellar is suggested, and any other name becomes a wish of its own, with a photo of the label if you like. Each wish takes a quantity and a note. "Add bottle" on a wish opens the usual bottle form; on a wish typed by name, "Create the wine" opens the wine form with that name and photo, then goes on to its bottles. Once you have added bottles of a wine on the wishlist, from there or anywhere else, the app asks whether to take it off the list: nothing leaves it without your say. Purchases shows the number of wines in shortage in red, or else a dot while the wishlist has wishes. Backups and data exports keep the wishlist; the CSV files leave it out. Admin › Images names the wishes that use an image. Scripts find the wishlist routes in docs/API.md, and an AI assistant can read the wishlist and, when you allow changes, add or remove wishes.
+
+The dependencies were reviewed again before this release. No package that the server installs in the Docker image had a newer fix published by 24 October, so the server keeps the packages and the Node.js 24.22.1 of 1.2.0. A few small libraries that the build puts into the pages, for dates and dialogs, and some development tools take their latest fixes. The dependency audit still lists the moderate minimatch advisory of 1.1.0: Cellar still never uses the part of the ZIP library that runs minimatch, and the fix, minimatch 11.0.1, is still too recent and not yet accepted by that library.
+
+### Upgrade actions
+
+None.
+
+### Changes
+
+#### Features
+
+- **db:** Add the wine_photos table for the other photos of a wine (a817adb)
+- **api:** List, add, choose and remove the photos of a wine (02b4e3b)
+- **wines:** Take, turn and crop wine photos, and show them all on the wine page (27b5bf2)
+- **navigation:** Group the menu into sections, with a gear and a tab bar (1bc0eea)
+- **wines:** Link to the bottles out of the cellar under the filters (631b920)
+- **db:** Add the wishes table of the wishlist (e0e7506)
+- **api:** List, add, change and remove wishes, kept by backups and exports (e8503b1)
+- **mcp:** Read and change the wishlist (d6dbb6d)
+- **purchases:** Add the wishlist tab, its menu signal and the flows from a wish to bottles (cf875b7)
+
+#### Bug fixes
+
+- **api:** Keep a replaced main photo among the wine's photos, and tidy imported ones (2518da7)
+- **wines:** Leave room to drag a small crop frame, and send nothing cancelled (77eaa0b)
+- **navigation:** Name the purchases tab before its count, set direct sections apart (e5f9f07)
+- **i18n:** Name the barcode page « Codes-barres » in French (1d0dc85)
+- **navigation:** Act on the review of the sections menu (0ae9ff7)
+- **purchases:** Act on the review of the wishlist (2b4ebb2)
+- **wines:** Put the heart of a wine card on its photo area (e0d142d)
+
+#### Refactoring
+
+- **navigation:** Act on the second review of the sections menu (d3745b7)
+- **i18n:** Name the key of the wine suggestions after its text (2d82ead)
+- **wines:** Name the overlay heart's prop and share the small card button class (77ef76c)
+
+#### Documentation
+
+- **release:** Describe the wine photos in the 1.3.0 summary (bd83d97)
+- **release:** Quote the button names as the English notes do (f967584)
+- **releases:** Describe the menu by sections in 1.3.0 (eda678a)
+- **release:** Describe the wishlist in the 1.3.0 summary (8f8f54c)
+- **release:** Say which dependency fixes 1.3.0 takes (b74a23e)
+
+#### Build and CI
+
+- **deps:** Update esbuild to 0.25.12 (815140b)
+- **deps:** Update @swc/helpers to 0.5.23 (2c547c1)
+- **deps:** Update ignore to 7.0.14 (c5f424e)
+- **deps:** Update style-to-object to 1.0.14 (a34e8c9)
+- **deps:** Update postcss-selector-parser to 7.1.7 (44ccd3e)
+- **deps:** Update smol-toml to 1.9.1 (f69ee02)
+- **deps:** Update tabbable to 6.5.1 (d609143)
+- **deps:** Update uuid to 14.0.3 (d536342)
+- **deps:** Update zimmerframe to 1.1.5 (5a805e7)
+- **deps:** Update magic-string to 1.4.3 (b025cb1)
+- Run the checks on ubuntu-24.04, like release.yml (12173b8)
+
+#### Other changes
+
+- **e2e:** Send a phone photo with EXIF data and check the stored file (9a1f87d)
+- **e2e:** Buy a wine of the wishlist in the wines journey (54d4dc7)
+
 ## 1.2.0
 
 1.2.0 adds an MCP server to Cellar, so that an AI assistant on your network can read your cellar and, if you allow it, update it, and publishes an OpenAPI description of the API.

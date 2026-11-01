@@ -10,7 +10,7 @@
     } from '@lucide/svelte';
     import { page } from '$app/state';
     import { Badge } from '#lib/components/ui/badge/index.js';
-    import { Button, buttonVariants } from '#lib/components/ui/button/index.js';
+    import { Button } from '#lib/components/ui/button/index.js';
     import { Card } from '#lib/components/ui/card/index.js';
     import * as DropdownMenu from '#lib/components/ui/dropdown-menu/index.js';
     import * as Table from '#lib/components/ui/table/index.js';
@@ -21,6 +21,7 @@
     import { auth } from '#lib/stores/auth.svelte.js';
     import { colorBadgeClass } from '#lib/utils/wine-badges.js';
     import { wineFacts } from './wine-facts.js';
+    import { iconButton } from './wine-list.js';
 
     type Wine = WineGroupDTO['definition'];
 
@@ -54,12 +55,6 @@
     // Loaded by the root layout, and reloaded after each change
     const wishedWines: Record<string, string> = $derived(page.data.wishedWines ?? {});
 
-    // Above the link that covers the row
-    const iconButton = buttonVariants({
-        variant: 'ghost',
-        size: 'icon',
-        class: 'relative z-10 text-muted-foreground'
-    });
     // Its ::after covers the row, which must be positioned: a click anywhere opens the wine.
     const nameLink =
         "font-semibold transition-colors after:absolute after:inset-0 after:content-[''] group-hover/row:text-primary-text";
@@ -79,6 +74,19 @@
             <ImageIcon class="size-4" aria-hidden="true" />
         </div>
     {/if}
+{/snippet}
+
+<!-- A colour of many words wraps inside its badge, which otherwise keeps its text on one line -->
+{#snippet colorBadge(wine: Wine, className = '')}
+    <Badge
+        class={[
+            colorBadgeClass(wine.color),
+            className,
+            'text-xs whitespace-normal [overflow-wrap:break-word]'
+        ]}
+    >
+        {wine.color}
+    </Badge>
 {/snippet}
 
 <!-- On a phone, the menu holds every action of the row; on a computer, the row shows the bottles,
@@ -170,7 +178,7 @@
                     </Table.Cell>
                     <Table.Cell class="text-muted-foreground {wrapping}">{facts.place}</Table.Cell>
                     <Table.Cell>
-                        <Badge class="{colorBadgeClass(wine.color)} text-xs">{wine.color}</Badge>
+                        {@render colorBadge(wine)}
                     </Table.Cell>
                     <Table.Cell>{facts.vintage}</Table.Cell>
                     <Table.Cell class="whitespace-normal">{facts.price}</Table.Cell>
@@ -227,9 +235,7 @@
                     <p class="text-xs text-muted-foreground">{facts.producer} · {facts.place}</p>
                     <!-- Inline, so that the facts wrap next to the badge rather than below it -->
                     <p class="mt-0.5 text-xs/6 text-muted-foreground">
-                        <Badge class="{colorBadgeClass(wine.color)} me-1 text-xs"
-                            >{wine.color}</Badge
-                        >
+                        {@render colorBadge(wine, 'me-1')}
                         {facts.vintage} · {m['common.n_bottles']({ count: facts.bottleCount })} ·
                         {facts.price}
                     </p>

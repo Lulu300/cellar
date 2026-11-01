@@ -1,5 +1,11 @@
 [
   {
+    "version": "1.4.0",
+    "summary": "1.4.0 adds a list view of the wines next to the cards, gives each wine colour a real colour, shown on the storage page, in the statistics and on the wine cards, and turns the storage page into a map of the cellar.",
+    "mandatoryStop": false,
+    "actions": []
+  },
+  {
     "version": "1.3.2",
     "summary": "1.3.2 redesigns the wine cards of the wine list.\n\nEach wine card is now laid out sideways, with a portrait photo on the left, and every card has the same size, with each detail always in the same place: the name, the producer and region, the badges, then the classification, vintage and price behind their icons, and two lines of description. A text too long for its line fades out, and scrolls to its end while you point at the card; on a touch screen, the name gets two lines. The bottles, add a bottle, the bookmark, edit and duplicate now sit in a bar at the bottom of the card. The list keeps cards wide enough to read and shows one column fewer when the window narrows, instead of squeezing them. Every button of the app now shows the hand pointer.",
     "mandatoryStop": false,

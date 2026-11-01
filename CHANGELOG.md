@@ -4,6 +4,37 @@
 
 Upgrade actions are also collected in [UPGRADING.md](UPGRADING.md).
 
+## 1.3.2
+
+1.3.2 redesigns the wine cards of the wine list.
+
+Each wine card is now laid out sideways, with a portrait photo on the left, and every card has the same size, with each detail always in the same place: the name, the producer and region, the badges, then the classification, vintage and price behind their icons, and two lines of description. A text too long for its line fades out, and scrolls to its end while you point at the card; on a touch screen, the name gets two lines. The bottles, add a bottle, the bookmark, edit and duplicate now sit in a bar at the bottom of the card. The list keeps cards wide enough to read and shows one column fewer when the window narrows, instead of squeezing them. Every button of the app now shows the hand pointer.
+
+### Upgrade actions
+
+None.
+
+### Changes
+
+#### Features
+
+- **ui:** Show the hand pointer on every button (9ecca10)
+- **wines:** Lay out every wine card the same, as the C3 mockup (96ad545)
+- **wines:** Fade and scroll the badge row of a card when it is cut (70340d0)
+
+#### Bug fixes
+
+- **wines:** Let clicks on a cut text through to the card's link (ed038c1)
+
+#### Documentation
+
+- **releases:** Describe the new wine cards in 1.3.2 (22b8982)
+- **releases:** The two-line name is for touch screens (95a9910)
+
+#### Other changes
+
+- **wines:** Line the badge row of a card up with its neighbours (18897dd)
+
 ## 1.3.1
 
 1.3.1 polishes the menu and the wishlist button of 1.3.0.

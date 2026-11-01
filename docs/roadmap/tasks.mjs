@@ -39,6 +39,7 @@ export const versions = [
 	{
 		id: '1.3.0',
 		title: 'Navigation, photos et achats',
+		released: '2026-11-01',
 		goal: 'Le menu par sections, dont dépend tout ce qui suit, les photos d’étiquette, et la liste d’envies, la fonctionnalité la plus demandée.'
 	},
 	{
@@ -158,7 +159,7 @@ export const phases = [
 		id: 'P15',
 		version: '1.3.0',
 		title: 'Navigation, photos et achats',
-		goal: 'Pour la 1.3.0 (décision « Versions de 1.3.0 à 1.7.0 ») : le menu par sections d’abord, parce que les pages qui suivent s’y rangent, puis les photos d’étiquette et la page Achats, dont les envies réutilisent l’envoi de photo. Lots, chacun mergé avant le suivant, résumé 1.3.0 : 1. UI-28 et FEAT-01 en parallèle (faits le 2026-10-31) (le menu et les photos ne touchent pas les mêmes fichiers) ; 2. FEAT-02, qui a besoin des deux (fait le 2026-11-01) ; 3. DEP-09 ; puis REL-09. Si la phase traîne, la page Achats peut partir d’abord avec des envies en texte seul.'
+		goal: 'Pour la 1.3.0 (décision « Versions de 1.3.0 à 1.7.0 ») : le menu par sections d’abord, parce que les pages qui suivent s’y rangent, puis les photos d’étiquette et la page Achats, dont les envies réutilisent l’envoi de photo. Lots, chacun mergé avant le suivant, résumé 1.3.0 : 1. UI-28 et FEAT-01 en parallèle (faits le 2026-10-31) (le menu et les photos ne touchent pas les mêmes fichiers) ; 2. FEAT-02, qui a besoin des deux (fait le 2026-11-01) ; 3. DEP-09 ; puis REL-09. Publiée en 1.3.0 le 2026-11-01. Si la phase traîne, la page Achats peut partir d’abord avec des envies en texte seul.'
 	},
 	{
 		id: 'P16',
@@ -2451,7 +2452,9 @@ export const tasks = [
 			'Comme DEP-07 et DEP-08 : correctifs publiés depuis au moins 7 jours, une mise à jour par commit, portes à chaque fois ; revoir l’alerte minimatch (readdir-glob ou archiver acceptent-ils minimatch 11 ?) ; `pnpm audit --prod` vide ou chaque alerte justifiée.',
 			'Trouvé pendant DEP-08 : `ci.yml` tourne sur `ubuntu-latest`, qui passe à Ubuntu 26, alors que `release.yml` fixe `ubuntu-24.04`.',
 			'Lot 3 de P15, juste avant la release.',
-			'Choix du mainteneur (2026-11-01) : publier la 1.3.0 sans attendre ; DEP-09 ne prend que ce qui est éligible le jour même, le reste passe à DEP-10 (P16).'
+			'Choix du mainteneur (2026-11-01) : publier la 1.3.0 sans attendre ; DEP-09 ne prend que ce qui est éligible le jour même, le reste passe à DEP-10 (P16).',
+			'Fait en P15 (2026-11-01, fe9cc7b6..b74a23ee) : dix correctifs du fichier de verrouillage, tous hors des paquets du serveur dans l’image (esbuild, tabbable, uuid, zimmerframe, magic-string…) ; `ci.yml` sur `ubuntu-24.04` comme `release.yml` ; aucune dépendance directe, action ni image de base n’avait de correctif de 7 jours ; l’image garde les paquets et Node 24.22.1 de la 1.2.0 ; l’alerte minimatch reste acceptée (readdir-glob 3.0.0 et archiver 8.0.0 n’ont pas bougé). La liste datée de ce qui devient éligible du 2026-11-01 au 2026-11-06 est pour DEP-10.',
+			'Trouvé pendant DEP-09 : alerte basse GHSA-gcqx-w48m-w2h4 sur deepmerge 4.3.1, par vite-plugin-svelte, outil de développement seulement, sans correctif publié ; DEP-08 n’avait parcouru que les dépendances du serveur : DEP-10 parcourt tout le fichier de verrouillage (`scripts/lockfile-patches.mjs` des preuves de DEP-09).'
 		],
 		done: 'Chaque dépendance, action et image de base est à son dernier correctif publié depuis au moins 7 jours, ou l’écart est justifié ; `pnpm audit --prod` vide ou chaque alerte justifiée.',
 		deps: ['DEP-08'], src: ['Trouvé pendant DEP-08', 'Décision « Alerte minimatch (DEP-08) »']
@@ -2462,7 +2465,8 @@ export const tasks = [
 		why: 'La 1.3.0 apporte aux utilisateurs ce que sa phase a livré.',
 		where: ['releases.json', 'CHANGELOG.md', 'UPGRADING.md'],
 		todo: [
-			'Résumé 1.3.0 complété à chaque tâche ; banc depuis la version précédente ; release selon RELEASING.md, avec le mainteneur.'
+			'Résumé 1.3.0 complété à chaque tâche ; banc depuis la version précédente ; release selon RELEASING.md, avec le mainteneur.',
+			'Fait en P15 (2026-11-01, 5bb5dfdd) : bancs de la 1.2.0 et de la 1.0.0 vers la 1.3.0, d’abord à 174 sur 176 : le nouveau champ `wishes` de `GET /api/admin/images` (FEAT-02) ; listes d’images identiques sans lui, vérifié par empreintes ; le banc ignore désormais ce champ à partir de la 1.3.0 (copie d’avant : `upgrade-test.sh.bak-before-1.3`), puis 176 sur 176 chacun. CI 41256340804 verte ; `main` avancée, tag v1.3.0, release 41256588054 verte ; image publique sans connexion (`1.3.0`, `1.3`, `latest`, amd64 et arm64). develop passe à 1.4.0-rc.0. Publiée sans attendre les correctifs du 2026-11-05, au choix du mainteneur (DEP-10).'
 		],
 		done: 'v1.3.0 est publiée sur `main` et son image se télécharge sans connexion ; develop passe à la rc suivante.',
 		deps: ['UI-28', 'FEAT-01', 'FEAT-02', 'DEP-09'], src: ['Décision « Versions après la 1.0 »']

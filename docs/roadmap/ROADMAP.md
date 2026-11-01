@@ -163,7 +163,7 @@ Revue du code du 2026-10-08, commit `556c7bb`. Ce fichier est la version pour le
 | 1.0.0 | P12 · Vérification d’avant 1.0 | Une revue complète en lecture seule après P11, comme l’audit d’avant 1.0 puis sa vérification : tout ce que l’audit demandait est fait, et le nettoyage n’a pas créé de nouveaux problèmes. Le mainteneur juge chaque constat : à corriger avant la 1.0 (tâches ajoutées ici) ou acceptable en l’état. Puis la 1.0.0, avec R2 de l’audit au tag : dépôt et image publics, protection de `main`. Revue faite le 2026-10-30 (QA-06). Lots des corrections, chacun mergé avant le suivant, résumé 1.0.0 : 1. SEC-12, API-12, BUG-22, BUG-23 ; 2. UI-21, UI-22, DEP-07 ; 3. DOC-04 (documentation d’après les deux premiers lots) ; 4. UI-23 ; puis REL-06, la publication, avec le mainteneur. Terminée le 2026-10-30 (develop 89d2c4c1), publiée en 1.0.0 le 2026-10-30. Lots 1 à 4 faits le 2026-10-30, puis la 1.0.0 publiée le même jour (tag v1.0.0 sur 8ad43dff) ; depuis le lot 2, le dépôt public repart d’un nouveau commit racine (décision « Nouveau départ à la 1.0 (REL-06) »). | QA-06, SEC-12, API-12, BUG-22, BUG-23, UI-21, UI-22, DEP-07, DOC-04, UI-23, REL-06 | 11 / 11 |
 | 1.1.0 | P13 · Finitions et installation | Pour la 1.1.0, juste après la 1.0.0 : ce que voit d’abord un nouveau visiteur (installation dans le README, liens vers la doc de l’API), l’app installable sur le téléphone (PWA), et les finitions notées pendant P12 (décision « Versions après la 1.0 »). Lots, chacun mergé avant le suivant, résumé 1.1.0 (lots 1 à 3 faits le 2026-10-31, publiée en 1.1.0 le même jour) : 1. DOC-05, UI-27, SEC-13, BUG-24 ; 2. UI-24, UI-25, API-13 ; 3. UI-26, UI-29, DEP-08 ; UI-30 ; puis REL-07. | DOC-05, UI-27, SEC-13, BUG-24, UI-24, UI-25, API-13, UI-26, UI-29, UI-30, DEP-08, REL-07 | 12 / 12 |
 | 1.2.0 | P14 · Serveur MCP | Pour la 1.2.0, enchaînée juste après la 1.1.0 : un serveur MCP intégré à Cellar, pour les assistants d’IA du réseau local (décision « Serveur MCP (P14) »), et la description OpenAPI de l’API, tirée des mêmes schémas zod. Lots : 1. SEC-11, API-14 (faits le 2026-10-31) ; 2. API-10, API-15 (faits le 2026-10-31) ; 3. API-11, DOC-06 (faits le 2026-10-31) ; BUG-25 ; puis REL-08. Publiée en 1.2.0 le 2026-10-31. | SEC-11, API-14, API-10, API-11, API-15, DOC-06, BUG-25, REL-08 | 8 / 8 |
-| 1.3.0 | P15 · Navigation, photos et achats | Pour la 1.3.0 (décision « Versions de 1.3.0 à 1.7.0 ») : le menu par sections d’abord, parce que les pages qui suivent s’y rangent, puis les photos d’étiquette et la page Achats, dont les envies réutilisent l’envoi de photo. Lots, chacun mergé avant le suivant, résumé 1.3.0 : 1. UI-28 et FEAT-01 en parallèle (faits le 2026-10-31) (le menu et les photos ne touchent pas les mêmes fichiers) ; 2. FEAT-02, qui a besoin des deux (fait le 2026-11-01) ; 3. DEP-09 ; puis REL-09. Si la phase traîne, la page Achats peut partir d’abord avec des envies en texte seul. | UI-28, FEAT-01, FEAT-02, DEP-09, REL-09 | 4 / 5 |
+| 1.3.0 | P15 · Navigation, photos et achats | Pour la 1.3.0 (décision « Versions de 1.3.0 à 1.7.0 ») : le menu par sections d’abord, parce que les pages qui suivent s’y rangent, puis les photos d’étiquette et la page Achats, dont les envies réutilisent l’envoi de photo. Lots, chacun mergé avant le suivant, résumé 1.3.0 : 1. UI-28 et FEAT-01 en parallèle (faits le 2026-10-31) (le menu et les photos ne touchent pas les mêmes fichiers) ; 2. FEAT-02, qui a besoin des deux (fait le 2026-11-01) ; 3. DEP-09 ; puis REL-09. Publiée en 1.3.0 le 2026-11-01. Si la phase traîne, la page Achats peut partir d’abord avec des envies en texte seul. | UI-28, FEAT-01, FEAT-02, DEP-09, REL-09 | 5 / 5 |
 | 1.4.0 | P16 · Couleurs et plan de la cave | Pour la 1.4.0 : les couleurs des vins, puis le plan de la cave, qui s’appuie dessus. Ordre : FEAT-03 ; FEAT-04 ; DEP-10 ; puis REL-10. | FEAT-03, FEAT-04, DEP-10, REL-10 | 0 / 4 |
 | 1.5.0 | P17 · À boire et dégustation | Pour la 1.5.0 : la vie d’une bouteille jusqu’à ce qu’on la boive. Les deux tâches ajoutent leur repère et leur fiche à la liste d’une case du plan (FEAT-04). Ordre : FEAT-05 et FEAT-06 ; puis REL-11. | FEAT-05, FEAT-06, REL-11 | 0 / 3 |
 | 1.6.0 | P18 · Producteurs et revue de l’import | Pour la 1.6.0 : les producteurs d’abord, parce que la revue de l’import doit savoir relier ou créer un producteur. Ordre : FEAT-07 ; FEAT-08 ; puis REL-12. | FEAT-07, FEAT-08, REL-12 | 0 / 3 |
@@ -3143,7 +3143,7 @@ Sévérité **évolution** · effort **S** · dépend de SEC-11, API-14, API-10,
 
 ## P15 · Navigation, photos et achats (1.3.0)
 
-Pour la 1.3.0 (décision « Versions de 1.3.0 à 1.7.0 ») : le menu par sections d’abord, parce que les pages qui suivent s’y rangent, puis les photos d’étiquette et la page Achats, dont les envies réutilisent l’envoi de photo. Lots, chacun mergé avant le suivant, résumé 1.3.0 : 1. UI-28 et FEAT-01 en parallèle (faits le 2026-10-31) (le menu et les photos ne touchent pas les mêmes fichiers) ; 2. FEAT-02, qui a besoin des deux (fait le 2026-11-01) ; 3. DEP-09 ; puis REL-09. Si la phase traîne, la page Achats peut partir d’abord avec des envies en texte seul.
+Pour la 1.3.0 (décision « Versions de 1.3.0 à 1.7.0 ») : le menu par sections d’abord, parce que les pages qui suivent s’y rangent, puis les photos d’étiquette et la page Achats, dont les envies réutilisent l’envoi de photo. Lots, chacun mergé avant le suivant, résumé 1.3.0 : 1. UI-28 et FEAT-01 en parallèle (faits le 2026-10-31) (le menu et les photos ne touchent pas les mêmes fichiers) ; 2. FEAT-02, qui a besoin des deux (fait le 2026-11-01) ; 3. DEP-09 ; puis REL-09. Publiée en 1.3.0 le 2026-11-01. Si la phase traîne, la page Achats peut partir d’abord avec des envies en texte seul.
 
 ### UI-28 · Menu par sections et barre d’onglets
 
@@ -3231,6 +3231,8 @@ Sévérité **mineur** · effort **S** · dépend de DEP-08 · statut **Fait**
 - Trouvé pendant DEP-08 : `ci.yml` tourne sur `ubuntu-latest`, qui passe à Ubuntu 26, alors que `release.yml` fixe `ubuntu-24.04`.
 - Lot 3 de P15, juste avant la release.
 - Choix du mainteneur (2026-11-01) : publier la 1.3.0 sans attendre ; DEP-09 ne prend que ce qui est éligible le jour même, le reste passe à DEP-10 (P16).
+- Fait en P15 (2026-11-01, fe9cc7b6..b74a23ee) : dix correctifs du fichier de verrouillage, tous hors des paquets du serveur dans l’image (esbuild, tabbable, uuid, zimmerframe, magic-string…) ; `ci.yml` sur `ubuntu-24.04` comme `release.yml` ; aucune dépendance directe, action ni image de base n’avait de correctif de 7 jours ; l’image garde les paquets et Node 24.22.1 de la 1.2.0 ; l’alerte minimatch reste acceptée (readdir-glob 3.0.0 et archiver 8.0.0 n’ont pas bougé). La liste datée de ce qui devient éligible du 2026-11-01 au 2026-11-06 est pour DEP-10.
+- Trouvé pendant DEP-09 : alerte basse GHSA-gcqx-w48m-w2h4 sur deepmerge 4.3.1, par vite-plugin-svelte, outil de développement seulement, sans correctif publié ; DEP-08 n’avait parcouru que les dépendances du serveur : DEP-10 parcourt tout le fichier de verrouillage (`scripts/lockfile-patches.mjs` des preuves de DEP-09).
 
 **Critère d’acceptation** : Chaque dépendance, action et image de base est à son dernier correctif publié depuis au moins 7 jours, ou l’écart est justifié ; `pnpm audit --prod` vide ou chaque alerte justifiée.
 
@@ -3238,7 +3240,9 @@ Sévérité **mineur** · effort **S** · dépend de DEP-08 · statut **Fait**
 
 ### REL-09 · Publication de la 1.3.0
 
-Sévérité **évolution** · effort **S** · dépend de UI-28, FEAT-01, FEAT-02, DEP-09 · statut **À faire**
+Sévérité **évolution** · effort **S** · dépend de UI-28, FEAT-01, FEAT-02, DEP-09 · statut **Fait**
+
+**Suivi** (2026-11-01) : Publiée le 2026-11-01 : tag v1.3.0 sur 5bb5dfdd, release 41256588054 verte, image publique 1.3.0 / 1.3 / latest (amd64, arm64) ; bancs 1.2.0 et 1.0.0 vers 1.3.0 à 176 sur 176 après avoir appris au banc le champ wishes.
 
 **Problème** : La 1.3.0 apporte aux utilisateurs ce que sa phase a livré.
 
@@ -3247,6 +3251,7 @@ Sévérité **évolution** · effort **S** · dépend de UI-28, FEAT-01, FEAT-02
 **À faire**
 
 - Résumé 1.3.0 complété à chaque tâche ; banc depuis la version précédente ; release selon RELEASING.md, avec le mainteneur.
+- Fait en P15 (2026-11-01, 5bb5dfdd) : bancs de la 1.2.0 et de la 1.0.0 vers la 1.3.0, d’abord à 174 sur 176 : le nouveau champ `wishes` de `GET /api/admin/images` (FEAT-02) ; listes d’images identiques sans lui, vérifié par empreintes ; le banc ignore désormais ce champ à partir de la 1.3.0 (copie d’avant : `upgrade-test.sh.bak-before-1.3`), puis 176 sur 176 chacun. CI 41256340804 verte ; `main` avancée, tag v1.3.0, release 41256588054 verte ; image publique sans connexion (`1.3.0`, `1.3`, `latest`, amd64 et arm64). develop passe à 1.4.0-rc.0. Publiée sans attendre les correctifs du 2026-11-05, au choix du mainteneur (DEP-10).
 
 **Critère d’acceptation** : v1.3.0 est publiée sur `main` et son image se télécharge sans connexion ; develop passe à la rc suivante.
 

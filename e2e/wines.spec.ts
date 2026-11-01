@@ -27,6 +27,22 @@ test('log in, add a wine and two bottles from the wine list, and buy a wine of t
 
     await addWine(page, 'Château Journey', 2);
 
+    // Every card has the same size, whatever the length of its texts: a name that does not fit
+    // is measured as cut and fades out, and the card still opens from anywhere. With reduced
+    // motion the fade stays on hover, over the card's link.
+    const longName = 'Clos des Grandes Vignes « Les Perrières » Vieilles Vignes';
+    await addWine(page, longName, 1);
+    const card = (name: string) =>
+        page.locator('[data-slot="card"]').filter({ has: page.getByRole('heading', { name }) });
+    const [long, short] = [card(longName), card('Château Journey')];
+    expect((await long.boundingBox())!.height).toBe((await short.boundingBox())!.height);
+    await expect(long.getByRole('heading').locator('.cut')).toHaveCount(1);
+    await expect(short.getByRole('heading').locator('.cut')).toHaveCount(0);
+    await page.emulateMedia({ reducedMotion: 'reduce' });
+    await long.click({ position: { x: 20, y: 100 } });
+    await expect(page.getByRole('heading', { level: 1, name: longName })).toBeVisible();
+    await page.emulateMedia({ reducedMotion: null });
+
     // A name typed on the wishlist, with a photo of its label, becomes a wine, then a bottle; the
     // wine leaves the wishlist only when the user says so (FEAT-02).
     await openFromMenu(page, 'Purchases', 'Wishlist');

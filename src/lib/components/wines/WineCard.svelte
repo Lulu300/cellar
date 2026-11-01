@@ -1,7 +1,17 @@
 <script lang="ts">
-    import { Copy, SquarePen, SquarePlus, Star } from '@lucide/svelte';
+    import {
+        Award,
+        Calendar,
+        Coins,
+        Copy,
+        Image,
+        SquarePen,
+        SquarePlus,
+        Star
+    } from '@lucide/svelte';
     import { Badge } from '#lib/components/ui/badge/index.js';
-    import { Card, CardContent } from '#lib/components/ui/card/index.js';
+    import { Button, buttonVariants } from '#lib/components/ui/button/index.js';
+    import { Card } from '#lib/components/ui/card/index.js';
     import WishButton from '#lib/components/wishlist/WishButton.svelte';
     import { m } from '#lib/paraglide/messages.js';
     import type { WineGroupDTO } from '#lib/shared/dto.js';
@@ -9,6 +19,7 @@
     import { formatPriceRange, formatRating, formatVintageRange } from '#lib/utils/format.js';
     import { colorBadgeClass, typeBadgeClass } from '#lib/utils/wine-badges.js';
     import { priceStats, vintageRange } from '#lib/utils/wine-group-sort.js';
+    import ScrollingText from './ScrollingText.svelte';
 
     type Wine = WineGroupDTO['definition'];
 
@@ -34,186 +45,144 @@
         onShowBottles: (wine: Wine) => void;
     } = $props();
 
-    const iconButton =
-        'relative z-10 text-muted-foreground hover:text-foreground transition-colors rounded p-1 sm:p-1.5 min-h-[28px] sm:min-h-[32px] min-w-[28px] sm:min-w-[32px] flex items-center justify-center';
-    // The buttons beside the number of bottles
-    const smallIconButton =
-        'relative z-10 text-muted-foreground hover:text-foreground transition-colors rounded p-1 text-xs h-5 w-5 flex items-center justify-center';
+    // Every card has the same size and each field the same place: one line per field, each
+    // behind its icon, whose label screen readers and the icon's tooltip give.
+    const facts = $derived([
+        {
+            icon: Award,
+            label: m['common.classification'](),
+            value: wine.classification || m['common.not_available']()
+        },
+        {
+            icon: Calendar,
+            label: m['common.vintage'](),
+            value: formatVintageRange(vintageRange(bottles))
+        },
+        { icon: Coins, label: m['common.price'](), value: formatPriceRange(priceStats(bottles)) }
+    ]);
+
+    // Above the link that covers the card
+    const iconButton = buttonVariants({
+        variant: 'ghost',
+        size: 'icon',
+        class: 'relative z-10 text-muted-foreground'
+    });
 </script>
 
 <!-- The link of the title covers the whole card (its ::after); the buttons sit above it,
      since a button inside a link is invalid HTML. -->
-<div class="relative">
-    <Card class="hover:shadow-lg transition-shadow py-0 wine-card-min-width">
-        <CardContent class="p-4 wine-card-content">
-            <div class="flex flex-col">
-                {#if showImage}
-                    <div class="relative mb-4 flex-shrink-0">
-                        {#if auth.isAuthenticated}
-                            <WishButton wineId={wine.id} overlay />
-                        {/if}
-                        {#if imageUrl}
-                            <img
-                                src={imageUrl}
-                                alt={wine.name}
-                                class="w-full h-32 object-cover rounded"
-                            />
-                        {:else}
-                            <div
-                                class="w-full h-32 bg-muted rounded flex items-center justify-center"
-                            >
-                                <div class="text-center text-muted-foreground">
-                                    <svg
-                                        aria-hidden="true"
-                                        class="w-8 h-8 mx-auto mb-2"
-                                        fill="currentColor"
-                                        viewBox="0 0 20 20"
-                                        xmlns="http://www.w3.org/2000/svg"
-                                    >
-                                        <path
-                                            d="M3 4a1 1 0 011-1h12a1 1 0 011 1v2a1 1 0 01-1 1H4a1 1 0 01-1-1V4zM3 10a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H4a1 1 0 01-1-1v-6zM14 9a1 1 0 00-1 1v6a1 1 0 001 1h2a1 1 0 001-1v-6a1 1 0 00-1-1h-2z"
-                                        />
-                                    </svg>
-                                    <span class="text-xs"
-                                        >{m['wine_details.no_image_available']()}</span
-                                    >
-                                </div>
-                            </div>
-                        {/if}
-                    </div>
-                {/if}
-
-                <div class="flex flex-col">
-                    <!-- Title and badges -->
-                    <div class="mb-3 flex-shrink-0">
-                        <div class="flex justify-between items-start">
-                            <h2
-                                class="text-lg font-semibold line-clamp-1 overflow-hidden truncate"
-                                title={wine.name}
-                            >
-                                <a
-                                    href="/wines/{wine.id}"
-                                    class="after:absolute after:inset-0 after:content-['']"
-                                    >{wine.name}</a
-                                >
-                            </h2>
-                            {#if auth.isAuthenticated}
-                                <div class="flex gap-1">
-                                    <button
-                                        class={iconButton}
-                                        onclick={() => onEdit(wine)}
-                                        title={m['forms.edit_wine']()}
-                                        aria-label={m['forms.edit_wine']()}
-                                    >
-                                        <SquarePen class="h-4 w-4" aria-hidden="true" />
-                                    </button>
-                                    <button
-                                        class={iconButton}
-                                        onclick={() => onDuplicate(wine)}
-                                        title={m['forms.duplicate_wine']()}
-                                        aria-label={m['forms.duplicate_wine']()}
-                                    >
-                                        <Copy class="h-4 w-4" aria-hidden="true" />
-                                    </button>
-                                </div>
-                            {/if}
-                        </div>
-                        <div class="flex flex-wrap gap-1">
-                            <Badge class="{typeBadgeClass(wine.type)} text-xs">
-                                {wine.type}
-                            </Badge>
-                            <Badge class="{colorBadgeClass(wine.color)} text-xs">
-                                {wine.color}
-                            </Badge>
-                            <div class="flex items-center gap-1">
-                                <button
-                                    class="relative z-10 hover:opacity-80 transition-opacity"
-                                    onclick={() => onShowBottles(wine)}
-                                    title={m['wines.view_bottle_details']()}
-                                >
-                                    <Badge variant="secondary" class="text-xs cursor-pointer">
-                                        {m['common.n_bottles']({ count: bottles.length })}
-                                    </Badge>
-                                </button>
-                                {#if auth.isAuthenticated}
-                                    <button
-                                        class={smallIconButton}
-                                        onclick={() => onAddBottle(wine)}
-                                        title={m['wines.add_bottle_of_wine']()}
-                                        aria-label={m['wines.add_bottle_of_wine']()}
-                                    >
-                                        <SquarePlus class="h-3 w-3" aria-hidden="true" />
-                                    </button>
-                                    <!-- Without the photo area, beside the bottles rather than
-                                         the name, which needs the width -->
-                                    {#if !showImage}
-                                        <WishButton
-                                            wineId={wine.id}
-                                            class={smallIconButton}
-                                            iconClass="h-3 w-3"
-                                        />
-                                    {/if}
-                                {/if}
-                            </div>
-                        </div>
-                        <div class="mt-1 min-h-[1.5rem] flex items-center">
-                            {#if wine.rating}
-                                <Badge variant="outline" class="text-xs">
-                                    <Star size={14} class="mr-1" />
-                                    {formatRating(wine.rating)}
-                                </Badge>
-                            {:else}
-                                <Badge variant="secondary" class="text-xs text-muted-foreground">
-                                    <Star size={14} class="mr-1" />
-                                    {m['common.no_rating']()}
-                                </Badge>
-                            {/if}
-                        </div>
-                    </div>
-
-                    <div class="overflow-hidden flex flex-col justify-start">
-                        <div class="text-sm text-muted-foreground flex-shrink-0 mb-1">
-                            <div class="truncate">
-                                {wine.producer || m['wines.unknown_producer']()}
-                            </div>
-                            <div class="truncate">
-                                {wine.region}, {wine.country}
-                            </div>
-                        </div>
-                        <div class="text-xs flex-shrink-0 my-2">
-                            <div class="truncate">
-                                <strong
-                                    >{m['common.label']({
-                                        label: m['common.classification']()
-                                    })}</strong
-                                >
-                                {wine.classification || m['common.not_available']()}
-                            </div>
-                            <div class="truncate">
-                                <strong>{m['common.label']({ label: m['common.price']() })}</strong>
-                                {formatPriceRange(priceStats(bottles))}
-                            </div>
-                            <div class="truncate">
-                                <strong
-                                    >{m['common.label']({ label: m['common.vintage']() })}</strong
-                                >
-                                {formatVintageRange(vintageRange(bottles))}
-                            </div>
-                        </div>
-                        <div class="text-xs text-muted-foreground">
-                            <div class="line-clamp-1 overflow-hidden">
-                                {#if wine.description}
-                                    {wine.description}
-                                {:else}
-                                    <span class="text-muted-foreground"
-                                        >{m['wines.no_description_available']()}</span
-                                    >
-                                {/if}
-                            </div>
-                        </div>
-                    </div>
+<Card
+    class="scroll-text-host group/card relative h-full gap-2.5 p-3.5 transition-shadow hover:shadow-lg"
+>
+    <div class="flex min-w-0 gap-3">
+        {#if showImage}
+            {#if imageUrl}
+                <img
+                    src={imageUrl}
+                    alt={wine.name}
+                    class="h-35 w-25 shrink-0 rounded-md object-cover"
+                />
+            {:else}
+                <div
+                    class="flex h-35 w-25 shrink-0 flex-col items-center justify-center gap-1 rounded-md bg-muted p-1 text-center text-[10px] text-muted-foreground"
+                >
+                    <Image class="size-5" aria-hidden="true" />
+                    {m['wine_details.no_image_available']()}
                 </div>
+            {/if}
+        {/if}
+
+        <div class="flex min-w-0 grow flex-col gap-1.5">
+            <div>
+                <h2 class="text-base/tight font-semibold" title={wine.name}>
+                    <!-- Around the text, not inside it: the fade of a cut name would also mask
+                         the ::after, and the card would no longer open -->
+                    <a
+                        href="/wines/{wine.id}"
+                        class="block transition-colors after:absolute after:inset-0 after:content-[''] group-hover/card:text-primary-text"
+                    >
+                        <ScrollingText wrap>{wine.name}</ScrollingText>
+                    </a>
+                </h2>
+                <ScrollingText class="text-sm text-muted-foreground">
+                    {wine.producer || m['wines.unknown_producer']()} · {wine.region}, {wine.country}
+                </ScrollingText>
             </div>
-        </CardContent>
-    </Card>
-</div>
+            <div class="flex gap-1 overflow-hidden">
+                <Badge class="{typeBadgeClass(wine.type)} text-xs">{wine.type}</Badge>
+                <Badge class="{colorBadgeClass(wine.color)} text-xs">{wine.color}</Badge>
+                {#if wine.rating}
+                    <Badge variant="outline" class="text-xs">
+                        <Star size={14} />
+                        {formatRating(wine.rating)}
+                    </Badge>
+                {:else}
+                    <Badge variant="secondary" class="text-xs text-muted-foreground">
+                        <Star size={14} />
+                        {m['common.no_rating']()}
+                    </Badge>
+                {/if}
+            </div>
+            <dl
+                class="grid grid-cols-[1rem_minmax(0,1fr)] items-center gap-x-2 gap-y-0.5 border-t pt-1.5 text-sm"
+            >
+                {#each facts as { icon: Icon, label, value } (label)}
+                    <!-- Above the card's link, so that the icon shows its tooltip -->
+                    <dt class="relative z-10 text-muted-foreground" title={label}>
+                        <span class="sr-only">{label}</span>
+                        <Icon class="size-4" aria-hidden="true" />
+                    </dt>
+                    <dd class="font-semibold">
+                        <ScrollingText>{value}</ScrollingText>
+                    </dd>
+                {/each}
+            </dl>
+        </div>
+    </div>
+
+    <!-- Two lines, always: a short description or none keeps the bar below in its place -->
+    <p class="line-clamp-2 h-8 text-xs/4 {wine.description ? '' : 'text-muted-foreground'}">
+        {wine.description || m['wines.no_description_available']()}
+    </p>
+
+    <div class="mt-auto flex items-center gap-1 border-t pt-2">
+        <Button
+            variant="secondary"
+            class="relative z-10"
+            onclick={() => onShowBottles(wine)}
+            title={m['wines.view_bottle_details']()}
+        >
+            {m['common.n_bottles']({ count: bottles.length })}
+        </Button>
+        {#if auth.isAuthenticated}
+            <button
+                type="button"
+                class={iconButton}
+                onclick={() => onAddBottle(wine)}
+                title={m['wines.add_bottle_of_wine']()}
+                aria-label={m['wines.add_bottle_of_wine']()}
+            >
+                <SquarePlus aria-hidden="true" />
+            </button>
+            <WishButton wineId={wine.id} class="ml-auto {iconButton}" />
+            <button
+                type="button"
+                class={iconButton}
+                onclick={() => onEdit(wine)}
+                title={m['forms.edit_wine']()}
+                aria-label={m['forms.edit_wine']()}
+            >
+                <SquarePen aria-hidden="true" />
+            </button>
+            <button
+                type="button"
+                class={iconButton}
+                onclick={() => onDuplicate(wine)}
+                title={m['forms.duplicate_wine']()}
+                aria-label={m['forms.duplicate_wine']()}
+            >
+                <Copy aria-hidden="true" />
+            </button>
+        {/if}
+    </div>
+</Card>

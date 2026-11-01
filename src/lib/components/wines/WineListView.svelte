@@ -107,9 +107,8 @@
         </CardContent>
     </Card>
 
-    <div
-        class="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6 gap-4 items-start"
-    >
+    <!-- As many cards of 340 px or more as fit: the grid drops a column rather than squeeze them -->
+    <div class="grid grid-cols-[repeat(auto-fill,minmax(min(340px,100%),1fr))] gap-4">
         {#each shownWines as { definition, bottles } (definition.id)}
             <WineCard
                 wine={definition}

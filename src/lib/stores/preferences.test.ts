@@ -27,6 +27,7 @@ describe('preferences', () => {
         stored.set('wine-cellar-theme', 'green');
         stored.set('wine-cellar-theme-mode', 'dark');
         stored.set('wine-cellar-show-images', 'false');
+        stored.set('wine-cellar-wine-list-view', 'list');
         stored.set('wine-cellar-storage-view-mode', 'grid');
         stored.set('wine-cellar-containers-layout', 'false');
 
@@ -34,6 +35,7 @@ describe('preferences', () => {
         expect(preferences.theme).toBe('green');
         expect(preferences.isDark).toBe(true);
         expect(preferences.showImages).toBe(false);
+        expect(preferences.wineListView).toBe('list');
         expect(preferences.storageViewMode).toBe('grid');
         expect(preferences.containersAsColumns).toBe(false);
     });
@@ -41,11 +43,13 @@ describe('preferences', () => {
     it('falls back to the defaults for missing or unknown values', async () => {
         stored.set('wine-cellar-theme', 'toString');
         stored.set('wine-cellar-theme-mode', 'sepia');
+        stored.set('wine-cellar-wine-list-view', 'table');
 
         const preferences = await loadPreferences();
         expect(preferences.theme).toBe('blue');
         expect(preferences.themeMode).toBe('system');
         expect(preferences.showImages).toBe(true);
+        expect(preferences.wineListView).toBe('cards');
         expect(preferences.storageViewMode).toBe('table');
         expect(preferences.containersAsColumns).toBe(true);
     });

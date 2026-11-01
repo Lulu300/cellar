@@ -2,14 +2,15 @@
     import { ArrowDownWideNarrow, ArrowUpNarrowWide, ChevronRight } from '@lucide/svelte';
     import { Button } from '#lib/components/ui/button/index.js';
     import * as Select from '#lib/components/ui/select/index.js';
+    import ChoiceButtons from '#lib/components/preferences/ChoiceButtons.svelte';
     import DebouncedInput from '#lib/components/wines/DebouncedInput.svelte';
     import { m } from '#lib/paraglide/messages.js';
-    import type { BottleCountMode, WineListQuery } from '#lib/utils/wine-filters.js';
+    import type { BottleCountMode, WineListQuery, WineListView } from '#lib/utils/wine-filters.js';
     import type { WineGroupSortKey } from '#lib/utils/wine-group-sort.js';
 
     /**
      * The count of what the list shows with a link to the bottles out of the cellar, its sort, the
-     * bottle-count filter and the images switch.
+     * bottle-count filter, the images switch and the choice of cards or list.
      */
     let {
         query,
@@ -17,6 +18,7 @@
         wineCount,
         bottleCount,
         outOfCellarCount,
+        view,
         showImages = $bindable()
     }: {
         query: WineListQuery;
@@ -25,6 +27,8 @@
         bottleCount: number;
         /** All the bottles taken out of the cellar, whatever the filters, as the page it links to. */
         outOfCellarCount: number;
+        /** The view shown, which a choice here puts in the URL. */
+        view: WineListView;
         showImages: boolean;
     } = $props();
 
@@ -170,5 +174,16 @@
                 ></span>
             </button>
         </div>
+        <ChoiceButtons
+            aria-label={m['wines.view']()}
+            class="p-0.5"
+            buttonClass="h-7"
+            options={[
+                { value: 'cards', label: m['common.cards']() },
+                { value: 'list', label: m['common.list']() }
+            ]}
+            value={view}
+            onchange={(view) => onChange({ view })}
+        />
     </div>
 </div>

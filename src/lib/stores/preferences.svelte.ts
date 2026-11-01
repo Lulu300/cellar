@@ -1,5 +1,6 @@
 import { browser } from '$app/env';
 import { themes } from '#lib/utils/theme-colors.js';
+import type { WineListView } from '#lib/utils/wine-filters.js';
 
 export type ThemeId = keyof typeof themes;
 type ThemeMode = 'light' | 'dark' | 'system';
@@ -9,6 +10,7 @@ const KEYS = {
     theme: 'wine-cellar-theme',
     themeMode: 'wine-cellar-theme-mode',
     showImages: 'wine-cellar-show-images',
+    wineListView: 'wine-cellar-wine-list-view',
     storageViewMode: 'wine-cellar-storage-view-mode',
     containersAsColumns: 'wine-cellar-containers-layout'
 } as const;
@@ -24,6 +26,8 @@ class Preferences {
     themeMode = $state<ThemeMode>('system');
     /** Whether the wine list and the shortage page show the images of the wines at first. */
     showImages = $state(true);
+    /** The view the wine list opens in, when its URL names none. */
+    wineListView = $state<WineListView>('cards');
     storageViewMode = $state<'table' | 'grid'>('table');
     /** Whether the storage table shows the containers as columns, or as rows. */
     containersAsColumns = $state(true);
@@ -63,6 +67,7 @@ class Preferences {
         const mode = stored('themeMode');
         this.themeMode = mode === 'light' || mode === 'dark' ? mode : 'system';
         this.showImages = stored('showImages') !== 'false';
+        this.wineListView = stored('wineListView') === 'list' ? 'list' : 'cards';
         this.storageViewMode = stored('storageViewMode') === 'grid' ? 'grid' : 'table';
         this.containersAsColumns = stored('containersAsColumns') !== 'false';
     }

@@ -8,6 +8,7 @@
     import WineCard from '#lib/components/wines/WineCard.svelte';
     import WineFilters from '#lib/components/wines/WineFilters.svelte';
     import WineListToolbar from '#lib/components/wines/WineListToolbar.svelte';
+    import WineTable from '#lib/components/wines/WineTable.svelte';
     import { m } from '#lib/paraglide/messages.js';
     import { CELLAR } from '#lib/shared/dependencies.js';
     import type { WineGroupDTO } from '#lib/shared/dto.js';
@@ -17,7 +18,8 @@
         filterWines,
         readWineListQuery,
         wineListParams,
-        type WineListQuery
+        type WineListQuery,
+        type WineListView
     } from '#lib/utils/wine-filters.js';
     import { sortWineGroups } from '#lib/utils/wine-group-sort.js';
 
@@ -56,11 +58,18 @@
     // Loaded by the root layout, for the menu too
     const outOfCellarCount: number = $derived(page.data.outOfCellarCount);
 
-    // The preference only sets the first state: the switch does not change it.
+    // The preferences only set the first state: the switches do not change them. The server, which
+    // cannot read them, renders the defaults.
     let showImages = $state(true);
+    let preferredView = $state<WineListView>('cards');
     onMount(() => {
         showImages = preferences.showImages;
+        preferredView = preferences.wineListView;
     });
+    // A view chosen on the page stays in the URL, for the way back from a wine, a reload or a link.
+    const view = $derived(query.view || preferredView);
+
+    const imageUrl = (wine: Wine) => (wine.imageId ? imageUrls.get(wine.imageId) : undefined);
 
     // The code in the barcode field: it stays while the bottles that it found are shown.
     let barcode = $state('');
@@ -102,26 +111,11 @@
                 wineCount={shownWines.length}
                 {bottleCount}
                 {outOfCellarCount}
+                {view}
                 bind:showImages
             />
         </CardContent>
     </Card>
-
-    <!-- As many cards of 340 px or more as fit: the grid drops a column rather than squeeze them -->
-    <div class="grid grid-cols-[repeat(auto-fill,minmax(min(340px,100%),1fr))] gap-4">
-        {#each shownWines as { definition, bottles } (definition.id)}
-            <WineCard
-                wine={definition}
-                {bottles}
-                imageUrl={definition.imageId ? imageUrls.get(definition.imageId) : undefined}
-                showImage={showImages}
-                onEdit={onEditWine}
-                onDuplicate={onDuplicateWine}
-                {onAddBottle}
-                onShowBottles={(wine) => openBottleDetails(wine)}
-            />
-        {/each}
-    </div>
 
     {#if shownWines.length === 0}
         <Card>
@@ -131,6 +125,32 @@
                 </p>
             </CardContent>
         </Card>
+    {:else if view === 'list'}
+        <WineTable
+            wines={shownWines}
+            {imageUrl}
+            {showImages}
+            onEdit={onEditWine}
+            onDuplicate={onDuplicateWine}
+            {onAddBottle}
+            onShowBottles={(wine) => openBottleDetails(wine)}
+        />
+    {:else}
+        <!-- As many cards of 340 px or more as fit: the grid drops a column rather than squeeze them -->
+        <div class="grid grid-cols-[repeat(auto-fill,minmax(min(340px,100%),1fr))] gap-4">
+            {#each shownWines as { definition, bottles } (definition.id)}
+                <WineCard
+                    wine={definition}
+                    {bottles}
+                    imageUrl={imageUrl(definition)}
+                    showImage={showImages}
+                    onEdit={onEditWine}
+                    onDuplicate={onDuplicateWine}
+                    {onAddBottle}
+                    onShowBottles={(wine) => openBottleDetails(wine)}
+                />
+            {/each}
+        </div>
     {/if}
 </div>
 

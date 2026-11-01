@@ -49,14 +49,13 @@ describe('the filters of the wine list', () => {
 describe('the URL of the wine list', () => {
     it('gives each missing or invalid value its default', () => {
         const query = readWineListQuery(
-            new URLSearchParams('search=Bug04&region=r1&sort=nowhere&dir=up&vintage=old')
+            new URLSearchParams('search=Bug04&region=r1&sort=nowhere&dir=up&vintage=old&view=grid')
         );
         expect(query).toMatchObject({ search: 'Bug04', region: 'r1', vintage: '', count: '1' });
-        expect(query).toMatchObject({ sort: 'name', dir: 'asc' });
-        expect(readWineListQuery(new URLSearchParams('sort=price&dir=desc'))).toMatchObject({
-            sort: 'price',
-            dir: 'desc'
-        });
+        expect(query).toMatchObject({ sort: 'name', dir: 'asc', view: '' });
+        expect(
+            readWineListQuery(new URLSearchParams('sort=price&dir=desc&view=list'))
+        ).toMatchObject({ sort: 'price', dir: 'desc', view: 'list' });
     });
 
     it('leaves out of the URL a value back to its default', () => {

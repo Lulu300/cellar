@@ -14,6 +14,9 @@ interface FilterBottle {
 const BOTTLE_COUNT_MODES = ['', 'none', 'exact', 'at_least', 'less_than'] as const;
 export type BottleCountMode = (typeof BOTTLE_COUNT_MODES)[number];
 
+const WINE_LIST_VIEWS = ['cards', 'list'] as const;
+export type WineListView = (typeof WINE_LIST_VIEWS)[number];
+
 const VINTAGE_MODES = ['', 'no_vintage', 'range'] as const;
 export type VintageMode = (typeof VINTAGE_MODES)[number];
 
@@ -63,9 +66,10 @@ export function matchesOrigin(bottles: FilterBottle[], originId: string): boolea
 }
 
 /**
- * The search, filters and sort of the wine list, as its URL holds them (`?search=&region=&sort=`
- * and so on): a missing or invalid value gives its default, so that any URL shows the list. The
- * references are ids, so that two regions of the same name in two countries stay apart.
+ * The search, filters, sort and view of the wine list, as its URL holds them
+ * (`?search=&region=&sort=` and so on): a missing or invalid value gives its default, so that any
+ * URL shows the list. The references are ids, so that two regions of the same name in two
+ * countries stay apart. Without a view chosen on the page (''), the preference gives it.
  */
 const wineListQuerySchema = z.object({
     search: z.string().catch(''),
@@ -80,7 +84,8 @@ const wineListQuerySchema = z.object({
     bottles: z.enum(BOTTLE_COUNT_MODES).catch(''),
     count: z.string().catch('1'),
     sort: z.enum(WINE_GROUP_SORT_KEYS).catch('name'),
-    dir: z.enum(['asc', 'desc']).catch('asc')
+    dir: z.enum(['asc', 'desc']).catch('asc'),
+    view: z.enum(['', ...WINE_LIST_VIEWS]).catch('')
 });
 
 export type WineListQuery = z.output<typeof wineListQuerySchema>;

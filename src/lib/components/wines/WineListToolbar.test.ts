@@ -19,6 +19,7 @@ describe('WineListToolbar', () => {
                 wineCount: 1,
                 bottleCount: 3,
                 outOfCellarCount: 0,
+                view: 'cards',
                 showImages: false
             }
         });

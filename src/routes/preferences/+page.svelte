@@ -192,6 +192,16 @@
                     onchange={(show) => preferences.set('showImages', show)}
                 />
                 <ChoiceGroup
+                    label={m['preferences.default_wine_list_view']()}
+                    description={m['preferences.default_wine_list_view_description']()}
+                    options={[
+                        { value: 'cards', label: m['common.cards']() },
+                        { value: 'list', label: m['common.list']() }
+                    ]}
+                    value={preferences.wineListView}
+                    onchange={(view) => preferences.set('wineListView', view)}
+                />
+                <ChoiceGroup
                     label={m['preferences.default_storage_view']()}
                     description={m['preferences.default_storage_view_description']()}
                     options={[

@@ -126,7 +126,17 @@ test('log in, add a wine and two bottles from the wine list, and buy a wine of t
     await expect.poll(() => query().get('color')).toBeTruthy();
     await expect(page.getByText('1 wine (2 bottles in all)')).toBeVisible();
 
-    await page.getByRole('heading', { name: 'Château Journey' }).click();
+    // The list view (FEAT-10), chosen on the page: the URL keeps it, for the way back from the
+    // wine. A click anywhere on a row opens its wine, as on a card.
+    await page
+        .getByRole('radiogroup', { name: 'View' })
+        .getByRole('radio', { name: 'List' })
+        .click();
+    await expect.poll(() => query().get('view')).toBe('list');
+    const row = page.getByRole('row').filter({ hasText: 'Château Journey' });
+    await expect(row.getByRole('button', { name: '2 bottles' })).toBeVisible();
+    const region = (await row.getByRole('cell').nth(1).boundingBox())!;
+    await page.mouse.click(region.x + region.width / 2, region.y + region.height / 2);
     await expect(page.getByText('Available Bottles (2)')).toBeVisible();
 
     // A photo of the label as a phone writes it, through the preview that turns and crops it. It
@@ -152,6 +162,25 @@ test('log in, add a wine and two bottles from the wine list, and buy a wine of t
     await expect(page.getByLabel('Search', { exact: true })).toHaveValue('Château Journey');
     await expect(page.getByRole('button', { name: 'Descending order' })).toBeVisible();
     await expect(page.getByText('1 wine (2 bottles in all)')).toBeVisible();
+    await expect(row.getByRole('link', { name: 'Château Journey' })).toBeVisible();
+
+    // Without a view in the URL, the preference chooses it; the switch does not change it.
+    await page.goto('/preferences', { waitUntil: 'networkidle' });
+    await page
+        .getByRole('radiogroup', { name: 'Default Wine List View' })
+        .getByRole('radio', { name: 'List' })
+        .click();
+    await openFromMenu(page, 'Cellar', 'My Wines');
+    await expect(page.getByRole('table')).toBeVisible();
+    await page.getByRole('radio', { name: 'Cards' }).click();
+    await expect.poll(() => query().get('view')).toBe('cards');
+    await expect(page.getByRole('table')).toBeHidden();
+    await page.goto('/preferences', { waitUntil: 'networkidle' });
+    await expect(
+        page.getByRole('radiogroup', { name: 'Default Wine List View' }).getByRole('radio', {
+            name: 'List'
+        })
+    ).toHaveAttribute('aria-checked', 'true');
 
     // A bottle added to a new wine, then cancelled, leaves no wine chosen for the next one.
     const bottleDialog = await addWineThenBottle(page, 'Château Cancelled');

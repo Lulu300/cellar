@@ -100,7 +100,7 @@
                     {/if}
                 {/each}
                 {#if onEdit}
-                    <TableHead class="w-16">{m['bottle_table.actions']()}</TableHead>
+                    <TableHead class="w-16">{m['common.actions']()}</TableHead>
                 {/if}
             </TableRow>
         </TableHeader>

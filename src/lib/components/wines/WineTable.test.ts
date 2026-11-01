@@ -39,6 +39,8 @@ function renderTable(authenticated: boolean, showImages = true) {
 }
 
 describe('WineTable', () => {
+    // The items of a closed menu are not rendered: the phone menu of a visitor, which only shows
+    // the bottles, is checked in the browser (FEAT-10 evidence).
     it('offers the actions that change the cellar only to a logged-in user', () => {
         const visitor = renderTable(false);
         expect(visitor).toContain('href="/wines/w1"');
@@ -50,6 +52,12 @@ describe('WineTable', () => {
         expect(user).toContain('aria-label="Add bottle of this wine"');
         expect(user).toContain('aria-label="Wishlist"');
         expect(user).toContain('>Actions<');
+    });
+
+    it('shows a dash for a wine without a rating, which a screen reader reads as text', () => {
+        expect(renderTable(false)).toMatch(
+            /<span aria-hidden="true">—<\/span>\s*<span class="sr-only">No rating<\/span>/
+        );
     });
 
     it('drops the thumbnails with the images hidden', () => {

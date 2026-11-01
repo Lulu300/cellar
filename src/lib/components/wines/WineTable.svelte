@@ -195,11 +195,15 @@
                             {m['common.n_bottles']({ count: facts.bottleCount })}
                         </Button>
                     </Table.Cell>
-                    <Table.Cell
-                        class="whitespace-normal {wine.rating ? '' : 'text-muted-foreground'}"
-                    >
-                        {facts.rating}
-                    </Table.Cell>
+                    {#if wine.rating}
+                        <Table.Cell>{facts.rating}</Table.Cell>
+                    {:else}
+                        <!-- A dash keeps the column narrow; a screen reader still hears the text -->
+                        <Table.Cell class="text-muted-foreground">
+                            <span aria-hidden="true">—</span>
+                            <span class="sr-only">{facts.rating}</span>
+                        </Table.Cell>
+                    {/if}
                     {#if auth.isAuthenticated}
                         <Table.Cell class="pe-4">
                             <div class="flex justify-end">

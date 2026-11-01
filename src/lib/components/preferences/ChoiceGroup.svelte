@@ -1,7 +1,6 @@
 <script lang="ts" generics="Value extends string | boolean">
     import type { Snippet } from 'svelte';
-    import { Button } from '#lib/components/ui/button/index.js';
-    import { moveChoice } from './radio-group.js';
+    import ChoiceButtons from './ChoiceButtons.svelte';
 
     /**
      * A preference with a few choices, as buttons that work as radios: the group is named by the
@@ -36,26 +35,12 @@
         <p id="{id}-description" class="text-sm text-muted-foreground">{description}</p>
         {@render children?.()}
     </div>
-    <div
-        role="radiogroup"
+    <ChoiceButtons
         aria-labelledby="{id}-label"
         aria-describedby="{id}-description"
-        class="flex gap-1 border rounded-md p-1"
-    >
-        {#each options as option (option.value)}
-            {@const checked = option.value === value}
-            <Button
-                role="radio"
-                aria-checked={checked}
-                tabindex={checked ? 0 : -1}
-                variant={checked ? 'default' : 'ghost'}
-                size="sm"
-                class="text-xs"
-                onclick={() => onchange(option.value)}
-                onkeydown={(event) => moveChoice(event, chooseWithArrows)}
-            >
-                {option.label}
-            </Button>
-        {/each}
-    </div>
+        {options}
+        {value}
+        {onchange}
+        {chooseWithArrows}
+    />
 </div>

@@ -1172,5 +1172,5 @@
   "wishlist.in_cellar": "{count, plural, one {# bouteille en cave} other {# bouteilles en cave}}",
   "wishlist.create_wine": "Créer la fiche du vin",
   "wishlist.empty": "Votre liste d’envies est vide",
-  "wishlist.empty_hint": "Ajoutez un vin avec le champ ci-dessus, ou avec le cœur d’un vin dans Mes vins."
+  "wishlist.empty_hint": "Ajoutez un vin avec le champ ci-dessus, ou avec le signet d’un vin dans Mes vins."
 }

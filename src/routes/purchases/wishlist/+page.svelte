@@ -1,6 +1,6 @@
 <script lang="ts">
     import { onMount } from 'svelte';
-    import { Heart } from '@lucide/svelte';
+    import { Bookmark } from '@lucide/svelte';
     import { invalidate } from '$app/navigation';
     import { errorMessage } from '#lib/api/client.js';
     import WineBottleDialog from '#lib/components/bottles/WineBottleDialog.svelte';
@@ -92,7 +92,7 @@
     <Card>
         <CardContent class="flex flex-col items-center gap-4 p-8 text-center">
             <div class="rounded-full bg-primary/10 p-4">
-                <Heart class="h-8 w-8 text-primary-text" aria-hidden="true" />
+                <Bookmark class="h-8 w-8 text-primary-text" aria-hidden="true" />
             </div>
             <div>
                 <h2 class="text-lg font-medium">{m['wishlist.empty']()}</h2>

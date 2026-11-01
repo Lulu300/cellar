@@ -1,6 +1,6 @@
 import {
+    Bookmark,
     ChartColumn,
-    Heart,
     History,
     LayoutGrid,
     LogOut,
@@ -92,7 +92,7 @@ export function purchasesSection(shortageCount: number, wishCount: number): NavS
             {
                 href: '/purchases/wishlist',
                 label: m['navigation.wishlist'](),
-                icon: Heart,
+                icon: Bookmark,
                 count: {
                     value: wishCount,
                     label: m['navigation.wish_count']({ count: wishCount }),

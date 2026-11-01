@@ -1172,5 +1172,5 @@
   "wishlist.in_cellar": "{count, plural, one {# bottle in the cellar} other {# bottles in the cellar}}",
   "wishlist.create_wine": "Create the wine",
   "wishlist.empty": "Your wishlist is empty",
-  "wishlist.empty_hint": "Add a wine with the field above, or with the heart of a wine in My Wines."
+  "wishlist.empty_hint": "Add a wine with the field above, or with the bookmark of a wine in My Wines."
 }

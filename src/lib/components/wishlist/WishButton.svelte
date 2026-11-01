@@ -1,5 +1,5 @@
 <script lang="ts">
-    import { Heart } from '@lucide/svelte';
+    import { Bookmark } from '@lucide/svelte';
     import { invalidate } from '$app/navigation';
     import { page } from '$app/state';
     import { errorMessage } from '#lib/api/client.js';
@@ -9,9 +9,10 @@
     import { addWish, removeWish } from './wishes.js';
 
     /**
-     * The heart of a wine, on its card and its page: a press puts the wine on the wishlist, and
-     * another takes it off. `overlay` lays it over a photo, as a white heart on a dark disc that
-     * stays readable over any photo, in every theme; `class` styles it otherwise.
+     * The bookmark of a wine, on its card and its page, filled while the wine is on the wishlist:
+     * a press puts the wine on the list, and another takes it off. `overlay` lays it over a photo,
+     * as a white bookmark on a dark disc that stays readable over any photo, in every theme;
+     * `class` styles it otherwise.
      */
     let {
         wineId,
@@ -53,7 +54,7 @@
     disabled={busy}
     onclick={toggle}
 >
-    <Heart
+    <Bookmark
         class="{iconClass} {wishId
             ? overlay
                 ? 'fill-current'

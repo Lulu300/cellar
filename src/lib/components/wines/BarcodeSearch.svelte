@@ -11,6 +11,7 @@
     import { searchBarcode } from '#lib/shared/barcode.js';
     import type { WineGroupDTO } from '#lib/shared/dto.js';
     import { toasts } from '#lib/stores/toast.svelte.js';
+    import { quietButton } from '#lib/components/layout/button-states.js';
 
     /**
      * Finds a bottle of the list by its barcode, typed or scanned, and opens the bulk entry of
@@ -135,7 +136,7 @@
                     {#each results as bottle (bottle.id)}
                         <button
                             type="button"
-                            class="w-full text-left px-3 py-2 rounded hover:bg-accent transition-colors text-sm flex justify-between items-center gap-2"
+                            class="w-full text-left px-3 py-2 rounded-md text-sm flex justify-between items-center gap-2 {quietButton}"
                             onclick={() => choose(bottle)}
                         >
                             <span class="font-mono text-primary-text">{bottle.barcode}</span>

@@ -26,6 +26,8 @@
     import { storageLocations } from '#lib/components/wines/wine-facts.js';
     import { ownedBottles, vintageRange } from '#lib/utils/wine-group-sort.js';
     import { sortBottles } from '#lib/utils/bottle-sort.js';
+    import { iconButton } from '#lib/components/layout/button-states.js';
+    import { cn } from '#lib/utils.js';
 
     type Bottle = BottleWithDefinitionDTO;
 
@@ -88,8 +90,7 @@
         await invalidate(CELLAR);
     }
 
-    const headerButton =
-        'text-muted-foreground hover:text-foreground transition-colors rounded p-2 sm:p-2.5 text-sm sm:text-base min-h-[32px] sm:min-h-[36px] min-w-[32px] sm:min-w-[36px] flex items-center justify-center';
+    const headerButton = cn(iconButton, 'size-10');
 
     function showBarcode(wine: Bottle) {
         if (wine.barcode) {
@@ -135,7 +136,7 @@
                             <WishButton
                                 wineId={wineDefinition.id}
                                 class={headerButton}
-                                iconClass="h-6 w-6"
+                                iconClass="size-6"
                             />
                             <button
                                 class={headerButton}
@@ -143,7 +144,7 @@
                                 title={m['forms.edit_wine']()}
                                 aria-label={m['forms.edit_wine']()}
                             >
-                                <SquarePen class="h-6 w-6" aria-hidden="true" />
+                                <SquarePen class="size-6" aria-hidden="true" />
                             </button>
                         </div>
                     {/if}

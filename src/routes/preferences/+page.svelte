@@ -13,6 +13,7 @@
     import { preferences, type ThemeId } from '#lib/stores/preferences.svelte.js';
     import { m } from '#lib/paraglide/messages.js';
     import { getLocale, setLocale } from '#lib/paraglide/runtime.js';
+    import { quietButton } from '#lib/components/layout/button-states.js';
 
     const themeOptions = Object.entries(themes).map(([id, theme]) => ({
         id: id as ThemeId,
@@ -115,7 +116,7 @@
                                 role="radio"
                                 aria-checked={checked}
                                 tabindex={checked ? 0 : -1}
-                                class="relative p-4 border-2 rounded-lg transition-all hover:scale-105 focus:outline-none focus:ring-2 focus:ring-ring {checked
+                                class="relative p-4 border-2 rounded-lg {quietButton} {checked
                                     ? 'border-primary bg-accent'
                                     : 'border-border'}"
                                 onclick={() => preferences.set('theme', theme.id)}

@@ -2,6 +2,7 @@
     import { ArrowDown, ArrowUp } from '@lucide/svelte';
     import { TableHead } from '#lib/components/ui/table/index.js';
     import type { SortDirection } from '#lib/shared/schemas/bottle-list.js';
+    import { quietButton } from '#lib/components/layout/button-states.js';
 
     /**
      * The header of a column that the table sorts on: a button, so that the keyboard reaches it,
@@ -24,7 +25,7 @@
 >
     <button
         type="button"
-        class="-mx-2 inline-flex items-center gap-1 rounded-md px-2 py-1 hover:bg-muted/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+        class="-mx-2 inline-flex items-center gap-1 rounded-md px-2 py-1 {quietButton}"
         onclick={onSort}
     >
         {label}

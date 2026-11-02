@@ -17,6 +17,8 @@
     import { CELLAR } from '#lib/shared/dependencies.js';
     import type { BottleWithDefinitionDTO, Jsonified } from '#lib/shared/dto.js';
     import { sortBottles, type BottleSort } from '#lib/utils/bottle-sort.js';
+    import { iconButton } from '#lib/components/layout/button-states.js';
+    import { cn } from '#lib/utils.js';
 
     type Bottle = Jsonified<BottleWithDefinitionDTO>;
 
@@ -77,7 +79,7 @@
 {#snippet actions(bottle: Bottle)}
     <DropdownMenu.Root>
         <DropdownMenu.Trigger
-            class="inline-flex h-8 w-8 items-center justify-center rounded-md text-muted-foreground hover:bg-accent hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+            class={cn(iconButton, 'size-8')}
             title={m['bottles.actions_for']({ name: bottleName(bottle) })}
             aria-label={m['bottles.actions_for']({ name: bottleName(bottle) })}
         >

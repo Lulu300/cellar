@@ -4,6 +4,7 @@
     import NavCount from './NavCount.svelte';
     import NavRow from './NavRow.svelte';
     import { isInSection, signalOf, type NavItem, type NavSection } from './navigation.js';
+    import { focusRing } from '#lib/components/layout/button-states.js';
 
     /**
      * A section of the top bar. Its name links to its first page, which a tap on a touch screen
@@ -62,7 +63,7 @@
     }
 
     const triggerClasses = $derived(
-        `relative inline-flex h-8 items-center gap-1 rounded-md px-2.5 text-sm font-medium whitespace-nowrap hover:bg-accent hover:text-accent-foreground ${
+        `relative inline-flex h-8 items-center gap-1 rounded-md px-2.5 text-sm font-medium whitespace-nowrap hover:bg-accent hover:text-accent-foreground ${focusRing} ${
             current ? 'bg-accent text-accent-foreground' : ''
         }`
     );

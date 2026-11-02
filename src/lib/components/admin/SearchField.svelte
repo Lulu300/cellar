@@ -2,6 +2,8 @@
     import { Search, X } from '@lucide/svelte';
     import { m } from '#lib/paraglide/messages.js';
     import { Input } from '#lib/components/ui/input/index.js';
+    import { iconButton } from '#lib/components/layout/button-states.js';
+    import { cn } from '#lib/utils.js';
 
     let {
         value,
@@ -24,7 +26,7 @@
             type="button"
             onclick={() => onSearch('')}
             aria-label={m['admin.clear_search']()}
-            class="absolute right-2 top-2.5 h-4 w-4 text-muted-foreground hover:text-foreground"
+            class={cn(iconButton, 'absolute right-1 top-1 size-7')}
         >
             <X class="h-4 w-4" />
         </button>

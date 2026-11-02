@@ -2,6 +2,7 @@
     import { CircleAlert, CircleCheckBig, X } from '@lucide/svelte';
     import { fly } from 'svelte/transition';
     import { m } from '#lib/paraglide/messages.js';
+    import { quietButton } from '#lib/components/layout/button-states.js';
 
     let {
         message,
@@ -48,7 +49,7 @@
         <p class="text-sm font-medium flex-1">{message}</p>
         <button
             onclick={close}
-            class="flex-shrink-0 p-0.5 rounded hover:bg-accent transition-colors"
+            class="shrink-0 rounded-md p-0.5 {quietButton}"
             aria-label={m['common.close_notification']()}
         >
             <X class="h-4 w-4" />

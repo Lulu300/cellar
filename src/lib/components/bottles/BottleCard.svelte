@@ -13,6 +13,7 @@
     } from '@lucide/svelte';
     import { m } from '#lib/paraglide/messages.js';
     import { Badge } from '#lib/components/ui/badge/index.js';
+    import { focusRing, iconButton } from '#lib/components/layout/button-states.js';
     import { BottleAvailability } from '#lib/shared/bottle-availability.js';
     import type { BottleWithDefinitionDTO } from '#lib/shared/dto.js';
     import { auth } from '#lib/stores/auth.svelte.js';
@@ -44,15 +45,13 @@
     // AvailabilityBadge does, with white text on it.
     const pill =
         'text-white px-3 py-2 sm:px-4 sm:py-2.5 rounded-full text-xs sm:text-sm min-h-[32px] sm:min-h-[36px] flex items-center';
-    const iconButton =
-        'text-muted-foreground hover:text-foreground transition-colors rounded p-2 sm:p-2.5 text-sm sm:text-base min-h-[32px] sm:min-h-[36px] min-w-[32px] sm:min-w-[36px] flex items-center justify-center';
 </script>
 
 <!-- The pill of a bottle still owned: a button that changes its status, for a signed-in user -->
 {#snippet statusPill(colour: string, text: string)}
     {#if auth.isAuthenticated}
         <button
-            class="{colour} {pill} transition-colors"
+            class="{colour} {pill} {focusRing} transition-colors"
             onclick={() => onStatus(bottle)}
             title={m['wine_details.click_to_mark_consumed']()}
         >
@@ -123,7 +122,7 @@
 
         <div class="flex flex-wrap gap-1 min-h-[3rem]">
             <button
-                class="bg-secondary text-secondary-foreground hover:bg-secondary/80 rounded-lg transition-colors p-2 sm:p-3 min-h-[36px] sm:min-h-[42px] min-w-[36px] sm:min-w-[42px] flex items-center justify-center"
+                class="bg-secondary text-secondary-foreground hover:bg-secondary-hover {focusRing} rounded-lg transition-colors p-2 sm:p-3 min-h-[36px] sm:min-h-[42px] min-w-[36px] sm:min-w-[42px] flex items-center justify-center"
                 onclick={() => onBarcode(bottle)}
                 title={m['wine_details.view_barcode']()}
                 aria-label={m['wine_details.view_barcode']()}

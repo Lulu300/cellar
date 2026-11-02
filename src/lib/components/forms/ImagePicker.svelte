@@ -9,6 +9,7 @@
     import { formatFileSize } from '#lib/utils/format.js';
     import { matchesImageSearch } from '#lib/utils/image-search.js';
     import PhotoField from './PhotoField.svelte';
+    import { focusRing } from '#lib/components/layout/button-states.js';
 
     type ExistingImage = Jsonified<AdminImagesDTO>['images'][number];
 
@@ -91,7 +92,7 @@
                     {#each shownImages as image (image.id)}
                         <button
                             type="button"
-                            class="group relative aspect-square overflow-hidden rounded-md border hover:ring-2 hover:ring-primary focus-visible:ring-2 focus-visible:ring-primary"
+                            class="group relative aspect-square overflow-hidden rounded-md border hover:ring-2 hover:ring-primary {focusRing}"
                             title={[image.filename, ...image.wines.map((wine) => wine.name)].join(
                                 ', '
                             )}

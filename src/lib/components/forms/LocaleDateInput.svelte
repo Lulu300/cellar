@@ -4,6 +4,7 @@
     import { Input } from '#lib/components/ui/input/index.js';
     import { Calendar } from '@lucide/svelte';
     import { dateAfterInput, formatLocaleDate } from './locale-date';
+    import { quietButton } from '#lib/components/layout/button-states.js';
 
     let {
         value = $bindable(''),
@@ -63,7 +64,7 @@
     <!-- Calendar icon button -->
     <button
         type="button"
-        class="absolute right-2 top-1/2 transform -translate-y-1/2 p-1 hover:bg-accent rounded"
+        class="absolute right-2 top-1/2 -translate-y-1/2 rounded-md p-1 {quietButton}"
         {disabled}
         onclick={openCalendar}
         aria-label={m['forms.open_calendar']()}

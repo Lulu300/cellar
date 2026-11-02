@@ -2,6 +2,7 @@
     import { m } from '#lib/paraglide/messages.js';
     import { preferences } from '#lib/stores/preferences.svelte.js';
     import { themes } from '#lib/utils/theme-colors.js';
+    import { quietButton } from '#lib/components/layout/button-states.js';
 
     interface Bar {
         /** Unique among the bars. */
@@ -43,7 +44,7 @@
     {#each bars as bar (bar.key)}
         <button
             type="button"
-            class="group flex h-full min-w-0 flex-1 flex-col items-center justify-end gap-2 rounded-sm focus-visible:outline-2 focus-visible:outline-ring"
+            class="group flex h-full min-w-0 flex-1 flex-col items-center justify-end gap-2 rounded-sm {quietButton}"
             aria-pressed={bar === chosen}
             aria-label="{label(bar)} {bottles(bar)}"
             title={wholeName(bar)}

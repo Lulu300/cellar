@@ -6,6 +6,7 @@
     import { Card, CardContent } from '#lib/components/ui/card/index.js';
     import { auth } from '#lib/stores/auth.svelte.js';
     import type { Wish } from './wishes.js';
+    import { iconButton } from '#lib/components/layout/button-states.js';
 
     /**
      * A wish of the list: a wine of the cellar, which takes bottles, or a text, whose wine is
@@ -29,9 +30,6 @@
 
     const name = $derived(wish.wine?.name ?? wish.text ?? '');
     const imageUrl = $derived(wish.wine ? wish.wine.imageUrl : wish.imageUrl);
-
-    const iconButton =
-        'flex min-h-9 min-w-9 items-center justify-center rounded text-muted-foreground transition-colors hover:text-foreground';
 </script>
 
 <Card class="py-0">

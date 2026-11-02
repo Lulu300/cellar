@@ -26,6 +26,8 @@ beforeAll(async () => {
         { storageCaseId: rack1, availability: BottleAvailability.AVAILABLE, vintage: 2015 },
         { storageCaseId: rack1, availability: BottleAvailability.AVAILABLE, vintage: 2018 },
         { storageCaseId: rack1, availability: BottleAvailability.OUT_OF_CELLAR },
+        // A drunk bottle keeps the case it was in (FEAT-12), without being there.
+        { storageCaseId: rack1, availability: BottleAvailability.CONSUMED, vintage: 2010 },
         { storageCaseId: rack2, availability: BottleAvailability.AVAILABLE }
     ]);
 });

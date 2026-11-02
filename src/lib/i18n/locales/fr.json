@@ -1125,6 +1125,7 @@
   "bottle_form.locations_not_loaded": "Les emplacements de ce vin n’ont pas pu être chargés.",
   "common.places_free": "{count, plural, one {# libre} other {# libres}}",
   "bottle_form.no_case_when_consumed": "Une bouteille bue n’est dans aucune case.",
+  "bottle_form.consumed_former_case": "Une bouteille bue ne prend pas de place dans une case. Elle était dans {caseName}.",
   "common.places_used": "{used, plural, one {# emplacement utilisé} other {# emplacements utilisés}} sur {capacity, number}",
   "wine_form.image_hint": "Une photo, réduite avant l’envoi, ou une image déjà enregistrée.",
   "wine_form.new_image": "Nouvelle image, envoyée à l’enregistrement",

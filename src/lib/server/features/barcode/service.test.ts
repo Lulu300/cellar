@@ -3,6 +3,7 @@ import { eq } from 'drizzle-orm';
 import { db } from '#lib/server/db/index.js';
 import { appSettings, wineBottles, wineDefinitions } from '#lib/server/db/schema.js';
 import { createBottles } from '#lib/server/features/bottles/service.js';
+import { createContainer } from '#lib/server/features/storage/service.js';
 import { failWrites } from '../../../../test/failing-write';
 import { bottleData, insertWineDefinition } from '../../../../test/wine';
 import { getBarcodeSettings } from './repository';
@@ -151,6 +152,27 @@ describe('exportBarcodeRange', () => {
                 'CV00000001,Château Margaux,,Margaux,2015,Still,Red,\n' +
                 'CV00000002,,,,,,,\n'
         );
+    });
+
+    // FEAT-12: a drunk bottle keeps the case it was in, which is not where it is.
+    it('names the case of a bottle still owned, not the one a drunk bottle left', () => {
+        updateBarcodeSettings({ autoGeneration: false, prefix: 'CV', startNumber: 1 });
+        const caseId = createContainer({ name: 'Rack', cases: ['1'], caseCapacities: [6] }).cases[0]
+            .id;
+        for (const [barcode, availability] of [
+            ['CV00000001', 'available'],
+            ['CV00000002', 'out_of_cellar'],
+            ['CV00000003', 'consumed']
+        ]) {
+            createBottles(
+                bottleData(definitionId, { barcode, availability, storageCaseId: caseId }),
+                1
+            );
+        }
+
+        const lines = exportBarcodeRange(1, 3, 'CV').csv.trim().split('\n').slice(1);
+
+        expect(lines.map((line) => line.split(',').at(-1))).toEqual(['Rack1', 'Rack1', '']);
     });
 
     it('guards a name that a spreadsheet would run, but not a code of the prefix -AB', () => {

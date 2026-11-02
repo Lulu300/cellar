@@ -180,20 +180,28 @@ describe('updateBottles', () => {
         expect(updateBottles(ids.slice(0, 2), { storageCaseId: small })).toHaveLength(2);
     });
 
-    it('brings no bottle back into a full case, nor bottles that would fill it past capacity', () => {
-        const caseId = newCase(3);
-        const ids = fullBottles(3, caseId).map((bottle) => bottle.id);
-        updateBottles(ids, { availability: BottleAvailability.OUT_OF_CELLAR });
-        createBottles(bottleData(definitionId, { storageCaseId: caseId }), 1);
+    // A bottle drunk keeps its case as one taken out does (FEAT-12): either comes back to it.
+    it.each([BottleAvailability.OUT_OF_CELLAR, BottleAvailability.CONSUMED])(
+        'brings no bottle %s back into a full case, nor bottles that would fill it past capacity',
+        (away) => {
+            const caseId = newCase(3);
+            const ids = fullBottles(3, caseId).map((bottle) => bottle.id);
+            updateBottles(ids, { availability: away });
+            expect(bottlesIn(caseId)).toHaveLength(3);
+            createBottles(bottleData(definitionId, { storageCaseId: caseId }), 1);
 
-        expect(() => updateBottles(ids, { availability: BottleAvailability.AVAILABLE })).toThrow(
-            caseFull
-        );
-        expect(bottlesIn(caseId).filter((b) => b.availability === 'available')).toHaveLength(1);
-        expect(
-            updateBottles(ids.slice(0, 2), { availability: BottleAvailability.AVAILABLE })
-        ).toHaveLength(2);
-    });
+            expect(() =>
+                updateBottles(ids, { availability: BottleAvailability.AVAILABLE })
+            ).toThrow(caseFull);
+            expect(bottlesIn(caseId).filter((b) => b.availability === 'available')).toHaveLength(1);
+            expect(
+                updateBottles(ids.slice(0, 2), { availability: BottleAvailability.AVAILABLE })
+            ).toEqual([
+                expect.objectContaining({ storageCaseId: caseId, consumedDate: null }),
+                expect.objectContaining({ storageCaseId: caseId, consumedDate: null })
+            ]);
+        }
+    );
 
     it('still takes bottles out of a case over its capacity', () => {
         const caseId = newCase(1);
@@ -243,10 +251,12 @@ describe('updateBottles', () => {
 
         expect(
             updateWineBottle(bottle.id, { availability: BottleAvailability.CONSUMED, consumedDate })
-        ).toMatchObject({ storageCaseId: null, consumedDate });
-        // A consumed bottle keeps its date when another field changes, and goes in no case.
-        expect(updateWineBottle(bottle.id, { notes: 'Lovely' })).toMatchObject({ consumedDate });
-        expect(updateWineBottle(bottle.id, { storageCaseId: caseId }).storageCaseId).toBeNull();
+        ).toMatchObject({ storageCaseId: caseId, consumedDate });
+        // A consumed bottle keeps its date when another field changes, and the case it was in.
+        expect(updateWineBottle(bottle.id, { notes: 'Lovely' })).toMatchObject({
+            storageCaseId: caseId,
+            consumedDate
+        });
         expect(
             updateWineBottle(bottle.id, { availability: BottleAvailability.OUT_OF_CELLAR })
                 .consumedDate
@@ -463,30 +473,28 @@ describe('createBottles', () => {
         expect(await addBottles(1)).toMatchObject([{ formatId: 'bottle', format: 'Bottle' }]);
     });
 
-    it('stores a consumed bottle nowhere, and dates only the consumption of a consumed one', async () => {
+    it('keeps the case of a consumed bottle, and dates only the consumption of a consumed one', async () => {
         useBarcodes({ auto: false });
         const consumedDate = '2026-10-01';
+        const caseId = newCase(5);
 
         const [drunk] = await createBottles(
             bottleData(definitionId, {
                 availability: 'consumed',
-                storageCaseId: 'rack1',
+                storageCaseId: caseId,
                 consumedDate
             }),
             1
         );
         const [kept] = await createBottles(bottleData(definitionId, { consumedDate }), 1);
 
-        expect(drunk).toMatchObject({ storageCaseId: null, consumedDate: new Date(consumedDate) });
+        expect(drunk).toMatchObject({
+            storageCaseId: caseId,
+            consumedDate: new Date(consumedDate)
+        });
         expect(kept.consumedDate).toBeNull();
         expect(
             updateWineBottle(kept.id, bottleData(definitionId, { consumedDate }))?.consumedDate
-        ).toBeNull();
-        expect(
-            updateWineBottle(
-                kept.id,
-                bottleData(definitionId, { availability: 'consumed', storageCaseId: 'rack1' })
-            )?.storageCaseId
         ).toBeNull();
     });
 });

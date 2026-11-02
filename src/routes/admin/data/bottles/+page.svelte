@@ -116,7 +116,8 @@
                     {bottle.barcode}</span
                 >
             {/if}
-            {#if bottle.storageCaseName}
+            <!-- A drunk bottle keeps the case it was in, but is no longer there -->
+            {#if bottle.storageCaseName && bottle.availability !== BottleAvailability.CONSUMED}
                 <span
                     ><strong>{m['common.label']({ label: m['common.location']() })}</strong>
                     {bottle.storageCaseName}</span

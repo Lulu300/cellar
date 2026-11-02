@@ -881,6 +881,39 @@ describe('POST /api/admin/import-csv', () => {
             });
         });
 
+        // FEAT-12: a drunk bottle keeps the case it was in, without taking a place there.
+        it('keeps the case of a consumed bottle when the cellar has it, and imports it in none otherwise', async () => {
+            const timestamps = { createdAt: new Date(), updatedAt: new Date() };
+            await db
+                .insert(storageContainers)
+                .values({ id: 'csv-drawer', name: 'Drawer', ...timestamps });
+            await db.insert(storageCases).values({
+                id: 'csv-full',
+                name: 'Full',
+                capacity: 1,
+                containerId: 'csv-drawer',
+                ...timestamps
+            });
+
+            const response = await importCsv(
+                'wineBottles.csv',
+                'wineName,formatName,storageCaseName,availability,notes\n' +
+                    'Viña Imaginaria,Bottle,Full,available,In the cellar\n' +
+                    'Viña Imaginaria,Bottle,Full,consumed,Drunk from Full\n' +
+                    'Viña Imaginaria,Bottle,Gone,consumed,Drunk from a case since removed\n'
+            );
+
+            expect((await response.json()).results[0]).toMatchObject({
+                successfulImports: 3,
+                errors: []
+            });
+            const caseOf = async (notes: string) =>
+                (await db.select().from(wineBottles).where(eq(wineBottles.notes, notes)))[0]
+                    .storageCaseId;
+            expect(await caseOf('Drunk from Full')).toBe('csv-full');
+            expect(await caseOf('Drunk from a case since removed')).toBeNull();
+        });
+
         it('imports new bottles without a barcode alike to bottles of the cellar with one', async () => {
             setAppSetting('barcode_auto_generation', 'false');
             const timestamps = { createdAt: new Date(), updatedAt: new Date() };

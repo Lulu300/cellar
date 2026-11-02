@@ -69,18 +69,30 @@ function wineSummary(wine: Wine) {
     };
 }
 
+/** Whether a bottle has this availability. */
+const isIn =
+    (availability: BottleAvailability) =>
+    (bottle: { availability: string }): boolean =>
+        bottle.availability === availability;
+
+// A bottle out of the cellar or drunk keeps the case it left, without taking a place there: the
+// answers name it `formerLocation` or `formerCaseId`, so that an assistant does not read it as where
+// the bottle is. `location` and `caseId` are those of a bottle in the cellar only.
+const inCellar = isIn(BottleAvailability.AVAILABLE);
+
 function bottleSummary(bottle: Bottle) {
     const { storageCase } = bottle;
+    const location = storageCase && {
+        container: storageCase.container && containerLabel(storageCase.container.name),
+        case: storageCase.name
+    };
     return {
         id: bottle.id,
         availability: bottle.availability,
         vintage: bottle.vintage,
         optimum: bottle.optimum,
         format: bottle.format,
-        location: storageCase && {
-            container: storageCase.container && containerLabel(storageCase.container.name),
-            case: storageCase.name
-        },
+        ...(inCellar(bottle) ? { location } : { formerLocation: location }),
         barcode: bottle.barcode,
         origin: bottle.origin?.name ?? null,
         purchasePrice: bottle.purchasePrice,
@@ -90,12 +102,6 @@ function bottleSummary(bottle: Bottle) {
         notes: bottle.notes
     };
 }
-
-/** Whether a bottle has this availability. */
-const isIn =
-    (availability: BottleAvailability) =>
-    (bottle: { availability: string }): boolean =>
-        bottle.availability === availability;
 
 /** Lowercase and without accents: « cotes du rhone » finds « Côtes du Rhône ». */
 const searchable = (text: string) =>
@@ -128,12 +134,12 @@ export function searchWines({ query = '', inCellarOnly, limit }: WineSearch) {
     const matches = matching(query);
     const found = listWines({ ownedOnly: true })
         .map(({ definition, bottles }) => {
-            const inCellar = bottles.filter(isIn(BottleAvailability.AVAILABLE));
+            const kept = bottles.filter(inCellar);
             return {
                 ...wineSummary(definition),
-                inCellar: inCellar.length,
+                inCellar: kept.length,
                 outOfCellar: bottles.filter(isIn(BottleAvailability.OUT_OF_CELLAR)).length,
-                vintages: [...new Set(inCellar.map((bottle) => bottle.vintage))].sort(
+                vintages: [...new Set(kept.map((bottle) => bottle.vintage))].sort(
                     (a, b) => (a ?? Infinity) - (b ?? Infinity)
                 )
             };
@@ -342,7 +348,9 @@ function writtenBottle(bottle: WineBottleWithFormat) {
         vintage: bottle.vintage,
         optimum: bottle.optimum,
         format: bottle.format,
-        caseId: bottle.storageCaseId,
+        ...(inCellar(bottle)
+            ? { caseId: bottle.storageCaseId }
+            : { formerCaseId: bottle.storageCaseId }),
         barcode: bottle.barcode,
         originId: bottle.originId,
         purchasePrice: bottle.purchasePrice,
@@ -399,8 +407,8 @@ export function addBottles({ wineId, quantity, caseId, ...bottle }: NewBottles) 
 }
 
 /**
- * Marks the bottles drunk on `date`, today when null, as the status dialog does: they leave their
- * case, and `note` goes after their notes.
+ * Marks the bottles drunk on `date`, today when null, as the status dialog does: each keeps the case
+ * it was in, without taking a place there, and `note` goes after their notes.
  */
 export function markDrunk(ids: string[], date: Date | null, note: string | null) {
     const changes = {
@@ -422,9 +430,9 @@ export function takeOut(ids: string[]) {
 }
 
 /**
- * Puts the bottles back in the cellar, in the case `caseId`, or when null in the case they were
- * taken out of, as the status dialog does: a drunk bottle loses its consumed date, and has no case
- * left to go back to.
+ * Puts the bottles back in the cellar, in the case `caseId`, or when null in the case each one left
+ * when taken out or drunk, as the status dialog does: a drunk bottle loses its consumed date. One
+ * drunk before 1.4.0 has no case left to go back to.
  */
 export function putBack(ids: string[], caseId: string | null) {
     const changes = {
@@ -434,7 +442,10 @@ export function putBack(ids: string[], caseId: string | null) {
     return updateBottles(ids, changes).map(writtenBottle);
 }
 
-/** Puts the bottles in the case: a drunk bottle stays out of any case. */
+/**
+ * Puts the bottles in the case, keeping their availability: for a bottle out of the cellar or drunk,
+ * that is the case it goes back to.
+ */
 export function moveBottles(ids: string[], caseId: string) {
     return updateBottles(ids, { storageCaseId: caseId }).map(writtenBottle);
 }

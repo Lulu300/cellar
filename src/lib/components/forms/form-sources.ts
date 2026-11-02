@@ -39,6 +39,8 @@ export type BottleFormSource = {
     currentValue: number | null;
     currentValueDate: Day;
     storageCaseId: string | null;
+    /** Its case, by name, when the screen has it. */
+    storageCase?: { name: string } | null;
     notes: string | null;
     barcode: string | null;
     availability: BottleAvailability;

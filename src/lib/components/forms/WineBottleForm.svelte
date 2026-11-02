@@ -66,6 +66,9 @@
     let originId = $state(initial.originId);
     let formatId = $state(initial.formatId);
     let storageCaseId = $state(initial.storageCaseId);
+    // The case of the bottle edited, which it keeps when drunk without taking a place there: made
+    // available again, it goes back to it, which the case field then shows chosen.
+    const formerCase = untrack(() => (editedId ? bottle?.storageCase?.name : undefined));
     let availability = $state(initial.availability);
     const consumed = $derived(availability === BottleAvailability.CONSUMED);
 
@@ -259,7 +262,9 @@
     {#if consumed}
         <FormField label={m['forms.storage_case']()}>
             <p class="rounded-md border bg-muted/20 px-3 py-2 text-sm italic text-muted-foreground">
-                {m['bottle_form.no_case_when_consumed']()}
+                {formerCase
+                    ? m['bottle_form.consumed_former_case']({ caseName: formerCase })
+                    : m['bottle_form.no_case_when_consumed']()}
             </p>
         </FormField>
     {:else}

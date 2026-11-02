@@ -1125,6 +1125,7 @@
   "bottle_form.locations_not_loaded": "The places of this wine could not be loaded.",
   "common.places_free": "{count} free",
   "bottle_form.no_case_when_consumed": "A consumed bottle is in no case.",
+  "bottle_form.consumed_former_case": "A consumed bottle takes no room in a case. It was in {caseName}.",
   "common.places_used": "{used, number} of {capacity, plural, one {# place} other {# places}} used",
   "wine_form.image_hint": "A photo, shrunk before it is sent, or an image already stored.",
   "wine_form.new_image": "New image, sent when you save",

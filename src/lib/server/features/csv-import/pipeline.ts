@@ -223,11 +223,14 @@ function importRow(table: TableName, record: CsvRecord, context: Context): Outco
 }
 
 function importBottle(record: CsvRecord, bottles: BottleImport, context: Context): Outcome {
-    // A consumed bottle is in no case, and the case it was in may be gone.
-    const consumed = normalized(record.availability) === BottleAvailability.CONSUMED;
+    // A consumed bottle keeps the case it was in, without taking a place there, but that case may
+    // be gone: it is then imported in no case rather than refused.
+    const caseGone =
+        normalized(record.availability) === BottleAvailability.CONSUMED &&
+        !context.index.find('storageCases', record.storageCaseName ?? '');
     const references = referencedIds(
         'wineBottles',
-        consumed ? { ...record, storageCaseName: '' } : record,
+        caseGone ? { ...record, storageCaseName: '' } : record,
         context
     );
     if ('failed' in references) return references;

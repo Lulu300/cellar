@@ -82,6 +82,10 @@ beforeEach(() => {
 const search = (query?: string, fields: { inCellarOnly?: boolean; limit?: number } = {}) =>
     searchWines({ query, inCellarOnly: false, limit: 50, ...fields });
 
+/** The fields of `object` among `keys` that it has. */
+const pick = (object: object, keys: string[]) =>
+    Object.fromEntries(Object.entries(object).filter(([key]) => keys.includes(key)));
+
 const namesOf = ({ wines }: { wines: { name: string }[] }) => wines.map((wine) => wine.name);
 
 describe('searchWines', () => {
@@ -136,28 +140,37 @@ describe('wineWithBottles', () => {
             cases: ['1'],
             caseCapacities: [6]
         });
+        const inB1 = { storageCaseId: cases[0].id };
         await insertBottles(margaux, [
-            { id: 'here', availability: 'available', storageCaseId: cases[0].id, vintage: 2015 },
-            { id: 'out', availability: 'out_of_cellar', notes: 'Lent' },
+            { id: 'here', availability: 'available', ...inB1, vintage: 2015 },
+            { id: 'out', availability: 'out_of_cellar', ...inB1, notes: 'Lent' },
+            { id: 'nowhere', availability: 'out_of_cellar' },
             {
                 id: 'drunk',
                 availability: 'consumed',
+                ...inB1,
                 consumedDate: new Date('2026-09-12T20:00:00Z'),
                 notes: 'With roast chicken'
             }
         ]);
+        // As the storage page names it.
+        const b1 = { container: 'B', case: 'Column B1' };
 
         const wine = wineWithBottles(margaux);
 
         expect(wine).toMatchObject({ id: margaux, name: 'Château Margaux', color: 'Red' });
-        expect(wine.bottles.map((bottle) => [bottle.id, bottle.location])).toEqual([
-            // As the storage page names it.
-            ['here', { container: 'B', case: 'Column B1' }],
-            ['out', null]
+        // Only a bottle in the cellar has a location: the others name the case they left so that
+        // an assistant does not look for them there (FEAT-12).
+        const places = (bottles: object[]) =>
+            bottles.map((bottle) => pick(bottle, ['id', 'location', 'formerLocation']));
+        expect(places(wine.bottles)).toEqual([
+            { id: 'here', location: b1 },
+            { id: 'out', formerLocation: b1 },
+            { id: 'nowhere', formerLocation: null }
         ]);
+        expect(places(wine.consumed)).toEqual([{ id: 'drunk', formerLocation: b1 }]);
         expect(wine.consumed).toEqual([
             expect.objectContaining({
-                id: 'drunk',
                 consumedDate: '2026-09-12',
                 notes: 'With roast chicken'
             })
@@ -427,7 +440,7 @@ describe('addBottles', () => {
 });
 
 describe('markDrunk', () => {
-    it('marks the bottles drunk on the day given, out of their case, the note after their notes', async () => {
+    it('marks the bottles drunk on the day given, keeping their case, the note after their notes', async () => {
         const { cases } = createContainer({ name: 'Rack', cases: ['1'], caseCapacities: [6] });
         await insertBottles(margaux, [
             { id: 'a', storageCaseId: cases[0].id, notes: 'Gift from Anna' },
@@ -436,11 +449,14 @@ describe('markDrunk', () => {
 
         const drunk = markDrunk(['a', 'b'], new Date('2026-10-30'), 'With roast chicken');
 
+        expect(drunk[0]).not.toHaveProperty('caseId');
+        // Drunk, they take no room in their case.
+        expect(freeSpace().containers[0].cases[0]).toMatchObject({ bottles: 0, free: 6 });
         expect(drunk).toEqual([
             expect.objectContaining({
                 id: 'a',
                 availability: 'consumed',
-                caseId: null,
+                formerCaseId: cases[0].id,
                 consumedDate: '2026-10-30',
                 notes: 'Gift from Anna\nWith roast chicken'
             }),
@@ -521,7 +537,11 @@ describe('takeOut and putBack', () => {
         ]);
 
         expect(takeOut(['a'])).toEqual([
-            expect.objectContaining({ id: 'a', availability: 'out_of_cellar', caseId: cases[0].id })
+            expect.objectContaining({
+                id: 'a',
+                availability: 'out_of_cellar',
+                formerCaseId: cases[0].id
+            })
         ]);
         // Out of the cellar, a bottle takes no room in its case: the other one goes back there.
         expect(putBack(['b'], null)).toEqual([
@@ -543,8 +563,46 @@ describe('takeOut and putBack', () => {
 
         expect(back).toMatchObject({ availability: 'available', caseId: cases[0].id });
         expect(back).toHaveProperty('consumedDate', null);
-        expect(out).toMatchObject({ availability: 'out_of_cellar', caseId: null });
+        expect(out).toMatchObject({ availability: 'out_of_cellar' });
         expect(out).toHaveProperty('consumedDate', null);
+    });
+
+    // FEAT-12: a bottle drunk keeps its case, without taking room there, and goes back to it.
+    it('put a bottle drunk by mistake back in its case, or refuse when the case filled up', async () => {
+        const { cases } = createContainer({
+            name: 'Rack',
+            cases: ['1', '2'],
+            caseCapacities: [1, 6]
+        });
+        const [small, large] = cases.map(({ id }) => id);
+        await insertBottles(margaux, [
+            { id: 'a', storageCaseId: small },
+            { id: 'b', storageCaseId: large },
+            // Drunk before 1.4.0, when a drunk bottle lost its case.
+            { id: 'old', availability: 'consumed', consumedDate: new Date('2025-01-01') }
+        ]);
+        const counts = () => freeSpace().containers[0].cases.map(({ bottles }) => bottles);
+        markDrunk(['a', 'b'], new Date('2026-10-30'), null);
+        expect(counts()).toEqual([0, 0]);
+
+        expect(putBack(['b', 'old'], null)).toEqual([
+            expect.objectContaining({ id: 'b', availability: 'available', caseId: large }),
+            expect.objectContaining({ id: 'old', availability: 'available' })
+        ]);
+        expect(counts()).toEqual([0, 1]);
+        expect(listBottlesWithDefinitions(margaux).find(({ id }) => id === 'old')).toMatchObject({
+            storageCaseId: null,
+            consumedDate: null
+        });
+
+        // The case filled up while the bottle was drunk: it does not come back, nor any other.
+        await insertBottles(barolo, [{ id: 'newcomer', storageCaseId: small }]);
+        expect(() => putBack(['a'], null)).toThrow(expect.objectContaining({ code: 'case_full' }));
+        expect(listBottlesWithDefinitions(margaux).find(({ id }) => id === 'a')).toMatchObject({
+            availability: 'consumed',
+            storageCaseId: small
+        });
+        expect(putBack(['a'], large)[0]).toMatchObject({ caseId: large });
     });
 
     it('change none of the bottles when one does not exist or the case has no room for them', async () => {

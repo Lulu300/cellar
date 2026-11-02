@@ -297,6 +297,27 @@ describe('POST /api/admin/import-json', () => {
         expect((await response.json()).backup).toBe(dataFiles()[0]);
     });
 
+    // FEAT-12: a drunk bottle keeps the case it was in, where putting it back returns it.
+    it('puts back the case that a drunk bottle kept, without counting it there', async () => {
+        await db.insert(wineBottles).values({
+            id: 'drunk',
+            definitionId: 'margaux',
+            formatId: 'bottle',
+            storageCaseId: 'rack1',
+            availability: 'consumed',
+            consumedDate: new Date('2026-10-30T00:00:00Z'),
+            ...timestamps
+        });
+        const zip = await exportZip();
+        await db.delete(wineBottles);
+
+        expect((await importZip(zip)).status).toBe(200);
+
+        const [drunk] = await db.select().from(wineBottles).where(eq(wineBottles.id, 'drunk'));
+        expect(drunk).toMatchObject({ availability: 'consumed', storageCaseId: 'rack1' });
+        expect(storageOverview()[0].cases[0].bottles).toBe(1);
+    });
+
     it('imports an export made before wines had other photos and a wishlist', async () => {
         const data = JSON.parse(JSON.stringify(await snapshot()));
         delete data.winePhotos;

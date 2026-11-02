@@ -60,7 +60,7 @@ function statusChanges(bottle: BulkBottle, availability: string): boolean {
     return !!availability && availability !== bottle.availability;
 }
 
-// A consumed bottle has no location (the API clears it), so a move never applies to it
+// A consumed bottle is in no case (it only keeps the one it left), so a move never applies to it
 function locationApplies(bottle: BulkBottle, availability: string, caseId: string): boolean {
     return !!caseId && finalAvailability(bottle, availability) !== BottleAvailability.CONSUMED;
 }

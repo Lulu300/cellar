@@ -117,6 +117,8 @@ beforeEach(() => {
                 definitionId: 'white',
                 availability: 'consumed',
                 consumedDate: new Date('2025-02-01T00:00:00Z'),
+                // The case it was in, which it keeps without taking a place there (FEAT-12).
+                storageCaseId: 'rack1',
                 barcode: 'RT0002'
             },
             // Two bottles alike: both are kept, and neither is added again.
@@ -611,7 +613,8 @@ describe('CSV export then import of the cases', () => {
         db.update(wineBottles).set({ storageCaseId: 'a1-1' }).where(eq(wineBottles.id, 'b1')).run();
         db.update(wineBottles).set({ storageCaseId: 'a-11' }).where(eq(wineBottles.id, 'b5')).run();
         const before = placeOfBottles();
-        expect(before).toEqual({ 2015: 'A1 / A11', 2020: 'A / A11' });
+        // The bottle drunk, without a vintage, keeps the case it was in.
+        expect(before).toEqual({ 2015: 'A1 / A11', 2020: 'A / A11', null: 'Rack / Rack1' });
         const files = await exportAll();
         emptyCellar();
 

@@ -39,15 +39,15 @@ export {
 /** A bottle with the name of its format. */
 export type WineBottleWithFormat = WineBottle & { format: string };
 
-type ConsumptionFields = Pick<WineBottle, 'availability' | 'storageCaseId' | 'consumedDate'>;
+type ConsumptionFields = Pick<WineBottle, 'availability' | 'consumedDate'>;
 
 /**
- * A consumed bottle is stored nowhere any more, and only a consumed bottle has a consumption
- * date.
+ * Only a consumed bottle has a consumption date. A consumed bottle keeps its case, as one out of
+ * the cellar does, without taking a place there: put back in the cellar, it goes back to it.
  */
 function withConsumptionRule<Bottle extends ConsumptionFields>(bottle: Bottle): Bottle {
     return bottle.availability === BottleAvailability.CONSUMED
-        ? { ...bottle, storageCaseId: null }
+        ? bottle
         : { ...bottle, consumedDate: null };
 }
 
@@ -57,9 +57,10 @@ function withNote(notes: string | null, note: string): string {
 }
 
 /**
- * What to write on `bottle`: `changes`, `addedNote` after its notes once changed, and the place and
- * consumption date that the consumption rule gives it once changed. They are the ones it has when
- * the rule changes nothing.
+ * What to write on `bottle`: `changes`, `addedNote` after its notes once changed, and the
+ * consumption date that the consumption rule gives it once changed. Its case goes with them, the
+ * one it has when `changes` leaves it: the capacity check reads it there, so that a bottle put back
+ * in the cellar counts in the case it kept.
  */
 function changesFor(
     bottle: WineBottle,
@@ -67,10 +68,10 @@ function changesFor(
     addedNote: string | null
 ): BottleChanges {
     const changed = { ...bottle, ...changes };
-    const { storageCaseId, consumedDate } = withConsumptionRule(changed);
+    const { consumedDate } = withConsumptionRule(changed);
     return {
         ...changes,
-        storageCaseId,
+        storageCaseId: changed.storageCaseId,
         consumedDate,
         ...(addedNote && { notes: withNote(changed.notes, addedNote) })
     };

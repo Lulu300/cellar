@@ -16,6 +16,7 @@ import {
     setAppSettings
 } from '#lib/server/features/settings/repository.js';
 import { BARCODE_LENGTH, LEGACY_BARCODE_LENGTH, maxBarcodeNumber } from '#lib/shared/barcode.js';
+import { BottleAvailability } from '#lib/shared/bottle-availability.js';
 
 export interface BarcodeSettings {
     autoGeneration: boolean;
@@ -147,26 +148,35 @@ export interface BarcodeRow {
 
 /** The bottles with a barcode that `condition` selects, in the order of their barcodes. */
 function barcodeRows(condition: SQL | undefined): BarcodeRow[] {
-    return db
-        .select({
-            barcode: wineBottles.barcode,
-            vintage: wineBottles.vintage,
-            wineName: wineDefinitions.name,
-            producer: wineDefinitions.producer,
-            appellationName: appellations.name,
-            typeName: wineTypes.type,
-            colorName: wineColors.color,
-            storageCaseName: storageCases.name
-        })
-        .from(wineBottles)
-        .innerJoin(wineDefinitions, eq(wineBottles.definitionId, wineDefinitions.id))
-        .innerJoin(appellations, eq(wineDefinitions.appellationId, appellations.id))
-        .innerJoin(wineTypes, eq(wineDefinitions.typeId, wineTypes.id))
-        .innerJoin(wineColors, eq(wineDefinitions.colorId, wineColors.id))
-        .leftJoin(storageCases, eq(wineBottles.storageCaseId, storageCases.id))
-        .where(and(hasBarcode, condition))
-        .orderBy(wineBottles.barcode)
-        .all();
+    return (
+        db
+            .select({
+                barcode: wineBottles.barcode,
+                vintage: wineBottles.vintage,
+                wineName: wineDefinitions.name,
+                producer: wineDefinitions.producer,
+                appellationName: appellations.name,
+                typeName: wineTypes.type,
+                colorName: wineColors.color,
+                storageCaseName: storageCases.name
+            })
+            .from(wineBottles)
+            .innerJoin(wineDefinitions, eq(wineBottles.definitionId, wineDefinitions.id))
+            .innerJoin(appellations, eq(wineDefinitions.appellationId, appellations.id))
+            .innerJoin(wineTypes, eq(wineDefinitions.typeId, wineTypes.id))
+            .innerJoin(wineColors, eq(wineDefinitions.colorId, wineColors.id))
+            // A drunk bottle keeps the case it was in, but is not there: its line names no place.
+            .leftJoin(
+                storageCases,
+                and(
+                    eq(wineBottles.storageCaseId, storageCases.id),
+                    ne(wineBottles.availability, BottleAvailability.CONSUMED)
+                )
+            )
+            .where(and(hasBarcode, condition))
+            .orderBy(wineBottles.barcode)
+            .all()
+    );
 }
 
 /** Every bottle with a barcode. */

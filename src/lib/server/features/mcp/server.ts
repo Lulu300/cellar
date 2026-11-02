@@ -84,6 +84,15 @@ const changes = (idempotent: boolean): ToolAnnotations => ({
 const withoutNulls = (_key: string, value: unknown) => (value === null ? undefined : value);
 
 /**
+ * The text of a refusal: its message, then the `details` that the API would answer with it, as
+ * JSON on a line of their own. The message names a few of the bottles in cause; the details name
+ * them all, or the wish already there, so that the assistant can act on them.
+ */
+function refusalText({ message, details }: { message: string; details?: unknown }): string {
+    return details === undefined ? message : `${message}\nDetails: ${JSON.stringify(details)}`;
+}
+
+/**
  * The answer of a tool: what `read` returns as JSON, or the error to show the assistant. An error
  * that the API would answer, such as an unknown wine or a full case, and the refusal of a read-only
  * token say what went wrong; any other is logged and stays here.
@@ -94,7 +103,8 @@ async function answer(tool: string, read: () => unknown): Promise<CallToolResult
         return { content: [{ type: 'text', text }] };
     } catch (error) {
         const refusal = error instanceof ReadOnlyTokenError ? error : apiErrorOf(error, 'POST');
-        if (refusal) return { isError: true, content: [{ type: 'text', text: refusal.message }] };
+        if (refusal)
+            return { isError: true, content: [{ type: 'text', text: refusalText(refusal) }] };
         console.error(`MCP tool ${tool} failed:`, error);
         return { isError: true, content: [{ type: 'text', text: 'Internal server error' }] };
     }

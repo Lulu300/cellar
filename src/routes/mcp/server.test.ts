@@ -6,7 +6,7 @@ import {
 } from '#lib/server/features/bottles/service.js';
 import type { McpAccess } from '#lib/server/features/mcp/token.js';
 import { createContainer, storageOverview } from '#lib/server/features/storage/service.js';
-import { createWish } from '#lib/server/features/wishlist/service.js';
+import { createWish, removeWish } from '#lib/server/features/wishlist/service.js';
 import { holdWrites } from '#lib/server/write-gate.js';
 import { wishSchema } from '#lib/shared/schemas/wish.js';
 import { fakeEvent } from '../../test/event';
@@ -402,7 +402,10 @@ describe('POST /mcp', () => {
             );
 
             expect(textOf(missing)).toEqual([true, 'An entry it refers to does not exist']);
-            expect(textOf(unknown)).toEqual([true, 'No bottle with the id gone']);
+            expect(textOf(unknown)).toEqual([
+                true,
+                'No bottle with the id gone\nDetails: {"ids":["gone"]}'
+            ]);
             expect(textOf(taken)).toEqual([
                 true,
                 'This barcode is already assigned to another bottle'
@@ -411,10 +414,66 @@ describe('POST /mcp', () => {
                 true,
                 'A barcode can only be given to a single bottle'
             ]);
-            expect(textOf(deleted)).toEqual([true, 'No bottle with the id gone']);
+            expect(textOf(deleted)).toEqual([
+                true,
+                'No bottle with the id gone\nDetails: {"ids":["gone"]}'
+            ]);
             expect(listBottlesWithDefinitions(margaux).map(({ id }) => id)).toContain('other');
             expect(errors).not.toHaveBeenCalled();
             errors.mockRestore();
+        });
+
+        // FEAT-12: the message names a few, the details all of them, for the assistant to act on.
+        it('gives the details of a refusal after its message: every bottle and wish in cause', async () => {
+            const detailsOf = ({ result }: { result: CallResult }) => {
+                expect(result.isError).toBe(true);
+                const [message, details, ...rest] = result.content[0].text.split('\n');
+                expect(rest).toEqual([]);
+                expect(details.startsWith('Details: ')).toBe(true);
+                return [message, JSON.parse(details.slice('Details: '.length))];
+            };
+            const [bottle] = listBottlesWithDefinitions(margaux);
+
+            const missing = Array.from({ length: 12 }, (_, i) => `missing-${i + 1}`);
+            expect(
+                detailsOf(
+                    await modernCall(
+                        'take_bottles_out',
+                        { bottleIds: [bottle.id, ...missing] },
+                        WRITE
+                    )
+                )
+            ).toEqual([
+                'No bottle with the id missing-1, missing-2, missing-3, missing-4, missing-5, missing-6, missing-7, missing-8, missing-9, missing-10 and 2 more',
+                { ids: missing }
+            ]);
+
+            await modernCall(
+                'update_bottle_notes',
+                { bottleIds: [bottle.id], notes: 'x'.repeat(4_990) },
+                WRITE
+            );
+            expect(
+                detailsOf(
+                    await modernCall(
+                        'mark_bottles_drunk',
+                        { bottleIds: [bottle.id], note: 'A long dinner' },
+                        WRITE
+                    )
+                )
+            ).toEqual([
+                'The note does not fit after the notes of 1 bottle(s): notes hold 5000 characters at most',
+                { ids: [bottle.id], bottles: 1, maximum: 5_000 }
+            ]);
+
+            const wish = createWish(wishSchema.parse({ definitionId: margaux }));
+            onTestFinished(() => {
+                removeWish(wish.id);
+            });
+            expect(
+                detailsOf(await modernCall('add_wish', { wineId: margaux, quantity: 2 }, WRITE))
+            ).toEqual(['This wine is already on the wishlist', { wishId: wish.id }]);
+            await modernCall('update_bottle_notes', { bottleIds: [bottle.id], notes: null }, WRITE);
         });
 
         it('checks the arguments with the rules of the API', async () => {

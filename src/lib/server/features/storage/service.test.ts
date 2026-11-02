@@ -93,7 +93,9 @@ describe('updateContainer', () => {
         putBottles(caseId, 3);
 
         expect(() => edit(containerId, caseId, 2)).toThrow(
-            expect.objectContaining({ details: { caseName: 'A1', capacity: 2, bottles: 3 } })
+            expect.objectContaining({
+                details: { caseId, caseName: 'A1', capacity: 2, bottles: 3 }
+            })
         );
     });
 

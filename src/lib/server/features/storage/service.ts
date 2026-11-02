@@ -72,11 +72,11 @@ export function listCases() {
 
 /** A case would hold more available bottles than its capacity. */
 class CaseFullError extends ConflictError {
-    constructor({ name, capacity, bottles }: CaseLoad) {
+    constructor({ id, name, capacity, bottles }: CaseLoad) {
         super(
             'case_full',
             `Case ${name} would hold ${bottles} bottles in the cellar, for a capacity of ${capacity}`,
-            { caseName: name, capacity, bottles }
+            { caseId: id, caseName: name, capacity, bottles }
         );
     }
 }

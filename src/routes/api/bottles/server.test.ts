@@ -274,7 +274,11 @@ describe('PATCH /api/bottles', () => {
         const response = await patch({ ids: moved, changes: { storageCaseId: cases[0].id } });
 
         expect(response.status).toBe(409);
-        expect((await response.json()).error.code).toBe('case_full');
+        // FEAT-13: the case's id, for a client to look at what it holds.
+        expect((await response.json()).error).toMatchObject({
+            code: 'case_full',
+            details: { caseId: cases[0].id, caseName: 'Small1', capacity: 1, bottles: 2 }
+        });
         expect(rowsOf(moved)).toEqual(before);
     });
 

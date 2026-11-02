@@ -105,7 +105,7 @@ Every error that a route answers has this body:
   "error": {
     "code": "case_full",
     "message": "Case A1 would hold 13 bottles in the cellar, for a capacity of 12",
-    "details": { "caseName": "A1", "capacity": 12, "bottles": 13 }
+    "details": { "caseId": "5da8a7f8-…", "caseName": "A1", "capacity": 12, "bottles": 13 }
   }
 }
 ```
@@ -809,7 +809,7 @@ Creates one or more identical bottles of a wine, all or none.
   [bottle fields](#bottle-fields)) and their number.
 - **Errors:**
   - `409 case_full` when the case would hold more available bottles than its capacity; `details` is
-    `{ "caseName", "capacity", "bottles" }`.
+    `{ "caseId", "caseName", "capacity", "bottles" }`.
   - `409 duplicate_barcode` when another bottle already has the barcode.
   - `409 barcode_range` when automatic barcodes have no number left under their prefix.
   - `409 barcode_prefix_too_long` when a bottle takes the next barcode and the configured prefix is
@@ -1485,8 +1485,8 @@ kept case is renamed after the container and gets its new position and capacity.
   - `404 not_found` when the container does not exist, or when `caseIds` holds an id that is not a
     case of this container.
   - `409 case_full` when a kept case would get a capacity below the number of available bottles it
-    holds; `details` is `{ "caseName", "capacity", "bottles" }`. A case that was already over its
-    capacity (after an import, say) is refused only when the change puts it further over.
+    holds; `details` is `{ "caseId", "caseName", "capacity", "bottles" }`. A case that was already
+    over its capacity (after an import, say) is refused only when the change puts it further over.
   - `409 case_holds_bottles` when a case to delete still holds an available bottle; `details` is
     `{ "caseName", "bottles" }`. Bottles that left the cellar do not prevent the deletion: they lose
     their case.

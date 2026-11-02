@@ -23,6 +23,7 @@
     import type { BottleWithDefinitionDTO } from '#lib/shared/dto.js';
     import { typeBadgeClass } from '#lib/utils/wine-badges.js';
     import WineColorBadge from '#lib/components/wines/WineColorBadge.svelte';
+    import { storageLocations } from '#lib/components/wines/wine-facts.js';
     import { ownedBottles, vintageRange } from '#lib/utils/wine-group-sort.js';
     import { sortBottles } from '#lib/utils/bottle-sort.js';
 
@@ -66,20 +67,7 @@
 
     const vintages = $derived(vintageRange(availableBottles));
 
-    // Get unique storage locations with counts for available bottles only
-    const storageLocations = $derived(
-        availableBottles.reduce(
-            (acc, bottle) => {
-                const location = bottle.storageCase?.name || m['common.not_available']();
-                if (!acc[location]) {
-                    acc[location] = 0;
-                }
-                acc[location]++;
-                return acc;
-            },
-            {} as Record<string, number>
-        )
-    );
+    const locations = $derived(storageLocations(bottles));
 
     // The storage page has cases to highlight only for a bottle in the cellar, in a case: one out
     // of the cellar keeps its case without being in it.
@@ -290,7 +278,7 @@
         </Card>
 
         <!-- Storage Locations -->
-        {#if Object.keys(storageLocations).length > 0}
+        {#if Object.keys(locations).length > 0}
             <div class="bg-muted/20 rounded-lg p-3 border">
                 <div class="flex flex-wrap items-center gap-2 mb-2">
                     <MapPin class="h-4 w-4 text-muted-foreground" />
@@ -308,7 +296,7 @@
                     {/if}
                 </div>
                 <div class="flex flex-wrap gap-2">
-                    {#each Object.entries(storageLocations) as [location, count] (location)}
+                    {#each Object.entries(locations) as [location, count] (location)}
                         <Badge variant="outline" class="text-xs">
                             {location} ({count})
                         </Badge>

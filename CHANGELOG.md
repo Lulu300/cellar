@@ -4,6 +4,33 @@
 
 Upgrade actions are also collected in [UPGRADING.md](UPGRADING.md).
 
+## 1.4.1
+
+1.4.1 makes the buttons react visibly when the pointer is over them, in the light and the dark theme.
+
+Every kind of button now follows one rule. A filled button, such as the number of bottles on a wine card, darkens in the light theme and lightens in the dark theme. A quiet button, such as the icons of a card, a table header or a storage case, takes the light background of the menus. The ring that shows the button reached with the keyboard is drawn in the full colour of the theme, links included. A disabled button no longer reacts. On the storage page, every container now gets the same neutral name pill: colour there tells the colour of the wines.
+
+### Upgrade actions
+
+None.
+
+### Changes
+
+#### Bug fixes
+
+- **storage:** Give every container the same neutral name pill (39a8c63)
+- **ui:** Make the hover and focus of every button variant visible (a52e4a5)
+- **ui:** Give the hand-made buttons the states of the Button component (ac33ee2)
+- **ui:** Let a chosen tile react to the pointer, and ring the photo remover (3180d38)
+- **ui:** Keep the switch, photo thumbnails and select triggers still while disabled (695ecf0)
+- **ui:** Keep a disabled select trigger still in dark mode too (9eba7a8)
+- **ui:** Keep a chosen tile readable under the pointer, and its focus visible (0fd111a)
+- **ui:** Keep the grey hints of a chosen tile at rest, and test them on its hover (5623eda)
+
+#### Documentation
+
+- **release:** Describe the button states in the 1.4.1 summary (80ee2ab)
+
 ## 1.4.0
 
 1.4.0 adds a list view of the wines next to the cards, gives each wine colour a real colour, shown on the storage page, in the statistics and on the wine cards, turns the storage page into a map of the cellar, and gives an AI assistant more to do and more context: it can take bottles out of the cellar, put them back and edit wines and bottles, and every refusal says exactly what is wrong.

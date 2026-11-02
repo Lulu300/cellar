@@ -223,16 +223,17 @@ function importRow(table: TableName, record: CsvRecord, context: Context): Outco
 }
 
 function importBottle(record: CsvRecord, bottles: BottleImport, context: Context): Outcome {
+    let references = referencedIds('wineBottles', record, context);
     // A consumed bottle keeps the case it was in, without taking a place there, but that case may
-    // be gone: it is then imported in no case rather than refused.
+    // be gone, or its container: it is then imported in no case rather than refused.
     const caseGone =
-        normalized(record.availability) === BottleAvailability.CONSUMED &&
-        !context.index.find('storageCases', record.storageCaseName ?? '');
-    const references = referencedIds(
-        'wineBottles',
-        caseGone ? { ...record, storageCaseName: '' } : record,
-        context
-    );
+        'failed' in references &&
+        references.failed.every(
+            (problem) => 'column' in problem && problem.column === 'storageCaseName'
+        );
+    if (caseGone && normalized(record.availability) === BottleAvailability.CONSUMED) {
+        references = referencedIds('wineBottles', { ...record, storageCaseName: '' }, context);
+    }
     if ('failed' in references) return references;
     const checked = importedRow('wineBottles', { ...csvValues(record), ...references.ids });
     if ('problems' in checked) return { failed: checked.problems };

@@ -897,21 +897,30 @@ describe('POST /api/admin/import-csv', () => {
 
             const response = await importCsv(
                 'wineBottles.csv',
-                'wineName,formatName,storageCaseName,availability,notes\n' +
-                    'Viña Imaginaria,Bottle,Full,available,In the cellar\n' +
-                    'Viña Imaginaria,Bottle,Full,consumed,Drunk from Full\n' +
-                    'Viña Imaginaria,Bottle,Gone,consumed,Drunk from a case since removed\n'
+                'wineName,formatName,containerName,storageCaseName,availability,notes\n' +
+                    'Viña Imaginaria,Bottle,,Full,available,In the cellar\n' +
+                    'Viña Imaginaria,Bottle,,Full,consumed,Drunk from Full\n' +
+                    'Viña Imaginaria,Bottle,,Gone,consumed,Drunk from a case since removed\n' +
+                    // A case of this name is left, in another container: not the one it was in.
+                    'Viña Imaginaria,Bottle,Removed,Full,consumed,Drunk from a container since removed\n' +
+                    'Viña Imaginaria,Bottle,,Gone,available,In a case that does not exist\n'
             );
 
             expect((await response.json()).results[0]).toMatchObject({
-                successfulImports: 3,
-                errors: []
+                successfulImports: 4,
+                errors: [
+                    {
+                        row: 5,
+                        problems: [{ code: 'unknown_reference', column: 'storageCaseName' }]
+                    }
+                ]
             });
             const caseOf = async (notes: string) =>
                 (await db.select().from(wineBottles).where(eq(wineBottles.notes, notes)))[0]
                     .storageCaseId;
             expect(await caseOf('Drunk from Full')).toBe('csv-full');
             expect(await caseOf('Drunk from a case since removed')).toBeNull();
+            expect(await caseOf('Drunk from a container since removed')).toBeNull();
         });
 
         it('imports new bottles without a barcode alike to bottles of the cellar with one', async () => {

@@ -2,7 +2,7 @@
     import { CircleAlert, CircleCheckBig, X } from '@lucide/svelte';
     import { fly } from 'svelte/transition';
     import { m } from '#lib/paraglide/messages.js';
-    import { quietButton } from '#lib/components/layout/button-states.js';
+    import { quietButton } from './button-states.js';
 
     let {
         message,

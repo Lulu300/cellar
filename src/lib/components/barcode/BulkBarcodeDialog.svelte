@@ -33,7 +33,7 @@
         type Line,
         type Row
     } from '#lib/components/barcode/bulk-barcode.js';
-    import { quietButton } from '#lib/components/layout/button-states.js';
+    import { buttonStates, chosenTile, quietButton } from '#lib/components/layout/button-states.js';
 
     let {
         open = $bindable(false),
@@ -390,10 +390,10 @@
                                 {@const Icon = option.icon}
                                 <button
                                     type="button"
-                                    class="flex flex-col items-start gap-1 rounded-md border p-3 text-left {quietButton} {action ===
+                                    class="flex flex-col items-start gap-1 rounded-md border p-3 text-left {action ===
                                     option.value
-                                        ? 'border-primary bg-primary/10'
-                                        : ''}"
+                                        ? `${buttonStates} border-primary ${chosenTile}`
+                                        : quietButton}"
                                     onclick={() => selectAction(option.value)}
                                     aria-pressed={action === option.value}
                                     disabled={changes.sending}

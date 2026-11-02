@@ -52,7 +52,8 @@
     --sidebar-ring: oklch(0.47 0.14 226);
     /* The hover of a filled button: its fill takes 15% of the text colour of the page, darker in
        light mode and lighter in dark mode (UI-33). Made from the theme's own colours, so that
-       every theme follows; a theme whose button text would fall short of 4.5:1 sets its own. */
+       every theme follows. A theme sets its own when its button text would fall short of 4.5:1,
+       or when its light primary would barely change. */
     --primary-hover: color-mix(in oklab, var(--primary), var(--foreground) 15%);
     --secondary-hover: color-mix(in oklab, var(--secondary), var(--foreground) 15%);
     --destructive-hover: color-mix(in oklab, var(--destructive), var(--foreground) 15%);

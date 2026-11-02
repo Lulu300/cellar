@@ -5,6 +5,7 @@
     import { formatFileSize } from '#lib/utils/format.js';
     import FormField from './FormField.svelte';
     import PhotoCapture from './PhotoCapture.svelte';
+    import { focusRing } from '#lib/components/layout/button-states.js';
 
     /**
      * A photo of a form: an image already stored, by its id, or a new photo taken or chosen, which
@@ -66,7 +67,7 @@
                      would let show through the white cross -->
                 <button
                     type="button"
-                    class="absolute -right-2 -top-2 flex h-6 w-6 items-center justify-center rounded-full bg-red-700 text-white hover:bg-red-800"
+                    class="absolute -right-2 -top-2 flex h-6 w-6 items-center justify-center rounded-full bg-red-700 text-white transition-colors hover:bg-red-800 {focusRing}"
                     aria-label={m['wine_form.remove_image']()}
                     onclick={remove}
                 >

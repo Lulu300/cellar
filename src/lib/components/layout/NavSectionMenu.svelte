@@ -4,7 +4,7 @@
     import NavCount from './NavCount.svelte';
     import NavRow from './NavRow.svelte';
     import { isInSection, signalOf, type NavItem, type NavSection } from './navigation.js';
-    import { focusRing } from '#lib/components/layout/button-states.js';
+    import { focusRing } from './button-states.js';
 
     /**
      * A section of the top bar. Its name links to its first page, which a tap on a touch screen

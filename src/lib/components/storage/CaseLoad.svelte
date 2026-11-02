@@ -5,7 +5,7 @@
     import { formatNumber, formatPercent } from '#lib/utils/format.js';
     import { wineColorStyle } from '#lib/utils/wine-color.js';
     import { utilization, utilizationColor } from './storage.js';
-    import { quietButton } from '#lib/components/layout/button-states.js';
+    import { buttonStates, chosenTile, quietButton } from '#lib/components/layout/button-states.js';
 
     /**
      * A case with a bottle icon per place, filled for each bottle it holds, and how full it is: a
@@ -83,9 +83,8 @@
     type="button"
     class={[
         'w-full rounded-md text-left',
-        quietButton,
         compact ? 'border p-2' : 'p-1 text-center',
-        highlighted && 'ring-2 ring-primary bg-primary/10'
+        highlighted ? `${buttonStates} ring-2 ring-primary ${chosenTile}` : quietButton
     ]}
     aria-label={highlighted
         ? m['storage.open_case_holding_wine']({ name, bottles, capacity })

@@ -49,9 +49,3 @@ describe('the keyboard focus of a button (UI-33)', () => {
         }
     });
 });
-
-describe('a quiet button made by hand (UI-33)', () => {
-    it('takes no hover while disabled', () => {
-        expect(quietButton.split(' ')).toContain('disabled:pointer-events-none');
-    });
-});

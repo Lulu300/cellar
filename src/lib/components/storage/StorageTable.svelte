@@ -14,10 +14,16 @@
     let {
         containers,
         containersAsColumns,
+        highlighted,
+        onOpen,
         onEdit
     }: {
         containers: StorageContainerDTO[];
         containersAsColumns: boolean;
+        /** The ids of the cases that hold the wine the page looks for. */
+        highlighted: ReadonlySet<string>;
+        /** Opens the bottles of a case. */
+        onOpen: (storageCase: StorageContainerDTO['cases'][number]) => void;
         /** Shows the button that edits a container; absent for a visitor. */
         onEdit?: (container: StorageContainerDTO) => void;
     } = $props();
@@ -43,7 +49,13 @@
 {#snippet caseCell(container: StorageContainerDTO, position: number)}
     {@const storageCase = container.cases[position]}
     {#if storageCase}
-        <td class="border p-2 text-center"><CaseLoad {storageCase} /></td>
+        <td class="border p-1 text-center">
+            <CaseLoad
+                {storageCase}
+                highlighted={highlighted.has(storageCase.id)}
+                onOpen={() => onOpen(storageCase)}
+            />
+        </td>
     {:else}
         <td class="border p-2 bg-muted/30 text-center text-muted-foreground">
             <span class="text-xs opacity-50">—</span>

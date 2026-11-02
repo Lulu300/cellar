@@ -154,7 +154,7 @@
                                                     {m['admin.show_less']()}
                                                 {:else}
                                                     <ChevronDown class="h-3 w-3 mr-1" />
-                                                    {m['admin.show_all_errors']()}
+                                                    {m['common.show_all']()}
                                                 {/if}
                                             </Button>
                                         {/if}
@@ -224,7 +224,7 @@
                                                     {m['admin.show_less']()}
                                                 {:else}
                                                     <ChevronDown class="h-3 w-3 mr-1" />
-                                                    {m['admin.show_all_errors']()}
+                                                    {m['common.show_all']()}
                                                 {/if}
                                             </Button>
                                         {/if}

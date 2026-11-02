@@ -81,6 +81,14 @@
         )
     );
 
+    // The storage page has cases to highlight only for a bottle in the cellar, in a case: one out
+    // of the cellar keeps its case without being in it.
+    const inACase = $derived(
+        bottles.some(
+            (bottle) => bottle.availability === BottleAvailability.AVAILABLE && bottle.storageCase
+        )
+    );
+
     function openBottleDialog(mode: 'add' | 'edit' | 'duplicate', bottle: Bottle | null = null) {
         bottleDialog = { mode, bottle };
         showBottleDialog = true;
@@ -284,9 +292,20 @@
         <!-- Storage Locations -->
         {#if Object.keys(storageLocations).length > 0}
             <div class="bg-muted/20 rounded-lg p-3 border">
-                <div class="flex items-center gap-2 mb-2">
+                <div class="flex flex-wrap items-center gap-2 mb-2">
                     <MapPin class="h-4 w-4 text-muted-foreground" />
                     <span class="text-sm font-medium">{m['wine_details.storage_locations']()}</span>
+                    {#if inACase}
+                        <Button
+                            href="/storage?wine={encodeURIComponent(wineDefinition.id)}"
+                            size="sm"
+                            variant="outline"
+                            class="ml-auto"
+                        >
+                            <MapPin class="h-4 w-4" aria-hidden="true" />
+                            {m['wine_details.show_in_cellar']()}
+                        </Button>
+                    {/if}
                 </div>
                 <div class="flex flex-wrap gap-2">
                     {#each Object.entries(storageLocations) as [location, count] (location)}

@@ -1,9 +1,10 @@
 <script lang="ts">
     import { pageTitle } from '#lib/components/layout/navigation.js';
-    import { onMount } from 'svelte';
-    import { List, RotateCcw } from '@lucide/svelte';
+    import { onMount, untrack } from 'svelte';
+    import { List, MapPin, RotateCcw } from '@lucide/svelte';
     import { m } from '#lib/paraglide/messages.js';
     import AllBottlesDialog from '#lib/components/storage/AllBottlesDialog.svelte';
+    import CaseBottlesDialog from '#lib/components/storage/CaseBottlesDialog.svelte';
     import ContainerDialog from '#lib/components/storage/ContainerDialog.svelte';
     import StorageGrid from '#lib/components/storage/StorageGrid.svelte';
     import StorageTable from '#lib/components/storage/StorageTable.svelte';
@@ -18,6 +19,7 @@
     import { toasts } from '#lib/stores/toast.svelte.js';
     import { formatPercent } from '#lib/utils/format.js';
     import { clampPage } from '#lib/utils/pagination.js';
+    import { showTablePage } from '#lib/utils/table-navigation.js';
     import type { PageData } from './$types';
 
     let { data }: { data: PageData } = $props();
@@ -31,8 +33,25 @@
     });
 
     const containersPerPage = 20;
-    let page = $state(1);
     const containers = $derived(data.containers);
+
+    // "Show in the cellar" on a wine page: the cases that hold the wine stand out.
+    const highlight = $derived(data.highlight);
+    const highlighted = $derived(new Set(highlight?.cases.map(({ id }) => id)));
+    // The page opens on the first container that holds the wine, and stays where the user goes
+    // when a change reloads the data. A writable derived resets on its dependencies only: it
+    // reads the id of the wine, a string that a reload leaves equal, and untrack keeps the
+    // containers, which every reload replaces, out of them.
+    const highlightedWine = $derived(highlight?.id);
+    let page = $derived.by(() => {
+        void highlightedWine;
+        return untrack(() => {
+            const first = containers.findIndex(({ cases }) =>
+                cases.some(({ id }) => highlighted.has(id))
+            );
+            return first === -1 ? 1 : Math.floor(first / containersPerPage) + 1;
+        });
+    });
     const shownPage = $derived(clampPage(page, containers.length, containersPerPage));
     const pageOfContainers = $derived(
         containers.slice((shownPage - 1) * containersPerPage, shownPage * containersPerPage)
@@ -41,6 +60,10 @@
     const cases = $derived(containers.flatMap((container) => container.cases));
     const totalCapacity = $derived(cases.reduce((sum, { capacity }) => sum + capacity, 0));
     const totalBottles = $derived(cases.reduce((sum, { bottles }) => sum + bottles, 0));
+
+    // The case whose bottles are open, as the reloaded data gives it: it goes when it is deleted.
+    let openedCaseId = $state<string | null>(null);
+    const openedCase = $derived(cases.find(({ id }) => id === openedCaseId));
 
     let draft = $state<ContainerDraft | null>(null);
     let showContainerDialog = $state(false);
@@ -57,6 +80,7 @@
     }
 
     const onEdit = $derived(auth.isAuthenticated ? openContainerDialog : undefined);
+    const onOpen = ({ id }: { id: string }) => (openedCaseId = id);
 </script>
 
 <svelte:head>
@@ -112,6 +136,28 @@
         </div>
     </div>
 
+    {#if highlight}
+        <div
+            class="mb-4 flex flex-wrap items-center gap-x-3 gap-y-2 rounded-lg border border-primary/40 bg-primary/10 px-4 py-2"
+        >
+            <MapPin class="h-4 w-4 shrink-0 text-primary-text" aria-hidden="true" />
+            <p class="text-sm">
+                {m['storage.cases_holding_wine']({
+                    wine: highlight.name,
+                    cases: highlight.cases.map(({ name }) => name).join(', ')
+                })}
+            </p>
+            <Button
+                variant="outline"
+                size="sm"
+                class="ml-auto"
+                onclick={() => showTablePage({ wine: null })}
+            >
+                {m['common.show_all']()}
+            </Button>
+        </div>
+    {/if}
+
     {#if containers.length === 0}
         <Card>
             <CardContent class="p-6 text-center">
@@ -129,7 +175,7 @@
         {/snippet}
 
         {#if viewMode === 'grid'}
-            <StorageGrid containers={pageOfContainers} {onEdit} />
+            <StorageGrid containers={pageOfContainers} {highlighted} {onOpen} {onEdit} />
             <div class="mt-6">{@render pagination()}</div>
         {:else}
             <Card>
@@ -138,7 +184,13 @@
                 </CardHeader>
                 <CardContent>
                     <div class="mb-4">{@render pagination()}</div>
-                    <StorageTable containers={pageOfContainers} {containersAsColumns} {onEdit} />
+                    <StorageTable
+                        containers={pageOfContainers}
+                        {containersAsColumns}
+                        {highlighted}
+                        {onOpen}
+                        {onEdit}
+                    />
                 </CardContent>
             </Card>
         {/if}
@@ -179,3 +231,7 @@
 {/if}
 
 <AllBottlesDialog bind:open={showAllBottlesDialog} />
+
+{#if openedCase}
+    <CaseBottlesDialog storageCase={openedCase} onClose={() => (openedCaseId = null)} />
+{/if}

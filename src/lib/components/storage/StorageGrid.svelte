@@ -10,9 +10,15 @@
     /** A card for each container, with its cases in order. */
     let {
         containers,
+        highlighted,
+        onOpen,
         onEdit
     }: {
         containers: StorageContainerDTO[];
+        /** The ids of the cases that hold the wine the page looks for. */
+        highlighted: ReadonlySet<string>;
+        /** Opens the bottles of a case. */
+        onOpen: (storageCase: StorageContainerDTO['cases'][number]) => void;
         /** Shows the button that edits a container; absent for a visitor. */
         onEdit?: (container: StorageContainerDTO) => void;
     } = $props();
@@ -35,7 +41,12 @@
             </CardHeader>
             <CardContent class="space-y-2">
                 {#each container.cases as storageCase (storageCase.id)}
-                    <CaseLoad {storageCase} compact />
+                    <CaseLoad
+                        {storageCase}
+                        compact
+                        highlighted={highlighted.has(storageCase.id)}
+                        onOpen={() => onOpen(storageCase)}
+                    />
                 {/each}
             </CardContent>
         </Card>

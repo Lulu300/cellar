@@ -1,4 +1,5 @@
 <script lang="ts" generics="B extends TableBottle">
+    import type { Snippet } from 'svelte';
     import { Pencil } from '@lucide/svelte';
     import { m } from '#lib/paraglide/messages.js';
     import { Badge } from '#lib/components/ui/badge/index.js';
@@ -33,6 +34,7 @@
         onToggle,
         onToggleAll,
         onEdit,
+        actions,
         linkWine = false
     }: {
         bottles: B[];
@@ -48,6 +50,8 @@
         onToggleAll?: (select: boolean) => void;
         /** With it, each row gets an edit button. */
         onEdit?: (bottle: B) => void;
+        /** With it, what each row offers to do with its bottle, such as a menu. */
+        actions?: Snippet<[B]>;
         /** Whether the name of the wine links to its page. */
         linkWine?: boolean;
     } = $props();
@@ -70,7 +74,8 @@
         bottles.length > 0 && bottles.every((bottle) => selection?.has(bottle.id))
     );
     const someSelected = $derived(bottles.some((bottle) => selection?.has(bottle.id)));
-    const columnCount = $derived(columns.length + Number(!!selection) + Number(!!onEdit));
+    const hasActions = $derived(!!onEdit || !!actions);
+    const columnCount = $derived(columns.length + Number(!!selection) + Number(hasActions));
     // The wine cell shows the vintage when no column does.
     const vintageInWineCell = $derived(!columns.includes('vintage'));
 </script>
@@ -100,7 +105,7 @@
                         />
                     {/if}
                 {/each}
-                {#if onEdit}
+                {#if hasActions}
                     <TableHead class="w-16">{m['common.actions']()}</TableHead>
                 {/if}
             </TableRow>
@@ -176,17 +181,20 @@
                             </TableCell>
                         {/if}
                     {/each}
-                    {#if onEdit}
+                    {#if hasActions}
                         <TableCell>
-                            <Button
-                                variant="ghost"
-                                size="sm"
-                                onclick={() => onEdit(bottle)}
-                                title={m['common.edit']()}
-                                aria-label={m['common.edit']()}
-                            >
-                                <Pencil class="h-4 w-4" />
-                            </Button>
+                            {#if onEdit}
+                                <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    onclick={() => onEdit(bottle)}
+                                    title={m['common.edit']()}
+                                    aria-label={m['common.edit']()}
+                                >
+                                    <Pencil class="h-4 w-4" />
+                                </Button>
+                            {/if}
+                            {@render actions?.(bottle)}
                         </TableCell>
                     {/if}
                 </TableRow>

@@ -25,7 +25,7 @@
         <div>
             <div class="text-sm font-medium">{title}</div>
             <div class="text-xs text-muted-foreground">
-                {m['bottle_form.places_used']({ used, capacity })}
+                {m['common.places_used']({ used, capacity })}
             </div>
         </div>
     </div>

@@ -1,14 +1,16 @@
 import { render } from 'svelte/server';
 import { describe, expect, it } from 'vitest';
 import { edgeColors } from '#lib/utils/wine-color.js';
+import { useLocale } from '../../../test/locale';
 import CaseLoad from './CaseLoad.svelte';
 
 const RED = '#7b1e2b';
 const PALE = '#ead98b';
 
-function renderCase(colors: string[], capacity: number) {
+function renderCase(colors: string[], capacity: number, highlighted = false) {
     return render(CaseLoad, {
         props: {
+            highlighted,
             storageCase: {
                 id: 'a1',
                 name: 'A1',
@@ -16,7 +18,8 @@ function renderCase(colors: string[], capacity: number) {
                 containerId: 'a',
                 bottles: colors.length,
                 colors
-            }
+            },
+            onOpen: () => {}
         }
     }).body;
 }
@@ -55,5 +58,15 @@ describe('CaseLoad', () => {
             expect(svg).toContain(`--wine-edge-dark: ${edge.dark}`);
             expect(svg).toContain('text-(--wine-edge)');
         });
+    });
+
+    // A case is a button that opens its bottles: a screen reader hears what the drawing shows.
+    it('names the case with its bottles and capacity, and says when it holds the wine looked for', () => {
+        useLocale('en');
+        expect(renderCase([RED, PALE], 6)).toContain('aria-label="A1: 2 of 6 bottles"');
+        const highlighted = renderCase([RED], 6, true);
+        expect(highlighted).toContain('aria-label="A1: 1 of 6 bottles, holds the wine shown"');
+        expect(highlighted).toContain('ring-primary');
+        expect(renderCase([RED], 6)).not.toContain('ring-primary');
     });
 });

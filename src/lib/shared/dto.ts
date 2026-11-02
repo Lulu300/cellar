@@ -6,7 +6,7 @@
  * route: the few fields that a route adds around what its service returns.
  * The imports are type-only: TypeScript erases them, so no server code reaches the browser.
  */
-import type { LabelPreset, StorageCase } from '#lib/server/db/schema.js';
+import type { LabelPreset, StorageCase, StorageContainer } from '#lib/server/db/schema.js';
 import type { importJson } from '#lib/server/features/backup/json-import.js';
 import type {
     createManualBackup,
@@ -67,7 +67,7 @@ export type Jsonified<T> = T extends Date
 
 // Reference tables: GET /api/<table> (lookup-crud names the name column `name` in every table).
 
-export type { StorageCase, LabelPreset };
+export type { StorageCase, StorageContainer, LabelPreset };
 
 /** The rows of a query of a reference table. */
 type RowOf<Query extends (...args: never[]) => { all(): unknown[] }> = ReturnType<

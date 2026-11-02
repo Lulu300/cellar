@@ -35,7 +35,7 @@
         </Badge>
         {#if used < capacity}
             <Badge variant="default" class="border-success/30 bg-success/10 text-xs text-success">
-                {m['bottle_form.places_free']({ count: capacity - used })}
+                {m['common.places_free']({ count: capacity - used })}
             </Badge>
         {:else}
             <Badge variant="destructive" class="text-xs">{m['forms.full']()}</Badge>

@@ -64,8 +64,25 @@ function locationApplies(bottle: BulkBottle, availability: string, caseId: strin
     return !!caseId && finalAvailability(bottle, availability) !== BottleAvailability.CONSUMED;
 }
 
-export function locationChanges(bottle: BulkBottle, availability: string, caseId: string): boolean {
+function locationChanges(bottle: BulkBottle, availability: string, caseId: string): boolean {
     return locationApplies(bottle, availability, caseId) && currentCaseId(bottle) !== caseId;
+}
+
+/**
+ * How many bottles of the checked rows the action that sets `availability` brings into the case
+ * `caseId`: those found and kept that end up in the cellar and are not already there.
+ */
+export function incomingBottles<B extends BulkBottle>(
+    rows: Row<B>[],
+    availability: string,
+    caseId: string
+): number {
+    return rows.filter(
+        (row) =>
+            row.state === 'found' &&
+            row.included &&
+            locationChanges(row.bottle!, availability, caseId)
+    ).length;
 }
 
 /**

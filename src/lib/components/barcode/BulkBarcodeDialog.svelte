@@ -28,7 +28,7 @@
     import {
         computeRows,
         currentCaseId,
-        locationChanges,
+        incomingBottles,
         type BarcodedBottle,
         type Line,
         type Row
@@ -131,10 +131,8 @@
     const issueCount = $derived(
         rows.filter((row) => row.state === 'ambiguous' || row.state === 'not_found').length
     );
-    const incomingCount = $derived(
-        selectedRows.filter((row) => locationChanges(row.bottle, targetAvailability, targetCaseId))
-            .length
-    );
+    // Whether the case chosen has no room for the bottles that the action brings into it
+    let overfilled = $state(false);
     const withoutLocationCount = $derived(
         targetAvailability === BottleAvailability.AVAILABLE
             ? selectedRows.filter((row) => !currentCaseId(row.bottle) && !targetCaseId).length
@@ -447,7 +445,8 @@
                     {#if asksLocation}
                         <CaseTargetPicker
                             bind:caseId={selectedCaseId}
-                            incoming={incomingCount}
+                            bind:overfilled
+                            incoming={(caseId) => incomingBottles(rows, targetAvailability, caseId)}
                             label={action === 'move' ? m['bulk.move_location_label']() : undefined}
                             disabled={changes.sending}
                         />
@@ -485,6 +484,7 @@
                         disabled={changes.sending ||
                             !action ||
                             missingLocation ||
+                            (asksLocation && overfilled) ||
                             selectedRows.length === 0}
                     >
                         {#if changes.sending}

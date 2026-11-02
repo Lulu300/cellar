@@ -30,11 +30,13 @@
     } = $props();
 
     let caseId = $state('');
+    let overfilled = $state(false);
 
     // The case they leave, when they all leave the same one
-    const currentCaseId = $derived.by(() => {
+    const leaving = $derived.by(() => {
         const first = bottles[0]?.storageCase?.id;
-        return bottles.every((bottle) => bottle.storageCase?.id === first) ? first : undefined;
+        const same = first && bottles.every((bottle) => bottle.storageCase?.id === first);
+        return same ? { caseId: first, count: bottles.length } : undefined;
     });
 
     const changes = new BottleChanges({
@@ -70,13 +72,19 @@
         <div class="space-y-4 py-4">
             <CaseTargetPicker
                 bind:caseId
-                incoming={bottles.length}
-                {currentCaseId}
+                bind:overfilled
+                incoming={(id) => bottles.filter((bottle) => bottle.storageCase?.id !== id).length}
+                {leaving}
                 label={m['forms.storage_case']()}
                 hint={m['admin.storage_location_hint']()}
                 disabled={changes.sending}
             />
-            <ConfirmButtons sending={changes.sending} onCancel={onClose} onConfirm={confirm} />
+            <ConfirmButtons
+                sending={changes.sending}
+                refused={overfilled}
+                onCancel={onClose}
+                onConfirm={confirm}
+            />
         </div>
     </DialogContent>
 </Dialog>

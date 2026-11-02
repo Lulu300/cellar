@@ -1,5 +1,11 @@
 import { describe, expect, it } from 'vitest';
-import { barcodedBottles, computeRows, type BulkBottle, type Line } from './bulk-barcode';
+import {
+    barcodedBottles,
+    computeRows,
+    incomingBottles,
+    type BulkBottle,
+    type Line
+} from './bulk-barcode';
 
 const bottle = (fields: Partial<BulkBottle> = {}): BulkBottle => ({
     id: 'b1',
@@ -46,6 +52,26 @@ describe('computeRows', () => {
         expect(computeRows([line(checked)], byId(), 'consumed', '')).toMatchObject([
             { state: 'found', bottle: checked, willChange: true }
         ]);
+    });
+});
+
+// The case picker greys a case without room for them, case by case (FEAT-04).
+describe('incomingBottles', () => {
+    const lines = [
+        line(bottle({ id: 'in-a' })),
+        line(bottle({ id: 'in-b', storageCaseId: 'case-b' })),
+        line(bottle({ id: 'drunk', availability: 'consumed', storageCaseId: null })),
+        { ...line(bottle({ id: 'left-out', storageCaseId: null })), included: false }
+    ];
+    const rows = computeRows(lines, byId(), '', '');
+
+    it('counts the kept bottles that are not in the case yet', () => {
+        expect(incomingBottles(rows, '', 'case-a')).toBe(1);
+        expect(incomingBottles(rows, '', 'case-c')).toBe(2);
+    });
+
+    it('counts the drunk bottles that the action puts back in the cellar', () => {
+        expect(incomingBottles(rows, 'available', 'case-c')).toBe(3);
     });
 });
 

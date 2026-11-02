@@ -189,13 +189,13 @@ export const phases = [
 		id: 'P16',
 		version: '1.4.0',
 		title: 'Couleurs et plan de la cave',
-		goal: 'Pour la 1.4.0 : les couleurs des vins, puis le plan de la cave, qui s’appuie dessus. Ordre : FEAT-10 (vue liste, demandée avec UI-32) ; FEAT-03 ; FEAT-11 (actions MCP, demandées après l’essai d’un utilisateur) ; FEAT-04 ; FEAT-12 (MCP plus complet, demandé après FEAT-11) ; DEP-10 ; puis REL-10.'
+		goal: 'Pour la 1.4.0 : les couleurs des vins, puis le plan de la cave, qui s’appuie dessus. Ordre : FEAT-10 (vue liste, demandée avec UI-32) ; FEAT-03 ; FEAT-11 (actions MCP, demandées après l’essai d’un utilisateur) ; FEAT-04 ; FEAT-12 (MCP plus complet, demandé après FEAT-11) ; FEAT-13 (deux refus, trouvés pendant FEAT-12) ; puis REL-10. DEP-10 passe après la 1.4.0.'
 	},
 	{
 		id: 'P17',
 		version: '1.5.0',
 		title: 'À boire et dégustation',
-		goal: 'Pour la 1.5.0 : la vie d’une bouteille jusqu’à ce qu’on la boive. Les deux tâches ajoutent leur repère et leur fiche à la liste d’une case du plan (FEAT-04). Ordre : FEAT-05 et FEAT-06 ; puis REL-11.'
+		goal: 'Pour la 1.5.0 : la vie d’une bouteille jusqu’à ce qu’on la boive. Les deux tâches ajoutent leur repère et leur fiche à la liste d’une case du plan (FEAT-04). Ordre : FEAT-05 et FEAT-06 ; DEP-10 (reportée de la 1.4.0) ; puis REL-11.'
 	},
 	{
 		id: 'P18',
@@ -335,6 +335,7 @@ export const decisions = [
 	{ topic: 'Cartes de vin (UI-32)', choice: 'Choisie sur maquette (https://claude.ai/artifact/9GrYNvpP1LUCF8jfT3Rwze, planche « C3 », 2026-11-01) : la carte devient horizontale, photo en portrait de 100 × 140 px à gauche. Règle de base, à ne jamais rompre : toutes les cartes ont la même taille et chaque élément est au même endroit ; chaque champ tient sur une ligne, la description a deux lignes réservées. Un texte coupé défile au survol (le mainteneur préfère ce mouvement sur les cartes). Le classement, le millésime et le prix sont précédés d’icônes, pas de libellés. La grille garde des cartes de 340 px au moins. Densité estimée sur un écran de 1 920 px : 4 cartes par ligne au lieu de 6, mais 8 cartes entières à l’écran au lieu de 6.' },
 	{ topic: 'Actions MCP (FEAT-11)', choice: 'Un utilisateur a essayé le MCP : il a demandé un vin pour son repas, puis voulu sortir la bouteille de la cave, et seul « marquer bue » existait. Le mainteneur ajoute à la 1.4.0 quatre groupes d’actions : sortir des bouteilles de la cave, les y remettre dans une case et annuler un « bu » fait par erreur ; modifier un vin (quantité cible, description, producteur…) et les champs des bouteilles (prix, valeur, millésime, apogée, code-barres) ; lister les bouteilles de toute la cave par état et par date ; changer la quantité ou la note d’un souhait, et supprimer une bouteille ajoutée par erreur (action destructive, annoncée comme telle au client). L’admin reste hors du MCP. Les applications Claude web et mobile ne l’atteignent pas : leurs connecteurs partent d’Internet et attendent OAuth ; Claude Code et les clients locaux, avec l’en-tête du jeton, fonctionnent (décision du 2026-11-01).' },
 	{ topic: 'MCP le plus complet possible (FEAT-12)', choice: 'Le mainteneur veut que l’assistant qui utilise le MCP ait le plus de contexte possible : les actions, leurs descriptions, la documentation et les erreurs. Une erreur rend donc aussi le détail du refus (les `details` de l’API), et une relecture de tous les outils, du point de vue d’un assistant, complète ce qui manque. Une bouteille marquée bue garde la case où elle était, sans y prendre de place, comme une bouteille hors cave : la remettre en cave la replace dans cette case, et l’assistant comme l’application peuvent dire où elle était. Les bouteilles bues avant la 1.4.0 ont déjà perdu leur case (décision du 2026-11-02). Précisé le même jour : le formulaire d’une bouteille bue dit dans quelle case elle était ; le MCP lit les listes au-delà de 200 (`offset`) ; pas de filtre sur l’apogée (avec « À boire », FEAT-05), ni de création d’origine ou de format, ni de suppression d’un vin, des conteneurs ou des appellations par le MCP.' },
+	{ topic: 'Dépendances après la 1.4.0', choice: 'Le mainteneur veut sortir la 1.4.0 vite : la revue des dépendances (DEP-10), qui attendait que les correctifs aient 7 jours (le 2026-11-05 ou 06), part dans la première version publiée après cette date. La 1.4.0 sort avec les dépendances de la 1.3.2 (décision du 2026-11-02).' },
 	{ topic: 'Vue liste (FEAT-10)', choice: 'Choisie sur maquette (planche « D3 ») : une vue liste à côté des cartes, sans défilement (le mainteneur n’en veut pas dans la liste) ; un texte long passe à la ligne. Un sélecteur « Cartes / Liste » sur la page et la vue par défaut dans les préférences. Demandée avec UI-32, placée en tête de la 1.4.0 parce que c’est une nouvelle fonction et non un correctif.' },
 	{ topic: 'Couleurs des vins (FEAT-03)', choice: 'Chaque couleur de vin a une vraie couleur, enregistrée en base ; les couleurs de départ reçoivent celles des étiquettes d’aujourd’hui. Créée depuis un formulaire, une couleur reçoit une teinte par défaut ou neutre ; dans Admin › Data, le sélecteur s’affiche dès la création ou la modification. Choisi sur maquette : sur la page Stockage, chaque place occupée prend la couleur de son vin ; les camemberts des statistiques prennent les vraies couleurs ; la liste des vins garde l’étiquette, colorée, et ajoute une bande à gauche de la carte ; les listes de bouteilles montrent l’étiquette colorée à côté du nom du vin. Pas de carte teintée (décision du 2026-10-31). Précisé le 2026-11-01 : les couleurs de départ sont les teintes de vin de la maquette (Rouge #7b1e2b, Blanc #ead98b, Rosé #f2a08c, Jaune #d4952a, N/A #9ca3af) ; une couleur créée depuis un formulaire reçoit le gris de N/A, sauf un nom reconnu, qui reprend sa teinte de départ. Changé le 2026-11-02, sur captures : le contour « seulement quand le contraste manque » donnait des bouteilles avec contour, d’autres sans, et un orange entre les deux, ce que le mainteneur refuse ; toute couleur reçoit désormais le même contour, dans sa propre teinte mêlée de 40 % de noir en clair et de 40 % de blanc en sombre, sur le stockage (une silhouette de bouteille sans étiquette ; une place vide est la même silhouette en contour), les étiquettes, la bande des cartes et la légende des statistiques. Une couleur choisie par l’utilisateur peut avoir un contour sous 3:1 (le blanc pur en clair : 2,85:1) : accepté.' },
 	{ topic: 'Plan de la cave (FEAT-04)', choice: 'La page Stockage devient le plan : un clic sur une case ouvre la liste de ses bouteilles (vin, millésime, couleur), d’où l’on ouvre une bouteille, la marque bue ou la déplace ; on en coche plusieurs puis « Déplacer vers… » une autre case, sans glisser-déposer. Une case reste un bac, sans place précise. La page d’un vin a un bouton « Voir dans la cave », qui met en évidence les cases où il est. La disposition des conteneurs ne change pas (décision du 2026-10-31). Précisé le 2026-11-02 : le choix de la case d’un déplacement est le même sur les trois écrans qui déplacent (liste des bouteilles d’un vin, scan en lot, plan), groupé par conteneur avec la place libre de chaque case, les cases sans place et la case quittée grisées, sans recherche par nom ; chaque bouteille de la case a un menu « ⋯ » (marquer bue, déplacer, modifier) ; « Voir dans la cave » entoure les cases du vin d’un anneau avec une épingle, sous une ligne « Cases contenant … » et « Tout afficher » ; un visiteur voit les bouteilles d’une case sans pouvoir agir ; le MCP liste les bouteilles d’une case (`list_bottles` avec `caseId`).' },
@@ -2632,15 +2633,17 @@ export const tasks = [
 		deps: ['FEAT-04'], src: ['Décision « MCP le plus complet possible (FEAT-12) »', 'Trouvé pendant FEAT-11']
 	},
 	{
-		id: 'DEP-10', phase: 'P16', size: 'S', sev: 'mineur',
-		title: 'Revue des dépendances d’avant la 1.4.0',
-		why: 'Ce que DEP-09 n’a pas pu prendre, la 1.3.0 étant publiée avant que les correctifs soient éligibles (choix du mainteneur) : node 24.22.2, SvelteKit, adapter-node, Paraglide, minimatch 11 et la suite.',
-		where: ['package.json', 'pnpm-lock.yaml', '.github/workflows/', 'Dockerfile'],
+		id: 'FEAT-13', phase: 'P16', size: 'S', sev: 'evolution',
+		title: 'Deux refus qui disent tout : case pleine et référence inconnue',
+		why: 'Après FEAT-12, deux refus ne donnent pas assez de contexte à un assistant : une case pleine ne donne que son nom, et une référence inconnue ne dit pas quel identifiant manque.',
+		where: ['src/lib/server/features/storage/service.ts', 'src/lib/server/db-errors.ts', 'src/lib/server/features/mcp/', 'docs/API.md', 'docs/openapi.json'],
 		todo: [
-			'Comme DEP-08 et DEP-09 : correctifs publiés depuis au moins 7 jours, une mise à jour par commit, portes à chaque fois ; l’alerte minimatch revue ; `pnpm audit --prod` vide ou chaque alerte justifiée. En fin de P16, juste avant REL-10.'
+			'Décision « MCP le plus complet possible (FEAT-12) » : `case_full` (`CaseFullError`) ajoute l’identifiant de la case à ses `details`, à côté du nom, de la capacité et des bouteilles ; un ajout à la réponse 409 de l’API, sans rien retirer.',
+			'`missing_reference` (`refusedWriteError` de `src/lib/server/db-errors.ts`) dit quelle référence manque (le champ, par exemple `formatId` ou `originId`, et la valeur donnée) quand on peut le savoir, dans le message et les `details` ; sinon il garde le message d’aujourd’hui.',
+			'API.md, OpenAPI et les descriptions du MCP suivent.'
 		],
-		done: 'Chaque dépendance, action et image de base est à son dernier correctif publié depuis au moins 7 jours, ou l’écart est justifié.',
-		deps: ['DEP-09'], src: ['Trouvé pendant DEP-09']
+		done: 'Un `add_bottles` avec un `formatId` faux est refusé en nommant `formatId` ; un déplacement vers une case pleine donne l’identifiant de la case ; testé, dans l’API et par le MCP.',
+		deps: ['FEAT-12'], src: ['Trouvé pendant FEAT-12']
 	},
 	{
 		id: 'REL-10', phase: 'P16', size: 'S', sev: 'evolution',
@@ -2651,7 +2654,7 @@ export const tasks = [
 			'Résumé 1.4.0 complété à chaque tâche ; banc depuis la version précédente ; release selon RELEASING.md, avec le mainteneur.'
 		],
 		done: 'v1.4.0 est publiée sur `main` et son image se télécharge sans connexion ; develop passe à la rc suivante.',
-		deps: ['FEAT-10', 'FEAT-03', 'FEAT-11', 'FEAT-04', 'FEAT-12', 'DEP-10'], src: ['Décision « Versions après la 1.0 »']
+		deps: ['FEAT-10', 'FEAT-03', 'FEAT-11', 'FEAT-04', 'FEAT-12', 'FEAT-13'], src: ['Décision « Versions après la 1.0 »']
 	},
 	// ───────── P17 À boire et dégustation
 	{
@@ -2681,6 +2684,17 @@ export const tasks = [
 		deps: ['REL-10'], src: ['Décision « Fiche de dégustation (FEAT-06) »']
 	},
 	{
+		id: 'DEP-10', phase: 'P17', size: 'S', sev: 'mineur',
+		title: 'Revue des dépendances d’après la 1.4.0',
+		why: 'Ce que DEP-09 n’a pas pu prendre, la 1.3.0 étant publiée avant que les correctifs soient éligibles (choix du mainteneur) : node 24.22.2, SvelteKit, adapter-node, Paraglide, minimatch 11 et la suite.',
+		where: ['package.json', 'pnpm-lock.yaml', '.github/workflows/', 'Dockerfile'],
+		todo: [
+			'Comme DEP-08 et DEP-09 : correctifs publiés depuis au moins 7 jours, une mise à jour par commit, portes à chaque fois ; l’alerte minimatch revue ; `pnpm audit --prod` vide ou chaque alerte justifiée. Reportée de la 1.4.0 (décision « Dépendances après la 1.4.0 ») : dans la première version publiée après le 2026-11-06, juste avant sa release.'
+		],
+		done: 'Chaque dépendance, action et image de base est à son dernier correctif publié depuis au moins 7 jours, ou l’écart est justifié.',
+		deps: ['DEP-09'], src: ['Trouvé pendant DEP-09']
+	},
+	{
 		id: 'REL-11', phase: 'P17', size: 'S', sev: 'evolution',
 		title: 'Publication de la 1.5.0',
 		why: 'La 1.5.0 apporte aux utilisateurs ce que sa phase a livré.',
@@ -2689,7 +2703,7 @@ export const tasks = [
 			'Résumé 1.5.0 complété à chaque tâche ; banc depuis la version précédente ; release selon RELEASING.md, avec le mainteneur.'
 		],
 		done: 'v1.5.0 est publiée sur `main` et son image se télécharge sans connexion ; develop passe à la rc suivante.',
-		deps: ['FEAT-05', 'FEAT-06'], src: ['Décision « Versions après la 1.0 »']
+		deps: ['FEAT-05', 'FEAT-06', 'DEP-10'], src: ['Décision « Versions après la 1.0 »']
 	},
 	// ───────── P18 Producteurs et revue de l’import
 	{

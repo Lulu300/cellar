@@ -7,8 +7,8 @@
     import BottleTable from '#lib/components/bottles/BottleTable.svelte';
     import { ownedBottles } from '#lib/utils/wine-group-sort.js';
     import { sortBottles, type BottleSort } from '#lib/utils/bottle-sort.js';
-    import BottleStatusDialog from '#lib/components/bottles/BottleStatusDialog.svelte';
-    import MoveBottlesDialog from '#lib/components/bottles/MoveBottlesDialog.svelte';
+    import BottleChangeDialogs from '#lib/components/bottles/BottleChangeDialogs.svelte';
+    import { BottleDialogs, whenLoggedIn } from '#lib/components/bottles/bottle-dialogs.svelte.js';
     import { Button } from '#lib/components/ui/button/index.js';
     import WineBottleDialog from '#lib/components/bottles/WineBottleDialog.svelte';
     import { auth } from '#lib/stores/auth.svelte.js';
@@ -39,9 +39,7 @@
     const selectedBottles = new SvelteSet<string>();
     let sort = $state<BottleSort>({ column: 'purchaseDate', direction: 'desc' });
 
-    // The bottles that change status, or move, while their dialog is open
-    let statusBottles = $state.raw<Bottle[]>([]);
-    let movingBottles = $state.raw<Bottle[]>([]);
+    const dialogs = new BottleDialogs<Bottle>(selectedBottles, () => onBottlesChanged());
 
     // Edit bottle dialog state
     let editingBottle = $state<ComponentProps<typeof WineBottleDialog>['editBottle']>(null);
@@ -82,28 +80,11 @@
         return sortedBottles.filter((bottle) => selectedBottles.has(bottle.id));
     }
 
-    async function afterChange() {
-        selectedBottles.clear();
-        await onBottlesChanged();
-    }
-
-    /**
-     * Leaves out of the selection the bottles deleted elsewhere, which a refused change names, and
-     * has the parent reload the list without them, so that trying again can work.
-     */
-    async function forgetDeletedBottles(ids: string[]) {
-        const kept = (bottle: Bottle) => !ids.includes(bottle.id);
-        statusBottles = statusBottles.filter(kept);
-        movingBottles = movingBottles.filter(kept);
-        ids.forEach((id) => selectedBottles.delete(id));
-        await onBottlesChanged();
-    }
-
     function editBottle(bottle: Bottle) {
-        if (auth.isAuthenticated) {
+        whenLoggedIn(() => {
             editingBottle = bottle;
             showEditBottleDialog = true;
-        } else toasts.add(m['toast.please_log_in_to_edit'](), 'warning');
+        });
     }
 </script>
 
@@ -144,14 +125,14 @@
                             <Button
                                 variant="outline"
                                 size="sm"
-                                onclick={() => (movingBottles = chosenBottles())}
+                                onclick={() => (dialogs.moving = chosenBottles())}
                             >
                                 {m['admin.change_storage_location']()}
                             </Button>
                             <Button
                                 variant="default"
                                 size="sm"
-                                onclick={() => (statusBottles = chosenBottles())}
+                                onclick={() => (dialogs.status = chosenBottles())}
                             >
                                 {m['admin.change_bottle_availability']()}
                             </Button>
@@ -208,23 +189,7 @@
     </ScrollingDialogContent>
 </Dialog>
 
-{#if statusBottles.length > 0}
-    <BottleStatusDialog
-        bottles={statusBottles}
-        onClose={() => (statusBottles = [])}
-        onSaved={afterChange}
-        onMissing={forgetDeletedBottles}
-    />
-{/if}
-
-{#if movingBottles.length > 0}
-    <MoveBottlesDialog
-        bottles={movingBottles}
-        onClose={() => (movingBottles = [])}
-        onSaved={afterChange}
-        onMissing={forgetDeletedBottles}
-    />
-{/if}
+<BottleChangeDialogs {dialogs} />
 
 <!-- Edit Bottle Dialog -->
 <WineBottleDialog

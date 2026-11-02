@@ -7,14 +7,13 @@
     import { Label } from '#lib/components/ui/label/index.js';
     import * as Select from '#lib/components/ui/select/index.js';
     import WineBottleDialog from '#lib/components/bottles/WineBottleDialog.svelte';
+    import { whenLoggedIn } from '#lib/components/bottles/bottle-dialogs.svelte.js';
     import BottleTable from '#lib/components/bottles/BottleTable.svelte';
     import Pagination from '#lib/components/table/Pagination.svelte';
     import { clampPage } from '#lib/utils/pagination.js';
     import { compareText } from '#lib/utils/compare.js';
     import { sortBottles, type BottleSort } from '#lib/utils/bottle-sort.js';
     import { CELLAR } from '#lib/shared/dependencies.js';
-    import { auth } from '#lib/stores/auth.svelte.js';
-    import { toasts } from '#lib/stores/toast.svelte.js';
     import { m } from '#lib/paraglide/messages.js';
     import type { Jsonified, OwnedBottleDTO } from '#lib/shared/dto.js';
 
@@ -97,17 +96,15 @@
     );
 
     function editBottle(bottle: Bottle) {
-        if (!auth.isAuthenticated) {
-            toasts.add(m['toast.please_log_in_to_edit'](), 'warning');
-            return;
-        }
-        // The list names the wine and the case of a bottle rather than giving their ids.
-        editingBottle = {
-            ...bottle,
-            definitionId: bottle.definition.id,
-            storageCaseId: bottle.storageCase?.id ?? null
-        };
-        showEditBottleDialog = true;
+        whenLoggedIn(() => {
+            // The list names the wine and the case of a bottle rather than giving their ids.
+            editingBottle = {
+                ...bottle,
+                definitionId: bottle.definition.id,
+                storageCaseId: bottle.storageCase?.id ?? null
+            };
+            showEditBottleDialog = true;
+        });
     }
 
     // The edit may move the bottle, or take it out of the cellar: the page behind shows how full

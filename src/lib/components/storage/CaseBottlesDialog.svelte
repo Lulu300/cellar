@@ -5,9 +5,9 @@
     import { ArrowRightLeft, EllipsisVertical, SquarePen, Wine } from '@lucide/svelte';
     import { request } from '#lib/api/client.js';
     import { bottleName } from '#lib/components/bottles/bottle-table.js';
-    import BottleStatusDialog from '#lib/components/bottles/BottleStatusDialog.svelte';
+    import BottleChangeDialogs from '#lib/components/bottles/BottleChangeDialogs.svelte';
+    import { BottleDialogs, whenLoggedIn } from '#lib/components/bottles/bottle-dialogs.svelte.js';
     import BottleTable from '#lib/components/bottles/BottleTable.svelte';
-    import MoveBottlesDialog from '#lib/components/bottles/MoveBottlesDialog.svelte';
     import WineBottleDialog from '#lib/components/bottles/WineBottleDialog.svelte';
     import ScrollingDialogContent from '#lib/components/layout/ScrollingDialogContent.svelte';
     import { Button } from '#lib/components/ui/button/index.js';
@@ -16,8 +16,6 @@
     import { m } from '#lib/paraglide/messages.js';
     import { CELLAR } from '#lib/shared/dependencies.js';
     import type { BottleWithDefinitionDTO, Jsonified } from '#lib/shared/dto.js';
-    import { auth } from '#lib/stores/auth.svelte.js';
-    import { toasts } from '#lib/stores/toast.svelte.js';
     import { sortBottles, type BottleSort } from '#lib/utils/bottle-sort.js';
 
     type Bottle = Jsonified<BottleWithDefinitionDTO>;
@@ -41,9 +39,10 @@
     let sort = $state<BottleSort>({ column: 'definition', direction: 'asc' });
     const selected = new SvelteSet<string>();
 
-    // The bottles that change status, move or are edited, while their dialog is open
-    let statusBottles = $state.raw<Bottle[]>([]);
-    let movingBottles = $state.raw<Bottle[]>([]);
+    // A change of status or place changes the case and the map behind it.
+    const dialogs = new BottleDialogs<Bottle>(selected, () =>
+        Promise.all([load(), invalidate(CELLAR)])
+    );
     let editingBottle = $state<ComponentProps<typeof WineBottleDialog>['editBottle']>(null);
     let showEditDialog = $state(false);
 
@@ -61,38 +60,17 @@
     }
     onMount(load);
 
-    /** Runs `action` for a session; a visitor is asked to log in, as on the other bottle lists. */
-    function withSession(action: () => void) {
-        if (auth.isAuthenticated) action();
-        else toasts.add(m['toast.please_log_in_to_edit'](), 'warning');
-    }
-
     function toggle(bottle: Bottle) {
-        withSession(() => {
+        whenLoggedIn(() => {
             if (!selected.delete(bottle.id)) selected.add(bottle.id);
         });
     }
 
     function toggleAll(select: boolean) {
-        withSession(() => {
+        whenLoggedIn(() => {
             selected.clear();
             if (select) for (const { id } of bottles) selected.add(id);
         });
-    }
-
-    // A move or a drunk bottle changes the case and the map behind it.
-    async function afterChange() {
-        selected.clear();
-        await Promise.all([load(), invalidate(CELLAR)]);
-    }
-
-    // Deleted elsewhere: they leave the selection and the open dialogs, and the list reloads.
-    async function forgetDeletedBottles(ids: string[]) {
-        const kept = (bottle: Bottle) => !ids.includes(bottle.id);
-        statusBottles = statusBottles.filter(kept);
-        movingBottles = movingBottles.filter(kept);
-        for (const id of ids) selected.delete(id);
-        await Promise.all([load(), invalidate(CELLAR)]);
     }
 </script>
 
@@ -106,17 +84,17 @@
             <EllipsisVertical class="h-4 w-4" aria-hidden="true" />
         </DropdownMenu.Trigger>
         <DropdownMenu.Content align="end" class="w-auto outline-none">
-            <DropdownMenu.Item onSelect={() => withSession(() => (statusBottles = [bottle]))}>
+            <DropdownMenu.Item onSelect={() => whenLoggedIn(() => (dialogs.status = [bottle]))}>
                 <Wine aria-hidden="true" />
                 {m['bottles.mark_drunk']()}
             </DropdownMenu.Item>
-            <DropdownMenu.Item onSelect={() => withSession(() => (movingBottles = [bottle]))}>
+            <DropdownMenu.Item onSelect={() => whenLoggedIn(() => (dialogs.moving = [bottle]))}>
                 <ArrowRightLeft aria-hidden="true" />
                 {m['bottles.move']()}
             </DropdownMenu.Item>
             <DropdownMenu.Item
                 onSelect={() =>
-                    withSession(() => {
+                    whenLoggedIn(() => {
                         editingBottle = bottle;
                         showEditDialog = true;
                     })}
@@ -140,7 +118,7 @@
         <Button
             size="sm"
             class="ml-auto"
-            onclick={() => (movingBottles = bottles.filter(({ id }) => selected.has(id)))}
+            onclick={() => (dialogs.moving = bottles.filter(({ id }) => selected.has(id)))}
         >
             <ArrowRightLeft class="h-4 w-4" aria-hidden="true" />
             {m['storage.move_to']()}
@@ -181,24 +159,10 @@
     </ScrollingDialogContent>
 </Dialog>
 
-{#if statusBottles.length > 0}
-    <BottleStatusDialog
-        bottles={statusBottles}
-        onClose={() => (statusBottles = [])}
-        onSaved={afterChange}
-        onMissing={forgetDeletedBottles}
-    >
-        <p class="text-sm text-muted-foreground">{bottleName(statusBottles[0])}</p>
-    </BottleStatusDialog>
-{/if}
+<BottleChangeDialogs {dialogs}>
+    {#snippet children([bottle])}
+        <p class="text-sm text-muted-foreground">{bottleName(bottle)}</p>
+    {/snippet}
+</BottleChangeDialogs>
 
-{#if movingBottles.length > 0}
-    <MoveBottlesDialog
-        bottles={movingBottles}
-        onClose={() => (movingBottles = [])}
-        onSaved={afterChange}
-        onMissing={forgetDeletedBottles}
-    />
-{/if}
-
-<WineBottleDialog bind:open={showEditDialog} editBottle={editingBottle} onSaved={afterChange} />
+<WineBottleDialog bind:open={showEditDialog} editBottle={editingBottle} onSaved={dialogs.saved} />

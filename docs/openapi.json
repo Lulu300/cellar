@@ -5625,7 +5625,7 @@
     },
     "responses": {
       "Error": {
-        "description": "An error, with its status and a stable `code`. Any route may answer `400 malformed_body`, `401 unauthenticated`, `403 cross_site_request`, `404 not_found`, `405 method_not_allowed`, `409 missing_reference` or `in_use`, `413 body_too_large`, `422 invalid_body` (`details` lists each problem as `{ path, message }`), `500 internal_error` and, for a write while a restore, an import or a wipe runs, `503 writes_held` with a `Retry-After` header. The other codes belong to some routes, which docs/API.md lists.",
+        "description": "An error, with its status and a stable `code`. Any route may answer `400 malformed_body`, `401 unauthenticated`, `403 cross_site_request`, `404 not_found`, `405 method_not_allowed`, `409 missing_reference` (for a write of a wine, a bottle or a wish, `details` lists each unknown id as `{ field, id }`) or `in_use`, `413 body_too_large`, `422 invalid_body` (`details` lists each problem as `{ path, message }`), `500 internal_error` and, for a write while a restore, an import or a wipe runs, `503 writes_held` with a `Retry-After` header. The other codes belong to some routes, which docs/API.md lists.",
         "content": {
           "application/json": {
             "schema": {

@@ -1,6 +1,7 @@
 import { and, asc, count, desc, eq, inArray, isNotNull, ne, or, sql } from 'drizzle-orm';
 import type { Tx } from '#lib/server/db/connection.js';
 import { db } from '#lib/server/db/index.js';
+import { namingMissingReferences } from '#lib/server/db-errors.js';
 import {
     appellations,
     countries,
@@ -23,7 +24,9 @@ import { BottleAvailability } from '#lib/shared/bottle-availability.js';
 export type BottleFields = Omit<NewWineBottle, 'id' | 'createdAt' | 'updatedAt'>;
 
 export function insertBottle(fields: BottleFields, tx: Tx): WineBottle {
-    return tx.insert(wineBottles).values(fields).returning().get();
+    return namingMissingReferences(wineBottles, fields, tx, () =>
+        tx.insert(wineBottles).values(fields).returning().get()
+    );
 }
 
 /** The bottles of `ids` that exist, in no particular order. */
@@ -37,12 +40,14 @@ export function updateBottle(
     fields: Partial<BottleFields>,
     tx: Tx
 ): WineBottle | undefined {
-    return tx
-        .update(wineBottles)
-        .set({ ...fields, updatedAt: new Date() })
-        .where(eq(wineBottles.id, id))
-        .returning()
-        .get();
+    return namingMissingReferences(wineBottles, fields, tx, () =>
+        tx
+            .update(wineBottles)
+            .set({ ...fields, updatedAt: new Date() })
+            .where(eq(wineBottles.id, id))
+            .returning()
+            .get()
+    );
 }
 
 /** Returns whether there was such a bottle. */

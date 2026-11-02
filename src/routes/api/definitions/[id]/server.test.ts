@@ -75,6 +75,24 @@ describe('PUT /api/definitions/[id]', () => {
         expect((await put('none', wine)).status).toBe(404);
     });
 
+    it.each([
+        ['an appellation', 'appellationId'],
+        ['a color', 'colorId'],
+        ['a classification', 'classificationId'],
+        ['a photo', 'imageId']
+    ])('answers 409 naming %s that does not exist, and keeps the wine', async (_, field) => {
+        const [wine] = await db.select().from(wineDefinitions);
+
+        const response = await put(wine.id, { ...wine, [field]: 'unknown' });
+
+        expect(response.status).toBe(409);
+        expect((await response.json()).error).toMatchObject({
+            code: 'missing_reference',
+            details: [{ field, id: 'unknown' }]
+        });
+        expect(await db.select().from(wineDefinitions)).toEqual([wine]);
+    });
+
     it('answers 422 for a rating out of 1 to 5, and keeps the wine as it was', async () => {
         const [wine] = await db.select().from(wineDefinitions);
 

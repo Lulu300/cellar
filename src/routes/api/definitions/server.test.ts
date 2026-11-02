@@ -83,7 +83,10 @@ describe('POST /api/definitions', () => {
         const response = await post({ ...wine, typeId: 'Sparkling' });
 
         expect(response.status).toBe(409);
-        expect((await response.json()).error.code).toBe('missing_reference');
+        expect((await response.json()).error).toMatchObject({
+            code: 'missing_reference',
+            details: [{ field: 'typeId', id: 'Sparkling' }]
+        });
         expect(await db.select().from(wineTypes)).toEqual(typesBefore);
     });
 });

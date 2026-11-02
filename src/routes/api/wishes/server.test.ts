@@ -142,11 +142,17 @@ describe('POST /api/wishes', () => {
         });
     });
 
-    it('refuses an unknown wine or photo', async () => {
-        for (const body of [{ definitionId: 'unknown' }, { text: 'Clos', imageId: 'unknown' }]) {
+    it('refuses an unknown wine or photo, naming it', async () => {
+        for (const [field, body] of [
+            ['definitionId', { definitionId: 'unknown' }],
+            ['imageId', { text: 'Clos', imageId: 'unknown' }]
+        ] as const) {
             const response = await post(body);
             expect(response.status).toBe(409);
-            expect(await errorCode(response)).toBe('missing_reference');
+            expect((await response.json()).error).toMatchObject({
+                code: 'missing_reference',
+                details: [{ field, id: 'unknown' }]
+            });
         }
     });
 });
@@ -200,6 +206,18 @@ describe('PUT /api/wishes/[id]', () => {
         expect(taken.status).toBe(409);
         expect(await errorCode(taken)).toBe('duplicate_wish');
         expect(unknown.status).toBe(404);
+    });
+
+    it('refuses an unknown wine, naming it', async () => {
+        const text = await added({ text: 'Margaux' });
+
+        const response = await put(text.id, { definitionId: 'unknown' });
+
+        expect(response.status).toBe(409);
+        expect((await response.json()).error).toMatchObject({
+            code: 'missing_reference',
+            details: [{ field: 'definitionId', id: 'unknown' }]
+        });
     });
 });
 

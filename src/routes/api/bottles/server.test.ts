@@ -110,19 +110,44 @@ describe('POST /api/bottles', () => {
         expect(await db.select().from(wineBottles)).toEqual(before);
     });
 
+    // FEAT-13: SQLite does not say which id is unknown; the answer does.
     it.each([
-        ['wine', { definitionId: 'no-such-wine' }],
-        ['format', { formatId: 'no-such-format' }],
-        ['origin', { originId: 'no-such-origin' }],
-        ['storage case', { storageCaseId: 'no-such-case' }]
-    ])('answers 409 for a %s that does not exist', async (_, fields) => {
+        ['a wine', 'definitionId', 'no-such-wine'],
+        ['a format', 'formatId', 'no-such-format'],
+        ['an origin', 'originId', 'no-such-origin'],
+        ['a storage case', 'storageCaseId', 'no-such-case']
+    ])('answers 409 for %s that does not exist, naming its field', async (_, field, id) => {
         const before = await db.select().from(wineBottles);
 
-        const response = await post({ definitionId, formatId: 'bottle', ...fields });
+        const response = await post({ definitionId, formatId: 'bottle', [field]: id });
 
         expect(response.status).toBe(409);
-        expect((await response.json()).error.code).toBe('missing_reference');
+        expect((await response.json()).error).toEqual({
+            code: 'missing_reference',
+            message: `An entry it refers to does not exist (${field} ${id})`,
+            details: [{ field, id }]
+        });
         expect(await db.select().from(wineBottles)).toEqual(before);
+    });
+
+    it('names every unknown id of a request', async () => {
+        const response = await post({
+            definitionId,
+            formatId: 'magnum-xl',
+            originId: 'corner-shop',
+            quantity: 2
+        });
+
+        expect(response.status).toBe(409);
+        expect((await response.json()).error).toMatchObject({
+            code: 'missing_reference',
+            message:
+                'An entry it refers to does not exist (originId corner-shop, formatId magnum-xl)',
+            details: [
+                { field: 'originId', id: 'corner-shop' },
+                { field: 'formatId', id: 'magnum-xl' }
+            ]
+        });
     });
 
     it('answers 409 once the prefix has no barcode number left', async () => {
@@ -280,6 +305,19 @@ describe('PATCH /api/bottles', () => {
             details: { caseId: cases[0].id, caseName: 'Small1', capacity: 1, bottles: 2 }
         });
         expect(rowsOf(moved)).toEqual(before);
+    });
+
+    it('answers 409 naming an unknown format, and changes none', async () => {
+        const before = rowsOf(ids);
+
+        const response = await patch({ ids, changes: { formatId: 'jeroboam-xl' } });
+
+        expect(response.status).toBe(409);
+        expect((await response.json()).error).toMatchObject({
+            code: 'missing_reference',
+            details: [{ field: 'formatId', id: 'jeroboam-xl' }]
+        });
+        expect(rowsOf(ids)).toEqual(before);
     });
 
     it('answers 422 to one manual barcode for several bottles, and changes none', async () => {

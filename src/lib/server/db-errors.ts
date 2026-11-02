@@ -1,5 +1,8 @@
 import Database from 'better-sqlite3';
+import { eq, getTableColumns } from 'drizzle-orm';
+import { getTableConfig, type SQLiteTable } from 'drizzle-orm/sqlite-core';
 import { BottleAvailability } from '#lib/shared/bottle-availability.js';
+import type { Tx } from './db/connection.js';
 import { ApiError, ConflictError, invalidField } from './http/errors.js';
 
 function sqliteCode(error: unknown): string | undefined {
@@ -101,6 +104,74 @@ export function brokenRule(error: unknown): BrokenRule | undefined {
     );
 }
 
+/** A field of a write, and the id it gives, which refers to no row. */
+export interface MissingReference {
+    field: string;
+    id: string;
+}
+
+function missingReferenceMessage(missing: MissingReference[]): string {
+    const message = 'An entry it refers to does not exist';
+    if (missing.length === 0) return message;
+    return `${message} (${missing.map(({ field, id }) => `${field} ${id}`).join(', ')})`;
+}
+
+/**
+ * A write refers to a row that does not exist. `missing` names each field and the id it gives, in
+ * the message and the details, when the write could tell them: SQLite's error names no column.
+ */
+export class MissingReferenceError extends ConflictError {
+    constructor(readonly missing: MissingReference[] = []) {
+        super(
+            'missing_reference',
+            missingReferenceMessage(missing),
+            missing.length > 0 ? missing : undefined
+        );
+    }
+}
+
+/** The fields of `values` whose id refers to no row, by the foreign keys of `table`, in its order. */
+function missingReferences(table: SQLiteTable, values: object, tx: Tx): MissingReference[] {
+    const references = getTableConfig(table).foreignKeys.map((foreignKey) =>
+        foreignKey.reference()
+    );
+    return Object.entries(getTableColumns(table)).flatMap(([field, column]) => {
+        const id = (values as Record<string, unknown>)[field];
+        const reference = references.find(({ columns }) => columns[0] === column);
+        if (typeof id !== 'string' || !reference) return [];
+        const [foreignColumn] = reference.foreignColumns;
+        const found = tx
+            .select({ id: foreignColumn })
+            .from(reference.foreignTable)
+            .where(eq(foreignColumn, id))
+            .get();
+        return found ? [] : [{ field, id }];
+    });
+}
+
+/**
+ * Runs `write`, which writes `values` in `table`, and when a foreign key refuses it, throws a
+ * MissingReferenceError naming the fields of `values` whose id refers to no row. As for a deletion
+ * in lookup-crud, the foreign key refuses and the refusal is explained after, so a write that goes
+ * through costs no query. Any other error, or a refusal that names none of `values`, goes on as it
+ * is.
+ */
+export function namingMissingReferences<T>(
+    table: SQLiteTable,
+    values: object,
+    tx: Tx,
+    write: () => T
+): T {
+    try {
+        return write();
+    } catch (error) {
+        if (!isForeignKeyRefusal(error)) throw error;
+        const missing = missingReferences(table, values, tx);
+        if (missing.length === 0) throw error;
+        throw new MissingReferenceError(missing);
+    }
+}
+
 /**
  * The ApiError for a write that SQLite refused, or undefined for any other error. A foreign key
  * refuses a deletion when other rows still use the row, and any other write when a row it refers
@@ -115,7 +186,7 @@ export function refusedWriteError(error: unknown, method: string): ApiError | un
         case 'SQLITE_CONSTRAINT_FOREIGNKEY':
             return method === 'DELETE'
                 ? new ConflictError('in_use', 'Other entries still use this one')
-                : new ConflictError('missing_reference', 'An entry it refers to does not exist');
+                : new MissingReferenceError();
         default:
             return undefined;
     }

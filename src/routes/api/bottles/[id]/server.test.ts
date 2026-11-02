@@ -84,11 +84,14 @@ describe('PATCH /api/bottles/[id]', () => {
         expect(rowOf('second')).toEqual(before);
     });
 
-    it('answers 409 for a storage case that does not exist, and keeps the bottle', async () => {
+    it('answers 409 for a storage case that does not exist, naming it, and keeps the bottle', async () => {
         const response = await patch('first', { storageCaseId: 'no-such-case' });
 
         expect(response.status).toBe(409);
-        expect((await response.json()).error.code).toBe('missing_reference');
+        expect((await response.json()).error).toMatchObject({
+            code: 'missing_reference',
+            details: [{ field: 'storageCaseId', id: 'no-such-case' }]
+        });
         expect(rowOf('first').storageCaseId).toBeNull();
     });
 

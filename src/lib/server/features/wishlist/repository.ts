@@ -1,6 +1,7 @@
 import { count, desc, eq, isNotNull, sql } from 'drizzle-orm';
 import type { Tx } from '#lib/server/db/connection.js';
 import { db } from '#lib/server/db/index.js';
+import { namingMissingReferences } from '#lib/server/db-errors.js';
 import { wishes, type Wish } from '#lib/server/db/schema.js';
 import type { WishInput } from '#lib/shared/schemas/wish.js';
 
@@ -36,17 +37,21 @@ export function wishedWines(): { definitionId: string; wishId: string }[] {
 }
 
 export function insertWish(data: WishInput, tx: Tx): Wish {
-    return tx.insert(wishes).values(data).returning().get();
+    return namingMissingReferences(wishes, data, tx, () =>
+        tx.insert(wishes).values(data).returning().get()
+    );
 }
 
 /** Replaces the fields of the wish; undefined when there is no such wish. */
 export function updateWish(id: string, data: Partial<WishInput>, tx: Tx): Wish | undefined {
-    return tx
-        .update(wishes)
-        .set({ ...data, updatedAt: new Date() })
-        .where(eq(wishes.id, id))
-        .returning()
-        .get();
+    return namingMissingReferences(wishes, data, tx, () =>
+        tx
+            .update(wishes)
+            .set({ ...data, updatedAt: new Date() })
+            .where(eq(wishes.id, id))
+            .returning()
+            .get()
+    );
 }
 
 /** Returns the wish deleted, or undefined when there was none. */

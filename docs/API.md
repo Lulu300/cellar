@@ -124,7 +124,7 @@ The common errors, which any route may answer:
 | 403    | `cross_site_request` | The `Origin` header is not Cellar's URL (see [Origin check](#origin-check)).                                                                                        |
 | 404    | `not_found`          | The id in the path, or an id the body names, does not exist; or the path matches no route.                                                                          |
 | 405    | `method_not_allowed` | The route does not have this method; the `Allow` header lists those it has.                                                                                         |
-| 409    | `missing_reference`  | A write points at a row that does not exist (a wine, a format, a case…).                                                                                            |
+| 409    | `missing_reference`  | A write points at a row that does not exist (a wine, a format, a case…); for a wine, a bottle or a wish, `details` lists each unknown id as `{ "field", "id" }`.    |
 | 409    | `in_use`             | A delete is refused because other rows still use the row.                                                                                                           |
 | 413    | `body_too_large`     | The body is over the limit of the route (see [Size limits](#size-limits)).                                                                                          |
 | 422    | `invalid_body`       | The body breaks a rule. `details` lists each problem as `{ "path", "message" }`, where `path` is the field as a dotted path (`cases.2`), empty for the body itself. |
@@ -437,7 +437,8 @@ such as `id` or `createdAt`, are ignored.
 - `targetQuantity`: integer 0-10,000, optional: the number of bottles to keep in the cellar (see
   [`GET /api/wine-shortage`](#get-apiwine-shortage)).
 
-An id that points at no row answers `409 missing_reference`.
+An id that points at no row answers `409 missing_reference`, whose `details` name its field and the
+id given.
 
 ### `GET /api/wines`
 

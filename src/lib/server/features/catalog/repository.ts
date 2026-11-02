@@ -1,6 +1,7 @@
 import { count, eq } from 'drizzle-orm';
 import type { Tx } from '#lib/server/db/connection.js';
 import { db } from '#lib/server/db/index.js';
+import { namingMissingReferences } from '#lib/server/db-errors.js';
 import {
     appellations,
     countries,
@@ -64,17 +65,21 @@ export function getDefinitionWithLocation(id: string): WineWithLocation | undefi
 }
 
 export function insertDefinition(data: WineDefinitionInput): WineDefinition {
-    return db.insert(wineDefinitions).values(data).returning().get();
+    return namingMissingReferences(wineDefinitions, data, db, () =>
+        db.insert(wineDefinitions).values(data).returning().get()
+    );
 }
 
 /** Changes the fields of `data` on the wine; undefined when there is no such wine. */
 export function updateDefinition(id: string, data: Partial<WineDefinitionInput>, tx: Tx = db) {
-    return tx
-        .update(wineDefinitions)
-        .set({ ...data, updatedAt: new Date() })
-        .where(eq(wineDefinitions.id, id))
-        .returning()
-        .get();
+    return namingMissingReferences(wineDefinitions, data, tx, () =>
+        tx
+            .update(wineDefinitions)
+            .set({ ...data, updatedAt: new Date() })
+            .where(eq(wineDefinitions.id, id))
+            .returning()
+            .get()
+    );
 }
 
 export function getDefinition(id: string, tx: Tx = db): WineDefinition | undefined {

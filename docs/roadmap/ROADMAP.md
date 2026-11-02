@@ -140,6 +140,7 @@ Revue du code du 2026-10-08, commit `556c7bb`. Ce fichier est la version pour le
 - **Actions MCP (FEAT-11)** : Un utilisateur a essayé le MCP : il a demandé un vin pour son repas, puis voulu sortir la bouteille de la cave, et seul « marquer bue » existait. Le mainteneur ajoute à la 1.4.0 quatre groupes d’actions : sortir des bouteilles de la cave, les y remettre dans une case et annuler un « bu » fait par erreur ; modifier un vin (quantité cible, description, producteur…) et les champs des bouteilles (prix, valeur, millésime, apogée, code-barres) ; lister les bouteilles de toute la cave par état et par date ; changer la quantité ou la note d’un souhait, et supprimer une bouteille ajoutée par erreur (action destructive, annoncée comme telle au client). L’admin reste hors du MCP. Les applications Claude web et mobile ne l’atteignent pas : leurs connecteurs partent d’Internet et attendent OAuth ; Claude Code et les clients locaux, avec l’en-tête du jeton, fonctionnent (décision du 2026-11-01).
 - **MCP le plus complet possible (FEAT-12)** : Le mainteneur veut que l’assistant qui utilise le MCP ait le plus de contexte possible : les actions, leurs descriptions, la documentation et les erreurs. Une erreur rend donc aussi le détail du refus (les `details` de l’API), et une relecture de tous les outils, du point de vue d’un assistant, complète ce qui manque. Une bouteille marquée bue garde la case où elle était, sans y prendre de place, comme une bouteille hors cave : la remettre en cave la replace dans cette case, et l’assistant comme l’application peuvent dire où elle était. Les bouteilles bues avant la 1.4.0 ont déjà perdu leur case (décision du 2026-11-02). Précisé le même jour : le formulaire d’une bouteille bue dit dans quelle case elle était ; le MCP lit les listes au-delà de 200 (`offset`) ; pas de filtre sur l’apogée (avec « À boire », FEAT-05), ni de création d’origine ou de format, ni de suppression d’un vin, des conteneurs ou des appellations par le MCP.
 - **Dépendances après la 1.4.0** : Le mainteneur veut sortir la 1.4.0 vite : la revue des dépendances (DEP-10), qui attendait que les correctifs aient 7 jours (le 2026-11-05 ou 06), part dans la première version publiée après cette date. La 1.4.0 sort avec les dépendances de la 1.3.2 (décision du 2026-11-02).
+- **Version corrective 1.4.1** : Le mainteneur veut corriger le survol des boutons dans une 1.4.1, avant la 1.5.0 (2026-11-02) : sur une carte de vin, le survol du nombre de bouteilles se voit à peine, surtout en thème sombre, et d’autres boutons ont peut-être le même défaut ; il veut une règle commune, pour un comportement prévisible et lisible. Comme pour la 1.3.1 : develop était passé à 1.5.0-rc.0 sans qu’aucune image ni base ne tourne sous ce numéro hors de la CI, donc il repasse à 1.4.1-rc.0, et l’entrée 1.5.0 de `releases.json` revient au démarrage de la 1.5.0.
 - **Vue liste (FEAT-10)** : Choisie sur maquette (planche « D3 ») : une vue liste à côté des cartes, sans défilement (le mainteneur n’en veut pas dans la liste) ; un texte long passe à la ligne. Un sélecteur « Cartes / Liste » sur la page et la vue par défaut dans les préférences. Demandée avec UI-32, placée en tête de la 1.4.0 parce que c’est une nouvelle fonction et non un correctif.
 - **Couleurs des vins (FEAT-03)** : Chaque couleur de vin a une vraie couleur, enregistrée en base ; les couleurs de départ reçoivent celles des étiquettes d’aujourd’hui. Créée depuis un formulaire, une couleur reçoit une teinte par défaut ou neutre ; dans Admin › Data, le sélecteur s’affiche dès la création ou la modification. Choisi sur maquette : sur la page Stockage, chaque place occupée prend la couleur de son vin ; les camemberts des statistiques prennent les vraies couleurs ; la liste des vins garde l’étiquette, colorée, et ajoute une bande à gauche de la carte ; les listes de bouteilles montrent l’étiquette colorée à côté du nom du vin. Pas de carte teintée (décision du 2026-10-31). Précisé le 2026-11-01 : les couleurs de départ sont les teintes de vin de la maquette (Rouge #7b1e2b, Blanc #ead98b, Rosé #f2a08c, Jaune #d4952a, N/A #9ca3af) ; une couleur créée depuis un formulaire reçoit le gris de N/A, sauf un nom reconnu, qui reprend sa teinte de départ. Changé le 2026-11-02, sur captures : le contour « seulement quand le contraste manque » donnait des bouteilles avec contour, d’autres sans, et un orange entre les deux, ce que le mainteneur refuse ; toute couleur reçoit désormais le même contour, dans sa propre teinte mêlée de 40 % de noir en clair et de 40 % de blanc en sombre, sur le stockage (une silhouette de bouteille sans étiquette ; une place vide est la même silhouette en contour), les étiquettes, la bande des cartes et la légende des statistiques. Une couleur choisie par l’utilisateur peut avoir un contour sous 3:1 (le blanc pur en clair : 2,85:1) : accepté.
 - **Plan de la cave (FEAT-04)** : La page Stockage devient le plan : un clic sur une case ouvre la liste de ses bouteilles (vin, millésime, couleur), d’où l’on ouvre une bouteille, la marque bue ou la déplace ; on en coche plusieurs puis « Déplacer vers… » une autre case, sans glisser-déposer. Une case reste un bac, sans place précise. La page d’un vin a un bouton « Voir dans la cave », qui met en évidence les cases où il est. La disposition des conteneurs ne change pas (décision du 2026-10-31). Précisé le 2026-11-02 : le choix de la case d’un déplacement est le même sur les trois écrans qui déplacent (liste des bouteilles d’un vin, scan en lot, plan), groupé par conteneur avec la place libre de chaque case, les cases sans place et la case quittée grisées, sans recherche par nom ; chaque bouteille de la case a un menu « ⋯ » (marquer bue, déplacer, modifier) ; « Voir dans la cave » entoure les cases du vin d’un anneau avec une épingle, sous une ligne « Cases contenant … » et « Tout afficher » ; un visiteur voit les bouteilles d’une case sans pouvoir agir ; le MCP liste les bouteilles d’une case (`list_bottles` avec `caseId`).
@@ -174,6 +175,7 @@ Revue du code du 2026-10-08, commit `556c7bb`. Ce fichier est la version pour le
 | 1.3.1 | P15b · Correctifs de la 1.3.0 | Pour la 1.3.1, avant P16 (décision « Version corrective 1.3.1 ») : UI-31 (fait le 2026-11-01) ; puis REL-14. Publiée en 1.3.1 le 2026-11-01. | UI-31, REL-14 | 2 / 2 |
 | 1.3.2 | P15c · Cartes de vin | Pour la 1.3.2, avant P16 (décisions « Cartes de vin (UI-32) » et « Version corrective 1.3.1 », qui vaut aussi pour la 1.3.2) : UI-32 (fait le 2026-11-01) ; puis REL-15. Publiée en 1.3.2 le 2026-11-01. | UI-32, REL-15 | 2 / 2 |
 | 1.4.0 | P16 · Couleurs et plan de la cave | Pour la 1.4.0 : les couleurs des vins, puis le plan de la cave, qui s’appuie dessus. Ordre : FEAT-10 (vue liste, demandée avec UI-32) ; FEAT-03 ; FEAT-11 (actions MCP, demandées après l’essai d’un utilisateur) ; FEAT-04 ; FEAT-12 (MCP plus complet, demandé après FEAT-11) ; FEAT-13 (deux refus, trouvés pendant FEAT-12) ; puis REL-10. DEP-10 passe après la 1.4.0. Publiée en 1.4.0 le 2026-11-02. | FEAT-10, FEAT-03, FEAT-11, FEAT-04, FEAT-12, FEAT-13, REL-10 | 7 / 7 |
+| 1.4.1 | P16b · Survol des boutons | Pour la 1.4.1, avant P17 (décision « Version corrective 1.4.1 ») : UI-33 ; puis REL-16. | UI-33, REL-16 | 0 / 2 |
 | 1.5.0 | P17 · À boire et dégustation | Pour la 1.5.0 : la vie d’une bouteille jusqu’à ce qu’on la boive. Les deux tâches ajoutent leur repère et leur fiche à la liste d’une case du plan (FEAT-04). Ordre : FEAT-05 et FEAT-06 ; DEP-10 (reportée de la 1.4.0) ; puis REL-11. | FEAT-05, FEAT-06, DEP-10, REL-11 | 0 / 4 |
 | 1.6.0 | P18 · Producteurs et revue de l’import | Pour la 1.6.0 : les producteurs d’abord, parce que la revue de l’import doit savoir relier ou créer un producteur. Ordre : FEAT-07 ; FEAT-08 ; puis REL-12. | FEAT-07, FEAT-08, REL-12 | 0 / 3 |
 | 1.7.0 | P19 · Notifications | Pour la 1.7.0 : les notifications, qui utilisent « À boire » (FEAT-05), le statut hors cave et la vérification des mises à jour. Ordre : FEAT-09 ; puis REL-13. | FEAT-09, REL-13 | 0 / 2 |
@@ -3508,6 +3510,44 @@ Sévérité **évolution** · effort **S** · dépend de FEAT-10, FEAT-03, FEAT-
 **Critère d’acceptation** : v1.4.0 est publiée sur `main` et son image se télécharge sans connexion ; develop passe à la rc suivante.
 
 **Sources** : Décision « Versions après la 1.0 »
+
+## P16b · Survol des boutons (1.4.1)
+
+Pour la 1.4.1, avant P17 (décision « Version corrective 1.4.1 ») : UI-33 ; puis REL-16.
+
+### UI-33 · Un survol lisible et prévisible sur tous les boutons
+
+Sévérité **mineur** · effort **M** · dépend de REL-10 · statut **À faire**
+
+**Problème** : Sur une carte de vin, le survol du nombre de bouteilles change si peu sa teinte qu’on ne voit pas que le bouton réagit, surtout en thème sombre, alors que les boutons voisins (ajouter, liste d’envies, modifier, dupliquer) se voient. D’autres boutons de l’application ont sans doute le même défaut.
+
+**Fichiers** : `src/lib/components/ui/button/`, `src/app.css`, `src/lib/components/`
+
+**À faire**
+
+- Corriger au moins le bouton du nombre de bouteilles des cartes (`WineCard.svelte`), en clair et en sombre.
+- Relever le survol, le focus clavier, l’état appuyé et l’état désactivé de chaque sorte de bouton de l’application (variantes shadcn et boutons faits main), en clair et en sombre, avec le contraste mesuré entre l’état normal et le survol ; proposer au mainteneur une règle par sorte de bouton, sur captures, avant de l’appliquer partout.
+- Appliquer la règle choisie par les variantes et les jetons partagés plutôt que bouton par bouton ; ce que la règle ne couvre pas est listé.
+
+**Critère d’acceptation** : Chaque bouton montre un survol et un focus visibles en clair et en sombre, selon la règle choisie par le mainteneur ; captures avant et après ; mesures ; testé.
+
+**Sources** : Décision « Version corrective 1.4.1 »
+
+### REL-16 · Publication de la 1.4.1
+
+Sévérité **évolution** · effort **S** · dépend de UI-33 · statut **À faire**
+
+**Problème** : La 1.4.1 apporte le survol corrigé sans attendre la 1.5.0.
+
+**Fichiers** : `releases.json`, `CHANGELOG.md`, `UPGRADING.md`, `package.json`
+
+**À faire**
+
+- Résumé 1.4.1 ; bancs depuis la 1.4.0 et la 1.0.0 ; release selon RELEASING.md ; puis develop repasse à 1.5.0-rc.0 avec l’entrée 1.5.0 de `releases.json`.
+
+**Critère d’acceptation** : v1.4.1 est publiée sur `main` et son image se télécharge sans connexion ; develop repasse à 1.5.0-rc.0.
+
+**Sources** : Décision « Version corrective 1.4.1 »
 
 ## P17 · À boire et dégustation (1.5.0)
 

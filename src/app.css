@@ -50,6 +50,13 @@
     --sidebar-accent-foreground: oklch(0.15 0.042 228);
     --sidebar-border: oklch(0.9 0.013 228);
     --sidebar-ring: oklch(0.47 0.14 226);
+    /* The hover of a filled button: its fill takes 15% of the text colour of the page, darker in
+       light mode and lighter in dark mode (UI-33). Made from the theme's own colours, so that
+       every theme follows; a theme whose button text would fall short of 4.5:1 sets its own. */
+    --primary-hover: color-mix(in oklab, var(--primary), var(--foreground) 15%);
+    --secondary-hover: color-mix(in oklab, var(--secondary), var(--foreground) 15%);
+    --destructive-hover: color-mix(in oklab, var(--destructive), var(--foreground) 15%);
+    --input-hover: color-mix(in oklab, var(--input), var(--foreground) 15%);
 }
 
 .dark {
@@ -74,6 +81,8 @@
     --border: oklch(0.25 0.05 228);
     --input: oklch(0.5 0.05 228);
     --ring: oklch(0.6 0.18 226);
+    /* In dark mode the primary takes 20%: at 15%, its hover was weaker than before (UI-33) */
+    --primary-hover: color-mix(in oklab, var(--primary), var(--foreground) 20%);
     --chart-1: oklch(0.6 0.18 226);
     --chart-2: oklch(0.7 0.15 210);
     --chart-3: oklch(0.5 0.12 240);
@@ -106,6 +115,10 @@
     --color-primary: var(--primary);
     --color-primary-foreground: var(--primary-foreground);
     --color-primary-text: var(--primary-text);
+    --color-primary-hover: var(--primary-hover);
+    --color-secondary-hover: var(--secondary-hover);
+    --color-destructive-hover: var(--destructive-hover);
+    --color-input-hover: var(--input-hover);
     --color-secondary: var(--secondary);
     --color-secondary-foreground: var(--secondary-foreground);
     --color-muted: var(--muted);
@@ -135,7 +148,9 @@
 
 @layer base {
     * {
-        @apply border-border outline-ring/50;
+        /* The focus outline of links and tabs, in the full theme colour like the ring of the
+           buttons: at half strength it fell under 3:1 (UI-33) */
+        @apply border-border outline-ring;
     }
     body {
         @apply bg-background text-foreground;

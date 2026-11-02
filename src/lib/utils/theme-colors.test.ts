@@ -170,11 +170,14 @@ describe('the default theme', () => {
 });
 
 describe('the contrast of every theme', () => {
-    /** The sRGB channels (0 to 1) of an `oklch(L C H)` colour, clipped to the sRGB gamut. */
-    function srgb(color: string) {
+    /** The OKLab coordinates of an `oklch(L C H)` colour. */
+    function oklab(color: string) {
         const [l, c, h] = /^oklch\(([\d.]+) ([\d.]+) ([\d.]+)\)$/.exec(color)!.slice(1).map(Number);
-        const a = c * Math.cos((h * Math.PI) / 180);
-        const b = c * Math.sin((h * Math.PI) / 180);
+        return [l, c * Math.cos((h * Math.PI) / 180), c * Math.sin((h * Math.PI) / 180)];
+    }
+
+    /** The sRGB channels (0 to 1) of OKLab coordinates, clipped to the sRGB gamut. */
+    function labToSrgb([l, a, b]: number[]) {
         const lms = [
             l + 0.3963377774 * a + 0.2158037573 * b,
             l - 0.1055613458 * a - 0.0638541728 * b,
@@ -192,6 +195,9 @@ describe('the contrast of every theme', () => {
                 linear <= 0.0031308 ? 12.92 * linear : 1.055 * linear ** (1 / 2.4) - 0.055
             );
     }
+
+    /** The sRGB channels (0 to 1) of an `oklch(L C H)` colour, clipped to the sRGB gamut. */
+    const srgb = (color: string) => labToSrgb(oklab(color));
 
     /** The WCAG relative luminance of sRGB channels. */
     function luminance(channels: number[]) {
@@ -236,6 +242,50 @@ describe('the contrast of every theme', () => {
                 contrast(srgb(color['--input']), srgb(color['--background'])),
                 'input'
             ).toBeGreaterThanOrEqual(3);
+        }
+    );
+
+    // UI-33: the hover of a filled button changes its fill by 1.2:1 at least, as much as the
+    // hover it replaced, and keeps its text readable; a quiet button's accent shows on a card and
+    // on the page.
+    it.each(everyThemeAndMode)(
+        'shows the hover of every button with the %s theme (dark: %s)',
+        (themeId, isDarkMode) => {
+            const color = Object.fromEntries(variablesOf(themeId, isDarkMode));
+            const css = appCssVariables(':root');
+            const darkCss = appCssVariables('.dark');
+            /** `color-mix(in oklab, var(--fill), var(--text) N%)`, or `white` for the text. */
+            function hover(name: string) {
+                const mix =
+                    color[`--${name}-hover`] ??
+                    (isDarkMode ? darkCss.get(`--${name}-hover`) : undefined) ??
+                    css.get(`--${name}-hover`)!;
+                const [, fill, towards, percent] =
+                    /^color-mix\(in oklab, var\(--([a-z-]+)\), (?:var\(--([a-z-]+)\)|white) (\d+)%\)$/.exec(
+                        mix
+                    )!;
+                const [from, to] = [
+                    oklab(color[`--${fill}`]),
+                    oklab(towards ? color[`--${towards}`] : 'oklch(1 0 0)')
+                ];
+                return labToSrgb(
+                    from.map((value, i) => value + (to[i] - value) * (Number(percent) / 100))
+                );
+            }
+            for (const name of ['primary', 'secondary']) {
+                const fill = srgb(color[`--${name}`]);
+                expect(contrast(fill, hover(name)), `${name} hover`).toBeGreaterThanOrEqual(1.2);
+                expect(
+                    contrast(srgb(color[`--${name}-foreground`]), hover(name)),
+                    `text on the ${name} hover`
+                ).toBeGreaterThanOrEqual(4.5);
+            }
+            for (const surface of ['card', 'background']) {
+                expect(
+                    contrast(srgb(color['--accent']), srgb(color[`--${surface}`])),
+                    `accent on ${surface}`
+                ).toBeGreaterThanOrEqual(1.15);
+            }
         }
     );
 

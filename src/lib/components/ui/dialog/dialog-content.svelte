@@ -33,8 +33,10 @@
     >
         {@render children?.()}
         {#if showCloseButton}
+            <!-- A quiet icon button, unlike the CLI's on purpose (UI-33): keep it when
+                 `shadcn add --overwrite` rewrites this file. -->
             <DialogPrimitive.Close
-                class="ring-offset-background focus:ring-ring rounded-xs focus:outline-hidden absolute end-4 top-4 opacity-70 transition-opacity hover:opacity-100 focus:ring-2 focus:ring-offset-2 disabled:pointer-events-none [&_svg:not([class*='size-'])]:size-4 [&_svg]:pointer-events-none [&_svg]:shrink-0"
+                class="absolute end-3 top-3 inline-flex size-7 items-center justify-center rounded-md text-muted-foreground outline-none transition-colors hover:bg-accent hover:text-accent-foreground focus-visible:ring-[3px] focus-visible:ring-ring disabled:pointer-events-none [&_svg:not([class*='size-'])]:size-4 [&_svg]:pointer-events-none [&_svg]:shrink-0"
             >
                 <XIcon />
                 <span class="sr-only">{m['common.close']()}</span>

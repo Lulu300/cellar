@@ -42,6 +42,8 @@ export const themes = {
             primary: 'oklch(0.56 0.16 145)',
             'primary-text': 'oklch(0.5 0.16 145)',
             'primary-foreground': 'oklch(0.05 0.02 145)',
+            // Dark text on the green: a darker hover would bring it under 4.5:1, so it lightens
+            'primary-hover': 'color-mix(in oklab, var(--primary), white 15%)',
             secondary: 'oklch(0.96 0.007 145)',
             accent: 'oklch(0.93 0.02 145)',
             foreground: 'oklch(0.15 0.042 145)',
@@ -58,6 +60,8 @@ export const themes = {
             popover: 'oklch(0.15 0.035 145)',
             'popover-foreground': 'oklch(0.98 0.003 145)',
             primary: 'oklch(0.7 0.18 145)',
+            // A light primary barely changes at app.css's 20%: a stronger mix keeps its hover visible
+            'primary-hover': 'color-mix(in oklab, var(--primary), var(--foreground) 25%)',
             'primary-foreground': 'oklch(0.05 0.02 145)',
             secondary: 'oklch(0.2 0.04 145)',
             'secondary-foreground': 'oklch(0.98 0.003 145)',
@@ -126,6 +130,8 @@ export const themes = {
             popover: 'oklch(0.15 0.035 55)',
             'popover-foreground': 'oklch(0.98 0.003 55)',
             primary: 'oklch(0.7 0.17 55)',
+            // A light primary barely changes at app.css's 20%: a stronger mix keeps its hover visible
+            'primary-hover': 'color-mix(in oklab, var(--primary), var(--foreground) 25%)',
             'primary-foreground': 'oklch(0.05 0.02 55)',
             secondary: 'oklch(0.2 0.04 55)',
             'secondary-foreground': 'oklch(0.98 0.003 55)',
@@ -196,6 +202,8 @@ export const themes = {
             popover: 'oklch(0.15 0.035 85)',
             'popover-foreground': 'oklch(0.98 0.003 85)',
             primary: 'oklch(0.75 0.16 85)',
+            // A light primary barely changes at app.css's 20%: a stronger mix keeps its hover visible
+            'primary-hover': 'color-mix(in oklab, var(--primary), var(--foreground) 30%)',
             'primary-foreground': 'oklch(0.05 0.02 85)',
             secondary: 'oklch(0.2 0.04 85)',
             'secondary-foreground': 'oklch(0.98 0.003 85)',
@@ -264,6 +272,8 @@ export const themes = {
             popover: 'oklch(0.13 0.006 228)',
             'popover-foreground': 'oklch(0.98 0.003 228)',
             primary: 'oklch(0.7 0.015 228)',
+            // A light primary barely changes at app.css's 20%: a stronger mix keeps its hover visible
+            'primary-hover': 'color-mix(in oklab, var(--primary), var(--foreground) 25%)',
             'primary-foreground': 'oklch(0.09 0.005 228)',
             secondary: 'oklch(0.18 0.006 228)',
             'secondary-foreground': 'oklch(0.98 0.003 228)',

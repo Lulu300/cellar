@@ -2681,7 +2681,8 @@ export const tasks = [
 		todo: [
 			'Corriger au moins le bouton du nombre de bouteilles des cartes (`WineCard.svelte`), en clair et en sombre.',
 			'Relever le survol, le focus clavier, l’état appuyé et l’état désactivé de chaque sorte de bouton de l’application (variantes shadcn et boutons faits main), en clair et en sombre, avec le contraste mesuré entre l’état normal et le survol ; proposer au mainteneur une règle par sorte de bouton, sur captures, avant de l’appliquer partout.',
-			'Appliquer la règle choisie par les variantes et les jetons partagés plutôt que bouton par bouton ; ce que la règle ne couvre pas est listé.'
+			'Appliquer la règle choisie par les variantes et les jetons partagés plutôt que bouton par bouton ; ce que la règle ne couvre pas est listé.',
+			'Ajouté par le mainteneur le 2026-11-02 : sur la page Stockage, les noms des conteneurs A à E ont une couleur fixe (`CONTAINER_COLORS` de `src/lib/components/storage/storage.ts`) et les suivants presque aucune en thème sombre ; tous prennent la même pastille neutre, lisible en clair et en sombre, puisque depuis FEAT-03 la couleur de cette page est celle du vin.'
 		],
 		done: 'Chaque bouton montre un survol et un focus visibles en clair et en sombre, selon la règle choisie par le mainteneur ; captures avant et après ; mesures ; testé.',
 		deps: ['REL-10'], src: ['Décision « Version corrective 1.4.1 »']

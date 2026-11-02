@@ -2,7 +2,8 @@ import { expect, test } from '@playwright/test';
 import { addWine, logIn, openFromMenu, pick } from './helpers.js';
 
 test('add a container on the storage page, put bottles in its cases, move three from the map, find the wine in the cellar, then colour it from the admin', async ({
-    page
+    page,
+    browser
 }) => {
     await logIn(page);
     await addWine(page, 'Cuvée Stored', 4);
@@ -132,6 +133,22 @@ test('add a container on the storage page, put bottles in its cases, move three 
     await page.getByRole('button', { name: 'Show all' }).click();
     await expect(page).toHaveURL(/\/storage$/);
     await expect(page.getByRole('button', { name: 'Rack1: 1 of 5 bottles' })).toBeVisible();
+
+    // A visitor sees what a case holds; ticking a bottle asks to log in, and ticks nothing.
+    const visitorContext = await browser.newContext();
+    const visitor = await visitorContext.newPage();
+    await visitor.goto(new URL('/storage', page.url()).href);
+    const visitorCase = visitor.getByRole('dialog', { name: 'Rack1' });
+    // Opened once hydrated: a click before then does nothing.
+    await expect(async () => {
+        await visitor.getByRole('button', { name: 'Rack1: 1 of 5 bottles' }).click();
+        await expect(visitorCase).toBeVisible({ timeout: 1000 });
+    }).toPass();
+    const box = visitorCase.getByRole('checkbox', { name: 'Select this bottle' });
+    await box.click();
+    await expect(visitor.getByText('Please log in to edit bottles')).toBeVisible();
+    await expect(box).not.toBeChecked();
+    await visitorContext.close();
 
     // A colour picked in the admin fills the place of the wine's bottle (FEAT-03).
     await openFromMenu(page, 'Settings', 'Admin');

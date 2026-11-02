@@ -86,10 +86,11 @@
             <TableRow>
                 {#if selection}
                     <TableHead class="w-12">
+                        <!-- Bound through the selection: a box whose click selects nothing, as for
+                             a visitor, stays as it was rather than ticked by the checkbox itself. -->
                         <Checkbox
-                            checked={allSelected}
-                            indeterminate={someSelected && !allSelected}
-                            onCheckedChange={() => onToggleAll?.(!allSelected)}
+                            bind:checked={() => allSelected, () => onToggleAll?.(!allSelected)}
+                            bind:indeterminate={() => someSelected && !allSelected, () => {}}
                             aria-label={m['common.select_all']()}
                         />
                     </TableHead>
@@ -116,8 +117,9 @@
                     {#if selection}
                         <TableCell>
                             <Checkbox
-                                checked={selection.has(bottle.id)}
-                                onCheckedChange={() => onToggle?.(bottle)}
+                                bind:checked={
+                                    () => selection.has(bottle.id), () => onToggle?.(bottle)
+                                }
                                 aria-label={m['bottle_table.select_bottle']()}
                             />
                         </TableCell>

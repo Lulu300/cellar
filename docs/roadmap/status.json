@@ -71,6 +71,7 @@
   "FEAT-01": {"state":"done","note":"fd3ad192..f9675842","updatedAt":"2026-10-31T20:56:32.235Z"},
   "FEAT-02": {"state":"done","note":"af695367..77ef76ca","updatedAt":"2026-10-31T23:11:12.700Z"},
   "FEAT-03": {"state":"done","note":"cbd4fe8f..39143a78","updatedAt":"2026-11-02T10:35:22.087Z"},
+  "FEAT-04": {"state":"done","note":"e7aafe34..f6915ee4","updatedAt":"2026-11-02T13:08:31.005Z"},
   "FEAT-10": {"state":"done","note":"d9a6a731..f0e43641","updatedAt":"2026-11-01T16:26:25.637Z"},
   "FEAT-11": {"state":"done","note":"d163a28a..40464b95","updatedAt":"2026-11-02T11:11:18.041Z"},
   "QA-01": {"state":"done","note":"f73d895..45cef85 sur develop : Vitest, 165 tests (dont 3 it.fails BUG-01/API-01), base :memory: migrée, scripts/test-*.ts supprimés","updatedAt":"2026-10-10T15:00:00Z"},

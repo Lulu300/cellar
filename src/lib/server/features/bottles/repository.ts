@@ -135,6 +135,22 @@ export function listBottlesWithDefinitions(definitionId?: string) {
         .map(toBottleWithDefinition);
 }
 
+/**
+ * The bottles that a case holds, with their wine, format, case and origin: the available ones, as
+ * caseLoads counts them; a bottle out of the cellar keeps its case without being in it.
+ */
+export function listBottlesInCase(caseId: string) {
+    return bottlesWithDefinitions()
+        .where(
+            and(
+                eq(wineBottles.storageCaseId, caseId),
+                eq(wineBottles.availability, BottleAvailability.AVAILABLE)
+            )
+        )
+        .all()
+        .map(toBottleWithDefinition);
+}
+
 /** The bottles of these availabilities, with their wine, format, case and origin, by id. */
 export function listBottlesByAvailability(availabilities: BottleAvailability[]) {
     return bottlesWithDefinitions()

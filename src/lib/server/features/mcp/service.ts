@@ -3,6 +3,7 @@ import {
     deleteBottlesById,
     getWineShortages,
     listBottlesWithDefinitions,
+    listCaseBottles,
     updateBottles,
     type WineBottleWithFormat
 } from '#lib/server/features/bottles/service.js';
@@ -202,6 +203,7 @@ export function bottlesByBarcode(barcode: string) {
 type Bound = Date | null | undefined;
 
 export interface BottleSearch {
+    caseId?: string;
     availability?: BottleAvailability;
     consumedFrom?: Bound;
     consumedTo?: Bound;
@@ -223,12 +225,13 @@ function within(date: Date | null, from: Bound, to: Bound): boolean {
 const latestFirst = (a: string | null, b: string | null) => (b ?? '').localeCompare(a ?? '');
 
 /**
- * The bottles of the whole cellar with this availability, drunk and bought within these days, each
- * with its wine: the latest drunk first, then the latest bought. `total` counts them all, beyond
- * `limit`.
+ * The bottles of the whole cellar, or those that the case `caseId` holds, with this availability,
+ * drunk and bought within these days, each with its wine: the latest drunk first, then the latest
+ * bought. `total` counts them all, beyond `limit`. Throws a NotFoundError for an unknown case.
  */
 export function listBottles(search: BottleSearch) {
-    const found = listBottlesWithDefinitions()
+    const bottles = search.caseId ? listCaseBottles(search.caseId) : listBottlesWithDefinitions();
+    const found = bottles
         .filter(
             (bottle) =>
                 (!search.availability || bottle.availability === search.availability) &&

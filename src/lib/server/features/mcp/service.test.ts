@@ -241,6 +241,24 @@ describe('listBottles', () => {
             bottles: [{ id: 'november' }, { id: 'late' }]
         });
     });
+
+    // "What is in case B2?" (FEAT-04): the bottles a case holds, as the storage page counts them.
+    it('lists what a case holds, the bottles out of the cellar that kept it left out', async () => {
+        const { cases } = createContainer({ name: 'B', cases: ['1', '2'], caseCapacities: [6, 6] });
+        const [b1, b2] = cases.map(({ id }) => id);
+        db.update(wineBottles).set({ storageCaseId: b2 }).where(eq(wineBottles.id, 'out')).run();
+        await insertBottles(barolo, [
+            { id: 'in-b2', availability: 'available', storageCaseId: b2 },
+            { id: 'in-b1', availability: 'available', storageCaseId: b1 }
+        ]);
+
+        expect(idsOf(list({ caseId: b2 }))).toEqual(['in-b2']);
+        expect(list({ caseId: b2 }).bottles[0]).toMatchObject({
+            location: { container: 'B', case: 'B2' },
+            wine: { name: 'Cannubi' }
+        });
+        expect(() => list({ caseId: 'no-such-case' })).toThrow(NotFoundError);
+    });
 });
 
 describe('wineShortages', () => {

@@ -257,11 +257,16 @@ export function deleteStorageCase(id: string): void {
     if (!deleted) throw new NotFoundError('Case not found');
 }
 
-/** How full the case is, for the forms that put bottles in it. */
-export function caseCapacity(id: string) {
+/** The case with the bottles it holds. Throws a NotFoundError for an unknown case. */
+export function existingCase(id: string): CaseLoad {
     const [load] = caseLoads([id]);
     if (!load) throw new NotFoundError('Storage case not found');
-    const { name, capacity, bottles } = load;
+    return load;
+}
+
+/** How full the case is, for the forms that put bottles in it. */
+export function caseCapacity(id: string) {
+    const { name, capacity, bottles } = existingCase(id);
     return {
         storageCase: { id, name, capacity },
         currentCount: bottles,

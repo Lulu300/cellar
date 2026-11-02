@@ -257,6 +257,7 @@ request needs one.
 | GET    | `/api/statistics`                        | no                       |
 | GET    | `/api/storage-cases`                     | no                       |
 | DELETE | `/api/storage-cases/{id}`                | yes                      |
+| GET    | `/api/storage-cases/{id}/bottles`        | no                       |
 | GET    | `/api/storage-cases/{id}/capacity`       | no                       |
 | GET    | `/api/storage-containers`                | no                       |
 | POST   | `/api/storage-containers`                | yes                      |
@@ -1552,6 +1553,19 @@ Deletes one case.
 - **Errors:** `404 not_found` when the case does not exist; `409 case_holds_bottles` when the case
   still holds an available bottle, with `details` `{ "caseName", "bottles" }`.
 
+### `GET /api/storage-cases/{id}/bottles`
+
+Lists the bottles that a case holds: its available bottles, those that `GET
+/api/storage-occupancy` counts. A bottle out of the cellar keeps its case but is not in it, and is
+not listed.
+
+- **Session:** not needed.
+- **Body:** none.
+- **Response:** `200` with an array of bottles, in no particular order, each as
+  [`GET /api/bottles`](#get-apibottles) gives it, with its `definition`, `storageCase` and `origin`.
+  An empty case gives `[]`.
+- **Errors:** `404 not_found` when the case does not exist.
+
 ### `GET /api/storage-cases/{id}/capacity`
 
 Tells how full a case is, counting its available bottles only.
@@ -2465,9 +2479,12 @@ The tools that read:
     `producer`, `color`, `type`): the code as given, then in other capitals, then the codes that
     end with it. `[]` when none has it.
 - `get_statistics`: no parameters; the answer of [`GET /api/statistics`](#get-apistatistics).
-- `list_bottles`: the bottles of the whole cellar, by availability and by day: what was drunk this
-  month, what is out of the cellar, what was bought last year.
-  - **Parameters:** all optional: `availability`: `available`, `out_of_cellar` or `consumed`, every
+- `list_bottles`: the bottles of the whole cellar, or of one case, by availability and by day: what
+  is in case B2, what was drunk this month, what is out of the cellar, what was bought last year.
+  - **Parameters:** all optional: `caseId`: string (from `get_free_space`), only the bottles that
+    the case holds, those in the cellar, as
+    [`GET /api/storage-cases/{id}/bottles`](#get-apistorage-casesidbottles) lists them; an unknown
+    id is refused (not found); `availability`: `available`, `out_of_cellar` or `consumed`, every
     bottle when left out; `consumedFrom` and `consumedTo`: `YYYY-MM-DD`, the days a bottle was drunk
     on, both included: a bottle without a `consumedDate`, so any bottle not drunk, is left out when
     either is given; `purchasedFrom` and `purchasedTo`: the same for the `purchaseDate`; `limit`:
@@ -2485,8 +2502,8 @@ The tools that read:
 - `get_free_space`: no parameters; `{ "capacity", "bottles", "free", "containers" }`: each container
   by the name the storage page shows, with its totals and its `cases` (`id`, `name`, `capacity`,
   `bottles`, `free`). A case holds its capacity in bottles in the cellar; one that holds more has
-  no room left. The `id` of a case is what `add_bottles`, `move_bottles` and `put_bottles_back`
-  take.
+  no room left. The `id` of a case is what `list_bottles`, `add_bottles`, `move_bottles` and
+  `put_bottles_back` take.
 - `list_choices`: no parameters; `{ "formats", "colors", "types", "classifications", "origins" }`:
   the `id` and `name` of each row of these lists, sorted by name, for the ids that `add_wine`,
   `update_wine`, `add_bottles` and `update_bottles` take.

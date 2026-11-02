@@ -812,7 +812,7 @@
   "admin.token_failed": "Le jeton n’a pas pu être généré.",
   "admin.mcp_access": "Accès MCP",
   "admin.mcp_description": "Un assistant d’IA de votre réseau (un modèle local, un outil en ligne de commande, une application de bureau) peut utiliser votre cave par le serveur MCP de Cellar, avec le jeton ci-dessous. Le jeton n’ouvre que le serveur MCP : ni les pages ni l’API de Cellar, et jamais l’admin (sauvegardes, restauration, imports, code d’accès).",
-  "admin.mcp_allows_read": "Lecture seule : l’assistant peut chercher les vins, voir leurs bouteilles et leurs emplacements, lister les bouteilles de toute la cave, et lire les statistiques, la pénurie, la liste d’envies et la place libre. Il ne peut rien modifier.",
+  "admin.mcp_allows_read": "Lecture seule : l’assistant peut chercher les vins, voir leurs bouteilles et leurs emplacements, lister les bouteilles de toute la cave ou d’une case, et lire les statistiques, la pénurie, la liste d’envies et la place libre. Il ne peut rien modifier.",
   "admin.mcp_allows_write": "Lecture et écriture : en plus de lire, l’assistant peut ajouter des vins et des bouteilles, marquer des bouteilles bues, les sortir de la cave ou les y remettre, les déplacer, modifier un vin, les champs et les notes des bouteilles et la liste d’envies, et supprimer des bouteilles ajoutées par erreur.",
   "admin.mcp_allow_write": "Autoriser les modifications",
   "admin.mcp_address": "Adresse du serveur MCP",

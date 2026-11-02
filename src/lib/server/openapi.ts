@@ -321,6 +321,11 @@ const operations: Record<string, Operation> = {
         summary: 'Deletes a case',
         answers: noContent
     },
+    'GET /api/storage-cases/[id]/bottles': {
+        tag: 'storage',
+        summary: 'The bottles a case holds',
+        answers: ok
+    },
     'GET /api/storage-cases/[id]/capacity': {
         tag: 'storage',
         summary: 'How many bottles a case holds and has room for',

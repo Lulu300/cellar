@@ -3661,6 +3661,37 @@
         }
       }
     },
+    "/api/storage-cases/{id}/bottles": {
+      "get": {
+        "tags": [
+          "Storage"
+        ],
+        "summary": "The bottles a case holds",
+        "operationId": "getStorageCasesIdBottles",
+        "security": [],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {}
+            }
+          },
+          "default": {
+            "$ref": "#/components/responses/Error"
+          }
+        }
+      }
+    },
     "/api/storage-cases/{id}/capacity": {
       "get": {
         "tags": [

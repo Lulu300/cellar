@@ -219,8 +219,15 @@ function createServer({ authInfo }: McpRequestContext): McpServer {
         {
             title: 'List bottles',
             description:
-                'The bottles of the whole cellar, each with its wine and where it is, by availability and by day: what was drunk this month, what is out of the cellar, what was bought last year. The latest drunk first, then the latest bought. total counts every bottle found, beyond limit. get_wine gives the bottles of one wine.',
+                'The bottles of the whole cellar, or of one case, each with its wine and where it is, by availability and by day: what is in case B2, what was drunk this month, what is out of the cellar, what was bought last year. The latest drunk first, then the latest bought. total counts every bottle found, beyond limit. get_wine gives the bottles of one wine.',
             inputSchema: z.strictObject({
+                caseId: z
+                    .string()
+                    .min(1)
+                    .optional()
+                    .describe(
+                        'Only the bottles that this case holds, those in the cellar: the ids of get_free_space. An unknown id is refused.'
+                    ),
                 availability: z
                     .enum(BottleAvailability)
                     .optional()
@@ -263,7 +270,7 @@ function createServer({ authInfo }: McpRequestContext): McpServer {
         {
             title: 'Free space in storage',
             description:
-                'The room left (free) in each case of each storage container, in bottles, with the totals: a case holds its capacity in bottles in the cellar. The id of a case is what add_bottles, move_bottles and put_bottles_back take.',
+                'The room left (free) in each case of each storage container, in bottles, with the totals: a case holds its capacity in bottles in the cellar. The id of a case is what list_bottles, add_bottles, move_bottles and put_bottles_back take.',
             annotations: READ_ONLY
         },
         () => answer('get_free_space', freeSpace)

@@ -2,7 +2,7 @@ import type { Tx } from '#lib/server/db/connection.js';
 import { db } from '#lib/server/db/index.js';
 import type { WineBottle } from '#lib/server/db/schema.js';
 import { takeNextBarcodes } from '#lib/server/features/barcode/service.js';
-import { keepingCasesWithinCapacity } from '#lib/server/features/storage/service.js';
+import { existingCase, keepingCasesWithinCapacity } from '#lib/server/features/storage/service.js';
 import { NotFoundError, ValidationError } from '#lib/server/http/errors.js';
 import type { BottleChanges, BottleInput } from '#lib/shared/schemas/bottle.js';
 import { BottleAvailability } from '#lib/shared/bottle-availability.js';
@@ -20,6 +20,7 @@ import {
     insertBottle,
     listBottlesByAvailability,
     listBottlesForAdmin,
+    listBottlesInCase,
     listBottlesNotConsumed,
     listBottlesWithDefinitions,
     listBottlesWithoutDefinitions,
@@ -196,6 +197,12 @@ export function listBottlePage({
     const current = Math.min(page, pageCount);
     const bottles = all.slice((current - 1) * perPage, current * perPage);
     return { bottles, total: all.length, page: current, pageCount };
+}
+
+/** The bottles that the case holds, with their wine. Throws a NotFoundError for an unknown case. */
+export function listCaseBottles(caseId: string) {
+    existingCase(caseId);
+    return listBottlesInCase(caseId);
 }
 
 /** updateBottles for one bottle. */

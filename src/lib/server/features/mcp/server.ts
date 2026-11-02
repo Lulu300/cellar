@@ -59,11 +59,11 @@ import { assertMcpWrite, ReadOnlyTokenError, type McpAccess } from './token';
 /** The most results that one search or list returns. */
 const MAX_SEARCH_LIMIT = 200;
 
-const INSTRUCTIONS = `Cellar manages a home wine cellar. A wine (name, producer, appellation, color…) has bottles. A bottle is "available" (in the cellar, most often in a case of a storage container), "out_of_cellar" (taken out, not drunk yet: set aside for a meal, brought to friends) or "consumed" (drunk). A bottle in the cellar gives its "location"; one out of the cellar or drunk gives its "formerLocation" instead, the case it left, where put_bottles_back returns it: it is not there. "optimum" is the year a bottle is at its best. Prices are numbers in the cellar's currency, which the app shows as euros; dates are YYYY-MM-DD. A field left out of an answer is empty.
+const INSTRUCTIONS = `Cellar manages a home wine cellar. A wine (name, producer, appellation, color…) has bottles. A bottle is "available" (in the cellar, most often in a case of a storage container), "out_of_cellar" (taken out, not drunk yet: set aside for a meal, brought to friends) or "consumed" (drunk). A bottle in the cellar gives its "location"; one out of the cellar or drunk gives its "formerLocation" instead, the case it left, where put_bottles_back returns it: the bottle is not in that case now. "optimum" is the year a bottle is at its best. Prices are numbers in the cellar's currency, which the app shows as euros; dates are YYYY-MM-DD. A field left out of an answer is empty.
 
 The tools that change the cellar run only when its owner allowed changes for this token, and each one writes all or nothing. They take the ids that the other tools give: a wine from search_wines, a bottle from get_wine, list_bottles or find_bottle_by_barcode, a case from get_free_space, a format, color, type, classification or origin from list_choices, an appellation from search_appellations, a wish from get_wishlist. A bottle drunk is marked with mark_bottles_drunk, one taken away without being drunk with take_bottles_out; delete_bottles is only for bottles added by mistake.
 
-A call that Cellar refuses answers why, then, when there is more to know, a line "Details: " followed by JSON: every unknown id, the bottles whose notes would be too long, the wish already there.`;
+A call that Cellar refuses answers why, then, when there is more to know, a line "Details: " followed by JSON: every unknown id, the bottles whose notes would be too long, the wish already there, or the name, capacity and bottles of a case without room.`;
 
 /** A tool that only reads: the client may call it without asking. */
 const READ_ONLY: ToolAnnotations = { readOnlyHint: true, openWorldHint: false };
@@ -147,6 +147,30 @@ const pageParams = (what: string) => ({
 
 /** Whether a write tool was given something to change besides the ids of what it changes. */
 const changesSomething = (args: object) => Object.keys(args).length > 1;
+
+const wine = wineDefinitionSchema.shape;
+
+/** The fields of a wine that add_wine and update_wine take, but its rating and grapes. */
+const wineFields = {
+    name: wine.name.describe('Its name, as on the label, without the vintage: Château Margaux.'),
+    producer: wine.producer.describe('Its producer: the estate or the house.'),
+    appellationId: id.describe('The id of its appellation, from search_appellations.'),
+    typeId: id.describe('The id of its type, from list_choices.'),
+    colorId: id.describe('The id of its color, from list_choices.'),
+    classificationId: optionalId.describe('The id of its classification, from list_choices.'),
+    website: wine.website.describe('Its website, an http(s) address.'),
+    description: wine.description.describe(
+        "Its description: tasting notes, food pairings, the owner's words."
+    ),
+    targetQuantity: wine.targetQuantity.describe(
+        'How many bottles to keep in the cellar: get_wine_shortage lists the wines below it.'
+    )
+};
+
+/** Where bottles were bought: only an origin of list_choices, which no tool adds. */
+const originParam = optionalId.describe(
+    'The id of where they were bought, from list_choices. An origin missing from list_choices is left out: the owner adds it in the app, then update_bottles can give it.'
+);
 
 /** A day of a write tool. */
 const dateParam = (what: string) => optionalDate.describe(`YYYY-MM-DD: ${what}.`);
@@ -342,34 +366,12 @@ function createServer({ authInfo }: McpRequestContext): McpServer {
             inputSchema: wineDefinitionSchema
                 .omit({ imageId: true })
                 .extend({
-                    name: wineDefinitionSchema.shape.name.describe(
-                        'Its name, as on the label, without the vintage: Château Margaux.'
-                    ),
-                    producer: wineDefinitionSchema.shape.producer.describe(
-                        'Its producer: the estate or the house.'
-                    ),
-                    appellationId: id.describe(
-                        'The id of its appellation, from search_appellations.'
-                    ),
-                    typeId: id.describe('The id of its type, from list_choices.'),
-                    colorId: id.describe('The id of its color, from list_choices.'),
-                    classificationId: optionalId.describe(
-                        'The id of its classification, from list_choices.'
-                    ),
-                    rating: wineDefinitionSchema.shape.rating.describe(
+                    ...wineFields,
+                    rating: wine.rating.describe(
                         "The owner's rating, from 1 to 5, half points included."
                     ),
-                    website: wineDefinitionSchema.shape.website.describe(
-                        'Its website, an http(s) address.'
-                    ),
-                    description: wineDefinitionSchema.shape.description.describe(
-                        "Its description: tasting notes, food pairings, the owner's words."
-                    ),
-                    grapeVarieties: wineDefinitionSchema.shape.grapeVarieties.describe(
+                    grapeVarieties: wine.grapeVarieties.describe(
                         'Its grapes, each by its name: ["Merlot", "Cabernet Sauvignon"].'
-                    ),
-                    targetQuantity: wineDefinitionSchema.shape.targetQuantity.describe(
-                        'How many bottles to keep in the cellar: get_wine_shortage lists the wines below it.'
                     )
                 })
                 .strict(),
@@ -395,11 +397,9 @@ function createServer({ authInfo }: McpRequestContext): McpServer {
                     optimum: bottleSchema.shape.optimum.describe(
                         'The year they are at their best.'
                     ),
-                    originId: optionalId.describe(
-                        'The id of where they were bought, from list_choices. A shop missing from list_choices is left out: the owner adds it in the app, and update_bottles gives it later.'
-                    ),
+                    originId: originParam,
                     purchasePrice: bottleSchema.shape.purchasePrice.describe(
-                        'The price of one bottle, in the currency of the owner.'
+                        "The price of one bottle, in the cellar's currency."
                     ),
                     purchaseDate: dateParam('the day they were bought'),
                     caseId: optionalId.describe(
@@ -537,7 +537,6 @@ function createServer({ authInfo }: McpRequestContext): McpServer {
         ({ wineId, rating }) => answerWrite('rate_wine', access, () => rateWine(wineId, rating))
     );
 
-    const wine = wineDefinitionSchema.shape;
     server.registerTool(
         'update_wine',
         {
@@ -547,24 +546,10 @@ function createServer({ authInfo }: McpRequestContext): McpServer {
             inputSchema: z
                 .strictObject({
                     wineId: id.describe('The id of the wine, from search_wines.'),
-                    name: wine.name.describe('Its name.'),
-                    producer: wine.producer.describe('Its producer.'),
-                    appellationId: id.describe(
-                        'The id of its appellation, from search_appellations.'
-                    ),
-                    typeId: id.describe('The id of its type, from list_choices.'),
-                    colorId: id.describe('The id of its color, from list_choices.'),
-                    classificationId: optionalId.describe(
-                        'The id of its classification, from list_choices.'
-                    ),
-                    website: wine.website.describe('Its website, an http(s) address.'),
-                    description: wine.description.describe('Its description.'),
+                    ...wineFields,
                     grapeVarieties: wine.grapeVarieties
                         .unwrap()
-                        .describe('Its grapes, in place of the old ones: [] removes them.'),
-                    targetQuantity: wine.targetQuantity.describe(
-                        'How many bottles to keep in the cellar: get_wine_shortage lists the wines below it.'
-                    )
+                        .describe('Its grapes, in place of the old ones: [] removes them.')
                 })
                 .partial()
                 .required({ wineId: true })
@@ -586,11 +571,11 @@ function createServer({ authInfo }: McpRequestContext): McpServer {
                 .strictObject({
                     bottleIds,
                     purchasePrice: bottle.purchasePrice.describe(
-                        'The price of one bottle, in the currency of the owner.'
+                        "The price of one bottle, in the cellar's currency."
                     ),
                     purchaseDate: dateParam('the day they were bought'),
                     currentValue: bottle.currentValue.describe(
-                        'What one bottle is worth now, in the currency of the owner.'
+                        "What one bottle is worth now, in the cellar's currency."
                     ),
                     currentValueDate: dateParam('the day currentValue was estimated'),
                     vintage: bottle.vintage.describe(
@@ -598,9 +583,7 @@ function createServer({ authInfo }: McpRequestContext): McpServer {
                     ),
                     optimum: bottle.optimum.describe('The year they are at their best.'),
                     formatId: id.describe('The id of their format, from list_choices.'),
-                    originId: optionalId.describe(
-                        'The id of where they were bought, from list_choices.'
-                    ),
+                    originId: originParam,
                     barcode: bottle.barcode.describe(
                         'The barcode of the label, for a single bottle: no two bottles share one.'
                     )

@@ -264,6 +264,22 @@ describe('listBottles', () => {
         expect(idsOf(list({ limit: 2, offset: 4 }))).toEqual(['cellar']);
     });
 
+    it('orders the bottles alike by their id, so that a page boundary between them holds', async () => {
+        const alike = ['c', 'a', 'd', 'b'].map((id) => ({ id: `twin-${id}` }));
+        await insertBottles(barolo, alike);
+        const twins = (offset: number) =>
+            idsOf(list({ availability: BottleAvailability.AVAILABLE, limit: 2, offset })).filter(
+                (id) => id.startsWith('twin')
+            );
+
+        expect([...twins(0), ...twins(2), ...twins(4)]).toEqual([
+            'twin-a',
+            'twin-b',
+            'twin-c',
+            'twin-d'
+        ]);
+    });
+
     // "What is in case B2?" (FEAT-04): the bottles a case holds, as the storage page counts them.
     it('lists what a case holds, the bottles out of the cellar that kept it left out', async () => {
         const { cases } = createContainer({ name: 'B', cases: ['1', '2'], caseCapacities: [6, 6] });

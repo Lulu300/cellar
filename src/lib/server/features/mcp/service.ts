@@ -167,7 +167,8 @@ export function searchWines({ query = '', inCellarOnly, ...page }: WineSearch) {
                 ...wine.grapes
             ]);
         })
-        .sort((a, b) => compareText(a.name, b.name));
+        // The id breaks ties, so that a wine shows on one page only.
+        .sort((a, b) => compareText(a.name, b.name) || a.id.localeCompare(b.id));
     return { total: found.length, wines: pageOf(found, page) };
 }
 
@@ -258,7 +259,9 @@ export function listBottles(search: BottleSearch) {
             (a, b) =>
                 latestFirst(a.consumedDate, b.consumedDate) ||
                 latestFirst(a.purchaseDate, b.purchaseDate) ||
-                compareText(a.wine.name, b.wine.name)
+                compareText(a.wine.name, b.wine.name) ||
+                // Bottles of a wine bought on the same day are many: the id puts each on one page.
+                a.id.localeCompare(b.id)
         );
     return { total: found.length, bottles: pageOf(found, search) };
 }

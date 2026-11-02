@@ -8,7 +8,7 @@
     import { m } from '#lib/paraglide/messages.js';
     import type { BottleCountMode, WineListQuery, WineListView } from '#lib/utils/wine-filters.js';
     import type { WineGroupSortKey } from '#lib/utils/wine-group-sort.js';
-    import { focusRing } from '#lib/components/layout/button-states.js';
+    import { buttonStates } from '#lib/components/layout/button-states.js';
 
     /**
      * The count of what the list shows with a link to the bottles out of the cellar, its sort, the
@@ -164,7 +164,7 @@
                 role="switch"
                 aria-checked={showImages}
                 aria-label={m['wines.show_images']()}
-                class="relative inline-flex h-6 w-11 items-center rounded-full transition-colors {focusRing} {showImages
+                class="relative inline-flex h-6 w-11 items-center rounded-full {buttonStates} {showImages
                     ? 'bg-primary hover:bg-primary-hover'
                     : 'bg-input hover:bg-input-hover'}"
                 onclick={() => (showImages = !showImages)}

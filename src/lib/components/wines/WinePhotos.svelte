@@ -10,7 +10,7 @@
     import { CELLAR } from '#lib/shared/dependencies.js';
     import { auth } from '#lib/stores/auth.svelte.js';
     import { toasts } from '#lib/stores/toast.svelte.js';
-    import { focusRing } from '#lib/components/layout/button-states.js';
+    import { buttonStates } from '#lib/components/layout/button-states.js';
 
     interface Photo {
         imageId: string;
@@ -77,7 +77,7 @@
                 {#each photos as photo, index (photo.imageId)}
                     <button
                         type="button"
-                        class="relative size-14 overflow-hidden rounded border-2 transition-colors {focusRing} {photo ===
+                        class="relative size-14 overflow-hidden rounded border-2 {buttonStates} {photo ===
                         shown
                             ? 'border-primary'
                             : 'border-transparent hover:border-input'}"

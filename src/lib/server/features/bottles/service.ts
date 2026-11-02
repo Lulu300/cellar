@@ -207,13 +207,17 @@ export function deleteWineBottle(id: string): void {
     if (!deleteBottle(id)) throw new NotFoundError('Wine bottle not found');
 }
 
-/** Deletes the bottles of `ids`, all or none: a NotFoundError names those that do not exist. */
-export function deleteBottlesById(ids: string[]): void {
+/**
+ * Deletes the bottles of `ids`, all or none, and returns their ids, once each: a NotFoundError
+ * names those that do not exist.
+ */
+export function deleteBottlesById(ids: string[]): string[] {
     const uniqueIds = [...new Set(ids)];
     db.transaction((tx) => {
         existingBottles(uniqueIds, tx);
         deleteBottles(uniqueIds, tx);
     });
+    return uniqueIds;
 }
 
 export async function getStatistics() {

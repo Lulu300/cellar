@@ -1,6 +1,9 @@
 import { inspect } from 'node:util';
-import { beforeAll, describe, expect, it, vi } from 'vitest';
-import { listBottlesWithDefinitions } from '#lib/server/features/bottles/service.js';
+import { beforeAll, describe, expect, it, onTestFinished, vi } from 'vitest';
+import {
+    deleteBottlesById,
+    listBottlesWithDefinitions
+} from '#lib/server/features/bottles/service.js';
 import type { McpAccess } from '#lib/server/features/mcp/token.js';
 import { createContainer, storageOverview } from '#lib/server/features/storage/service.js';
 import { createWish } from '#lib/server/features/wishlist/service.js';
@@ -174,6 +177,39 @@ describe('POST /mcp', () => {
         });
         expect(errors).toHaveBeenCalledWith('MCP tool get_free_space failed:', expect.any(Error));
         errors.mockRestore();
+    });
+
+    it('lists what was drunk in a month, from the days an assistant gives', async () => {
+        const drunk = (id: string, day: string) => ({
+            id,
+            availability: 'consumed' as const,
+            consumedDate: new Date(day)
+        });
+        const rows = [
+            drunk('october-31', '2026-10-31T22:30:00Z'),
+            drunk('november-1', '2026-11-01'),
+            drunk('november-30', '2026-11-30T21:00:00Z'),
+            drunk('december-1', '2026-12-01')
+        ];
+        await insertBottles(margaux, rows);
+        // The tests of the write tools count the bottles of the wine.
+        onTestFinished(() => {
+            deleteBottlesById(rows.map(({ id }) => id));
+        });
+
+        const { result } = await modernCall('list_bottles', {
+            availability: 'consumed',
+            consumedFrom: '2026-11-01',
+            consumedTo: '2026-11-30'
+        });
+
+        const { total, bottles } = JSON.parse(result.content[0].text);
+        expect(total).toBe(2);
+        expect(bottles.map(({ id }: { id: string }) => id)).toEqual(['november-30', 'november-1']);
+        expect(bottles[0]).toMatchObject({
+            consumedDate: '2026-11-30',
+            wine: { id: margaux, name: 'Château Margaux' }
+        });
     });
 
     it('refuses the arguments that the schema of the tool refuses', async () => {

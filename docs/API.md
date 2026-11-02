@@ -2590,7 +2590,8 @@ one is not dropped; each one writes all or nothing.
   lose their `consumedDate`.
   - **Parameters:** `bottleIds` as above; `caseId`: string, optional (from `get_free_space`): the
     case to put them in. Left out, each bottle goes back to the case it kept when it was taken out,
-    as in the status dialog of the app; a bottle that was `consumed` has none.
+    as in the status dialog of the app; a bottle that was `consumed` has no case left, and is back
+    in the cellar without a place unless `caseId` is given. The description tells the assistant so.
   - **Answer:** an array of the bottles changed, as `add_bottles` answers them.
   - **Refusals:** those of `PATCH /api/bottles`, such as a case without room for them all.
 - `update_wish`: changes the quantity or the note of a wish, as

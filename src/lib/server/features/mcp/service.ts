@@ -23,7 +23,8 @@ import {
     changeWish,
     createWish,
     listWishes,
-    removeWish
+    removeWish,
+    type WishChanges
 } from '#lib/server/features/wishlist/service.js';
 import { findBarcodeMatches } from '#lib/shared/barcode.js';
 import { BottleAvailability } from '#lib/shared/bottle-availability.js';
@@ -355,7 +356,7 @@ export function addWine(wine: WineDefinitionInput) {
     return wineWithBottles(createDefinition(wine).id);
 }
 
-/** The fields of a wine that edit_wine changes: its photos and its rating have their own ways. */
+/** The fields of a wine that update_wine changes: its photos and its rating have their own ways. */
 export type WineChanges = Partial<Omit<WineDefinitionInput, 'imageId' | 'rating'>>;
 
 /** Changes the fields of `changes` on the wine, and answers it as get_wine does. */
@@ -435,7 +436,7 @@ export function moveBottles(ids: string[], caseId: string) {
     return updateBottles(ids, { storageCaseId: caseId }).map(writtenBottle);
 }
 
-/** The fields of bottles that edit_bottles changes: those of their purchase and their label. */
+/** The fields of bottles that update_bottles changes: those of their purchase and their label. */
 export type BottleEdits = Pick<
     BottleChanges,
     | 'purchasePrice'
@@ -456,8 +457,7 @@ export function editBottles(ids: string[], changes: BottleEdits) {
 
 /** Deletes the bottles, all or none, and answers their ids. */
 export function deleteBottles(ids: string[]) {
-    deleteBottlesById(ids);
-    return { deleted: [...new Set(ids)] };
+    return { deleted: deleteBottlesById(ids) };
 }
 
 /** Replaces the notes of the bottles when `notes` is given, then adds `addedNote` after them. */
@@ -505,8 +505,7 @@ export const addWish = (wish: Omit<WishInput, 'imageId'>) =>
     wishSummary(createWish({ ...wish, imageId: null }));
 
 /** Changes the quantity or the note of a wish, and answers it as wishlist does. */
-export const editWish = (id: string, changes: Partial<Pick<WishInput, 'quantity' | 'note'>>) =>
-    wishSummary(changeWish(id, changes));
+export const editWish = (id: string, changes: WishChanges) => wishSummary(changeWish(id, changes));
 
 /** Removes a wish from the wishlist. */
 export async function removeWishById(id: string) {

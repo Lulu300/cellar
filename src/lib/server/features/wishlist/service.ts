@@ -117,7 +117,9 @@ export async function replaceWish(id: string, input: WishInput) {
 }
 
 /** Changes the quantity or the note of the wish, and leaves its wine or text and photo as they are. */
-export function changeWish(id: string, changes: Partial<Pick<WishInput, 'quantity' | 'note'>>) {
+export type WishChanges = Partial<Pick<WishInput, 'quantity' | 'note'>>;
+
+export function changeWish(id: string, changes: WishChanges) {
     if (!updateWish(id, changes, db)) throw wishNotFound();
     return listedWish(id);
 }

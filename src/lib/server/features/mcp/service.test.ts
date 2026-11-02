@@ -1,4 +1,4 @@
-import { beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
+import { beforeAll, beforeEach, describe, expect, it, onTestFinished, vi } from 'vitest';
 import { eq, like } from 'drizzle-orm';
 import { db } from '#lib/server/db/index.js';
 import {
@@ -612,6 +612,15 @@ describe('deleteBottles', () => {
 describe('editWine', () => {
     it('changes the fields given, clears those given null, and leaves the others', () => {
         const before = getDefinitionDetails(barolo);
+        // The other tests read this wine as beforeAll made it: its fields are given back after.
+        onTestFinished(() => {
+            editWine(barolo, {
+                targetQuantity: before.targetQuantity,
+                description: null,
+                producer: before.producer,
+                grapeVarieties: before.grapeVarieties
+            });
+        });
 
         const wine = editWine(barolo, {
             targetQuantity: 12,
@@ -636,12 +645,6 @@ describe('editWine', () => {
             producer: null,
             grapeVarieties: ['Nebbiolo', 'Barbera'],
             updatedAt: expect.any(Date)
-        });
-        editWine(barolo, {
-            targetQuantity: before.targetQuantity,
-            description: null,
-            producer: before.producer,
-            grapeVarieties: before.grapeVarieties
         });
     });
 

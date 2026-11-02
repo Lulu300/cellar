@@ -56,7 +56,7 @@ import {
 } from './service';
 import { assertMcpWrite, ReadOnlyTokenError, type McpAccess } from './token';
 
-/** The most wines that one search returns. */
+/** The most results that one search or list returns. */
 const MAX_SEARCH_LIMIT = 200;
 
 const INSTRUCTIONS = `Cellar manages a home wine cellar. A wine (name, producer, appellation, color…) has bottles; each bottle is "available" (in the cellar, in a case of a storage container), "out_of_cellar" (taken out, not drunk yet) or "consumed" (drunk). "optimum" is the year a bottle is at its best. Prices are in the currency of the cellar's owner. A field left out of an answer is empty. The tools that change the cellar run only when its owner allowed changes for this token; they take the ids that the other tools give.`;
@@ -111,7 +111,7 @@ function answerWrite(tool: string, access: McpAccess, write: () => unknown) {
     });
 }
 
-/** The bottles of a write tool, by the ids that get_wine and find_bottle_by_barcode give. */
+/** The bottles of a write tool, by the ids that the read tools give. */
 const bottleIds = bulkBottleChangesSchema.shape.ids.describe(
     'The ids of the bottles, as get_wine, list_bottles or find_bottle_by_barcode give them.'
 );
@@ -582,7 +582,7 @@ function createServer({ authInfo }: McpRequestContext): McpServer {
         {
             title: 'Put bottles back in the cellar',
             description:
-                'Puts bottles back in the cellar (available): those taken out with take_bottles_out, or marked drunk by mistake, which lose their consumed date. caseId puts them in that case; left out, each goes back to the case it was taken out of, and a bottle that was drunk has none. All or none: a case without room for them takes none. move_bottles moves bottles already in the cellar.',
+                'Puts bottles back in the cellar (available): those taken out with take_bottles_out, or marked drunk by mistake, which lose their consumed date. caseId puts them in that case; left out, each goes back to the case it was taken out of. A bottle that was drunk has no case left: give caseId for it, or it is back in the cellar without a place. All or none: a case without room for them takes none. move_bottles moves bottles already in the cellar.',
             inputSchema: z.strictObject({
                 bottleIds,
                 caseId: optionalId.describe('The id of the case, from get_free_space.')

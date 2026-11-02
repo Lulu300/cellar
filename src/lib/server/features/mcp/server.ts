@@ -10,6 +10,7 @@ import { z } from 'zod';
 import { MissingReferenceError } from '#lib/server/db-errors.js';
 import { debugLogger } from '#lib/server/debug.js';
 import { getStatistics } from '#lib/server/features/bottles/service.js';
+import type { ApiError } from '#lib/server/http/errors.js';
 import { apiErrorOf } from '#lib/server/http/handler.js';
 import { runAsWrite } from '#lib/server/write-gate.js';
 import { BottleAvailability } from '#lib/shared/bottle-availability.js';
@@ -107,7 +108,7 @@ const PARAMETER_OF_FIELD: Record<string, string> = {
  * The refusal that the assistant reads: an unknown reference is named by the parameter it gave,
  * wineId rather than the API's definitionId.
  */
-function toolRefusal<Refusal extends Error>(refusal: Refusal): Refusal | MissingReferenceError {
+function toolRefusal(refusal: ApiError | ReadOnlyTokenError): ApiError | ReadOnlyTokenError {
     if (!(refusal instanceof MissingReferenceError)) return refusal;
     return new MissingReferenceError(
         refusal.missing.map(({ field, id }) => ({ field: PARAMETER_OF_FIELD[field] ?? field, id }))

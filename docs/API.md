@@ -2470,9 +2470,9 @@ README-Docker says how to set up an assistant (see
 
   `notes_too_long` gives `{ "ids", "bottles", "maximum" }`, `duplicate_wish` the `wishId` already
   on the wishlist, `case_full` `{ "caseId", "caseName", "capacity", "bottles" }`, and
-  `missing_reference` the unknown references as the API names them, but under the name of the
-  tool's parameter: `wineId` for `definitionId`, `caseId` for `storageCaseId`. Arguments that the
-  tool refuses get `isError: true` with the reason.
+  `missing_reference` each unknown id as `{ "field", "id" }`, where `field` is the tool's parameter:
+  `wineId` rather than the API's `definitionId`, `caseId` rather than `storageCaseId`. Arguments that
+  the tool refuses get `isError: true` with the reason.
 
 - **Restore, import, wipe:** the tools go on reading meanwhile, like the `GET` routes of this API.
   A tool that writes refuses with the message of `503 writes_held` until it ends.

@@ -130,14 +130,24 @@ export class MissingReferenceError extends ConflictError {
     }
 }
 
+/** The values a write gives the columns of `table`. */
+type Values<Table extends SQLiteTable> = Partial<Table['$inferInsert']>;
+
 /** The fields of `values` whose id refers to no row, by the foreign keys of `table`, in its order. */
-function missingReferences(table: SQLiteTable, values: object, tx: Tx): MissingReference[] {
+function missingReferences<Table extends SQLiteTable>(
+    table: Table,
+    values: Values<Table>,
+    tx: Tx
+): MissingReference[] {
     const references = getTableConfig(table).foreignKeys.map((foreignKey) =>
         foreignKey.reference()
     );
     return Object.entries(getTableColumns(table)).flatMap(([field, column]) => {
-        const id = (values as Record<string, unknown>)[field];
-        const reference = references.find(({ columns }) => columns[0] === column);
+        const id: unknown = values[field as keyof Values<Table>];
+        // Keys of one column only: the schema has no other kind.
+        const reference = references.find(
+            ({ columns }) => columns.length === 1 && columns[0] === column
+        );
         if (typeof id !== 'string' || !reference) return [];
         const [foreignColumn] = reference.foreignColumns;
         const found = tx
@@ -156,9 +166,9 @@ function missingReferences(table: SQLiteTable, values: object, tx: Tx): MissingR
  * through costs no query. Any other error, or a refusal that names none of `values`, goes on as it
  * is.
  */
-export function namingMissingReferences<T>(
-    table: SQLiteTable,
-    values: object,
+export function namingMissingReferences<Table extends SQLiteTable, T>(
+    table: Table,
+    values: Values<Table>,
     tx: Tx,
     write: () => T
 ): T {

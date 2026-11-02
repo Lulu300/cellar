@@ -85,7 +85,7 @@
         'w-full rounded-md text-left',
         compact ? 'border p-2' : 'p-1 text-center',
         highlighted
-            ? `ring-2 ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-background ${chosenTile}`
+            ? `ring-2 ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-card ${chosenTile}`
             : quietButton
     ]}
     aria-label={highlighted

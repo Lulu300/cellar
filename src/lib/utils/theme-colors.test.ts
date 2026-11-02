@@ -246,6 +246,17 @@ describe('the contrast of every theme', () => {
         }
     );
 
+    // A chosen tile: a tint of the primary that gets stronger under the pointer, where its grey
+    // hints may take the text colour.
+    const classes = chosenTile.split(' ');
+    const percent = (prefix: string) =>
+        Number(classes.find((c) => c.startsWith(prefix))!.slice(prefix.length)) / 100;
+    const chosenTileTint = percent('bg-primary/');
+    const chosenTileHoverTint = percent('hover:bg-primary/');
+    const chosenTileHintTakesText = classes.includes(
+        'hover:[&_.text-muted-foreground]:text-foreground'
+    );
+
     // UI-33: the hover of a filled button changes its fill by 1.2:1 at least, as much as the
     // hover it replaced, and keeps its text readable; a quiet button's accent shows on a card and
     // on the page.
@@ -281,25 +292,29 @@ describe('the contrast of every theme', () => {
                     `text on the ${name} hover`
                 ).toBeGreaterThanOrEqual(4.5);
             }
-            // A chosen tile: a tint of the primary that gets stronger under the pointer
-            const [rest, hovered] = [
-                ...chosenTile.matchAll(/(?:^| )(?:hover:)?bg-primary\/(\d+)/g)
-            ].map(([, percent]) => Number(percent) / 100);
+            const primary = srgb(color['--primary']);
+            const hint = srgb(color['--muted-foreground']);
+            const hintOnHover = chosenTileHintTakesText ? srgb(color['--foreground']) : hint;
             for (const surface of ['card', 'background']) {
                 const under = srgb(color[`--${surface}`]);
                 expect(
                     contrast(srgb(color['--accent']), under),
                     `accent on ${surface}`
                 ).toBeGreaterThanOrEqual(1.15);
-                const primary = srgb(color['--primary']);
-                const tile = tint(primary, under, hovered);
+                const [tile, hoveredTile] = [chosenTileTint, chosenTileHoverTint].map((alpha) =>
+                    tint(primary, under, alpha)
+                );
                 expect(
-                    contrast(tint(primary, under, rest), tile),
+                    contrast(tile, hoveredTile),
                     `chosen tile hover on ${surface}`
                 ).toBeGreaterThanOrEqual(1.2);
                 expect(
-                    contrast(srgb(color['--foreground']), tile),
-                    `text on the chosen tile hover on ${surface}`
+                    contrast(hint, tile),
+                    `hint on a chosen tile on ${surface}`
+                ).toBeGreaterThanOrEqual(4.5);
+                expect(
+                    contrast(hintOnHover, hoveredTile),
+                    `hint on the chosen tile hover on ${surface}`
                 ).toBeGreaterThanOrEqual(4.5);
             }
         }

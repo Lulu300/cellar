@@ -54,6 +54,14 @@ describe('bottleFormValues', () => {
         });
     });
 
+    // A drunk bottle keeps the case it left (FEAT-12); a copy of it starts in no case, as before.
+    it('puts the copy of a drunk bottle in no case, and that of a bottle still owned in its case', () => {
+        expect(bottleFormValues(bottle, { copy: true }).storageCaseId).toBe('');
+        expect(bottleFormValues(bottle).storageCaseId).toBe('a1');
+        const owned = { ...bottle, availability: BottleAvailability.OUT_OF_CELLAR };
+        expect(bottleFormValues(owned, { copy: true }).storageCaseId).toBe('a1');
+    });
+
     it('starts a new bottle with the wine chosen beforehand', () => {
         expect(bottleFormValues(null, { definitionId: 'margaux' })).toMatchObject({
             definitionId: 'margaux',

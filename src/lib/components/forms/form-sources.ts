@@ -52,7 +52,8 @@ const day = (value: Day | undefined) => (value ? isoDate(value) : '');
 
 /**
  * The fields of the bottle form, as the form holds them, for `bottle`: empty for a new bottle. A
- * copy is a new bottle in the cellar, which gets its own barcode.
+ * copy is a new bottle in the cellar, which gets its own barcode. The copy of a drunk bottle starts
+ * in no case, as before drunk bottles kept theirs: the case it left may have no room any more.
  */
 export function bottleFormValues(
     bottle: BottleFormSource | null,
@@ -75,7 +76,13 @@ export function bottleFormValues(
         consumedDate: day(bottle?.consumedDate)
     };
     if (!copy) return fields;
-    return { ...fields, barcode: '', availability: BottleAvailability.AVAILABLE, consumedDate: '' };
+    return {
+        ...fields,
+        ...(bottle?.availability === BottleAvailability.CONSUMED && { storageCaseId: '' }),
+        barcode: '',
+        availability: BottleAvailability.AVAILABLE,
+        consumedDate: ''
+    };
 }
 
 /**

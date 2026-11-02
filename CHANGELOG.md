@@ -4,6 +4,93 @@
 
 Upgrade actions are also collected in [UPGRADING.md](UPGRADING.md).
 
+## 1.4.0
+
+1.4.0 adds a list view of the wines next to the cards, gives each wine colour a real colour, shown on the storage page, in the statistics and on the wine cards, turns the storage page into a map of the cellar, and gives an AI assistant more to do and more context: it can take bottles out of the cellar, put them back and edit wines and bottles, and every refusal says exactly what is wrong.
+
+My Wines can now show the wines as a list, one row per wine, next to the cards. On a computer, the list is a table with the photo, the wine with its producer and classification, the region, colour, vintage, price, bottles and rating; on a phone, each row gives the name, the producer and region, then the colour, vintage, bottles and price. Nothing is cut: a long name wraps and its row grows. A click anywhere on a row opens the wine; the bottles count, the bookmark, add a bottle and the ⋮ menu, with edit and duplicate, work as on a card, with the keyboard too, and on a phone the ⋮ menu holds every action. The Cards and List buttons next to Show images switch the view; the address of the page keeps that choice, so that coming back from a wine, reloading the page or sharing its link keeps the view. Preferences › Default Wine List View chooses the view the list opens in. Search, filters, sorting and the images switch work the same in both views.
+
+Each wine colour now has a real colour. Rouge, Blanc, Rosé, Jaune and N/A start with a wine-like colour (deep red, pale gold, salmon, amber and grey), also when they were renamed to Red, White or Yellow; any other colour starts grey. Change a colour in Admin › Data › Wine Colors: the form shows a colour picker, and a badge with the name in the colour picked. A colour created from the wine form, or added in Admin › Data without picking one, gets the colour of its name, or grey for any other name. The storage page fills each bottle with the colour of its wine, the statistics draw the colour chart in these colours, the wine cards show the colour badge in its colour with a bar of that colour along their left edge, and the list view, the wine page and the bottle lists (out of the cellar, history, all the bottles of the storage page) show the coloured badge next to the wine. Each bottle of the storage page, each badge, each bar and each square of the statistics legend has a thin edge of its own colour, darker in the light theme and lighter in the dark theme, so that a pale white stays visible on a light background and a deep red on a dark one. Exports, imports and backups carry the colour; a file made by an earlier version gives each colour the one of its name.
+
+An AI assistant connected to Cellar's MCP server can now do more, when you allow changes. It takes bottles out of the cellar and puts them back in a case, which also undoes a bottle marked drunk by mistake; changes a wine (target quantity, description, producer, appellation, grapes…) and the fields of bottles (price, value, vintage, optimum, purchase date, format, origin, barcode); changes the quantity or note of a wish; and deletes bottles added by mistake, a change Cellar marks as one that cannot be undone. With a read-only token too, it lists the bottles of the whole cellar by availability and by the day they were drunk or bought, to answer « what did we drink this month? ». Admin › Settings › MCP access says what each choice allows, deleting bottles included. README-Docker now explains that the Claude apps on the web and on a phone, and the connectors of the desktop app, call from the internet and cannot reach a Cellar on your home network: use Claude Code, or a client on your network that sends the token.
+
+The storage page is now a map of the cellar. Click or tap a case, or reach it with the keyboard, to see the bottles it holds, with their wine, vintage and coloured badge; the name of a wine opens its page. The ⋮ menu of a bottle marks it drunk (with the date and a note), moves it, or opens the bottle form. Tick several bottles, then Move to… another case: the case list shows each case under its container with its free places, and greys the cases without room for them, so that a full case refuses the move and nothing moves. The case and the map update at once. The bottle dialog of a wine and the bulk barcode entry choose their case the same way. On a wine's page, Show in the cellar opens the storage page with the cases that hold the wine highlighted; Show all removes the highlight. An AI assistant can list what a case holds too, with list_bottles and the id of a case, and so can a script, with GET /api/storage-cases/{id}/bottles.
+
+A bottle marked drunk now keeps the case it was in, without taking a place there, as a bottle out of the cellar already did: if it was marked drunk by mistake, putting it back in the cellar returns it to that case, or says the case is full. In the app, the bottle form of a drunk bottle names that case, and choosing Available selects it. The cases, the storage map, the free space and the wine page's Storage locations box count only the bottles in the cellar: that box no longer counts a bottle out of the cellar. Bottles drunk before 1.4.0 have no case left to go back to. For scripts, GET /api/bottles now gives a drunk bottle the storageCaseId of the case it left. The AI assistant gets more context too: when Cellar refuses a change, the assistant is told why and gets the full list of what caused the refusal, such as every bottle id it did not recognise; every tool description has been rewritten to say which tool provides the ids, which tool fits which request, and what cannot be undone; a bottle out of the cellar or drunk shows the case it left as formerLocation, never as its location; and the lists of bottles and wines can be read past their first 200 results with offset.
+
+Two refusals now say exactly what is wrong, to an AI assistant and to scripts: a change refused because a case is full gives the id of the case next to its name, and a wine, bottle or wish that refers to something that does not exist (a format, an origin, a case…) names the field and the id it gave, so that the assistant knows which one to correct.
+
+### Upgrade actions
+
+None.
+
+### Changes
+
+#### Features
+
+- **wines:** Add a list view of the wines next to the cards (0a81f32)
+- **wines:** Show a dash for a wine without a rating in the list (b6a8f33)
+- **wines:** Store a colour value for each wine colour (2e22dce)
+- **wines:** Draw each wine colour in its own colour (68494fe)
+- **storage:** Edge every wine colour alike, on a plain bottle (40ad242)
+- **mcp:** Take out, put back, edit, list and delete through the MCP server (f386285)
+- **api:** List the bottles of a case, in the API and the MCP (f2f244e)
+- **bottles:** Choose the case of a move among the cases with room (41f0993)
+- **storage:** Open a case of the map, and find a wine in the cellar (58899a2)
+- **mcp:** Give the details of a refusal after its message (b52427f)
+- **bottles:** Keep the case of a drunk bottle, which goes back to it (59127aa)
+- **mcp:** Review every tool for an assistant, and read lists past 200 (78b890d)
+- **storage:** Give the id of a full case in case_full (99402a9)
+- **api:** Name the unknown id of a refused write (9781eba)
+- **mcp:** Name an unknown reference by the parameter the assistant gave (8f3339b)
+
+#### Bug fixes
+
+- **wines:** Let a long colour name wrap in the list view (bfd2ca6)
+- **wines:** Keep a colour of one long word inside the list table (ca589c9)
+- **wines:** Cap a colour name in the list table instead of breaking it (f0e4364)
+- **admin:** Start a new wine colour's picker on the colour of its name (bebc41f)
+- **statistics:** List the wine colours by name, with their colour value (c5b7552)
+- **mcp:** Steer put_bottles_back for drunk bottles, test list_bottles end to end (abef932)
+- **bottles:** Count a move into a case as the case counts its bottles (88a1c35)
+- **bottles:** Leave a box unticked when its click selects nothing (6b8ae84)
+- **wines:** Count only the bottles in the cellar in Storage locations (303b339)
+- **csv-import:** Import a drunk bottle whose case is gone in no case (dc4862d)
+- **bottles:** Start the copy of a drunk bottle in no case (bc8fb93)
+- **mcp:** Break ties by id, so that offset shows each result once (5dfec84)
+
+#### Refactoring
+
+- **preferences:** Extract the choice buttons of ChoiceGroup (58d7ef9)
+- **wines:** Share what a wine card shows of its wine and its wish (fe55fff)
+- **wines:** Share the icon button and the view choices (b8e88d5)
+- **wines:** Tidy the drawing of wine colours after review (8f9b2a2)
+- **storage:** Gather the colours of a case more plainly (06aca09)
+- **bottles:** Share the status and move dialogs of bottle lists (f6915ee)
+- **mcp:** Share the descriptions of a wine's fields and an origin (93df114)
+- **api:** Type the values whose references are named (73d37ad)
+
+#### Documentation
+
+- **release:** Describe the wine list view in 1.4.0 (313ff16)
+- **release:** Describe the wine colours in 1.4.0 (762e571)
+- **release:** Say which colour a new wine colour gets (067ef4a)
+- **api:** Say that the statistics list the wine colours by name (5bc19fe)
+- **mcp:** List the new tools and say who can reach the server (d8ccc0a)
+- **release:** Describe the new MCP actions in 1.4.0 (2363d29)
+- **release:** Say Cellar marks a deletion as final (40464b9)
+- **release:** Describe the map of the cellar in 1.4.0 (2bcbe7c)
+- **release:** Say what FEAT-12 changes in 1.4.0 (88a94b3)
+- **api:** Say how the import finds a drunk bottle's case, and the id order (c94bfe3)
+- **release:** Say that two refusals name what is wrong (27a2cd5)
+
+#### Other changes
+
+- **ui:** Add the shadcn-svelte dropdown-menu (9e2c576)
+- **wines:** Check the list rows for visitors and without images (a09dd13)
+- **e2e:** Check the picker of a new wine colour starts on its name's colour (a313e47)
+- **storage:** Guard the plain bottle and the empty places (39143a7)
+
 ## 1.3.2
 
 1.3.2 redesigns the wine cards of the wine list.

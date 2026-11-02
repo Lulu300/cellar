@@ -134,6 +134,42 @@ describe('POST /mcp', () => {
         ]);
     });
 
+    // An assistant reads nothing else to know what a tool does and what to give it (FEAT-12).
+    it('describes the server, each tool and each parameter of a tool', async () => {
+        const initialized = await legacy('initialize', {
+            protocolVersion: '2025-06-18',
+            capabilities: {},
+            clientInfo: { name: 'test', version: '1.0.0' }
+        });
+        expect(initialized.result.instructions).toContain('formerLocation');
+
+        const { result } = await legacy('tools/list');
+        type Tool = {
+            name: string;
+            description?: string;
+            inputSchema: { properties?: Record<string, { description?: string }> };
+        };
+        const undescribed = (result.tools as Tool[]).flatMap(
+            ({ name, description, inputSchema }) => [
+                ...(description ? [] : [name]),
+                ...Object.entries(inputSchema.properties ?? {})
+                    .filter(([, property]) => !property.description)
+                    .map(([parameter]) => `${name}.${parameter}`)
+            ]
+        );
+        expect(undescribed).toEqual([]);
+    });
+
+    it('reads a list past its first page with offset', async () => {
+        const page = async (offset: number) =>
+            JSON.parse(
+                (await modernCall('search_wines', { limit: 1, offset })).result.content[0].text
+            );
+
+        expect(await page(0)).toMatchObject({ total: 1, wines: [{ id: margaux }] });
+        expect(await page(1)).toEqual({ total: 1, wines: [] });
+    });
+
     it('answers a tool in plain JSON, without the empty fields', async () => {
         const { result } = await legacy('tools/call', {
             name: 'find_bottle_by_barcode',

@@ -119,18 +119,27 @@ function matching(query: string) {
     };
 }
 
-export interface WineSearch {
+/** A page of a list: `limit` results, after the first `offset` ones. */
+interface Page {
+    offset?: number;
+    limit: number;
+}
+
+/** The results of `found` that the page asks for. */
+const pageOf = <T>(found: T[], { offset = 0, limit }: Page): T[] =>
+    found.slice(offset, offset + limit);
+
+export interface WineSearch extends Page {
     query?: string;
     inCellarOnly: boolean;
-    limit: number;
 }
 
 /**
  * The wines whose texts hold every word of `query`, by name, each with how many bottles are in the
- * cellar and out of it, and the vintages of those in the cellar. `total` counts them all, beyond
- * `limit`.
+ * cellar and out of it, and the vintages of those in the cellar: the page asked for, with `total`
+ * counting them all.
  */
-export function searchWines({ query = '', inCellarOnly, limit }: WineSearch) {
+export function searchWines({ query = '', inCellarOnly, ...page }: WineSearch) {
     const matches = matching(query);
     const found = listWines({ ownedOnly: true })
         .map(({ definition, bottles }) => {
@@ -159,7 +168,7 @@ export function searchWines({ query = '', inCellarOnly, limit }: WineSearch) {
             ]);
         })
         .sort((a, b) => compareText(a.name, b.name));
-    return { total: found.length, wines: found.slice(0, limit) };
+    return { total: found.length, wines: pageOf(found, page) };
 }
 
 /**
@@ -208,14 +217,13 @@ export function bottlesByBarcode(barcode: string) {
 /** A day of a search: a bound left out or null sets no limit. */
 type Bound = Date | null | undefined;
 
-export interface BottleSearch {
+export interface BottleSearch extends Page {
     caseId?: string;
     availability?: BottleAvailability;
     consumedFrom?: Bound;
     consumedTo?: Bound;
     purchasedFrom?: Bound;
     purchasedTo?: Bound;
-    limit: number;
 }
 
 /** Whether `date` falls from `from` to `to`, both days included. */
@@ -233,7 +241,8 @@ const latestFirst = (a: string | null, b: string | null) => (b ?? '').localeComp
 /**
  * The bottles of the whole cellar, or those that the case `caseId` holds, with this availability,
  * drunk and bought within these days, each with its wine: the latest drunk first, then the latest
- * bought. `total` counts them all, beyond `limit`. Throws a NotFoundError for an unknown case.
+ * bought. The page asked for, with `total` counting them all. Throws a NotFoundError for an unknown
+ * case.
  */
 export function listBottles(search: BottleSearch) {
     const bottles = search.caseId ? listCaseBottles(search.caseId) : listBottlesWithDefinitions();
@@ -251,7 +260,7 @@ export function listBottles(search: BottleSearch) {
                 latestFirst(a.purchaseDate, b.purchaseDate) ||
                 compareText(a.wine.name, b.wine.name)
         );
-    return { total: found.length, bottles: found.slice(0, search.limit) };
+    return { total: found.length, bottles: pageOf(found, search) };
 }
 
 /** The wines below their target quantity, the largest shortage first. */

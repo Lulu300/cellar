@@ -79,8 +79,10 @@ beforeEach(() => {
     db.delete(storageContainers).run();
 });
 
-const search = (query?: string, fields: { inCellarOnly?: boolean; limit?: number } = {}) =>
-    searchWines({ query, inCellarOnly: false, limit: 50, ...fields });
+const search = (
+    query?: string,
+    fields: { inCellarOnly?: boolean; limit?: number; offset?: number } = {}
+) => searchWines({ query, inCellarOnly: false, limit: 50, ...fields });
 
 /** The fields of `object` among `keys` that it has. */
 const pick = (object: object, keys: string[]) =>
@@ -125,11 +127,16 @@ describe('searchWines', () => {
         expect(namesOf(search(undefined, { inCellarOnly: true }))).toEqual(['Château Margaux']);
     });
 
-    it('returns at most `limit` wines, and counts them all', () => {
+    it('returns at most `limit` wines from `offset`, and counts them all', () => {
         expect(search(undefined, { limit: 1 })).toMatchObject({
             total: 2,
             wines: [{ name: 'Cannubi' }]
         });
+        expect(search(undefined, { limit: 1, offset: 1 })).toMatchObject({
+            total: 2,
+            wines: [{ name: 'Château Margaux' }]
+        });
+        expect(search(undefined, { offset: 2 })).toEqual({ total: 2, wines: [] });
     });
 });
 
@@ -248,11 +255,13 @@ describe('listBottles', () => {
         expect(idsOf(list({ availability: BottleAvailability.OUT_OF_CELLAR }))).toEqual(['out']);
     });
 
-    it('returns at most `limit` bottles, and counts them all', () => {
+    it('returns at most `limit` bottles from `offset`, and counts them all', () => {
         expect(list({ limit: 2 })).toMatchObject({
             total: 5,
             bottles: [{ id: 'november' }, { id: 'late' }]
         });
+        expect(idsOf(list({ limit: 2, offset: 2 }))).toEqual(['early', 'out']);
+        expect(idsOf(list({ limit: 2, offset: 4 }))).toEqual(['cellar']);
     });
 
     // "What is in case B2?" (FEAT-04): the bottles a case holds, as the storage page counts them.

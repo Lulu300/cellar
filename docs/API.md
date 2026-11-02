@@ -729,10 +729,12 @@ The fields of a bottle in the body of `POST /api/bottles`, `PATCH /api/bottles` 
 - `availability`: `available`, `out_of_cellar` or `consumed`; `available` by default on `POST`.
 - `consumedDate`: date, optional.
 
-Two rules apply on every write: a `consumed` bottle is in no case (`storageCaseId` becomes `null`),
-and only a `consumed` bottle keeps a `consumedDate` (it becomes `null` otherwise). A write that
-leaves a case with more `available` bottles over its capacity than before is refused with
-`409 case_full`; a case already over its capacity, after an import for example, still takes the
+Only a `consumed` bottle keeps a `consumedDate` (it becomes `null` otherwise). A bottle
+`out_of_cellar` or `consumed` keeps its `storageCaseId`, the case it left, without taking a place
+there: made `available` again without a new `storageCaseId`, it goes back to that case. Bottles drunk
+before 1.4.0 lost their case, and have none. A write that leaves a case with more `available`
+bottles over its capacity than before is refused with `409 case_full`, a bottle put back in the case
+it kept included; a case already over its capacity, after an import for example, still takes the
 writes that do not add to it.
 
 A bottle in an answer has every field above, all present (`null` when empty), plus `id`,
@@ -1359,8 +1361,9 @@ the same name, and no two cases of a container either: the CSV files tell a case
 and its name. Names are compared exactly, capitals included, so `Cellar` and `cellar` are two
 containers; the CSV import, which compares names without their case, takes them as one (an accepted
 limit). A case holds a number of bottles;
-only the bottles whose `availability` is `available` count toward it. A bottle `out_of_cellar`
-keeps its case but takes no place in it; a `consumed` bottle is in no case.
+only the bottles whose `availability` is `available` count toward it. A bottle `out_of_cellar` or
+`consumed` keeps its case but takes no place in it, and goes back to it when made `available`
+again (since 1.4.0 for a `consumed` one).
 
 #### Container fields
 
@@ -1556,8 +1559,8 @@ Deletes one case.
 ### `GET /api/storage-cases/{id}/bottles`
 
 Lists the bottles that a case holds: its available bottles, those that `GET
-/api/storage-occupancy` counts. A bottle out of the cellar keeps its case but is not in it, and is
-not listed.
+/api/storage-occupancy` counts. A bottle out of the cellar or drunk keeps its case but is not in it,
+and is not listed.
 
 - **Session:** not needed.
 - **Body:** none.
@@ -1617,7 +1620,8 @@ generated code of both `CV1` and `CV`, and `1230000002` of both `123` and the em
 
 The CSV files of this group have one header line and one line per code, with these columns:
 `barcode,wine_name,producer,appellation,vintage,wine_type,color,location`, where `location` is the
-name of the bottle's case. A field that holds a comma, a quote or a line break is quoted. Each line
+name of the bottle's case: empty for a `consumed` bottle, which keeps the case it was in without
+being there. A field that holds a comma, a quote or a line break is quoted. Each line
 ends with `\n`. A text that a spreadsheet would run as a formula gets a leading `'` and is quoted:
 one that starts with `=`, `@`, a tab or a carriage return, or with `+` or `-` unless only ASCII
 letters, digits and dashes follow, and one that already starts with `'` before one of these.
@@ -2442,13 +2446,31 @@ README-Docker says how to set up an assistant (see
   sessions, so each request stands alone, and `GET` answers `405`. It serves the 2026-07-28
   revision of the protocol and the earlier ones (2024-10-07, 2024-11-05, 2025-03-26, 2025-06-18,
   2025-11-25): the client picks.
+- **Instructions:** the answer to `initialize` gives the assistant `instructions`: what a wine and
+  a bottle are, the units, which tool gives the ids that the others take, which tool to use for a
+  bottle drunk or taken away, and how errors read.
 - **Answers:** a tool answers one text item that holds JSON. The fields that are empty are left out.
-  Prices are in the currency of the cellar, dates are `YYYY-MM-DD`. A bottle's `availability` is
-  `available` (in the cellar), `out_of_cellar` or `consumed`, and its `optimum` is the year it is at
-  its best.
+  Prices are in the currency of the cellar (the app shows euros), dates are `YYYY-MM-DD`. A
+  bottle's `availability` is `available` (in the cellar), `out_of_cellar` or `consumed`, and its
+  `optimum` is the year it is at its best.
+- **Where a bottle is:** a bottle `available` gives its case as `location` (read tools) or `caseId`
+  (write tools). A bottle `out_of_cellar` or `consumed` keeps the case it left, without taking a
+  place there: it gives it as `formerLocation` or `formerCaseId` instead, so that an assistant does
+  not read it as where the bottle is. `put_bottles_back` returns it there.
 - **Errors:** a tool that cannot answer, for an unknown wine for example, answers `isError: true`
-  with the reason as its text: the `message` that this API would answer for the same refusal.
-  Arguments that the tool refuses get the same, with the reason.
+  with the reason as its text: the `message` that this API would answer for the same refusal, then,
+  when the refusal has `details`, a second line `Details: ` followed by them as JSON. The message
+  names at most 10 unknown bottles; the details name them all:
+
+  ```text
+  No bottle with the id a, b, c, d, e, f, g, h, i, j and 2 more
+  Details: {"ids":["a","b","c","d","e","f","g","h","i","j","k","l"]}
+  ```
+
+  `notes_too_long` gives `{ "ids", "bottles", "maximum" }`, `duplicate_wish` the `wishId` already
+  on the wishlist, `case_full` `{ "caseName", "capacity", "bottles" }`. Arguments that the tool
+  refuses get `isError: true` with the reason.
+
 - **Restore, import, wipe:** the tools go on reading meanwhile, like the `GET` routes of this API.
   A tool that writes refuses with the message of `503 writes_held` until it ends.
 - **Annotations:** each tool tells the client whether it only reads (`readOnlyHint`), and a tool
@@ -2461,9 +2483,10 @@ The tools that read:
   - **Parameters:** `query`: string, optional, at most 500 characters: words that the wine must all
     hold, capitals and accents aside, in its name, producer, color, type, classification,
     appellation, region, country or grapes; `inCellarOnly`: boolean, default `false`; `limit`:
-    integer from 1 to 200, default 50.
-  - **Answer:** `{ "total", "wines" }`: the wines found, by name, `total` counting them beyond
-    `limit`. Each wine has `id`, `name`, `producer`, `color`, `type`, `classification`,
+    integer from 1 to 200, default 50; `offset`: integer from 0, default 0, how many wines to skip,
+    to read past `limit`.
+  - **Answer:** `{ "total", "wines" }`: the wines found, by name, from `offset`, `total` counting
+    them all. Each wine has `id`, `name`, `producer`, `color`, `type`, `classification`,
     `appellation`, `region`, `country`, `rating`, `grapes`, its bottles in the cellar (`inCellar`)
     and out of it (`outOfCellar`), and the `vintages` of those in the cellar.
 - `get_wine`: a wine with its bottles.
@@ -2471,8 +2494,9 @@ The tools that read:
   - **Answer:** the fields of a wine of `search_wines` from `id` to `grapes`, with `description`,
     `website` and `targetQuantity`, its bottles still owned in `bottles` and those drunk in
     `consumed`. Each bottle has `id`, `availability`, `vintage`, `optimum`, `format`, `location`
-    (`container`, `case`), `barcode`, `origin`, `purchasePrice`, `purchaseDate`, `currentValue`,
-    `consumedDate` and `notes`.
+    (`container`, `case`) when it is in the cellar or `formerLocation` (the same) when it is not,
+    `barcode`, `origin`, `purchasePrice`, `purchaseDate`, `currentValue`, `consumedDate` and
+    `notes`.
 - `find_bottle_by_barcode`: the bottles of a barcode, whatever their availability.
   - **Parameters:** `barcode`: string, required, 1 to 1000 characters.
   - **Answer:** an array of bottles as in `get_wine`, each with its `wine` (`id`, `name`,
@@ -2488,10 +2512,11 @@ The tools that read:
     bottle when left out; `consumedFrom` and `consumedTo`: `YYYY-MM-DD`, the days a bottle was drunk
     on, both included: a bottle without a `consumedDate`, so any bottle not drunk, is left out when
     either is given; `purchasedFrom` and `purchasedTo`: the same for the `purchaseDate`; `limit`:
-    integer from 1 to 200, default 50.
+    integer from 1 to 200, default 50; `offset`: integer from 0, default 0, how many bottles to
+    skip, to read past `limit`.
   - **Answer:** `{ "total", "bottles" }`: the bottles found, as `find_bottle_by_barcode` gives them,
     each with its `wine`, the latest drunk first, then the latest bought, then by the name of their
-    wine; `total` counts them beyond `limit`.
+    wine, from `offset`; `total` counts them all.
 - `get_wine_shortage`: no parameters; the wines below their target quantity, the largest shortage
   first, with `id`, `name`, `producer`, `color`, `type`, `appellation`, `region`, `country`,
   `targetQuantity`, `inCellar`, `missing` and `averagePrice`.
@@ -2502,7 +2527,7 @@ The tools that read:
 - `get_free_space`: no parameters; `{ "capacity", "bottles", "free", "containers" }`: each container
   by the name the storage page shows, with its totals and its `cases` (`id`, `name`, `capacity`,
   `bottles`, `free`). A case holds its capacity in bottles in the cellar; one that holds more has
-  no room left. The `id` of a case is what `list_bottles`, `add_bottles`, `move_bottles` and
+  no room left. The bottles out of the cellar or drunk that kept the case take no room there. The `id` of a case is what `list_bottles`, `add_bottles`, `move_bottles` and
   `put_bottles_back` take.
 - `list_choices`: no parameters; `{ "formats", "colors", "types", "classifications", "origins" }`:
   the `id` and `name` of each row of these lists, sorted by name, for the ids that `add_wine`,
@@ -2533,8 +2558,10 @@ one is not dropped; each one writes all or nothing.
     [bottle fields](#bottle-fields) `vintage`, `optimum`, `originId` (from `list_choices`),
     `purchasePrice`, `purchaseDate`, `barcode` (with `quantity` 1 only) and `notes`.
   - **Answer:** an array of the bottles created, each with `id`, `wineId`, `availability`,
-    `vintage`, `optimum`, `format`, `caseId`, `barcode`, `originId`, `purchasePrice`,
-    `purchaseDate`, `currentValue`, `currentValueDate`, `consumedDate` and `notes`.
+    `vintage`, `optimum`, `format`, `caseId` (or `formerCaseId` for a bottle not in the cellar, as
+    in the answers of the tools below), `barcode`, `originId`, `purchasePrice`, `purchaseDate`,
+    `currentValue`, `currentValueDate`, `consumedDate` and `notes`. An origin that `list_choices`
+    lacks is added in the app; the description says to leave `originId` out meanwhile.
   - **Refusals:** those of `POST /api/bottles`, such as a case without room for them all.
   - Its description asks the assistant, when the wine is on the wishlist, to ask the user whether
     to remove it with `remove_wish`, as the app asks after the last bottle saved.
@@ -2550,8 +2577,8 @@ one is not dropped; each one writes all or nothing.
   - **Parameters:** `wishId`: string, required, from `get_wishlist`.
   - **Answer:** `{ "removed": "<wishId>" }`.
   - **Refusals:** an unknown wish.
-- `mark_bottles_drunk`: marks bottles `consumed`, as the status dialog of the app does: they leave
-  their case.
+- `mark_bottles_drunk`: marks bottles `consumed`, as the status dialog of the app does. Each keeps
+  the case it was in as its `formerCaseId`, without taking a place there.
   - **Parameters:** `bottleIds`: array of 1-10,000 bottle ids, required; `date`: `YYYY-MM-DD`,
     optional: the day they were drunk, today on the server's clock when left out, which is UTC in
     the Docker image unless `TZ` is set, so an assistant should give the user's day; `note`:
@@ -2561,8 +2588,8 @@ one is not dropped; each one writes all or nothing.
     drunk takes the new day, and the note too, as with `PATCH /api/bottles`.
   - **Refusals:** those of `PATCH /api/bottles`, such as an unknown bottle or a note that does not
     fit after the notes.
-- `move_bottles`: puts bottles in a case. Their availability stays: a bottle out of the cellar
-  stays out of it, and a bottle drunk stays out of any case.
+- `move_bottles`: puts bottles in a case. Their availability stays: for a bottle out of the cellar
+  or drunk, the case becomes the one that `put_bottles_back` returns it to.
   - **Parameters:** `bottleIds` as above; `caseId`: string, required (from `get_free_space`).
   - **Answer:** an array of the bottles, as `add_bottles` answers them.
   - **Refusals:** those of `PATCH /api/bottles`, such as a case without room for them all.
@@ -2598,17 +2625,17 @@ one is not dropped; each one writes all or nothing.
   - **Refusals:** those of `PATCH /api/bottles`, such as an unknown bottle, a barcode that another
     bottle has, or one barcode for several bottles.
 - `take_bottles_out`: makes bottles `out_of_cellar`, as the status dialog of the app does. Each
-  keeps its case, which keeps no room for it: `put_bottles_back` can return it there. A bottle
-  `consumed` by mistake loses its `consumedDate`.
+  keeps its case as its `formerCaseId`, which keeps no room for it: `put_bottles_back` can return
+  it there. A bottle `consumed` by mistake loses its `consumedDate`.
   - **Parameters:** `bottleIds` as above.
   - **Answer:** an array of the bottles changed, as `add_bottles` answers them.
   - **Refusals:** those of `PATCH /api/bottles`, such as an unknown bottle.
 - `put_bottles_back`: makes bottles `available` again: taken out, or `consumed` by mistake, which
   lose their `consumedDate`.
   - **Parameters:** `bottleIds` as above; `caseId`: string, optional (from `get_free_space`): the
-    case to put them in. Left out, each bottle goes back to the case it kept when it was taken out,
-    as in the status dialog of the app; a bottle that was `consumed` has no case left, and is back
-    in the cellar without a place unless `caseId` is given. The description tells the assistant so.
+    case to put them in. Left out, each bottle goes back to the case it kept when it was taken out
+    or drunk, its `formerCaseId`, as in the app; a bottle drunk before 1.4.0 has no case left, and
+    is back in the cellar without a place unless `caseId` is given.
   - **Answer:** an array of the bottles changed, as `add_bottles` answers them.
   - **Refusals:** those of `PATCH /api/bottles`, such as a case without room for them all.
 - `update_wish`: changes the quantity or the note of a wish, as
@@ -2761,6 +2788,10 @@ as any row already there keeps its fields.
 A case row without `position`, added to a container that already has cases, goes after them. In a
 container that had none, the cases without `position` keep the order of the versions that did not
 export it: by the number that ends their name.
+
+A `consumed` bottle row keeps the case it names, without taking a place there, when the cellar has
+that case; when it does not, the case may have been deleted since, and the bottle is imported in no
+case rather than refused.
 
 - **Session:** required.
 - **Body:** multipart form, at most 50 MB in all:

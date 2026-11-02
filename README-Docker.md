@@ -675,13 +675,16 @@ statistics, the wines to buy again, the wishlist and the free space in storage.
 When you allow changes, it can also write, as you would in the app: « I just bought six bottles of
 this Chablis, put them in rack B », « we drank the 2015 Margaux tonight, with the lamb ». It adds a
 wine and its bottles, marks bottles drunk with the day and a note, takes bottles out of the cellar
-and puts them back in a case (which also undoes a « drunk » made by mistake), moves bottles to
+and puts them back in a case (which also undoes a « drunk » made by mistake: a bottle drunk keeps
+the case it was in, and goes back there), moves bottles to
 another case, changes a wine (its target quantity, description, producer…), the fields of bottles
 (price, value, vintage, optimum, barcode…) and their notes, rates a wine, adds wishes to the
 wishlist, changes their quantity or note and removes them, and deletes bottles added by mistake, a
 change it announces as one that cannot be undone. It never reaches the admin: backups, restore,
 wipe, imports and the access code stay in the app. Most assistants ask you before each change;
-during a restore or an import, a change is refused until it ends.
+during a restore or an import, a change is refused until it ends. When Cellar refuses a change, it
+tells the assistant why and names everything in cause, such as each bottle it does not know, so
+that the assistant can correct its request.
 
 1. In Cellar, open Admin › Settings › MCP access and create the token. Copy it: it is shown once.
    It is read-only unless you allow changes there.

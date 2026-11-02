@@ -59,7 +59,11 @@ import { assertMcpWrite, ReadOnlyTokenError, type McpAccess } from './token';
 /** The most results that one search or list returns. */
 const MAX_SEARCH_LIMIT = 200;
 
-const INSTRUCTIONS = `Cellar manages a home wine cellar. A wine (name, producer, appellation, color…) has bottles; each bottle is "available" (in the cellar, in a case of a storage container), "out_of_cellar" (taken out, not drunk yet) or "consumed" (drunk). "optimum" is the year a bottle is at its best. Prices are in the currency of the cellar's owner. A field left out of an answer is empty. The tools that change the cellar run only when its owner allowed changes for this token; they take the ids that the other tools give.`;
+const INSTRUCTIONS = `Cellar manages a home wine cellar. A wine (name, producer, appellation, color…) has bottles. A bottle is "available" (in the cellar, most often in a case of a storage container), "out_of_cellar" (taken out, not drunk yet: set aside for a meal, brought to friends) or "consumed" (drunk). A bottle in the cellar gives its "location"; one out of the cellar or drunk gives its "formerLocation" instead, the case it left, where put_bottles_back returns it: it is not there. "optimum" is the year a bottle is at its best. Prices are numbers in the cellar's currency, which the app shows as euros; dates are YYYY-MM-DD. A field left out of an answer is empty.
+
+The tools that change the cellar run only when its owner allowed changes for this token, and each one writes all or nothing. They take the ids that the other tools give: a wine from search_wines, a bottle from get_wine, list_bottles or find_bottle_by_barcode, a case from get_free_space, a format, color, type, classification or origin from list_choices, an appellation from search_appellations, a wish from get_wishlist. A bottle drunk is marked with mark_bottles_drunk, one taken away without being drunk with take_bottles_out; delete_bottles is only for bottles added by mistake.
+
+A call that Cellar refuses answers why, then, when there is more to know, a line "Details: " followed by JSON: every unknown id, the bottles whose notes would be too long, the wish already there.`;
 
 /** A tool that only reads: the client may call it without asking. */
 const READ_ONLY: ToolAnnotations = { readOnlyHint: true, openWorldHint: false };
@@ -126,9 +130,17 @@ const bottleIds = bulkBottleChangesSchema.shape.ids.describe(
     'The ids of the bottles, as get_wine, list_bottles or find_bottle_by_barcode give them.'
 );
 
-/** The most results of a read tool that lists. */
-const limitParam = (what: string) =>
-    z.int().min(1).max(MAX_SEARCH_LIMIT).default(50).describe(`The most ${what} to return.`);
+/** The page of a read tool that lists: how many results, and from which one. */
+const pageParams = (what: string) => ({
+    limit: z.int().min(1).max(MAX_SEARCH_LIMIT).default(50).describe(`The most ${what} to return.`),
+    offset: z
+        .int()
+        .min(0)
+        .default(0)
+        .describe(
+            `How many ${what} to skip, to read those after a first page: 0, then limit, then twice limit… until total.`
+        )
+});
 
 // A tool that changes the fields given makes its arguments partial, but the ids of what it changes:
 // a field that reads nothing as null, such as a producer, would otherwise clear it when left out.
@@ -160,7 +172,7 @@ function createServer({ authInfo }: McpRequestContext): McpServer {
         {
             title: 'Search wines',
             description:
-                'Finds the wines of the cellar, sorted by name. Each comes with its bottles in the cellar (inCellar), out of it (outOfCellar), and the vintages of those in the cellar. total counts every wine found, beyond limit.',
+                'Finds the wines of the cellar, sorted by name: the place to start, for the id of a wine that the other tools take. Each comes with how many of its bottles are in the cellar (inCellar) and out of it (outOfCellar), and the vintages of those in the cellar. total counts every wine found; offset reads past limit.',
             inputSchema: z.object({
                 query: z
                     .string()
@@ -173,7 +185,7 @@ function createServer({ authInfo }: McpRequestContext): McpServer {
                     .boolean()
                     .default(false)
                     .describe('Only the wines with at least one bottle in the cellar.'),
-                limit: limitParam('wines')
+                ...pageParams('wines')
             }),
             annotations: READ_ONLY
         },
@@ -185,7 +197,7 @@ function createServer({ authInfo }: McpRequestContext): McpServer {
         {
             title: 'Get a wine',
             description:
-                'A wine with its description and target quantity, its bottles still owned (bottles) with the container and case of each one in the cellar, and its bottles drunk (consumed) with their date and notes.',
+                'A wine with its description and target quantity, its bottles still owned (bottles: in the cellar or out of it) and its bottles drunk (consumed), with their dates and notes. A bottle in the cellar gives its location (container and case); one out of the cellar or drunk gives formerLocation, the case it left. Its bottle ids are what the bottle tools take.',
             inputSchema: z.object({
                 wineId: id.describe('The id of the wine, as search_wines gives it.')
             }),
@@ -199,7 +211,7 @@ function createServer({ authInfo }: McpRequestContext): McpServer {
         {
             title: 'Find a bottle by its barcode',
             description:
-                'The bottles of a barcode, whatever their availability, with their wine and where they are: the code as given, then in other capitals, then the codes that end with it. An empty list when none has it.',
+                'The bottles of a barcode, whatever their availability, each with its wine and its location or formerLocation: the code as given, then in other capitals, then the codes that end with it. An empty list when none has it. For a label that the owner reads out or scans.',
             inputSchema: z.object({
                 barcode: z
                     .string()
@@ -218,7 +230,7 @@ function createServer({ authInfo }: McpRequestContext): McpServer {
         {
             title: 'Cellar statistics',
             description:
-                'The figures of the statistics page: bottles by availability, the value of the bottles in the cellar, and their numbers by type, color, country, region (top 10), vintage, decade and producer (top 10).',
+                "The figures of the statistics page: bottles by availability; the value of the bottles in the cellar (valueStats: their purchase prices, their current values, and each one's current value or else its purchase price, in the cellar's currency); and their numbers by type, color, country, region (top 10), vintage, decade and producer (top 10).",
             annotations: READ_ONLY
         },
         () => answer('get_statistics', getStatistics)
@@ -229,24 +241,26 @@ function createServer({ authInfo }: McpRequestContext): McpServer {
         {
             title: 'List bottles',
             description:
-                'The bottles of the whole cellar, or of one case, each with its wine and where it is, by availability and by day: what is in case B2, what was drunk this month, what is out of the cellar, what was bought last year. The latest drunk first, then the latest bought. total counts every bottle found, beyond limit. get_wine gives the bottles of one wine.',
+                'The bottles of the whole cellar, or of one case, each with its wine and its location or formerLocation, by availability and by day: what is in case B2, what was drunk this month, what is out of the cellar, what was bought last year. The latest drunk first, then the latest bought. total counts every bottle found; offset reads past limit. get_wine gives the bottles of one wine.',
             inputSchema: z.strictObject({
                 caseId: z
                     .string()
                     .min(1)
                     .optional()
                     .describe(
-                        'Only the bottles that this case holds, those in the cellar: the ids of get_free_space. An unknown id is refused.'
+                        'Only the bottles in the cellar that this case holds: an id of get_free_space. An unknown id is refused.'
                     ),
                 availability: z
                     .enum(BottleAvailability)
                     .optional()
-                    .describe('Only the bottles with this availability. Left out, every bottle.'),
+                    .describe(
+                        'Only the bottles with this availability: available (in the cellar), out_of_cellar (taken out, not drunk) or consumed (drunk). Left out, every bottle.'
+                    ),
                 consumedFrom: dateParam('only the bottles drunk on this day or later'),
                 consumedTo: dateParam('only the bottles drunk on this day or earlier'),
                 purchasedFrom: dateParam('only the bottles bought on this day or later'),
                 purchasedTo: dateParam('only the bottles bought on this day or earlier'),
-                limit: limitParam('bottles')
+                ...pageParams('bottles')
             }),
             annotations: READ_ONLY
         },
@@ -258,7 +272,7 @@ function createServer({ authInfo }: McpRequestContext): McpServer {
         {
             title: 'Wines to buy again',
             description:
-                'The wines with fewer bottles in the cellar than their target quantity, the largest shortage (missing) first, with their average purchase price.',
+                "The wines with fewer bottles in the cellar than their target quantity, the largest shortage (missing) first, with the average purchase price of their bottles still owned (averagePrice, in the cellar's currency). update_wine changes a target quantity.",
             annotations: READ_ONLY
         },
         () => answer('get_wine_shortage', wineShortages)
@@ -269,7 +283,7 @@ function createServer({ authInfo }: McpRequestContext): McpServer {
         {
             title: 'Wishlist',
             description:
-                'The wines the owner wants to buy, the newest first: each wish is a wine of the cellar (wine, with its bottles in the cellar, inCellar) or the name of a wine not in it yet (text), with how many bottles to buy (quantity) and a note. get_wine_shortage lists the wines below their target quantity, which are another reason to buy.',
+                'The wines the owner wants to buy, the newest first: each wish is a wine of the cellar (wine, with its bottles in the cellar, inCellar) or the name of a wine not in it yet (text), with how many bottles to buy (quantity) and a note. Its id is what update_wish and remove_wish take. get_wine_shortage lists the wines below their target quantity, which are another reason to buy.',
             annotations: READ_ONLY
         },
         () => answer('get_wishlist', wishlist)
@@ -280,7 +294,7 @@ function createServer({ authInfo }: McpRequestContext): McpServer {
         {
             title: 'Free space in storage',
             description:
-                'The room left (free) in each case of each storage container, in bottles, with the totals: a case holds its capacity in bottles in the cellar. The id of a case is what list_bottles, add_bottles, move_bottles and put_bottles_back take.',
+                'The room left (free) in each case of each storage container, in bottles, with the totals: a case holds its capacity in bottles in the cellar, and the bottles out of the cellar or drunk take no room there. The id of a case is what list_bottles, add_bottles, move_bottles and put_bottles_back take.',
             annotations: READ_ONLY
         },
         () => answer('get_free_space', freeSpace)
@@ -324,10 +338,16 @@ function createServer({ authInfo }: McpRequestContext): McpServer {
         {
             title: 'Add a wine',
             description:
-                'Creates a wine, without bottles: add_bottles adds them. Answers it as get_wine does. Look for it with search_wines first: a wine is added once, then gets bottles of each vintage.',
+                'Creates a wine, without bottles: add_bottles adds them. Answers it as get_wine does. Look for it with search_wines first: a wine is added once, then gets bottles of each vintage, and no tool deletes a wine.',
             inputSchema: wineDefinitionSchema
                 .omit({ imageId: true })
                 .extend({
+                    name: wineDefinitionSchema.shape.name.describe(
+                        'Its name, as on the label, without the vintage: Château Margaux.'
+                    ),
+                    producer: wineDefinitionSchema.shape.producer.describe(
+                        'Its producer: the estate or the house.'
+                    ),
                     appellationId: id.describe(
                         'The id of its appellation, from search_appellations.'
                     ),
@@ -338,6 +358,15 @@ function createServer({ authInfo }: McpRequestContext): McpServer {
                     ),
                     rating: wineDefinitionSchema.shape.rating.describe(
                         "The owner's rating, from 1 to 5, half points included."
+                    ),
+                    website: wineDefinitionSchema.shape.website.describe(
+                        'Its website, an http(s) address.'
+                    ),
+                    description: wineDefinitionSchema.shape.description.describe(
+                        "Its description: tasting notes, food pairings, the owner's words."
+                    ),
+                    grapeVarieties: wineDefinitionSchema.shape.grapeVarieties.describe(
+                        'Its grapes, each by its name: ["Merlot", "Cabernet Sauvignon"].'
                     ),
                     targetQuantity: wineDefinitionSchema.shape.targetQuantity.describe(
                         'How many bottles to keep in the cellar: get_wine_shortage lists the wines below it.'
@@ -354,7 +383,7 @@ function createServer({ authInfo }: McpRequestContext): McpServer {
         {
             title: 'Add bottles',
             description:
-                'Adds bottles of a wine to the cellar, all alike, each with its own id and, when Cellar numbers them, its own barcode. All or none: a case without room for them adds none. When the wine is on the wishlist (get_wishlist), ask the owner whether to remove it with remove_wish.',
+                'Adds bottles of a wine to the cellar (available), all alike, each with its own id and, when Cellar numbers them, its own barcode: for bottles just bought. All or none: a case without room for them adds none. delete_bottles removes bottles added by mistake. When the wine is on the wishlist (get_wishlist), ask the owner whether to remove it with remove_wish.',
             inputSchema: z
                 .object({
                     wineId: id.describe('The id of the wine, from search_wines or add_wine.'),
@@ -367,13 +396,15 @@ function createServer({ authInfo }: McpRequestContext): McpServer {
                         'The year they are at their best.'
                     ),
                     originId: optionalId.describe(
-                        'The id of where they were bought, from list_choices.'
+                        'The id of where they were bought, from list_choices. A shop missing from list_choices is left out: the owner adds it in the app, and update_bottles gives it later.'
                     ),
                     purchasePrice: bottleSchema.shape.purchasePrice.describe(
                         'The price of one bottle, in the currency of the owner.'
                     ),
                     purchaseDate: dateParam('the day they were bought'),
-                    caseId: optionalId.describe('The id of their case, from get_free_space.'),
+                    caseId: optionalId.describe(
+                        'The id of their case, from get_free_space. Left out, they are in the cellar without a place.'
+                    ),
                     barcode: bottleSchema.shape.barcode.describe(
                         'The barcode of their label, for a single bottle: left out, Cellar numbers them when its automatic barcodes are on.'
                     ),
@@ -390,7 +421,7 @@ function createServer({ authInfo }: McpRequestContext): McpServer {
         {
             title: 'Add to the wishlist',
             description:
-                'Adds a wine to buy to the wishlist: a wine of the cellar by its id, at most once, or the name of a wine not in the cellar yet as text. Answers the wish as get_wishlist does.',
+                'Adds a wine to buy to the wishlist: a wine of the cellar by its id, at most once, or the name of a wine not in the cellar yet as text. Answers the wish as get_wishlist does. A wine already on the wishlist is refused, with the id of its wish in the details: update_wish changes it.',
             inputSchema: z
                 .strictObject({
                     wineId: optionalId.describe(
@@ -419,7 +450,7 @@ function createServer({ authInfo }: McpRequestContext): McpServer {
         {
             title: 'Remove from the wishlist',
             description:
-                'Removes a wish from the wishlist, such as a wine just bought: ask the owner first, as the app does.',
+                'Removes a wish from the wishlist, such as a wine just bought: ask the owner first, as the app does. Its quantity and note are lost; update_wish changes them instead.',
             inputSchema: z.strictObject({
                 wishId: id.describe('The id of the wish, from get_wishlist.')
             }),
@@ -433,7 +464,7 @@ function createServer({ authInfo }: McpRequestContext): McpServer {
         {
             title: 'Mark bottles drunk',
             description:
-                'Marks bottles as drunk on a day: they leave their case, and the note goes after the notes of each one. A bottle already drunk takes the new day, and the note too. All or none.',
+                'Marks bottles as drunk (consumed) on a day, the note after the notes of each one. Each keeps the case it was in as its formerLocation, without taking room there. A bottle already drunk takes the new day, and the note too. A bottle taken away but not drunk yet goes out with take_bottles_out instead. A mistake is undone with put_bottles_back, which returns it to its case, or take_bottles_out. All or none.',
             inputSchema: z.strictObject({
                 bottleIds,
                 date: dateParam(
@@ -452,7 +483,7 @@ function createServer({ authInfo }: McpRequestContext): McpServer {
         {
             title: 'Move bottles',
             description:
-                'Puts bottles in a case, keeping their availability: a bottle drunk stays out of any case. All or none: a case without room for them moves none.',
+                'Puts bottles in a case, keeping their availability: a bottle in the cellar moves there; for a bottle out of the cellar or drunk, it becomes the case that put_bottles_back returns it to. All or none: a case without room for the bottles in the cellar moves none. take_bottles_out and put_bottles_back change the availability.',
             inputSchema: z.strictObject({
                 bottleIds,
                 caseId: id.describe('The id of the case, from get_free_space.')
@@ -468,7 +499,7 @@ function createServer({ authInfo }: McpRequestContext): McpServer {
         {
             title: 'Change the notes of bottles',
             description:
-                'Replaces the notes of bottles with notes, adds addedNote after them, or both. All or none.',
+                'Replaces the notes of bottles with notes, which loses the old ones, adds addedNote after them, or both. All or none: notes hold 5,000 characters at most, and a note that does not fit is refused with the bottles in the details.',
             inputSchema: z
                 .strictObject({
                     bottleIds,
@@ -493,7 +524,8 @@ function createServer({ authInfo }: McpRequestContext): McpServer {
         'rate_wine',
         {
             title: 'Rate a wine',
-            description: "Gives a wine the owner's rating, or removes it.",
+            description:
+                "Gives a wine the owner's rating, from 1 to 5, or removes it. The other fields of the wine stay; update_wine changes them.",
             inputSchema: z.strictObject({
                 wineId: id.describe('The id of the wine, from search_wines.'),
                 rating: rating
@@ -549,7 +581,7 @@ function createServer({ authInfo }: McpRequestContext): McpServer {
         {
             title: 'Change bottles',
             description:
-                'Gives each bottle the fields given, the same for all; the others stay, and null removes an optional one. All or none. Other changes have their own tools: notes with update_bottle_notes, the case with move_bottles, drunk with mark_bottles_drunk, out of or back in the cellar with take_bottles_out and put_bottles_back.',
+                'Gives each bottle the fields given, the same for all: a price, a value, a vintage, a barcode…; the others stay, and null removes an optional one. All or none. Other changes have their own tools: notes with update_bottle_notes, the case with move_bottles, drunk with mark_bottles_drunk, out of or back in the cellar with take_bottles_out and put_bottles_back.',
             inputSchema: z
                 .strictObject({
                     bottleIds,
@@ -587,7 +619,7 @@ function createServer({ authInfo }: McpRequestContext): McpServer {
         {
             title: 'Take bottles out of the cellar',
             description:
-                "Takes bottles out of the cellar without drinking them yet, such as a bottle set aside for tonight's dinner or brought to friends: they become out_of_cellar, as in the app's status dialog, and each keeps its case, without taking room in it, for put_bottles_back. A bottle drunk is marked with mark_bottles_drunk. Also undoes mark_bottles_drunk made by mistake for a bottle no longer in the cellar: it loses its consumed date. All or none.",
+                "Takes bottles out of the cellar without drinking them yet, such as a bottle set aside for tonight's dinner or brought to friends: they become out_of_cellar, as in the app's status dialog, and each keeps its case as its formerLocation, without taking room there, for put_bottles_back. A bottle drunk is marked with mark_bottles_drunk. Also undoes mark_bottles_drunk made by mistake for a bottle no longer in the cellar: it loses its consumed date. All or none.",
             inputSchema: z.strictObject({ bottleIds }),
             annotations: changes(true)
         },
@@ -599,10 +631,12 @@ function createServer({ authInfo }: McpRequestContext): McpServer {
         {
             title: 'Put bottles back in the cellar',
             description:
-                'Puts bottles back in the cellar (available): those taken out with take_bottles_out, or marked drunk by mistake, which lose their consumed date. caseId puts them in that case; left out, each goes back to the case it was taken out of. A bottle that was drunk has no case left: give caseId for it, or it is back in the cellar without a place. All or none: a case without room for them takes none. move_bottles moves bottles already in the cellar.',
+                'Puts bottles back in the cellar (available): those taken out with take_bottles_out, or marked drunk by mistake, which lose their consumed date. caseId puts them all in that case; left out, each goes back to the case it left, its formerLocation, and one without any (drunk before Cellar 1.4.0, or never in a case) is back in the cellar without a place. All or none: a case without room for them takes none. move_bottles moves bottles already in the cellar.',
             inputSchema: z.strictObject({
                 bottleIds,
-                caseId: optionalId.describe('The id of the case, from get_free_space.')
+                caseId: optionalId.describe(
+                    'The id of the case, from get_free_space. Left out, each bottle goes back to its formerLocation.'
+                )
             }),
             annotations: changes(true)
         },

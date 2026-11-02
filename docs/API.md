@@ -2465,6 +2465,16 @@ The tools that read:
     `producer`, `color`, `type`): the code as given, then in other capitals, then the codes that
     end with it. `[]` when none has it.
 - `get_statistics`: no parameters; the answer of [`GET /api/statistics`](#get-apistatistics).
+- `list_bottles`: the bottles of the whole cellar, by availability and by day: what was drunk this
+  month, what is out of the cellar, what was bought last year.
+  - **Parameters:** all optional: `availability`: `available`, `out_of_cellar` or `consumed`, every
+    bottle when left out; `consumedFrom` and `consumedTo`: `YYYY-MM-DD`, the days a bottle was drunk
+    on, both included: a bottle without a `consumedDate`, so any bottle not drunk, is left out when
+    either is given; `purchasedFrom` and `purchasedTo`: the same for the `purchaseDate`; `limit`:
+    integer from 1 to 200, default 50.
+  - **Answer:** `{ "total", "bottles" }`: the bottles found, as `find_bottle_by_barcode` gives them,
+    each with its `wine`, the latest drunk first, then the latest bought, then by the name of their
+    wine; `total` counts them beyond `limit`.
 - `get_wine_shortage`: no parameters; the wines below their target quantity, the largest shortage
   first, with `id`, `name`, `producer`, `color`, `type`, `appellation`, `region`, `country`,
   `targetQuantity`, `inCellar`, `missing` and `averagePrice`.
@@ -2475,10 +2485,11 @@ The tools that read:
 - `get_free_space`: no parameters; `{ "capacity", "bottles", "free", "containers" }`: each container
   by the name the storage page shows, with its totals and its `cases` (`id`, `name`, `capacity`,
   `bottles`, `free`). A case holds its capacity in bottles in the cellar; one that holds more has
-  no room left. The `id` of a case is what `add_bottles` and `move_bottles` take.
+  no room left. The `id` of a case is what `add_bottles`, `move_bottles` and `put_bottles_back`
+  take.
 - `list_choices`: no parameters; `{ "formats", "colors", "types", "classifications", "origins" }`:
-  the `id` and `name` of each row of these lists, sorted by name, for the ids that `add_wine` and
-  `add_bottles` take.
+  the `id` and `name` of each row of these lists, sorted by name, for the ids that `add_wine`,
+  `update_wine`, `add_bottles` and `update_bottles` take.
 - `search_appellations`: finds appellations, for the `appellationId` of `add_wine`.
   - **Parameters:** `query`: string, required, at most 500 characters: words that the appellation,
     its region and its country must all hold between them, capitals and accents aside.
@@ -2505,7 +2516,8 @@ one is not dropped; each one writes all or nothing.
     [bottle fields](#bottle-fields) `vintage`, `optimum`, `originId` (from `list_choices`),
     `purchasePrice`, `purchaseDate`, `barcode` (with `quantity` 1 only) and `notes`.
   - **Answer:** an array of the bottles created, each with `id`, `wineId`, `availability`,
-    `vintage`, `format`, `caseId`, `barcode`, `consumedDate` and `notes`.
+    `vintage`, `optimum`, `format`, `caseId`, `barcode`, `originId`, `purchasePrice`,
+    `purchaseDate`, `currentValue`, `currentValueDate`, `consumedDate` and `notes`.
   - **Refusals:** those of `POST /api/bottles`, such as a case without room for them all.
   - Its description asks the assistant, when the wine is on the wishlist, to ask the user whether
     to remove it with `remove_wish`, as the app asks after the last bottle saved.
@@ -2548,6 +2560,53 @@ one is not dropped; each one writes all or nothing.
     included, or `null`, required: `null` removes the rating. The other fields of the wine stay.
   - **Answer:** the wine as `search_wines` gives it, without `inCellar`, `outOfCellar` and
     `vintages`.
+- `update_wine`: changes the fields given of a wine, as its form in the app does; the others stay.
+  - **Parameters:** `wineId`: string, required; and at least one of the
+    [wine fields](#wine-fields) `name`, `producer`, `appellationId`, `typeId`, `colorId`,
+    `classificationId`, `website`, `description`, `grapeVarieties` (in place of the old ones, `[]`
+    removes them) and `targetQuantity`. `null` removes an optional field; `name`, `appellationId`,
+    `typeId` and `colorId` cannot be removed. `rate_wine` changes the rating; the photos are
+    changed in the app.
+  - **Answer:** the wine as `get_wine` gives it.
+  - **Refusals:** those of [`PUT /api/definitions/{id}`](#put-apidefinitionsid), such as an unknown
+    wine or an id that points at no row.
+- `update_bottles`: gives bottles the same values for the fields given, as
+  [`PATCH /api/bottles`](#patch-apibottles) does; their other fields stay.
+  - **Parameters:** `bottleIds` as for `mark_bottles_drunk`; and at least one of the
+    [bottle fields](#bottle-fields) `purchasePrice`, `purchaseDate`, `currentValue`,
+    `currentValueDate`, `vintage`, `optimum`, `formatId`, `originId` and `barcode` (one bottle
+    only). `null` removes an optional field. The notes, the case and the availability have their
+    own tools.
+  - **Answer:** an array of the bottles changed, as `add_bottles` answers them.
+  - **Refusals:** those of `PATCH /api/bottles`, such as an unknown bottle, a barcode that another
+    bottle has, or one barcode for several bottles.
+- `take_bottles_out`: makes bottles `out_of_cellar`, as the status dialog of the app does. Each
+  keeps its case, which keeps no room for it: `put_bottles_back` can return it there. A bottle
+  `consumed` by mistake loses its `consumedDate`.
+  - **Parameters:** `bottleIds` as above.
+  - **Answer:** an array of the bottles changed, as `add_bottles` answers them.
+  - **Refusals:** those of `PATCH /api/bottles`, such as an unknown bottle.
+- `put_bottles_back`: makes bottles `available` again: taken out, or `consumed` by mistake, which
+  lose their `consumedDate`.
+  - **Parameters:** `bottleIds` as above; `caseId`: string, optional (from `get_free_space`): the
+    case to put them in. Left out, each bottle goes back to the case it kept when it was taken out,
+    as in the status dialog of the app; a bottle that was `consumed` has none.
+  - **Answer:** an array of the bottles changed, as `add_bottles` answers them.
+  - **Refusals:** those of `PATCH /api/bottles`, such as a case without room for them all.
+- `update_wish`: changes the quantity or the note of a wish, as
+  [`PUT /api/wishes/{id}`](#put-apiwishesid) would with the other fields unchanged.
+  - **Parameters:** `wishId`: string, required, from `get_wishlist`; `quantity`: integer 1-10,000,
+    or `null` to remove it; `note`: string of at most 5,000 characters, or `null` to remove it. One
+    of the two is required; the one left out stays.
+  - **Answer:** the wish, as `get_wishlist` gives it.
+  - **Refusals:** an unknown wish.
+- `delete_bottles`: deletes bottles, as [`DELETE /api/bottles/{id}`](#delete-apibottlesid) does for
+  one. It cannot be undone, and the bottles leave the history and the statistics: its annotations
+  say it destroys (`destructiveHint: true`), and its description tells the assistant that marking
+  them drunk or taking them out is usually what the user means, and to ask first.
+  - **Parameters:** `bottleIds` as above.
+  - **Answer:** `{ "deleted": [<bottleId>, …] }`.
+  - **Refusals:** an unknown bottle, which deletes none.
 
 No tool reaches the admin: backups, restore, wipe, imports and the access code stay out of the MCP
 server.

@@ -666,17 +666,22 @@ which `Origin` header it sends, the error format and the size limits.
 ## AI assistants (MCP)
 
 An AI assistant can read your cellar through Cellar's MCP server: « what goes with a roast chicken
-tonight? », « how many Burgundies are left? ». It finds wines, shows a wine with its bottles and
-where they are, finds a bottle by its barcode, and gives the statistics, the wines to buy again, the
-wishlist and the free space in storage. [docs/API.md](docs/API.md#mcp-access) lists the tools.
+tonight? », « how many Burgundies are left? », « what did we drink this month? ». It finds wines,
+shows a wine with its bottles and where they are, finds a bottle by its barcode, lists the bottles
+of the whole cellar by availability and by the day they were drunk or bought, and gives the
+statistics, the wines to buy again, the wishlist and the free space in storage.
+[docs/API.md](docs/API.md#mcp-access) lists the tools.
 
 When you allow changes, it can also write, as you would in the app: « I just bought six bottles of
 this Chablis, put them in rack B », « we drank the 2015 Margaux tonight, with the lamb ». It adds a
-wine and its bottles, marks bottles drunk with the day and a note, moves bottles to another case,
-changes the notes of bottles and the rating of a wine, and adds wines to the wishlist or removes
-them. It never reaches the admin: backups, restore, wipe, imports and the access code stay in the
-app. Most assistants ask you before each change; during a restore or an import, a change is refused
-until it ends.
+wine and its bottles, marks bottles drunk with the day and a note, takes bottles out of the cellar
+and puts them back in a case (which also undoes a « drunk » made by mistake), moves bottles to
+another case, changes a wine (its target quantity, description, producer…), the fields of bottles
+(price, value, vintage, optimum, barcode…) and their notes, rates a wine, adds wishes to the
+wishlist, changes their quantity or note and removes them, and deletes bottles added by mistake, a
+change it announces as one that cannot be undone. It never reaches the admin: backups, restore,
+wipe, imports and the access code stay in the app. Most assistants ask you before each change;
+during a restore or an import, a change is refused until it ends.
 
 1. In Cellar, open Admin › Settings › MCP access and create the token. Copy it: it is shown once.
    It is read-only unless you allow changes there.
@@ -717,6 +722,12 @@ The server speaks Streamable HTTP, without sessions, in the revisions of the pro
 server: an assistant that runs on your network (a local model, a command-line tool, a desktop app)
 reaches it, but an assistant that calls from the internet does not. Do not publish Cellar on the
 internet to get there; use a VPN to your network instead.
+
+This is why the custom connectors of the Claude apps (on the web, on a phone, and the connectors of
+the desktop app) cannot reach it: they call from the internet and expect OAuth sign-in, which
+Cellar does not offer. Use Claude Code, or another client that runs on your network and sends the
+token header, as above; for Claude Desktop, a local bridge such as `mcp-remote` started from its
+configuration file.
 
 ## Health check
 

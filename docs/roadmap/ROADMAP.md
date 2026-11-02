@@ -173,7 +173,7 @@ Revue du code du 2026-10-08, commit `556c7bb`. Ce fichier est la version pour le
 | 1.3.0 | P15 · Navigation, photos et achats | Pour la 1.3.0 (décision « Versions de 1.3.0 à 1.7.0 ») : le menu par sections d’abord, parce que les pages qui suivent s’y rangent, puis les photos d’étiquette et la page Achats, dont les envies réutilisent l’envoi de photo. Lots, chacun mergé avant le suivant, résumé 1.3.0 : 1. UI-28 et FEAT-01 en parallèle (faits le 2026-10-31) (le menu et les photos ne touchent pas les mêmes fichiers) ; 2. FEAT-02, qui a besoin des deux (fait le 2026-11-01) ; 3. DEP-09 ; puis REL-09. Publiée en 1.3.0 le 2026-11-01. Si la phase traîne, la page Achats peut partir d’abord avec des envies en texte seul. | UI-28, FEAT-01, FEAT-02, DEP-09, REL-09 | 5 / 5 |
 | 1.3.1 | P15b · Correctifs de la 1.3.0 | Pour la 1.3.1, avant P16 (décision « Version corrective 1.3.1 ») : UI-31 (fait le 2026-11-01) ; puis REL-14. Publiée en 1.3.1 le 2026-11-01. | UI-31, REL-14 | 2 / 2 |
 | 1.3.2 | P15c · Cartes de vin | Pour la 1.3.2, avant P16 (décisions « Cartes de vin (UI-32) » et « Version corrective 1.3.1 », qui vaut aussi pour la 1.3.2) : UI-32 (fait le 2026-11-01) ; puis REL-15. Publiée en 1.3.2 le 2026-11-01. | UI-32, REL-15 | 2 / 2 |
-| 1.4.0 | P16 · Couleurs et plan de la cave | Pour la 1.4.0 : les couleurs des vins, puis le plan de la cave, qui s’appuie dessus. Ordre : FEAT-10 (vue liste, demandée avec UI-32) ; FEAT-03 ; FEAT-11 (actions MCP, demandées après l’essai d’un utilisateur) ; FEAT-04 ; FEAT-12 (MCP plus complet, demandé après FEAT-11) ; FEAT-13 (deux refus, trouvés pendant FEAT-12) ; puis REL-10. DEP-10 passe après la 1.4.0. | FEAT-10, FEAT-03, FEAT-11, FEAT-04, FEAT-12, FEAT-13, REL-10 | 5 / 7 |
+| 1.4.0 | P16 · Couleurs et plan de la cave | Pour la 1.4.0 : les couleurs des vins, puis le plan de la cave, qui s’appuie dessus. Ordre : FEAT-10 (vue liste, demandée avec UI-32) ; FEAT-03 ; FEAT-11 (actions MCP, demandées après l’essai d’un utilisateur) ; FEAT-04 ; FEAT-12 (MCP plus complet, demandé après FEAT-11) ; FEAT-13 (deux refus, trouvés pendant FEAT-12) ; puis REL-10. DEP-10 passe après la 1.4.0. | FEAT-10, FEAT-03, FEAT-11, FEAT-04, FEAT-12, FEAT-13, REL-10 | 6 / 7 |
 | 1.5.0 | P17 · À boire et dégustation | Pour la 1.5.0 : la vie d’une bouteille jusqu’à ce qu’on la boive. Les deux tâches ajoutent leur repère et leur fiche à la liste d’une case du plan (FEAT-04). Ordre : FEAT-05 et FEAT-06 ; DEP-10 (reportée de la 1.4.0) ; puis REL-11. | FEAT-05, FEAT-06, DEP-10, REL-11 | 0 / 4 |
 | 1.6.0 | P18 · Producteurs et revue de l’import | Pour la 1.6.0 : les producteurs d’abord, parce que la revue de l’import doit savoir relier ou créer un producteur. Ordre : FEAT-07 ; FEAT-08 ; puis REL-12. | FEAT-07, FEAT-08, REL-12 | 0 / 3 |
 | 1.7.0 | P19 · Notifications | Pour la 1.7.0 : les notifications, qui utilisent « À boire » (FEAT-05), le statut hors cave et la vérification des mises à jour. Ordre : FEAT-09 ; puis REL-13. | FEAT-09, REL-13 | 0 / 2 |
@@ -3470,7 +3470,9 @@ Sévérité **évolution** · effort **M** · dépend de FEAT-04 · statut **Fai
 
 ### FEAT-13 · Deux refus qui disent tout : case pleine et référence inconnue
 
-Sévérité **évolution** · effort **S** · dépend de FEAT-12 · statut **À faire**
+Sévérité **évolution** · effort **S** · dépend de FEAT-12 · statut **Fait**
+
+**Suivi** (2026-11-02) : ff00d9a5..73d37adb
 
 **Problème** : Après FEAT-12, deux refus ne donnent pas assez de contexte à un assistant : une case pleine ne donne que son nom, et une référence inconnue ne dit pas quel identifiant manque.
 

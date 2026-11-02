@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { buttonVariants } from '#lib/components/ui/button/index.js';
-import { focusRing, iconButton, quietButton } from './button-states.js';
+import { chosenTile, focusRing, iconButton, quietButton } from './button-states.js';
 
 const variants = ['default', 'secondary', 'destructive', 'outline', 'ghost', 'link'] as const;
 const classesOf = (variant: (typeof variants)[number]) => buttonVariants({ variant }).split(' ');
@@ -44,7 +44,7 @@ describe('the keyboard focus of a button (UI-33)', () => {
     });
 
     it('draws the same ring on the buttons made by hand', () => {
-        for (const classes of [quietButton, iconButton]) {
+        for (const classes of [quietButton, chosenTile, iconButton]) {
             expect(classes.split(' ')).toEqual(expect.arrayContaining(focusRing.split(' ')));
         }
     });

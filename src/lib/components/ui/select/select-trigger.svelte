@@ -14,8 +14,8 @@
     } = $props();
 </script>
 
-<!-- The hover in light mode and the full focus ring differ from the CLI's on purpose (UI-33): keep
-     them when `shadcn add --overwrite` rewrites this file. -->
+<!-- The hover in light mode, no hover while disabled and the full focus ring differ from the CLI's
+     on purpose (UI-33): keep them when `shadcn add --overwrite` rewrites this file. -->
 <SelectPrimitive.Trigger
     bind:ref
     data-slot="select-trigger"

@@ -1,5 +1,6 @@
 import { readFileSync } from 'node:fs';
 import { afterEach, describe, expect, it, vi } from 'vitest';
+import { chosenTile } from '#lib/components/layout/button-states.js';
 import { applyTheme, themes } from './theme-colors.js';
 
 // The inline script of app.html, which colours the page before the app has loaded.
@@ -280,11 +281,26 @@ describe('the contrast of every theme', () => {
                     `text on the ${name} hover`
                 ).toBeGreaterThanOrEqual(4.5);
             }
+            // A chosen tile: a tint of the primary that gets stronger under the pointer
+            const [rest, hovered] = [
+                ...chosenTile.matchAll(/(?:^| )(?:hover:)?bg-primary\/(\d+)/g)
+            ].map(([, percent]) => Number(percent) / 100);
             for (const surface of ['card', 'background']) {
+                const under = srgb(color[`--${surface}`]);
                 expect(
-                    contrast(srgb(color['--accent']), srgb(color[`--${surface}`])),
+                    contrast(srgb(color['--accent']), under),
                     `accent on ${surface}`
                 ).toBeGreaterThanOrEqual(1.15);
+                const primary = srgb(color['--primary']);
+                const tile = tint(primary, under, hovered);
+                expect(
+                    contrast(tint(primary, under, rest), tile),
+                    `chosen tile hover on ${surface}`
+                ).toBeGreaterThanOrEqual(1.2);
+                expect(
+                    contrast(srgb(color['--foreground']), tile),
+                    `text on the chosen tile hover on ${surface}`
+                ).toBeGreaterThanOrEqual(4.5);
             }
         }
     );

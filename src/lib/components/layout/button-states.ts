@@ -14,8 +14,11 @@ export const buttonStates = `${focusRing} transition-colors disabled:pointer-eve
  */
 export const quietButton = `${buttonStates} hover:bg-accent hover:text-accent-foreground`;
 
-/** A chosen tile, as a filled button: its tint gets stronger under the pointer. */
-export const chosenTile = 'bg-primary/10 hover:bg-primary/25';
+/**
+ * A chosen tile, as a filled button: its tint gets stronger under the pointer. Its hints take the
+ * text colour, since grey text falls under 4.5:1 on the stronger tint.
+ */
+export const chosenTile = `${buttonStates} bg-primary/10 hover:bg-primary/30 [&_.text-muted-foreground]:text-foreground`;
 
 /** An icon button: the ghost variant, its icon grey until the pointer is over it. */
 export const iconButton = buttonVariants({

@@ -116,9 +116,14 @@ export const replaceDefinition = (id: string, data: WineDefinitionInput) =>
         return getDefinition(id, tx)!;
     });
 
-/** Gives the wine `rating`, or none with null, and leaves its other fields as they are. */
-export const rateDefinition = (id: string, rating: WineDefinitionInput['rating']) =>
-    changeDefinition(id, { rating });
+/**
+ * Changes the fields of `changes` on the wine and leaves the others as they are. Its photos stay:
+ * replaceDefinition changes them.
+ */
+export const editDefinition = (
+    id: string,
+    changes: Partial<Omit<WineDefinitionInput, 'imageId'>>
+) => changeDefinition(id, changes);
 
 /**
  * Deletes the wine, with its bottles when `withBottles` is set. Without it, throws a ConflictError

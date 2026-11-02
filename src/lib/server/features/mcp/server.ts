@@ -11,6 +11,7 @@ import { debugLogger } from '#lib/server/debug.js';
 import { getStatistics } from '#lib/server/features/bottles/service.js';
 import { apiErrorOf } from '#lib/server/http/handler.js';
 import { runAsWrite } from '#lib/server/write-gate.js';
+import { BottleAvailability } from '#lib/shared/bottle-availability.js';
 import {
     BARCODE_MAX_LENGTH,
     bottleChangesSchema,
@@ -33,15 +34,22 @@ import {
     bottlesByBarcode,
     changeBottleNotes,
     choices,
+    deleteBottles,
+    editBottles,
+    editWine,
+    editWish,
     freeSpace,
+    listBottles,
     markDrunk,
     MAX_APPELLATIONS,
     moveBottles,
     addWish,
+    putBack,
     rateWine,
     removeWishById,
     searchAppellations,
     searchWines,
+    takeOut,
     wineShortages,
     wineWithBottles,
     wishlist
@@ -105,8 +113,18 @@ function answerWrite(tool: string, access: McpAccess, write: () => unknown) {
 
 /** The bottles of a write tool, by the ids that get_wine and find_bottle_by_barcode give. */
 const bottleIds = bulkBottleChangesSchema.shape.ids.describe(
-    'The ids of the bottles, as get_wine or find_bottle_by_barcode give them.'
+    'The ids of the bottles, as get_wine, list_bottles or find_bottle_by_barcode give them.'
 );
+
+/** The most results of a read tool that lists. */
+const limitParam = (what: string) =>
+    z.int().min(1).max(MAX_SEARCH_LIMIT).default(50).describe(`The most ${what} to return.`);
+
+// A tool that changes the fields given makes its arguments partial, but the ids of what it changes:
+// a field that reads nothing as null, such as a producer, would otherwise clear it when left out.
+
+/** Whether a write tool was given something to change besides the ids of what it changes. */
+const changesSomething = (args: object) => Object.keys(args).length > 1;
 
 /** A day of a write tool. */
 const dateParam = (what: string) => optionalDate.describe(`YYYY-MM-DD: ${what}.`);
@@ -145,12 +163,7 @@ function createServer({ authInfo }: McpRequestContext): McpServer {
                     .boolean()
                     .default(false)
                     .describe('Only the wines with at least one bottle in the cellar.'),
-                limit: z
-                    .int()
-                    .min(1)
-                    .max(MAX_SEARCH_LIMIT)
-                    .default(50)
-                    .describe('The most wines to return.')
+                limit: limitParam('wines')
             }),
             annotations: READ_ONLY
         },
@@ -202,6 +215,28 @@ function createServer({ authInfo }: McpRequestContext): McpServer {
     );
 
     server.registerTool(
+        'list_bottles',
+        {
+            title: 'List bottles',
+            description:
+                'The bottles of the whole cellar, each with its wine and where it is, by availability and by day: what was drunk this month, what is out of the cellar, what was bought last year. The latest drunk first, then the latest bought. total counts every bottle found, beyond limit. get_wine gives the bottles of one wine.',
+            inputSchema: z.strictObject({
+                availability: z
+                    .enum(BottleAvailability)
+                    .optional()
+                    .describe('Only the bottles with this availability. Left out, every bottle.'),
+                consumedFrom: dateParam('only the bottles drunk on this day or later'),
+                consumedTo: dateParam('only the bottles drunk on this day or earlier'),
+                purchasedFrom: dateParam('only the bottles bought on this day or later'),
+                purchasedTo: dateParam('only the bottles bought on this day or earlier'),
+                limit: limitParam('bottles')
+            }),
+            annotations: READ_ONLY
+        },
+        (search) => answer('list_bottles', () => listBottles(search))
+    );
+
+    server.registerTool(
         'get_wine_shortage',
         {
             title: 'Wines to buy again',
@@ -228,7 +263,7 @@ function createServer({ authInfo }: McpRequestContext): McpServer {
         {
             title: 'Free space in storage',
             description:
-                'The room left (free) in each case of each storage container, in bottles, with the totals: a case holds its capacity in bottles in the cellar. The id of a case is what add_bottles and move_bottles take.',
+                'The room left (free) in each case of each storage container, in bottles, with the totals: a case holds its capacity in bottles in the cellar. The id of a case is what add_bottles, move_bottles and put_bottles_back take.',
             annotations: READ_ONLY
         },
         () => answer('get_free_space', freeSpace)
@@ -239,7 +274,7 @@ function createServer({ authInfo }: McpRequestContext): McpServer {
         {
             title: 'Lists to choose from',
             description:
-                'The id and name of each bottle format, wine color, wine type, classification and origin (where bottles were bought), for the ids that add_wine and add_bottles take. search_appellations gives the appellations.',
+                'The id and name of each bottle format, wine color, wine type, classification and origin (where bottles were bought), for the ids that add_wine, update_wine, add_bottles and update_bottles take. search_appellations gives the appellations.',
             annotations: READ_ONLY
         },
         () => answer('list_choices', choices)
@@ -451,6 +486,148 @@ function createServer({ authInfo }: McpRequestContext): McpServer {
             annotations: changes(true)
         },
         ({ wineId, rating }) => answerWrite('rate_wine', access, () => rateWine(wineId, rating))
+    );
+
+    const wine = wineDefinitionSchema.shape;
+    server.registerTool(
+        'update_wine',
+        {
+            title: 'Change a wine',
+            description:
+                'Changes the fields given of a wine, as its form in the app does; the others stay, and null removes an optional one. rate_wine changes its rating, and its photos are changed in the app. Answers the wine as get_wine does.',
+            inputSchema: z
+                .strictObject({
+                    wineId: id.describe('The id of the wine, from search_wines.'),
+                    name: wine.name.describe('Its name.'),
+                    producer: wine.producer.describe('Its producer.'),
+                    appellationId: id.describe(
+                        'The id of its appellation, from search_appellations.'
+                    ),
+                    typeId: id.describe('The id of its type, from list_choices.'),
+                    colorId: id.describe('The id of its color, from list_choices.'),
+                    classificationId: optionalId.describe(
+                        'The id of its classification, from list_choices.'
+                    ),
+                    website: wine.website.describe('Its website, an http(s) address.'),
+                    description: wine.description.describe('Its description.'),
+                    grapeVarieties: wine.grapeVarieties
+                        .unwrap()
+                        .describe('Its grapes, in place of the old ones: [] removes them.'),
+                    targetQuantity: wine.targetQuantity.describe(
+                        'How many bottles to keep in the cellar: get_wine_shortage lists the wines below it.'
+                    )
+                })
+                .partial()
+                .required({ wineId: true })
+                .refine(changesSomething, 'Give at least one field to change'),
+            annotations: changes(true)
+        },
+        ({ wineId, ...changes }) =>
+            answerWrite('update_wine', access, () => editWine(wineId, changes))
+    );
+
+    const bottle = bottleChangesSchema.shape;
+    server.registerTool(
+        'update_bottles',
+        {
+            title: 'Change bottles',
+            description:
+                'Gives each bottle the fields given, the same for all; the others stay, and null removes an optional one. All or none. Other changes have their own tools: notes with update_bottle_notes, the case with move_bottles, drunk with mark_bottles_drunk, out of or back in the cellar with take_bottles_out and put_bottles_back.',
+            inputSchema: z
+                .strictObject({
+                    bottleIds,
+                    purchasePrice: bottle.purchasePrice.describe(
+                        'The price of one bottle, in the currency of the owner.'
+                    ),
+                    purchaseDate: dateParam('the day they were bought'),
+                    currentValue: bottle.currentValue.describe(
+                        'What one bottle is worth now, in the currency of the owner.'
+                    ),
+                    currentValueDate: dateParam('the day currentValue was estimated'),
+                    vintage: bottle.vintage.describe(
+                        'Their vintage, a year: 0 or null for a wine without one.'
+                    ),
+                    optimum: bottle.optimum.describe('The year they are at their best.'),
+                    formatId: id.describe('The id of their format, from list_choices.'),
+                    originId: optionalId.describe(
+                        'The id of where they were bought, from list_choices.'
+                    ),
+                    barcode: bottle.barcode.describe(
+                        'The barcode of the label, for a single bottle: no two bottles share one.'
+                    )
+                })
+                .partial()
+                .required({ bottleIds: true })
+                .refine(changesSomething, 'Give at least one field to change'),
+            annotations: changes(true)
+        },
+        ({ bottleIds, ...changes }) =>
+            answerWrite('update_bottles', access, () => editBottles(bottleIds, changes))
+    );
+
+    server.registerTool(
+        'take_bottles_out',
+        {
+            title: 'Take bottles out of the cellar',
+            description:
+                "Takes bottles out of the cellar without drinking them yet, such as a bottle set aside for tonight's dinner or brought to friends: they become out_of_cellar, as in the app's status dialog, and each keeps its case, without taking room in it, for put_bottles_back. A bottle drunk is marked with mark_bottles_drunk. Also undoes mark_bottles_drunk made by mistake for a bottle no longer in the cellar: it loses its consumed date. All or none.",
+            inputSchema: z.strictObject({ bottleIds }),
+            annotations: changes(true)
+        },
+        ({ bottleIds }) => answerWrite('take_bottles_out', access, () => takeOut(bottleIds))
+    );
+
+    server.registerTool(
+        'put_bottles_back',
+        {
+            title: 'Put bottles back in the cellar',
+            description:
+                'Puts bottles back in the cellar (available): those taken out with take_bottles_out, or marked drunk by mistake, which lose their consumed date. caseId puts them in that case; left out, each goes back to the case it was taken out of, and a bottle that was drunk has none. All or none: a case without room for them takes none. move_bottles moves bottles already in the cellar.',
+            inputSchema: z.strictObject({
+                bottleIds,
+                caseId: optionalId.describe('The id of the case, from get_free_space.')
+            }),
+            annotations: changes(true)
+        },
+        ({ bottleIds, caseId }) =>
+            answerWrite('put_bottles_back', access, () => putBack(bottleIds, caseId))
+    );
+
+    server.registerTool(
+        'update_wish',
+        {
+            title: 'Change a wish',
+            description:
+                'Changes how many bottles to buy, or the note, of a wish of the wishlist; its wine or text stays. Answers the wish as get_wishlist does.',
+            inputSchema: z
+                .strictObject({
+                    wishId: id.describe('The id of the wish, from get_wishlist.'),
+                    quantity: wishSchema.shape.quantity.describe(
+                        'How many bottles to buy: null removes it.'
+                    ),
+                    note: wishSchema.shape.note.describe(
+                        'The note, in place of the old one: null removes it.'
+                    )
+                })
+                .partial()
+                .required({ wishId: true })
+                .refine(changesSomething, 'Give quantity, note or both'),
+            annotations: changes(true)
+        },
+        ({ wishId, ...changes }) =>
+            answerWrite('update_wish', access, () => editWish(wishId, changes))
+    );
+
+    server.registerTool(
+        'delete_bottles',
+        {
+            title: 'Delete bottles',
+            description:
+                'Deletes bottles for good, such as bottles added by mistake: this cannot be undone, and they leave the history and the statistics. A bottle drunk is marked with mark_bottles_drunk, and one taken away with take_bottles_out: that is usually what the owner means. Ask the owner first. All or none.',
+            inputSchema: z.strictObject({ bottleIds }),
+            annotations: changes(true)
+        },
+        ({ bottleIds }) => answerWrite('delete_bottles', access, () => deleteBottles(bottleIds))
     );
 
     return server;

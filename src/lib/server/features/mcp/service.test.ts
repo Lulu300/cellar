@@ -15,6 +15,7 @@ import { listBottlesWithDefinitions } from '#lib/server/features/bottles/service
 import { getDefinitionDetails } from '#lib/server/features/catalog/service.js';
 import { createContainer } from '#lib/server/features/storage/service.js';
 import { NotFoundError } from '#lib/server/http/errors.js';
+import { BottleAvailability } from '#lib/shared/bottle-availability.js';
 import { insertBottles, insertWineDefinition } from '../../../../test/wine';
 import {
     addBottles,
@@ -22,14 +23,21 @@ import {
     bottlesByBarcode,
     changeBottleNotes,
     choices,
+    deleteBottles,
+    editBottles,
+    editWine,
+    editWish,
     freeSpace,
+    listBottles,
     markDrunk,
     moveBottles,
     addWish,
+    putBack,
     rateWine,
     removeWishById,
     searchAppellations,
     searchWines,
+    takeOut,
     wineShortages,
     wineWithBottles,
     wishlist
@@ -178,6 +186,59 @@ describe('bottlesByBarcode', () => {
         expect(bottlesByBarcode('CV00000042')[0]).toMatchObject({
             availability: 'consumed',
             wine: { id: margaux, name: 'Château Margaux' }
+        });
+    });
+});
+
+describe('listBottles', () => {
+    const day = (text: string) => new Date(text);
+    const list = (search: Partial<Parameters<typeof listBottles>[0]> = {}) =>
+        listBottles({ limit: 50, ...search });
+    const idsOf = ({ bottles }: { bottles: { id: string }[] }) => bottles.map(({ id }) => id);
+
+    beforeEach(async () => {
+        await insertBottles(margaux, [
+            { id: 'cellar', availability: 'available', purchaseDate: day('2025-03-10') },
+            { id: 'out', availability: 'out_of_cellar', purchaseDate: day('2026-01-05') },
+            {
+                id: 'early',
+                availability: 'consumed',
+                consumedDate: day('2026-10-31'),
+                purchaseDate: day('2024-06-01')
+            },
+            { id: 'late', availability: 'consumed', consumedDate: day('2026-11-01T20:30:00Z') }
+        ]);
+        await insertBottles(barolo, [
+            { id: 'november', availability: 'consumed', consumedDate: day('2026-11-02') }
+        ]);
+    });
+
+    it('lists every bottle of the cellar with its wine, the latest drunk first, then the latest bought', () => {
+        expect(idsOf(list())).toEqual(['november', 'late', 'early', 'out', 'cellar']);
+        expect(list().bottles[0]).toMatchObject({
+            id: 'november',
+            availability: 'consumed',
+            consumedDate: '2026-11-02',
+            wine: { id: barolo, name: 'Cannubi', producer: 'Élevage Côté', color: 'Red' }
+        });
+    });
+
+    it('keeps the bottles of an availability, drunk or bought within the days given, both included', () => {
+        const november = { consumedFrom: day('2026-11-01'), consumedTo: day('2026-11-30') };
+
+        expect(idsOf(list({ availability: BottleAvailability.CONSUMED, ...november }))).toEqual([
+            'november',
+            'late'
+        ]);
+        expect(idsOf(list({ consumedTo: day('2026-10-31') }))).toEqual(['early']);
+        expect(idsOf(list({ purchasedFrom: day('2025-01-01') }))).toEqual(['out', 'cellar']);
+        expect(idsOf(list({ availability: BottleAvailability.OUT_OF_CELLAR }))).toEqual(['out']);
+    });
+
+    it('returns at most `limit` bottles, and counts them all', () => {
+        expect(list({ limit: 2 })).toMatchObject({
+            total: 5,
+            bottles: [{ id: 'november' }, { id: 'late' }]
         });
     });
 });
@@ -429,6 +490,166 @@ describe('changeBottleNotes', () => {
     });
 });
 
+describe('takeOut and putBack', () => {
+    it('take bottles out keeping their case, and put them back there or in the case given', async () => {
+        const { cases } = createContainer({
+            name: 'Rack',
+            cases: ['1', '2'],
+            caseCapacities: [1, 6]
+        });
+        await insertBottles(margaux, [
+            { id: 'a', storageCaseId: cases[0].id },
+            { id: 'b', storageCaseId: cases[0].id, availability: 'out_of_cellar' }
+        ]);
+
+        expect(takeOut(['a'])).toEqual([
+            expect.objectContaining({ id: 'a', availability: 'out_of_cellar', caseId: cases[0].id })
+        ]);
+        // Out of the cellar, a bottle takes no room in its case: the other one goes back there.
+        expect(putBack(['b'], null)).toEqual([
+            expect.objectContaining({ id: 'b', availability: 'available', caseId: cases[0].id })
+        ]);
+        expect(() => putBack(['a'], null)).toThrow(expect.objectContaining({ code: 'case_full' }));
+        expect(putBack(['a'], cases[1].id)).toEqual([
+            expect.objectContaining({ id: 'a', availability: 'available', caseId: cases[1].id })
+        ]);
+    });
+
+    it('undo a drunk made by mistake, without its consumed date', async () => {
+        const { cases } = createContainer({ name: 'Rack', cases: ['1'], caseCapacities: [6] });
+        await insertBottles(margaux, [{ id: 'a' }, { id: 'b' }]);
+        markDrunk(['a', 'b'], new Date('2026-10-30'), null);
+
+        const [back] = putBack(['a'], cases[0].id);
+        const [out] = takeOut(['b']);
+
+        expect(back).toMatchObject({ availability: 'available', caseId: cases[0].id });
+        expect(back).toHaveProperty('consumedDate', null);
+        expect(out).toMatchObject({ availability: 'out_of_cellar', caseId: null });
+        expect(out).toHaveProperty('consumedDate', null);
+    });
+
+    it('change none of the bottles when one does not exist or the case has no room for them', async () => {
+        const { cases } = createContainer({ name: 'Rack', cases: ['1'], caseCapacities: [1] });
+        await insertBottles(margaux, [
+            { id: 'a', availability: 'out_of_cellar' },
+            { id: 'b', availability: 'out_of_cellar' }
+        ]);
+
+        expect(() => takeOut(['a', 'gone'])).toThrow(NotFoundError);
+        expect(() => putBack(['a', 'b'], cases[0].id)).toThrow(
+            expect.objectContaining({ code: 'case_full' })
+        );
+        expect(listBottlesWithDefinitions(margaux).map((bottle) => bottle.availability)).toEqual([
+            'out_of_cellar',
+            'out_of_cellar'
+        ]);
+    });
+});
+
+describe('editBottles', () => {
+    it('gives each bottle the fields given and leaves the others', async () => {
+        await insertBottles(margaux, [
+            { id: 'a', vintage: 2015, purchasePrice: 30, notes: 'Gift' },
+            { id: 'b', vintage: 2016, purchasePrice: 30, barcode: 'CV1' }
+        ]);
+
+        const edited = editBottles(['a', 'b'], {
+            purchasePrice: 45.5,
+            currentValue: 60,
+            optimum: 2030,
+            purchaseDate: new Date('2026-10-01'),
+            barcode: undefined
+        });
+
+        expect(edited).toEqual([
+            expect.objectContaining({
+                id: 'a',
+                vintage: 2015,
+                optimum: 2030,
+                purchasePrice: 45.5,
+                purchaseDate: '2026-10-01',
+                currentValue: 60,
+                notes: 'Gift'
+            }),
+            expect.objectContaining({ id: 'b', vintage: 2016, barcode: 'CV1' })
+        ]);
+        expect(editBottles(['a'], { vintage: null, purchasePrice: null })[0]).toMatchObject({
+            vintage: null,
+            purchasePrice: null
+        });
+    });
+
+    it('refuses a barcode for several bottles, or one another bottle has, changing none', async () => {
+        await insertBottles(margaux, [
+            { id: 'a', barcode: 'CV1', purchasePrice: 30 },
+            { id: 'b', purchasePrice: 30 }
+        ]);
+
+        expect(() => editBottles(['a', 'b'], { barcode: 'CV2' })).toThrow(
+            'A barcode can only be given to a single bottle'
+        );
+        expect(() => editBottles(['b'], { barcode: 'CV1', purchasePrice: 10 })).toThrow(
+            /UNIQUE constraint failed: wine_bottles.barcode/
+        );
+        expect(listBottlesWithDefinitions(margaux).map((bottle) => bottle.purchasePrice)).toEqual([
+            30, 30
+        ]);
+    });
+});
+
+describe('deleteBottles', () => {
+    it('deletes the bottles, or none when one does not exist', async () => {
+        await insertBottles(margaux, [{ id: 'a' }, { id: 'b' }, { id: 'c' }]);
+
+        expect(() => deleteBottles(['a', 'gone'])).toThrow(NotFoundError);
+        expect(listBottlesWithDefinitions(margaux)).toHaveLength(3);
+        expect(deleteBottles(['a', 'b', 'a'])).toEqual({ deleted: ['a', 'b'] });
+        expect(listBottlesWithDefinitions(margaux).map(({ id }) => id)).toEqual(['c']);
+    });
+});
+
+describe('editWine', () => {
+    it('changes the fields given, clears those given null, and leaves the others', () => {
+        const before = getDefinitionDetails(barolo);
+
+        const wine = editWine(barolo, {
+            targetQuantity: 12,
+            description: 'From the Cannubi hill',
+            producer: null,
+            grapeVarieties: ['Nebbiolo', 'Barbera']
+        });
+
+        expect(wine).toMatchObject({
+            id: barolo,
+            name: 'Cannubi',
+            targetQuantity: 12,
+            description: 'From the Cannubi hill',
+            producer: null,
+            grapes: ['Nebbiolo', 'Barbera'],
+            bottles: []
+        });
+        expect(getDefinitionDetails(barolo)).toEqual({
+            ...before,
+            targetQuantity: 12,
+            description: 'From the Cannubi hill',
+            producer: null,
+            grapeVarieties: ['Nebbiolo', 'Barbera'],
+            updatedAt: expect.any(Date)
+        });
+        editWine(barolo, {
+            targetQuantity: before.targetQuantity,
+            description: null,
+            producer: before.producer,
+            grapeVarieties: before.grapeVarieties
+        });
+    });
+
+    it('refuses an unknown wine', () => {
+        expect(() => editWine('nothing', { targetQuantity: 1 })).toThrow(NotFoundError);
+    });
+});
+
 describe('rateWine', () => {
     it('changes the rating of the wine only', () => {
         const before = getDefinitionDetails(barolo);
@@ -482,6 +703,19 @@ describe('the wishlist', () => {
                 }
             }
         ]);
+    });
+
+    it('changes the quantity or the note of a wish, and leaves the rest', () => {
+        const wish = addWish({
+            definitionId: null,
+            text: 'Clos Rougeard',
+            quantity: 2,
+            note: 'Saumur'
+        });
+
+        expect(editWish(wish.id, { quantity: 6 })).toEqual({ ...wish, quantity: 6 });
+        expect(editWish(wish.id, { note: null })).toEqual({ ...wish, quantity: 6, note: null });
+        expect(() => editWish('nothing', { quantity: 1 })).toThrow('Wish not found');
     });
 
     it('refuses a wine twice, and removes a wish', async () => {

@@ -50,6 +50,10 @@ export function deleteBottle(id: string): boolean {
     return db.delete(wineBottles).where(eq(wineBottles.id, id)).run().changes > 0;
 }
 
+export function deleteBottles(ids: string[], tx: Tx): void {
+    tx.delete(wineBottles).where(inArray(wineBottles.id, ids)).run();
+}
+
 /** The name of a format that a bottle just written uses: its foreign key makes it exist. */
 export function formatName(formatId: string, tx: Tx): string {
     const format = tx

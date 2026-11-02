@@ -108,6 +108,7 @@ describe('POST /mcp', () => {
             ['get_wine', true],
             ['find_bottle_by_barcode', true],
             ['get_statistics', true],
+            ['list_bottles', true],
             ['get_wine_shortage', true],
             ['get_wishlist', true],
             ['get_free_space', true],
@@ -120,7 +121,13 @@ describe('POST /mcp', () => {
             ['mark_bottles_drunk', false],
             ['move_bottles', false],
             ['update_bottle_notes', false],
-            ['rate_wine', false]
+            ['rate_wine', false],
+            ['update_wine', false],
+            ['update_bottles', false],
+            ['take_bottles_out', false],
+            ['put_bottles_back', false],
+            ['update_wish', false],
+            ['delete_bottles', false]
         ]);
     });
 
@@ -205,19 +212,33 @@ describe('POST /mcp', () => {
     });
 
     describe('write tools', () => {
-        /** One call of each write tool, on the bottle `bottle`, the case `caseId` and the wish `wish`. */
-        const writes = (bottle: string, caseId: string, wish: string): [string, object][] => [
+        /**
+         * One call of each write tool, on the bottle `bottle`, the case `caseId` and the wish `wish`;
+         * delete_bottles deletes the bottle `spare`.
+         */
+        const writes = (
+            bottle: string,
+            caseId: string,
+            wish: string,
+            spare: string
+        ): [string, object][] => [
             [
                 'add_wine',
                 { name: 'Pavillon Rouge', appellationId: 'mgx', typeId: 'still', colorId: 'red' }
             ],
             ['add_bottles', { wineId: margaux, formatId: 'bottle', quantity: 2, vintage: 2020 }],
             ['add_wish', { text: 'Clos Rougeard', quantity: 2, note: 'For the wedding' }],
+            ['update_wish', { wishId: wish, quantity: 3 }],
             ['remove_wish', { wishId: wish }],
             ['mark_bottles_drunk', { bottleIds: [bottle], note: 'With friends' }],
             ['move_bottles', { bottleIds: [bottle], caseId }],
             ['update_bottle_notes', { bottleIds: [bottle], addedNote: 'Corked' }],
-            ['rate_wine', { wineId: margaux, rating: 2 }]
+            ['rate_wine', { wineId: margaux, rating: 2 }],
+            ['update_wine', { wineId: margaux, targetQuantity: 6 }],
+            ['update_bottles', { bottleIds: [bottle], purchasePrice: 52 }],
+            ['take_bottles_out', { bottleIds: [bottle] }],
+            ['put_bottles_back', { bottleIds: [bottle], caseId }],
+            ['delete_bottles', { bottleIds: [spare] }]
         ];
 
         /** The text of a tool's answer, and whether it is an error. */
@@ -230,7 +251,7 @@ describe('POST /mcp', () => {
         it('refuses each one to a read-only token, saying where to allow it, and writes nothing', async () => {
             const before = listBottlesWithDefinitions();
 
-            for (const [name, args] of writes('none', 'none', 'none')) {
+            for (const [name, args] of writes('none', 'none', 'none', 'none')) {
                 expect(textOf(await modernCall(name, args)), name).toEqual([
                     true,
                     'This MCP token is read-only: changes can be allowed in Cellar, under Admin › Settings › MCP access.'
@@ -244,9 +265,10 @@ describe('POST /mcp', () => {
         it('runs each one for a token that may write, from a 2026-07-28 or a 2025 client', async () => {
             const { cases } = createContainer({ name: 'Shelf', cases: ['1'], caseCapacities: [6] });
             const [bottle] = listBottlesWithDefinitions(margaux);
+            await insertBottles(margaux, [{ id: 'spare' }]);
 
             const wish = createWish(wishSchema.parse({ text: 'Bought already' }));
-            for (const [name, args] of writes(bottle.id, cases[0].id, wish.id)) {
+            for (const [name, args] of writes(bottle.id, cases[0].id, wish.id, 'spare')) {
                 const { result } = await modernCall(name, args, WRITE);
                 expect(result.isError, `${name}: ${result.content[0].text}`).toBeUndefined();
             }
@@ -259,10 +281,13 @@ describe('POST /mcp', () => {
 
             const bottles = listBottlesWithDefinitions(margaux);
             expect(bottles).toHaveLength(3);
-            // Drunk, then moved: a drunk bottle stays out of any case.
+            expect(bottles.map(({ id }) => id)).not.toContain('spare');
+            // Drunk, moved, taken out, then put back in the case: no longer drunk.
             expect(bottles.find(({ id }) => id === bottle.id)).toMatchObject({
-                availability: 'consumed',
-                storageCaseId: null,
+                availability: 'available',
+                storageCaseId: cases[0].id,
+                consumedDate: null,
+                purchasePrice: 52,
                 notes: 'With friends\nCorked'
             });
             const { result } = await modernCall('get_wishlist', {});
@@ -276,6 +301,42 @@ describe('POST /mcp', () => {
             ]);
         });
 
+        it('changes only the fields given, leaving out those a tool may clear with null', async () => {
+            const [bottle] = listBottlesWithDefinitions(margaux);
+            const wish = createWish(wishSchema.parse({ text: 'Clos Rougeard', note: 'Saumur' }));
+            const call = async (name: string, args: object) =>
+                JSON.parse((await modernCall(name, args, WRITE)).result.content[0].text);
+
+            await call('update_wine', { wineId: margaux, description: 'Grand vin', website: null });
+            await call('update_bottles', { bottleIds: [bottle.id], purchaseDate: '2026-10-01' });
+
+            expect(await call('update_wine', { wineId: margaux, targetQuantity: 6 })).toMatchObject(
+                {
+                    description: 'Grand vin',
+                    targetQuantity: 6
+                }
+            );
+            expect(
+                await call('update_bottles', { bottleIds: [bottle.id], purchasePrice: 52 })
+            ).toEqual([
+                expect.objectContaining({
+                    purchaseDate: '2026-10-01',
+                    purchasePrice: 52,
+                    barcode: 'CV0001',
+                    vintage: 2015
+                })
+            ]);
+            expect(await call('update_wish', { wishId: wish.id, quantity: 2 })).toEqual({
+                id: wish.id,
+                text: 'Clos Rougeard',
+                quantity: 2,
+                note: 'Saumur'
+            });
+            expect(
+                await call('update_wine', { wineId: margaux, description: null })
+            ).not.toHaveProperty('description');
+        });
+
         it('says why the cellar refuses a write, without logging it', async () => {
             const errors = vi.spyOn(console, 'error').mockImplementation(() => {});
 
@@ -286,8 +347,36 @@ describe('POST /mcp', () => {
             );
             const unknown = await modernCall('mark_bottles_drunk', { bottleIds: ['gone'] }, WRITE);
 
+            const [bottle] = listBottlesWithDefinitions(margaux);
+            await insertBottles(margaux, [{ id: 'other' }]);
+            const taken = await modernCall(
+                'update_bottles',
+                { bottleIds: ['other'], barcode: bottle.barcode },
+                WRITE
+            );
+            const shared = await modernCall(
+                'update_bottles',
+                { bottleIds: [bottle.id, 'other'], barcode: 'CV0002' },
+                WRITE
+            );
+            const deleted = await modernCall(
+                'delete_bottles',
+                { bottleIds: ['other', 'gone'] },
+                WRITE
+            );
+
             expect(textOf(missing)).toEqual([true, 'An entry it refers to does not exist']);
             expect(textOf(unknown)).toEqual([true, 'No bottle with the id gone']);
+            expect(textOf(taken)).toEqual([
+                true,
+                'This barcode is already assigned to another bottle'
+            ]);
+            expect(textOf(shared)).toEqual([
+                true,
+                'A barcode can only be given to a single bottle'
+            ]);
+            expect(textOf(deleted)).toEqual([true, 'No bottle with the id gone']);
+            expect(listBottlesWithDefinitions(margaux).map(({ id }) => id)).toContain('other');
             expect(errors).not.toHaveBeenCalled();
             errors.mockRestore();
         });
@@ -304,7 +393,20 @@ describe('POST /mcp', () => {
                 ['add_wine', { name: ' ', appellationId: 'mgx', typeId: 'still', colorId: 'red' }],
                 ['add_wish', { wineId: margaux, text: 'Margaux' }],
                 ['add_wish', { quantity: 2 }],
-                ['add_wish', { text: 'Clos Rougeard', quantity: 0 }]
+                ['add_wish', { text: 'Clos Rougeard', quantity: 0 }],
+                ['update_wine', { wineId: margaux }],
+                ['update_wine', { wineId: margaux, name: ' ' }],
+                ['update_wine', { wineId: margaux, colorId: null }],
+                ['update_wine', { wineId: margaux, website: 'not a site' }],
+                ['update_bottles', { bottleIds: ['a'] }],
+                ['update_bottles', { bottleIds: ['a'], purchasePrice: -1 }],
+                ['take_bottles_out', { bottleIds: [] }],
+                ['put_bottles_back', { bottleIds: [] }],
+                ['update_wish', { wishId: 'a' }],
+                ['update_wish', { wishId: 'a', quantity: 0 }],
+                ['delete_bottles', { bottleIds: [] }],
+                ['list_bottles', { availability: 'drunk' }],
+                ['list_bottles', { consumedFrom: 'last month' }]
             ] as const) {
                 const { result } = await modernCall(name, args, WRITE);
                 expect(result.isError, `${name} ${JSON.stringify(args)}`).toBe(true);
@@ -323,7 +425,14 @@ describe('POST /mcp', () => {
             for (const [name, args] of [
                 ['rate_wine', { wineId: margaux, score: 5 }],
                 ['add_bottles', { wineId: margaux, formatId: 'bottle', storageCaseId: 'x' }],
-                ['mark_bottles_drunk', { bottleIds: [before[0].id], notes: 'Typo' }]
+                ['mark_bottles_drunk', { bottleIds: [before[0].id], notes: 'Typo' }],
+                ['update_wine', { wineId: margaux, targetQuantity: 3, rating: 1 }],
+                ['update_bottles', { bottleIds: [before[0].id], purchasePrice: 1, notes: 'Typo' }],
+                ['take_bottles_out', { bottleIds: [before[0].id], caseId: 'x' }],
+                ['put_bottles_back', { bottleIds: [before[0].id], storageCaseId: 'x' }],
+                ['update_wish', { wishId: 'x', quantity: 2, text: 'Typo' }],
+                ['delete_bottles', { bottleIds: [before[0].id], force: true }],
+                ['list_bottles', { status: 'consumed' }]
             ] as const) {
                 const { result } = await modernCall(name, args, WRITE);
                 expect(result.isError, `${name} ${JSON.stringify(args)}`).toBe(true);

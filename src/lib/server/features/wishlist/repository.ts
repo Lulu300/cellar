@@ -40,7 +40,7 @@ export function insertWish(data: WishInput, tx: Tx): Wish {
 }
 
 /** Replaces the fields of the wish; undefined when there is no such wish. */
-export function updateWish(id: string, data: WishInput, tx: Tx): Wish | undefined {
+export function updateWish(id: string, data: Partial<WishInput>, tx: Tx): Wish | undefined {
     return tx
         .update(wishes)
         .set({ ...data, updatedAt: new Date() })

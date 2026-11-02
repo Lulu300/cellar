@@ -1,3 +1,4 @@
+import type { Tx } from '#lib/server/db/connection.js';
 import { db } from '#lib/server/db/index.js';
 import type { WineBottle } from '#lib/server/db/schema.js';
 import { takeNextBarcodes } from '#lib/server/features/barcode/service.js';
@@ -13,6 +14,7 @@ import {
     cellarStatistics,
     countBottlesByAvailability,
     deleteBottle,
+    deleteBottles,
     findBottles,
     formatName,
     insertBottle,
@@ -106,6 +108,22 @@ export function createBottles(data: BottleInput, quantity: number): WineBottleWi
 }
 
 /**
+ * The bottles of `ids`, by id. Throws a NotFoundError naming them when some do not exist, so that a
+ * write of several bottles changes none.
+ */
+function existingBottles(ids: string[], tx: Tx): Map<string, WineBottle> {
+    const found = new Map(findBottles(ids, tx).map((bottle) => [bottle.id, bottle]));
+    const missing = ids.filter((id) => !found.has(id));
+    if (missing.length > 0) {
+        // The message names a few, for the logs; the details name them all, for the client.
+        const named = missing.slice(0, 10).join(', ');
+        const more = missing.length > 10 ? ` and ${missing.length - 10} more` : '';
+        throw new NotFoundError(`No bottle with the id ${named}${more}`, { ids: missing });
+    }
+    return found;
+}
+
+/**
  * Sets the fields of `changes` on each bottle of `ids`, all or none, adds `addedNote` after their
  * notes, and leaves their other fields as they are; returns the bottles changed, once each, in the
  * order of `ids`. Throws, writing nothing:
@@ -123,14 +141,7 @@ export function updateBottles(
     const uniqueIds = [...new Set(ids)];
     checkBarcodeForOneBottle(changes.barcode, uniqueIds.length);
     return db.transaction((tx) => {
-        const found = new Map(findBottles(uniqueIds, tx).map((bottle) => [bottle.id, bottle]));
-        const missing = uniqueIds.filter((id) => !found.has(id));
-        if (missing.length > 0) {
-            // The message names a few, for the logs; the details name them all, for the client.
-            const named = missing.slice(0, 10).join(', ');
-            const more = missing.length > 10 ? ` and ${missing.length - 10} more` : '';
-            throw new NotFoundError(`No bottle with the id ${named}${more}`, { ids: missing });
-        }
+        const found = existingBottles(uniqueIds, tx);
         const writes = uniqueIds.map((id) => ({
             id,
             fields: changesFor(found.get(id)!, changes, addedNote)
@@ -194,6 +205,15 @@ export function updateWineBottle(id: string, changes: BottleChanges): WineBottle
 
 export function deleteWineBottle(id: string): void {
     if (!deleteBottle(id)) throw new NotFoundError('Wine bottle not found');
+}
+
+/** Deletes the bottles of `ids`, all or none: a NotFoundError names those that do not exist. */
+export function deleteBottlesById(ids: string[]): void {
+    const uniqueIds = [...new Set(ids)];
+    db.transaction((tx) => {
+        existingBottles(uniqueIds, tx);
+        deleteBottles(uniqueIds, tx);
+    });
 }
 
 export async function getStatistics() {

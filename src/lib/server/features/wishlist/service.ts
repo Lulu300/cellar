@@ -116,6 +116,12 @@ export async function replaceWish(id: string, input: WishInput) {
     return listedWish(id);
 }
 
+/** Changes the quantity or the note of the wish, and leaves its wine or text and photo as they are. */
+export function changeWish(id: string, changes: Partial<Pick<WishInput, 'quantity' | 'note'>>) {
+    if (!updateWish(id, changes, db)) throw wishNotFound();
+    return listedWish(id);
+}
+
 /** Removes the wish from the wishlist, with its photo unless a wine uses it. */
 export async function removeWish(id: string): Promise<void> {
     await writeWish((tx) => {

@@ -1,5 +1,6 @@
 import {
     createBottles,
+    deleteBottlesById,
     getWineShortages,
     listBottlesWithDefinitions,
     updateBottles,
@@ -7,10 +8,10 @@ import {
 } from '#lib/server/features/bottles/service.js';
 import {
     createDefinition,
+    editDefinition,
     getDefinitionDetails,
     listWines,
     originHandlers,
-    rateDefinition,
     wineClassificationHandlers,
     wineColorHandlers,
     wineFormatHandlers,
@@ -18,11 +19,16 @@ import {
 } from '#lib/server/features/catalog/service.js';
 import { appellationHandlers } from '#lib/server/features/geography/service.js';
 import { storageOverview } from '#lib/server/features/storage/service.js';
-import { createWish, listWishes, removeWish } from '#lib/server/features/wishlist/service.js';
+import {
+    changeWish,
+    createWish,
+    listWishes,
+    removeWish
+} from '#lib/server/features/wishlist/service.js';
 import { findBarcodeMatches } from '#lib/shared/barcode.js';
 import { BottleAvailability } from '#lib/shared/bottle-availability.js';
 import type { BottleWithDefinitionDTO, WineGroupDTO } from '#lib/shared/dto.js';
-import type { BottleInput } from '#lib/shared/schemas/bottle.js';
+import type { BottleChanges, BottleInput } from '#lib/shared/schemas/bottle.js';
 import type { WineDefinitionInput } from '#lib/shared/schemas/wine.js';
 import type { WishInput } from '#lib/shared/schemas/wish.js';
 import { containerLabel } from '#lib/shared/storage.js';
@@ -166,15 +172,9 @@ export function wineWithBottles(id: string) {
     };
 }
 
-/**
- * The bottles of `barcode`, whatever their availability, with their wine: the code as typed, then
- * in other capitals, then the codes that end with it, as the bulk entry finds them.
- */
-export function bottlesByBarcode(barcode: string) {
-    const coded = listBottlesWithDefinitions().filter(
-        (bottle): bottle is BottleWithDefinitionDTO & { barcode: string } => bottle.barcode !== null
-    );
-    return findBarcodeMatches(coded, barcode).map(({ definition, ...bottle }) => ({
+/** A bottle of the whole cellar, with the wine it is a bottle of. */
+function bottleWithWine({ definition, ...bottle }: BottleWithDefinitionDTO) {
+    return {
         ...bottleSummary(bottle),
         wine: {
             id: definition.id,
@@ -183,7 +183,65 @@ export function bottlesByBarcode(barcode: string) {
             color: definition.color,
             type: definition.type
         }
-    }));
+    };
+}
+
+/**
+ * The bottles of `barcode`, whatever their availability, with their wine: the code as typed, then
+ * in other capitals, then the codes that end with it, as the bulk entry finds them.
+ */
+export function bottlesByBarcode(barcode: string) {
+    const coded = listBottlesWithDefinitions().filter(
+        (bottle): bottle is BottleWithDefinitionDTO & { barcode: string } => bottle.barcode !== null
+    );
+    return findBarcodeMatches(coded, barcode).map(bottleWithWine);
+}
+
+/** A day of a search: a bound left out or null sets no limit. */
+type Bound = Date | null | undefined;
+
+export interface BottleSearch {
+    availability?: BottleAvailability;
+    consumedFrom?: Bound;
+    consumedTo?: Bound;
+    purchasedFrom?: Bound;
+    purchasedTo?: Bound;
+    limit: number;
+}
+
+/** Whether `date` falls from `from` to `to`, both days included. */
+function within(date: Date | null, from: Bound, to: Bound): boolean {
+    if (!from && !to) return true;
+    // Compared as days: a date of a bottle is the midnight of its day in UTC, or a time in it.
+    const when = day(date);
+    if (when === null) return false;
+    return (!from || when >= day(from)!) && (!to || when <= day(to)!);
+}
+
+/** Two days, the latest first, a missing one last. */
+const latestFirst = (a: string | null, b: string | null) => (b ?? '').localeCompare(a ?? '');
+
+/**
+ * The bottles of the whole cellar with this availability, drunk and bought within these days, each
+ * with its wine: the latest drunk first, then the latest bought. `total` counts them all, beyond
+ * `limit`.
+ */
+export function listBottles(search: BottleSearch) {
+    const found = listBottlesWithDefinitions()
+        .filter(
+            (bottle) =>
+                (!search.availability || bottle.availability === search.availability) &&
+                within(bottle.consumedDate, search.consumedFrom, search.consumedTo) &&
+                within(bottle.purchaseDate, search.purchasedFrom, search.purchasedTo)
+        )
+        .map(bottleWithWine)
+        .sort(
+            (a, b) =>
+                latestFirst(a.consumedDate, b.consumedDate) ||
+                latestFirst(a.purchaseDate, b.purchaseDate) ||
+                compareText(a.wine.name, b.wine.name)
+        );
+    return { total: found.length, bottles: found.slice(0, search.limit) };
 }
 
 /** The wines below their target quantity, the largest shortage first. */
@@ -278,9 +336,15 @@ function writtenBottle(bottle: WineBottleWithFormat) {
         wineId: bottle.definitionId,
         availability: bottle.availability,
         vintage: bottle.vintage,
+        optimum: bottle.optimum,
         format: bottle.format,
         caseId: bottle.storageCaseId,
         barcode: bottle.barcode,
+        originId: bottle.originId,
+        purchasePrice: bottle.purchasePrice,
+        purchaseDate: day(bottle.purchaseDate),
+        currentValue: bottle.currentValue,
+        currentValueDate: day(bottle.currentValueDate),
         consumedDate: day(bottle.consumedDate),
         notes: bottle.notes
     };
@@ -289,6 +353,15 @@ function writtenBottle(bottle: WineBottleWithFormat) {
 /** Creates the wine, and answers it as get_wine does: without bottles yet. */
 export function addWine(wine: WineDefinitionInput) {
     return wineWithBottles(createDefinition(wine).id);
+}
+
+/** The fields of a wine that edit_wine changes: its photos and its rating have their own ways. */
+export type WineChanges = Partial<Omit<WineDefinitionInput, 'imageId' | 'rating'>>;
+
+/** Changes the fields of `changes` on the wine, and answers it as get_wine does. */
+export function editWine(id: string, changes: WineChanges) {
+    editDefinition(id, changes);
+    return wineWithBottles(id);
 }
 
 /** The fields of the bottles that add_bottles creates: those of a purchase. */
@@ -334,9 +407,57 @@ export function markDrunk(ids: string[], date: Date | null, note: string | null)
     return updateBottles(ids, changes, note).map(writtenBottle);
 }
 
+/**
+ * Takes the bottles out of the cellar, as the status dialog does: each one keeps the case it was
+ * in, which keeps no room for it, and a drunk one loses its consumed date.
+ */
+export function takeOut(ids: string[]) {
+    return updateBottles(ids, { availability: BottleAvailability.OUT_OF_CELLAR }).map(
+        writtenBottle
+    );
+}
+
+/**
+ * Puts the bottles back in the cellar, in the case `caseId`, or when null in the case they were
+ * taken out of, as the status dialog does: a drunk bottle loses its consumed date, and has no case
+ * left to go back to.
+ */
+export function putBack(ids: string[], caseId: string | null) {
+    const changes = {
+        availability: BottleAvailability.AVAILABLE,
+        ...(caseId !== null && { storageCaseId: caseId })
+    };
+    return updateBottles(ids, changes).map(writtenBottle);
+}
+
 /** Puts the bottles in the case: a drunk bottle stays out of any case. */
 export function moveBottles(ids: string[], caseId: string) {
     return updateBottles(ids, { storageCaseId: caseId }).map(writtenBottle);
+}
+
+/** The fields of bottles that edit_bottles changes: those of their purchase and their label. */
+export type BottleEdits = Pick<
+    BottleChanges,
+    | 'purchasePrice'
+    | 'currentValue'
+    | 'currentValueDate'
+    | 'vintage'
+    | 'optimum'
+    | 'purchaseDate'
+    | 'formatId'
+    | 'originId'
+    | 'barcode'
+>;
+
+/** Sets the fields of `changes` on each bottle, all or none, as PATCH /api/bottles does. */
+export function editBottles(ids: string[], changes: BottleEdits) {
+    return updateBottles(ids, changes).map(writtenBottle);
+}
+
+/** Deletes the bottles, all or none, and answers their ids. */
+export function deleteBottles(ids: string[]) {
+    deleteBottlesById(ids);
+    return { deleted: [...new Set(ids)] };
 }
 
 /** Replaces the notes of the bottles when `notes` is given, then adds `addedNote` after them. */
@@ -351,7 +472,7 @@ export function changeBottleNotes(
 
 /** Gives the wine `rating`, or none with null, and answers the wine without its bottles. */
 export function rateWine(id: string, rating: number | null) {
-    rateDefinition(id, rating);
+    editDefinition(id, { rating });
     return wineSummary(getDefinitionDetails(id));
 }
 
@@ -382,6 +503,10 @@ export const wishlist = () => listWishes().map(wishSummary);
 /** Adds a wine of the cellar, or a text, to the wishlist, and answers the wish as wishlist does. */
 export const addWish = (wish: Omit<WishInput, 'imageId'>) =>
     wishSummary(createWish({ ...wish, imageId: null }));
+
+/** Changes the quantity or the note of a wish, and answers it as wishlist does. */
+export const editWish = (id: string, changes: Partial<Pick<WishInput, 'quantity' | 'note'>>) =>
+    wishSummary(changeWish(id, changes));
 
 /** Removes a wish from the wishlist. */
 export async function removeWishById(id: string) {

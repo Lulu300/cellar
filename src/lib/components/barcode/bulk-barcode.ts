@@ -1,5 +1,6 @@
 import { BottleAvailability } from '#lib/shared/bottle-availability.js';
 import type { ListedBottleDTO, WineGroupDTO } from '#lib/shared/dto.js';
+import type { MovedBottle } from '#lib/components/bottles/case-move.js';
 
 /** What the bulk entry reads of a bottle to decide what an action changes on it. */
 export interface BulkBottle {
@@ -69,20 +70,20 @@ function locationChanges(bottle: BulkBottle, availability: string, caseId: strin
 }
 
 /**
- * How many bottles of the checked rows the action that sets `availability` brings into the case
- * `caseId`: those found and kept that end up in the cellar and are not already there.
+ * The checked bottles found, as a move to a case counts them, for the action that sets
+ * `availability`: in the cellar or not, now and after the action.
  */
-export function incomingBottles<B extends BulkBottle>(
+export function movedBottles<B extends BulkBottle>(
     rows: Row<B>[],
-    availability: string,
-    caseId: string
-): number {
-    return rows.filter(
-        (row) =>
-            row.state === 'found' &&
-            row.included &&
-            locationChanges(row.bottle!, availability, caseId)
-    ).length;
+    availability: string
+): MovedBottle[] {
+    return rows
+        .filter((row) => row.state === 'found' && row.included)
+        .map(({ bottle }) => ({
+            caseId: currentCaseId(bottle!),
+            inCellar: bottle!.availability === BottleAvailability.AVAILABLE,
+            inCellarAfter: finalAvailability(bottle!, availability) === BottleAvailability.AVAILABLE
+        }));
 }
 
 /**

@@ -28,7 +28,7 @@
     import {
         computeRows,
         currentCaseId,
-        incomingBottles,
+        movedBottles,
         type BarcodedBottle,
         type Line,
         type Row
@@ -446,7 +446,7 @@
                         <CaseTargetPicker
                             bind:caseId={selectedCaseId}
                             bind:overfilled
-                            incoming={(caseId) => incomingBottles(rows, targetAvailability, caseId)}
+                            bottles={movedBottles(rows, targetAvailability)}
                             label={action === 'move' ? m['bulk.move_location_label']() : undefined}
                             disabled={changes.sending}
                         />

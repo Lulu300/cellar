@@ -7,6 +7,7 @@
     import { Label } from '#lib/components/ui/label/index.js';
     import * as Select from '#lib/components/ui/select/index.js';
     import type { Jsonified, StorageCase } from '#lib/shared/dto.js';
+    import { bottlesComingIn, caseLeft, type MovedBottle } from './case-move.js';
 
     /**
      * The case that bottles move to, chosen among the cases container by container, each with its
@@ -18,8 +19,7 @@
         // An output: the picker sets it, the screen reads it.
         // eslint-disable-next-line no-useless-assignment
         overfilled = $bindable(false),
-        incoming,
-        leaving,
+        bottles,
         label,
         hint,
         disabled = false
@@ -28,10 +28,8 @@
         /** Whether the case chosen has no room for the bottles, which the screen then refuses to
          * send: the bottles chosen, or the free places, may change after the case was chosen. */
         overfilled?: boolean;
-        /** The bottles that a move to the case brings into it, those not already there. */
-        incoming: (caseId: string) => number;
-        /** The case that all the bottles leave, and how many they are. */
-        leaving?: { caseId: string; count: number };
+        /** The bottles that move. */
+        bottles: MovedBottle[];
         label?: string;
         hint?: string;
         disabled?: boolean;
@@ -40,6 +38,8 @@
     const loads = new CaseLoads();
     onMount(() => loads.load());
 
+    const leaving = $derived(caseLeft(bottles));
+    const incoming = (caseId: string) => bottlesComingIn(bottles, caseId);
     const current = $derived(loads.find(leaving?.caseId));
     const target = $derived(loads.find(caseId));
     const fits = (storageCase: Jsonified<StorageCase>) =>

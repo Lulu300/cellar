@@ -13,4 +13,19 @@ describe('ConfirmButtons', () => {
 
         expect(body).toMatch(/>\s*Mise à jour…\s*</);
     });
+
+    // The move dialog refuses a case without room before sending anything (FEAT-04).
+    it('disables Confirm only while the dialog refuses the change', () => {
+        useLocale('en');
+        const buttons = (refused: boolean) =>
+            render(ConfirmButtons, {
+                props: { sending: false, refused, onCancel: () => {}, onConfirm: () => {} }
+            })
+                // The opening tags, their quoted values skipped: a class holds `disabled:` too.
+                .body.match(/<button(?:[^>"]|"[^"]*")*>/g)
+                ?.map((tag) => /\sdisabled(?=[\s=>])/.test(tag)) ?? [];
+
+        expect(buttons(true)).toEqual([false, true]);
+        expect(buttons(false)).toEqual([false, false]);
+    });
 });

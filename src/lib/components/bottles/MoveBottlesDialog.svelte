@@ -6,6 +6,7 @@
         DialogHeader,
         DialogTitle
     } from '#lib/components/ui/dialog/index.js';
+    import { BottleAvailability } from '#lib/shared/bottle-availability.js';
     import { toasts } from '#lib/stores/toast.svelte.js';
     import { BottleChanges } from './bottle-changes.svelte.js';
     import CaseTargetPicker from './CaseTargetPicker.svelte';
@@ -21,7 +22,7 @@
         onSaved,
         onMissing
     }: {
-        bottles: { id: string; storageCase?: { id: string } | null }[];
+        bottles: { id: string; availability: string; storageCase?: { id: string } | null }[];
         onClose: () => void;
         /** After the move, before the dialog closes: the screen reloads its bottles. */
         onSaved: () => Promise<void> | void;
@@ -32,12 +33,13 @@
     let caseId = $state('');
     let overfilled = $state(false);
 
-    // The case they leave, when they all leave the same one
-    const leaving = $derived.by(() => {
-        const first = bottles[0]?.storageCase?.id;
-        const same = first && bottles.every((bottle) => bottle.storageCase?.id === first);
-        return same ? { caseId: first, count: bottles.length } : undefined;
-    });
+    // A move changes no status: a bottle out of the cellar takes no place in its new case.
+    const moved = $derived(
+        bottles.map(({ availability, storageCase }) => {
+            const inCellar = availability === BottleAvailability.AVAILABLE;
+            return { caseId: storageCase?.id ?? null, inCellar, inCellarAfter: inCellar };
+        })
+    );
 
     const changes = new BottleChanges({
         onSaved: async (count) => {
@@ -73,8 +75,7 @@
             <CaseTargetPicker
                 bind:caseId
                 bind:overfilled
-                incoming={(id) => bottles.filter((bottle) => bottle.storageCase?.id !== id).length}
-                {leaving}
+                bottles={moved}
                 label={m['forms.storage_case']()}
                 hint={m['admin.storage_location_hint']()}
                 disabled={changes.sending}

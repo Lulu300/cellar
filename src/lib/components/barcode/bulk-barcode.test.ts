@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import {
     barcodedBottles,
     computeRows,
-    incomingBottles,
+    movedBottles,
     type BulkBottle,
     type Line
 } from './bulk-barcode';
@@ -55,23 +55,30 @@ describe('computeRows', () => {
     });
 });
 
-// The case picker greys a case without room for them, case by case (FEAT-04).
-describe('incomingBottles', () => {
+// The case picker counts what comes into a case from these (FEAT-04).
+describe('movedBottles', () => {
     const lines = [
-        line(bottle({ id: 'in-a' })),
-        line(bottle({ id: 'in-b', storageCaseId: 'case-b' })),
+        line(bottle({ id: 'stored' })),
+        line(bottle({ id: 'out', availability: 'out_of_cellar', storageCaseId: 'case-b' })),
         line(bottle({ id: 'drunk', availability: 'consumed', storageCaseId: null })),
         { ...line(bottle({ id: 'left-out', storageCaseId: null })), included: false }
     ];
     const rows = computeRows(lines, byId(), '', '');
 
-    it('counts the kept bottles that are not in the case yet', () => {
-        expect(incomingBottles(rows, '', 'case-a')).toBe(1);
-        expect(incomingBottles(rows, '', 'case-c')).toBe(2);
+    it('gives the kept bottles with their case, in the cellar now and after the action', () => {
+        expect(movedBottles(rows, '')).toEqual([
+            { caseId: 'case-a', inCellar: true, inCellarAfter: true },
+            { caseId: 'case-b', inCellar: false, inCellarAfter: false },
+            { caseId: null, inCellar: false, inCellarAfter: false }
+        ]);
     });
 
-    it('counts the drunk bottles that the action puts back in the cellar', () => {
-        expect(incomingBottles(rows, 'available', 'case-c')).toBe(3);
+    it('puts in the cellar the bottles that the action puts back', () => {
+        expect(movedBottles(rows, 'available').map((moved) => moved.inCellarAfter)).toEqual([
+            true,
+            true,
+            true
+        ]);
     });
 });
 

@@ -1,11 +1,9 @@
 <script lang="ts">
     import { m } from '#lib/paraglide/messages.js';
-    import { Badge } from '#lib/components/ui/badge/index.js';
     import type { StorageContainerDTO } from '#lib/shared/dto.js';
     import CaseLoad from './CaseLoad.svelte';
+    import ContainerBadge from './ContainerBadge.svelte';
     import EditContainerButton from './EditContainerButton.svelte';
-    import { containerLabel } from '#lib/shared/storage.js';
-    import { containerColor } from './storage.js';
 
     /**
      * The containers side by side, their cases lined up by position: the first case of each on
@@ -39,7 +37,7 @@
 
 {#snippet containerHeader(container: StorageContainerDTO)}
     <div class="flex flex-col items-center gap-1">
-        <Badge class={containerColor(container.name)}>{containerLabel(container.name)}</Badge>
+        <ContainerBadge name={container.name} />
         {#if onEdit}
             <EditContainerButton {container} {onEdit} />
         {/if}

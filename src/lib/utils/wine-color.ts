@@ -1,16 +1,14 @@
 // How a wine colour is drawn: on a storage place, a badge, the stripe of a card and a chart. Any
-// colour the user picks has to stay visible on the light and the dark surfaces, and readable as
-// the background of a badge.
+// colour the user picks has to stay visible on the light and the dark cards, and readable as the
+// background of a badge.
 
 /**
- * The surfaces a colour is drawn on, in sRGB: the card of the light mode, and `--card` of `.dark` in
- * app.css, oklch(0.15 0.035 228). The dark cards of theme-colors.ts, from L 0.13 to 0.15, and the
- * dark page background give an edge drawn for this one at least 3:1 too.
+ * How far the edge of a colour moves towards black in the light mode, and towards white in the
+ * dark mode. The same for every colour, so that every edge differs from its fill alike (the
+ * maintainer's choice, 2026-11-02). With the starting colours, an edge has at least 3.87:1 against
+ * its card.
  */
-const SURFACES = { light: '#ffffff', dark: '#000e17' } as const;
-
-/** The least contrast of a shape with its surface (WCAG 1.4.11). */
-const MIN_CONTRAST = 3;
+const EDGE_AMOUNT = 0.4;
 
 const channels = (hex: string) =>
     [1, 3, 5].map((start) => parseInt(hex.slice(start, start + 2), 16));
@@ -40,20 +38,13 @@ function mix(hex: string, target: string, amount: number): string {
 }
 
 /**
- * The edge of `hex` on a surface: the colour itself when it stands out enough, otherwise the
- * same hue darkened on the light surface or lightened on the dark one until it does. Never the
- * text colour, which would muddy the drawing inside a bottle icon.
+ * The edge of `hex` in each mode: its own hue, darker on the light card and lighter on the dark
+ * one. Never the text colour, which would muddy a small shape.
  */
-export function edgeColor(hex: string, surface: keyof typeof SURFACES): string {
-    const background = SURFACES[surface];
-    const target = surface === 'light' ? '#000000' : '#ffffff';
-    let edge = hex;
-    // In steps of 5 %, as little as needed.
-    for (let step = 1; step <= 20 && contrast(edge, background) < MIN_CONTRAST; step++) {
-        edge = mix(hex, target, step / 20);
-    }
-    return edge;
-}
+export const edgeColors = (hex: string) => ({
+    light: mix(hex, '#000000', EDGE_AMOUNT),
+    dark: mix(hex, '#ffffff', EDGE_AMOUNT)
+});
 
 /** Black or white, whichever reads better on `hex`. */
 export const textColor = (hex: string): string =>
@@ -65,10 +56,11 @@ export const textColor = (hex: string): string =>
  * `--wine-edge` its edge.
  */
 export function wineColorStyle(hex: string): string {
+    const edge = edgeColors(hex);
     return [
         `--wine: ${hex}`,
         `--wine-text: ${textColor(hex)}`,
-        `--wine-edge-light: ${edgeColor(hex, 'light')}`,
-        `--wine-edge-dark: ${edgeColor(hex, 'dark')}`
+        `--wine-edge-light: ${edge.light}`,
+        `--wine-edge-dark: ${edge.dark}`
     ].join('; ');
 }

@@ -1,6 +1,6 @@
 import { render } from 'svelte/server';
 import { describe, expect, it } from 'vitest';
-import { edgeColor } from '#lib/utils/wine-color.js';
+import { edgeColors } from '#lib/utils/wine-color.js';
 import CaseLoad from './CaseLoad.svelte';
 
 const RED = '#7b1e2b';
@@ -35,11 +35,13 @@ describe('CaseLoad', () => {
         }
     });
 
-    // The pale gold of a white wine would vanish on the light card, the deep red on the dark one.
-    it('gives a place the edge of its colour in each mode', () => {
-        const [pale] = places([PALE], 1);
-        expect(pale).toContain(`--wine-edge-light: ${edgeColor(PALE, 'light')}`);
-        expect(pale).toContain(`--wine-edge-dark: ${PALE}`);
-        expect(pale).toContain('text-(--wine-edge)');
+    // The pale gold of a white wine would vanish on the light card, the deep red on the dark one:
+    // every filled place gets the edge of its colour, in both modes.
+    it('gives every filled place the edge of its colour in each mode', () => {
+        for (const [svg, hex] of places([RED, PALE], 2).map((svg, i) => [svg, [RED, PALE][i]])) {
+            expect(svg).toContain(`--wine-edge-light: ${edgeColors(hex).light}`);
+            expect(svg).toContain(`--wine-edge-dark: ${edgeColors(hex).dark}`);
+            expect(svg).toContain('text-(--wine-edge)');
+        }
     });
 });

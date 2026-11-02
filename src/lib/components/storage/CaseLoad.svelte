@@ -1,5 +1,4 @@
 <script lang="ts">
-    import { BottleWine } from '@lucide/svelte';
     import type { StorageContainerDTO } from '#lib/shared/dto.js';
     import { formatNumber, formatPercent } from '#lib/utils/format.js';
     import { wineColorStyle } from '#lib/utils/wine-color.js';
@@ -24,18 +23,28 @@
 </script>
 
 {#snippet icons(size: string)}
-    <!-- A filled place takes the colour of its bottle's wine, drawn with an edge of the same hue
-         where the colour alone would not stand out; an empty place is a faint outline. -->
+    <!-- A plain bottle per place, without the label lines of an icon, which an edge would draw
+         unevenly: a filled place takes the colour of its bottle's wine, edged in the same hue
+         (wine-color.ts); an empty place is a faint outline. -->
     {#each { length: places }, place (place)}
         {@const hex = storageCase.colors[place]}
-        {#if hex}
-            <BottleWine
-                class="wine-color {size} fill-(--wine) text-(--wine-edge)"
-                style={wineColorStyle(hex)}
+        <svg
+            viewBox="0 0 24 24"
+            class={[
+                size,
+                hex ? 'wine-color fill-(--wine) text-(--wine-edge)' : 'text-muted-foreground/40'
+            ]}
+            style={hex ? wineColorStyle(hex) : undefined}
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linejoin="round"
+            aria-hidden="true"
+        >
+            <path
+                d="M10 2h4v4.5c0 1 3 2 3 5.5v9a1 1 0 0 1-1 1H8a1 1 0 0 1-1-1v-9c0-3.5 3-4.5 3-5.5z"
             />
-        {:else}
-            <BottleWine class="{size} text-muted-foreground/40" fill="none" />
-        {/if}
+        </svg>
     {/each}
 {/snippet}
 

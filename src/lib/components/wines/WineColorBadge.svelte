@@ -6,7 +6,8 @@
 
     /**
      * The badge of a wine colour, filled with its colour value, its text black or white, and an
-     * edge of the same hue where the colour alone would not stand out from the card.
+     * edge of the same hue, which keeps a pale badge visible on the light card and a dark one on
+     * the dark card.
      */
     let {
         name,

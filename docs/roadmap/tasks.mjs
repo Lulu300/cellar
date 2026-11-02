@@ -57,6 +57,7 @@ export const versions = [
 	{
 		id: '1.4.0',
 		title: 'Couleurs et plan de la cave',
+		released: '2026-11-02',
 		goal: 'Une vue liste à côté des cartes, une vraie couleur pour chaque couleur de vin, de nouvelles actions pour les assistants (MCP), et la page Stockage qui devient un plan de la cave.'
 	},
 	{
@@ -189,7 +190,7 @@ export const phases = [
 		id: 'P16',
 		version: '1.4.0',
 		title: 'Couleurs et plan de la cave',
-		goal: 'Pour la 1.4.0 : les couleurs des vins, puis le plan de la cave, qui s’appuie dessus. Ordre : FEAT-10 (vue liste, demandée avec UI-32) ; FEAT-03 ; FEAT-11 (actions MCP, demandées après l’essai d’un utilisateur) ; FEAT-04 ; FEAT-12 (MCP plus complet, demandé après FEAT-11) ; FEAT-13 (deux refus, trouvés pendant FEAT-12) ; puis REL-10. DEP-10 passe après la 1.4.0.'
+		goal: 'Pour la 1.4.0 : les couleurs des vins, puis le plan de la cave, qui s’appuie dessus. Ordre : FEAT-10 (vue liste, demandée avec UI-32) ; FEAT-03 ; FEAT-11 (actions MCP, demandées après l’essai d’un utilisateur) ; FEAT-04 ; FEAT-12 (MCP plus complet, demandé après FEAT-11) ; FEAT-13 (deux refus, trouvés pendant FEAT-12) ; puis REL-10. DEP-10 passe après la 1.4.0. Publiée en 1.4.0 le 2026-11-02.'
 	},
 	{
 		id: 'P17',
@@ -2653,7 +2654,8 @@ export const tasks = [
 		why: 'La 1.4.0 apporte aux utilisateurs ce que sa phase a livré.',
 		where: ['releases.json', 'CHANGELOG.md', 'UPGRADING.md'],
 		todo: [
-			'Résumé 1.4.0 complété à chaque tâche ; banc depuis la version précédente ; release selon RELEASING.md, avec le mainteneur.'
+			'Résumé 1.4.0 complété à chaque tâche ; banc depuis la version précédente ; release selon RELEASING.md, avec le mainteneur.',
+			'Fait le 2026-11-02 : le banc apprend les champs ajoutés par la 1.4.0 (`hex`, `colorHex`, et `definition.color` de `/api/bottles/non-consumed`) ; bancs de la 1.3.2 et de la 1.0.0 vers la 1.4.0, 176 sur 176 chacun ; CI 41474340796 verte sur 58fa59cd ; `main` avancée, tag v1.4.0, release 41474951685 verte ; image publique sans connexion (`1.4.0`, `1.4`, `latest`, amd64 et arm64). develop passe à 1.5.0-rc.0 (65f2952e). Sortie sans DEP-10, à la demande du mainteneur.'
 		],
 		done: 'v1.4.0 est publiée sur `main` et son image se télécharge sans connexion ; develop passe à la rc suivante.',
 		deps: ['FEAT-10', 'FEAT-03', 'FEAT-11', 'FEAT-04', 'FEAT-12', 'FEAT-13'], src: ['Décision « Versions après la 1.0 »']

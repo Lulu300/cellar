@@ -1,5 +1,11 @@
 [
   {
+    "version": "1.5.0",
+    "summary": "1.5.0 shows which bottles to drink soon, and keeps a tasting sheet for each bottle drunk.",
+    "mandatoryStop": false,
+    "actions": []
+  },
+  {
     "version": "1.4.1",
     "summary": "1.4.1 makes the buttons react visibly when the pointer is over them, in the light and the dark theme.\n\nEvery kind of button now follows one rule. A filled button, such as the number of bottles on a wine card, darkens in the light theme and lightens in the dark theme. A quiet button, such as the icons of a card, a table header or a storage case, takes the light background of the menus. The ring that shows the button reached with the keyboard is drawn in the full colour of the theme, links included. A disabled button no longer reacts. On the storage page, every container now gets the same neutral name pill: colour there tells the colour of the wines.",
     "mandatoryStop": false,

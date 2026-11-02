@@ -4,9 +4,9 @@
 
 /**
  * How far the edge of a colour moves towards black in the light mode, and towards white in the
- * dark mode. The same for every colour, so that every edge differs from its fill alike (the
- * maintainer's choice, 2026-11-02). With the starting colours, an edge has at least 3.87:1 against
- * its card.
+ * dark mode. The same for every colour, so that every shape gets an edge of its own hue and the
+ * storage page reads evenly. With the starting colours, an edge has at least 3.87:1 against its
+ * card.
  */
 const EDGE_AMOUNT = 0.4;
 

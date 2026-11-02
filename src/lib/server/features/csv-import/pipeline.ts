@@ -226,12 +226,13 @@ function importBottle(record: CsvRecord, bottles: BottleImport, context: Context
     let references = referencedIds('wineBottles', record, context);
     // A consumed bottle keeps the case it was in, without taking a place there, but that case may
     // be gone, or its container: it is then imported in no case rather than refused.
-    const caseGone =
+    const drunkCaseGone =
+        normalized(record.availability) === BottleAvailability.CONSUMED &&
         'failed' in references &&
         references.failed.every(
             (problem) => 'column' in problem && problem.column === 'storageCaseName'
         );
-    if (caseGone && normalized(record.availability) === BottleAvailability.CONSUMED) {
+    if (drunkCaseGone) {
         references = referencedIds('wineBottles', { ...record, storageCaseName: '' }, context);
     }
     if ('failed' in references) return references;

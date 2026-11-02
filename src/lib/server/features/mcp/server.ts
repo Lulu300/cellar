@@ -169,7 +169,7 @@ const wineFields = {
 
 /** Where bottles were bought: only an origin of list_choices, which no tool adds. */
 const originParam = optionalId.describe(
-    'The id of where they were bought, from list_choices. An origin missing from list_choices is left out: the owner adds it in the app, then update_bottles can give it.'
+    'The id of where they were bought, from list_choices. An origin missing from list_choices is left out: the owner adds it in the app, then gives it with update_bottles.'
 );
 
 /** A day of a write tool. */

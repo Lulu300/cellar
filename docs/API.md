@@ -2485,7 +2485,7 @@ The tools that read:
     appellation, region, country or grapes; `inCellarOnly`: boolean, default `false`; `limit`:
     integer from 1 to 200, default 50; `offset`: integer from 0, default 0, how many wines to skip,
     to read past `limit`.
-  - **Answer:** `{ "total", "wines" }`: the wines found, by name, from `offset`, `total` counting
+  - **Answer:** `{ "total", "wines" }`: the wines found, by name then by id, from `offset`, `total` counting
     them all. Each wine has `id`, `name`, `producer`, `color`, `type`, `classification`,
     `appellation`, `region`, `country`, `rating`, `grapes`, its bottles in the cellar (`inCellar`)
     and out of it (`outOfCellar`), and the `vintages` of those in the cellar.
@@ -2516,7 +2516,7 @@ The tools that read:
     skip, to read past `limit`.
   - **Answer:** `{ "total", "bottles" }`: the bottles found, as `find_bottle_by_barcode` gives them,
     each with its `wine`, the latest drunk first, then the latest bought, then by the name of their
-    wine, from `offset`; `total` counts them all.
+    wine, then by id, from `offset`; `total` counts them all.
 - `get_wine_shortage`: no parameters; the wines below their target quantity, the largest shortage
   first, with `id`, `name`, `producer`, `color`, `type`, `appellation`, `region`, `country`,
   `targetQuantity`, `inCellar`, `missing` and `averagePrice`.
@@ -2790,8 +2790,8 @@ container that had none, the cases without `position` keep the order of the vers
 export it: by the number that ends their name.
 
 A `consumed` bottle row keeps the case it names, without taking a place there, when the cellar has
-that case; when it does not, the case may have been deleted since, and the bottle is imported in no
-case rather than refused.
+that case, in the container the row names; when it does not, the case or its container may have
+been deleted since, and the bottle is imported in no case rather than refused.
 
 - **Session:** required.
 - **Body:** multipart form, at most 50 MB in all:

@@ -189,7 +189,7 @@ export const phases = [
 		id: 'P16',
 		version: '1.4.0',
 		title: 'Couleurs et plan de la cave',
-		goal: 'Pour la 1.4.0 : les couleurs des vins, puis le plan de la cave, qui s’appuie dessus. Ordre : FEAT-10 (vue liste, demandée avec UI-32) ; FEAT-03 ; FEAT-11 (actions MCP, demandées après l’essai d’un utilisateur) ; FEAT-04 ; DEP-10 ; puis REL-10.'
+		goal: 'Pour la 1.4.0 : les couleurs des vins, puis le plan de la cave, qui s’appuie dessus. Ordre : FEAT-10 (vue liste, demandée avec UI-32) ; FEAT-03 ; FEAT-11 (actions MCP, demandées après l’essai d’un utilisateur) ; FEAT-04 ; FEAT-12 (MCP plus complet, demandé après FEAT-11) ; DEP-10 ; puis REL-10.'
 	},
 	{
 		id: 'P17',
@@ -334,6 +334,7 @@ export const decisions = [
 	{ topic: 'Icône de la liste d’envies (1.3.1)', choice: 'Le cœur reste libre pour de futurs favoris : la liste d’envies prend le signet de la bibliothèque d’icônes (`Bookmark` de `@lucide/svelte`), en couleur du thème ; vide hors de la liste, plein quand le vin y est. Choix du mainteneur (2026-11-01), à revoir sur les captures si le signet se lit mal.' },
 	{ topic: 'Cartes de vin (UI-32)', choice: 'Choisie sur maquette (https://claude.ai/artifact/9GrYNvpP1LUCF8jfT3Rwze, planche « C3 », 2026-11-01) : la carte devient horizontale, photo en portrait de 100 × 140 px à gauche. Règle de base, à ne jamais rompre : toutes les cartes ont la même taille et chaque élément est au même endroit ; chaque champ tient sur une ligne, la description a deux lignes réservées. Un texte coupé défile au survol (le mainteneur préfère ce mouvement sur les cartes). Le classement, le millésime et le prix sont précédés d’icônes, pas de libellés. La grille garde des cartes de 340 px au moins. Densité estimée sur un écran de 1 920 px : 4 cartes par ligne au lieu de 6, mais 8 cartes entières à l’écran au lieu de 6.' },
 	{ topic: 'Actions MCP (FEAT-11)', choice: 'Un utilisateur a essayé le MCP : il a demandé un vin pour son repas, puis voulu sortir la bouteille de la cave, et seul « marquer bue » existait. Le mainteneur ajoute à la 1.4.0 quatre groupes d’actions : sortir des bouteilles de la cave, les y remettre dans une case et annuler un « bu » fait par erreur ; modifier un vin (quantité cible, description, producteur…) et les champs des bouteilles (prix, valeur, millésime, apogée, code-barres) ; lister les bouteilles de toute la cave par état et par date ; changer la quantité ou la note d’un souhait, et supprimer une bouteille ajoutée par erreur (action destructive, annoncée comme telle au client). L’admin reste hors du MCP. Les applications Claude web et mobile ne l’atteignent pas : leurs connecteurs partent d’Internet et attendent OAuth ; Claude Code et les clients locaux, avec l’en-tête du jeton, fonctionnent (décision du 2026-11-01).' },
+	{ topic: 'MCP le plus complet possible (FEAT-12)', choice: 'Le mainteneur veut que l’assistant qui utilise le MCP ait le plus de contexte possible : les actions, leurs descriptions, la documentation et les erreurs. Une erreur rend donc aussi le détail du refus (les `details` de l’API), et une relecture de tous les outils, du point de vue d’un assistant, complète ce qui manque. Une bouteille marquée bue garde la case où elle était, sans y prendre de place, comme une bouteille hors cave : la remettre en cave la replace dans cette case, et l’assistant comme l’application peuvent dire où elle était. Les bouteilles bues avant la 1.4.0 ont déjà perdu leur case (décision du 2026-11-02).' },
 	{ topic: 'Vue liste (FEAT-10)', choice: 'Choisie sur maquette (planche « D3 ») : une vue liste à côté des cartes, sans défilement (le mainteneur n’en veut pas dans la liste) ; un texte long passe à la ligne. Un sélecteur « Cartes / Liste » sur la page et la vue par défaut dans les préférences. Demandée avec UI-32, placée en tête de la 1.4.0 parce que c’est une nouvelle fonction et non un correctif.' },
 	{ topic: 'Couleurs des vins (FEAT-03)', choice: 'Chaque couleur de vin a une vraie couleur, enregistrée en base ; les couleurs de départ reçoivent celles des étiquettes d’aujourd’hui. Créée depuis un formulaire, une couleur reçoit une teinte par défaut ou neutre ; dans Admin › Data, le sélecteur s’affiche dès la création ou la modification. Choisi sur maquette : sur la page Stockage, chaque place occupée prend la couleur de son vin ; les camemberts des statistiques prennent les vraies couleurs ; la liste des vins garde l’étiquette, colorée, et ajoute une bande à gauche de la carte ; les listes de bouteilles montrent l’étiquette colorée à côté du nom du vin. Pas de carte teintée (décision du 2026-10-31). Précisé le 2026-11-01 : les couleurs de départ sont les teintes de vin de la maquette (Rouge #7b1e2b, Blanc #ead98b, Rosé #f2a08c, Jaune #d4952a, N/A #9ca3af) ; une couleur créée depuis un formulaire reçoit le gris de N/A, sauf un nom reconnu, qui reprend sa teinte de départ. Changé le 2026-11-02, sur captures : le contour « seulement quand le contraste manque » donnait des bouteilles avec contour, d’autres sans, et un orange entre les deux, ce que le mainteneur refuse ; toute couleur reçoit désormais le même contour, dans sa propre teinte mêlée de 40 % de noir en clair et de 40 % de blanc en sombre, sur le stockage (une silhouette de bouteille sans étiquette ; une place vide est la même silhouette en contour), les étiquettes, la bande des cartes et la légende des statistiques. Une couleur choisie par l’utilisateur peut avoir un contour sous 3:1 (le blanc pur en clair : 2,85:1) : accepté.' },
 	{ topic: 'Plan de la cave (FEAT-04)', choice: 'La page Stockage devient le plan : un clic sur une case ouvre la liste de ses bouteilles (vin, millésime, couleur), d’où l’on ouvre une bouteille, la marque bue ou la déplace ; on en coche plusieurs puis « Déplacer vers… » une autre case, sans glisser-déposer. Une case reste un bac, sans place précise. La page d’un vin a un bouton « Voir dans la cave », qui met en évidence les cases où il est. La disposition des conteneurs ne change pas (décision du 2026-10-31).' },
@@ -2614,6 +2615,19 @@ export const tasks = [
 		deps: ['FEAT-11'], src: ['Décision « Plan de la cave (FEAT-04) »']
 	},
 	{
+		id: 'FEAT-12', phase: 'P16', size: 'M', sev: 'evolution',
+		title: 'Un MCP plus complet : erreurs détaillées, descriptions relues, case d’une bouteille bue',
+		why: 'Après FEAT-11, une erreur du MCP ne rend que son message : avec plus de 10 bouteilles inconnues, l’assistant ne sait pas lesquelles retirer. Une bouteille marquée bue perd sa case : pour annuler un « bu », ni l’assistant ni l’application ne savent où elle était.',
+		where: ['src/lib/server/features/mcp/', 'src/lib/server/features/bottles/', 'src/lib/components/bottles/', 'docs/API.md', 'README-Docker.md'],
+		todo: [
+			'Décision « MCP le plus complet possible (FEAT-12) ». Erreurs : `answer()` de `src/lib/server/features/mcp/server.ts` ajoute les `details` du refus au texte (`not_found` et ses `ids`, `notes_too_long`, `duplicate_wish` et son `wishId`) ; API.md le dit.',
+			'Relecture de chaque outil (nom, description, paramètres, réponses, refus) du point de vue d’un assistant qui ne connaît pas Cellar : ce qu’il faut appeler avant, ce qui ne peut pas s’annuler, l’outil voisin à préférer. Un outil qui manque encore est proposé au mainteneur, pas ajouté d’office.',
+			'Une bouteille bue garde sa case (`withConsumptionRule` de `src/lib/server/features/bottles/service.ts`), sans y compter, comme une bouteille hors cave ; `put_bottles_back` sans `caseId` la remet dans cette case ; le dialogue de statut de l’application propose cette case quand on remet une bouteille bue en cave. Vérifier chaque compte et chaque liste des cases (stockage, plan de FEAT-04, place libre, suppression d’une case).'
+		],
+		done: 'Une erreur du MCP donne au client la liste complète des bouteilles en cause ; chaque description d’outil est relue et la documentation suit ; une bouteille bue par erreur revient dans sa case, depuis le MCP comme depuis l’application, sans changer les comptes des cases ; testé.',
+		deps: ['FEAT-04'], src: ['Décision « MCP le plus complet possible (FEAT-12) »', 'Trouvé pendant FEAT-11']
+	},
+	{
 		id: 'DEP-10', phase: 'P16', size: 'S', sev: 'mineur',
 		title: 'Revue des dépendances d’avant la 1.4.0',
 		why: 'Ce que DEP-09 n’a pas pu prendre, la 1.3.0 étant publiée avant que les correctifs soient éligibles (choix du mainteneur) : node 24.22.2, SvelteKit, adapter-node, Paraglide, minimatch 11 et la suite.',
@@ -2633,7 +2647,7 @@ export const tasks = [
 			'Résumé 1.4.0 complété à chaque tâche ; banc depuis la version précédente ; release selon RELEASING.md, avec le mainteneur.'
 		],
 		done: 'v1.4.0 est publiée sur `main` et son image se télécharge sans connexion ; develop passe à la rc suivante.',
-		deps: ['FEAT-03', 'FEAT-04', 'DEP-10'], src: ['Décision « Versions après la 1.0 »']
+		deps: ['FEAT-10', 'FEAT-03', 'FEAT-11', 'FEAT-04', 'FEAT-12', 'DEP-10'], src: ['Décision « Versions après la 1.0 »']
 	},
 	// ───────── P17 À boire et dégustation
 	{

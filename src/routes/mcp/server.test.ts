@@ -437,7 +437,10 @@ describe('POST /mcp', () => {
                 WRITE
             );
 
-            expect(textOf(missing)).toEqual([true, 'An entry it refers to does not exist']);
+            expect(textOf(missing)).toEqual([
+                true,
+                'An entry it refers to does not exist (formatId magnum)\nDetails: [{"field":"formatId","id":"magnum"}]'
+            ]);
             expect(textOf(unknown)).toEqual([
                 true,
                 'No bottle with the id gone\nDetails: {"ids":["gone"]}'
@@ -510,6 +513,66 @@ describe('POST /mcp', () => {
                 detailsOf(await modernCall('add_wish', { wineId: margaux, quantity: 2 }, WRITE))
             ).toEqual(['This wine is already on the wishlist', { wishId: wish.id }]);
             await modernCall('update_bottle_notes', { bottleIds: [bottle.id], notes: null }, WRITE);
+        });
+
+        // FEAT-13: which id is unknown, and the id of a full case, for the assistant to act on.
+        it('names an unknown reference, and the case that has no room', async () => {
+            const detailsOf = ({ result }: { result: CallResult }) => {
+                expect(result.isError).toBe(true);
+                const [, details] = result.content[0].text.split('\nDetails: ');
+                return JSON.parse(details);
+            };
+            const purchase = { wineId: margaux, formatId: 'bottle', quantity: 1 };
+            const [bottle] = listBottlesWithDefinitions(margaux);
+
+            expect(
+                detailsOf(
+                    await modernCall(
+                        'add_bottles',
+                        { ...purchase, formatId: 'nebuchadnezzar' },
+                        WRITE
+                    )
+                )
+            ).toEqual([{ field: 'formatId', id: 'nebuchadnezzar' }]);
+            expect(
+                detailsOf(
+                    await modernCall('add_bottles', { ...purchase, originId: 'market' }, WRITE)
+                )
+            ).toEqual([{ field: 'originId', id: 'market' }]);
+            // Named as the tools name them, not as the API does (definitionId, storageCaseId).
+            const misnamed = await modernCall(
+                'add_bottles',
+                { ...purchase, wineId: 'no-wine', caseId: 'no-case' },
+                WRITE
+            );
+            expect(textOf(misnamed)).toEqual([
+                true,
+                'An entry it refers to does not exist (wineId no-wine, caseId no-case)\nDetails: [{"field":"wineId","id":"no-wine"},{"field":"caseId","id":"no-case"}]'
+            ]);
+            expect(
+                detailsOf(
+                    await modernCall(
+                        'move_bottles',
+                        { bottleIds: [bottle.id], caseId: 'no-case' },
+                        WRITE
+                    )
+                )
+            ).toEqual([{ field: 'caseId', id: 'no-case' }]);
+            expect(
+                detailsOf(await modernCall('add_wish', { wineId: 'no-wine', quantity: 1 }, WRITE))
+            ).toEqual([{ field: 'wineId', id: 'no-wine' }]);
+
+            const { cases } = createContainer({ name: 'Tiny', cases: ['1'], caseCapacities: [1] });
+            await insertBottles(margaux, [{ id: 'resident', storageCaseId: cases[0].id }]);
+            expect(
+                detailsOf(
+                    await modernCall(
+                        'move_bottles',
+                        { bottleIds: [bottle.id], caseId: cases[0].id },
+                        WRITE
+                    )
+                )
+            ).toEqual({ caseId: cases[0].id, caseName: 'Tiny1', capacity: 1, bottles: 2 });
         });
 
         it('checks the arguments with the rules of the API', async () => {

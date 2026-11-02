@@ -7,6 +7,7 @@ import {
     type ToolAnnotations
 } from '@modelcontextprotocol/server';
 import { z } from 'zod';
+import { MissingReferenceError } from '#lib/server/db-errors.js';
 import { debugLogger } from '#lib/server/debug.js';
 import { getStatistics } from '#lib/server/features/bottles/service.js';
 import { apiErrorOf } from '#lib/server/http/handler.js';
@@ -63,7 +64,7 @@ const INSTRUCTIONS = `Cellar manages a home wine cellar. A wine (name, producer,
 
 The tools that change the cellar run only when its owner allowed changes for this token, and each one writes all or nothing. They take the ids that the other tools give: a wine from search_wines, a bottle from get_wine, list_bottles or find_bottle_by_barcode, a case from get_free_space, a format, color, type, classification or origin from list_choices, an appellation from search_appellations, a wish from get_wishlist. A bottle drunk is marked with mark_bottles_drunk, one taken away without being drunk with take_bottles_out; delete_bottles is only for bottles added by mistake.
 
-A call that Cellar refuses answers why, then, when there is more to know, a line "Details: " followed by JSON: every unknown id, the bottles whose notes would be too long, the wish already there, or the name, capacity and bottles of a case without room.`;
+A call that Cellar refuses answers why, then, when there is more to know, a line "Details: " followed by JSON: every unknown id (for an id that refers to nothing, the parameter that gave it, such as formatId or caseId), the bottles whose notes would be too long, the wish already there, or the id, name, capacity and bottles of a case without room.`;
 
 /** A tool that only reads: the client may call it without asking. */
 const READ_ONLY: ToolAnnotations = { readOnlyHint: true, openWorldHint: false };
@@ -96,6 +97,23 @@ function refusalText({ message, details }: { message: string; details?: unknown 
     return details === undefined ? message : `${message}\nDetails: ${JSON.stringify(details)}`;
 }
 
+/** The parameters of the tools that the API names otherwise. */
+const PARAMETER_OF_FIELD: Record<string, string> = {
+    definitionId: 'wineId',
+    storageCaseId: 'caseId'
+};
+
+/**
+ * The refusal that the assistant reads: an unknown reference is named by the parameter it gave,
+ * wineId rather than the API's definitionId.
+ */
+function toolRefusal<Refusal extends Error>(refusal: Refusal): Refusal | MissingReferenceError {
+    if (!(refusal instanceof MissingReferenceError)) return refusal;
+    return new MissingReferenceError(
+        refusal.missing.map(({ field, id }) => ({ field: PARAMETER_OF_FIELD[field] ?? field, id }))
+    );
+}
+
 /**
  * The answer of a tool: what `read` returns as JSON, or the error to show the assistant. An error
  * that the API would answer, such as an unknown wine or a full case, and the refusal of a read-only
@@ -108,7 +126,10 @@ async function answer(tool: string, read: () => unknown): Promise<CallToolResult
     } catch (error) {
         const refusal = error instanceof ReadOnlyTokenError ? error : apiErrorOf(error, 'POST');
         if (refusal)
-            return { isError: true, content: [{ type: 'text', text: refusalText(refusal) }] };
+            return {
+                isError: true,
+                content: [{ type: 'text', text: refusalText(toolRefusal(refusal)) }]
+            };
         console.error(`MCP tool ${tool} failed:`, error);
         return { isError: true, content: [{ type: 'text', text: 'Internal server error' }] };
     }

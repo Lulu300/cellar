@@ -63,6 +63,7 @@ export const versions = [
 	{
 		id: '1.4.1',
 		title: 'Survol des boutons',
+		released: '2026-11-02',
 		goal: 'Un survol lisible sur chaque bouton, en clair comme en sombre, à commencer par le nombre de bouteilles des cartes de vin, avec une règle commune à tous les boutons.'
 	},
 	{
@@ -201,7 +202,7 @@ export const phases = [
 		id: 'P16b',
 		version: '1.4.1',
 		title: 'Survol des boutons',
-		goal: 'Pour la 1.4.1, avant P17 (décision « Version corrective 1.4.1 ») : UI-33 ; puis REL-16.'
+		goal: 'Pour la 1.4.1, avant P17 (décision « Version corrective 1.4.1 ») : UI-33 ; puis REL-16. Publiée en 1.4.1 le 2026-11-02.'
 	},
 	{
 		id: 'P17',
@@ -2696,7 +2697,8 @@ export const tasks = [
 		why: 'La 1.4.1 apporte le survol corrigé sans attendre la 1.5.0.',
 		where: ['releases.json', 'CHANGELOG.md', 'UPGRADING.md', 'package.json'],
 		todo: [
-			'Résumé 1.4.1 ; bancs depuis la 1.4.0 et la 1.0.0 ; release selon RELEASING.md ; puis develop repasse à 1.5.0-rc.0 avec l’entrée 1.5.0 de `releases.json`.'
+			'Résumé 1.4.1 ; bancs depuis la 1.4.0 et la 1.0.0 ; release selon RELEASING.md ; puis develop repasse à 1.5.0-rc.0 avec l’entrée 1.5.0 de `releases.json`.',
+			'Fait le 2026-11-02 : bancs de la 1.4.0 et de la 1.0.0 vers la 1.4.1, 176 sur 176 chacun, sans changer le banc ; CI 41511510998 verte sur 499ff1fc ; `main` avancée, tag v1.4.1, release 41512097830 verte ; image publique sans connexion (`1.4.1`, `1.4`, `latest`, amd64 et arm64). develop repasse à 1.5.0-rc.0 (dd6d437c) avec l’entrée 1.5.0 gardée.'
 		],
 		done: 'v1.4.1 est publiée sur `main` et son image se télécharge sans connexion ; develop repasse à 1.5.0-rc.0.',
 		deps: ['UI-33'], src: ['Décision « Version corrective 1.4.1 »']

@@ -2,28 +2,26 @@
     import { onMount, type ComponentProps } from 'svelte';
     import { invalidate } from '$app/navigation';
     import { SvelteSet } from 'svelte/reactivity';
-    import { ArrowRightLeft, EllipsisVertical, SquarePen, Wine } from '@lucide/svelte';
+    import { ArrowRightLeft, CalendarClock } from '@lucide/svelte';
     import { request } from '#lib/api/client.js';
     import { bottleName } from '#lib/components/bottles/bottle-table.js';
     import BottleChangeDialogs from '#lib/components/bottles/BottleChangeDialogs.svelte';
     import { BottleDialogs, whenLoggedIn } from '#lib/components/bottles/bottle-dialogs.svelte.js';
+    import BottleRowMenu from '#lib/components/bottles/BottleRowMenu.svelte';
     import BottleTable from '#lib/components/bottles/BottleTable.svelte';
     import WineBottleDialog from '#lib/components/bottles/WineBottleDialog.svelte';
     import ScrollingDialogContent from '#lib/components/layout/ScrollingDialogContent.svelte';
     import { Button } from '#lib/components/ui/button/index.js';
     import { Dialog } from '#lib/components/ui/dialog/index.js';
-    import * as DropdownMenu from '#lib/components/ui/dropdown-menu/index.js';
     import { m } from '#lib/paraglide/messages.js';
     import { CELLAR } from '#lib/shared/dependencies.js';
     import type { BottleWithDefinitionDTO, Jsonified } from '#lib/shared/dto.js';
     import { sortBottles, type BottleSort } from '#lib/utils/bottle-sort.js';
-    import { iconButton } from '#lib/components/layout/button-states.js';
-    import { cn } from '#lib/utils.js';
 
     type Bottle = Jsonified<BottleWithDefinitionDTO>;
 
     /**
-     * The bottles that a case holds, to open, mark drunk or move, one or several at a time. The
+     * The bottles that a case holds, to open, mark drunk, move or date, one or several at a time. The
      * storage page mounts it to open it, and unmounts it on `onClose`.
      */
     let {
@@ -77,35 +75,14 @@
 </script>
 
 {#snippet actions(bottle: Bottle)}
-    <DropdownMenu.Root>
-        <DropdownMenu.Trigger
-            class={cn(iconButton, 'size-8')}
-            title={m['bottles.actions_for']({ name: bottleName(bottle) })}
-            aria-label={m['bottles.actions_for']({ name: bottleName(bottle) })}
-        >
-            <EllipsisVertical class="h-4 w-4" aria-hidden="true" />
-        </DropdownMenu.Trigger>
-        <DropdownMenu.Content align="end" class="w-auto outline-none">
-            <DropdownMenu.Item onSelect={() => whenLoggedIn(() => (dialogs.status = [bottle]))}>
-                <Wine aria-hidden="true" />
-                {m['bottles.mark_drunk']()}
-            </DropdownMenu.Item>
-            <DropdownMenu.Item onSelect={() => whenLoggedIn(() => (dialogs.moving = [bottle]))}>
-                <ArrowRightLeft aria-hidden="true" />
-                {m['bottles.move']()}
-            </DropdownMenu.Item>
-            <DropdownMenu.Item
-                onSelect={() =>
-                    whenLoggedIn(() => {
-                        editingBottle = bottle;
-                        showEditDialog = true;
-                    })}
-            >
-                <SquarePen aria-hidden="true" />
-                {m['forms.edit_wine_bottle']()}
-            </DropdownMenu.Item>
-        </DropdownMenu.Content>
-    </DropdownMenu.Root>
+    <BottleRowMenu
+        {bottle}
+        {dialogs}
+        onEdit={(bottle) => {
+            editingBottle = bottle;
+            showEditDialog = true;
+        }}
+    />
 {/snippet}
 
 <!-- Outside the scrolling list, and wrapping: the move stays in view on a narrow screen. -->
@@ -118,8 +95,16 @@
             {m['common.clear_selection']()}
         </Button>
         <Button
+            variant="outline"
             size="sm"
             class="ml-auto"
+            onclick={() => (dialogs.dating = bottles.filter(({ id }) => selected.has(id)))}
+        >
+            <CalendarClock class="h-4 w-4" aria-hidden="true" />
+            {m['drinking.drink_before']()}
+        </Button>
+        <Button
+            size="sm"
             onclick={() => (dialogs.moving = bottles.filter(({ id }) => selected.has(id)))}
         >
             <ArrowRightLeft class="h-4 w-4" aria-hidden="true" />
@@ -162,8 +147,11 @@
 </Dialog>
 
 <BottleChangeDialogs {dialogs}>
-    {#snippet children([bottle])}
-        <p class="text-sm text-muted-foreground">{bottleName(bottle)}</p>
+    <!-- The bottle of a row's menu; several ticked ones are counted by the dialog itself. -->
+    {#snippet children(chosen)}
+        {#if chosen.length === 1}
+            <p class="text-sm text-muted-foreground">{bottleName(chosen[0])}</p>
+        {/if}
     {/snippet}
 </BottleChangeDialogs>
 

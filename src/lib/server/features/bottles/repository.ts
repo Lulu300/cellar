@@ -206,6 +206,7 @@ export function listBottlesNotConsumed() {
             id: bottle.id,
             vintage: bottle.vintage,
             optimum: bottle.optimum,
+            drinkBefore: bottle.drinkBefore,
             formatId: bottle.formatId,
             format: wine_formats.name,
             purchasePrice: bottle.purchasePrice,

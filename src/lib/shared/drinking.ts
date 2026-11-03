@@ -83,3 +83,42 @@ export function compareDrinking(a: DrinkingDates, b: DrinkingDates, now: Month):
     const rankB = RANK_ORDER.indexOf(drinkingRank(b, now)!);
     return rankA - rankB || monthNumber(deadline(a)!) - monthNumber(deadline(b)!);
 }
+
+/** How far ahead the storage marker looks, a preference of the browser. */
+export const DrinkingHorizon = {
+    /** The late bottles and this month's. */
+    THIS_MONTH: 'this_month',
+    /** The bottles to drink soon, as the banner of the wine list counts them. */
+    THIS_YEAR: 'this_year',
+    /** Those, and the bottles due next year. */
+    NEXT_YEAR: 'next_year',
+    /** Those, and the bottles due the year after. */
+    TWO_YEARS: 'two_years'
+} as const;
+
+export type DrinkingHorizon = (typeof DrinkingHorizon)[keyof typeof DrinkingHorizon];
+
+const YEARS_AHEAD: Record<DrinkingHorizon, number> = {
+    this_month: 0,
+    this_year: 0,
+    next_year: 1,
+    two_years: 2
+};
+
+/**
+ * The rank of the bottle when it is to drink within `horizon` in the month `now`, null otherwise:
+ * a later bottle counts when its deadline falls within the years of the horizon.
+ */
+export function rankWithin(
+    bottle: DrinkingDates,
+    horizon: DrinkingHorizon,
+    now: Month
+): DrinkingRank | null {
+    const rank = drinkingRank(bottle, now);
+    if (rank === null) return null;
+    if (horizon === DrinkingHorizon.THIS_MONTH) {
+        return rank === DrinkingRank.LATE || rank === DrinkingRank.THIS_MONTH ? rank : null;
+    }
+    if (rank !== DrinkingRank.LATER) return rank;
+    return deadline(bottle)!.year <= now.year + YEARS_AHEAD[horizon] ? rank : null;
+}

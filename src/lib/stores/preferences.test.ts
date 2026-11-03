@@ -43,7 +43,8 @@ describe('preferences', () => {
     it('falls back to the defaults for missing or unknown values', async () => {
         stored.set('wine-cellar-theme', 'toString');
         stored.set('wine-cellar-theme-mode', 'sepia');
-        stored.set('wine-cellar-wine-list-view', 'table');
+        stored.set('wine-cellar-wine-list-view', 'later');
+        stored.set('wine-cellar-drinking-horizon', 'ten_years');
 
         const preferences = await loadPreferences();
         expect(preferences.theme).toBe('blue');
@@ -52,6 +53,17 @@ describe('preferences', () => {
         expect(preferences.wineListView).toBe('cards');
         expect(preferences.storageViewMode).toBe('table');
         expect(preferences.containersAsColumns).toBe(true);
+        expect(preferences.drinkingHorizon).toBe('this_year');
+        expect(preferences.showDrinkingMarker).toBe(false);
+    });
+
+    it('reads the horizon and the marker of the bottles to drink', async () => {
+        stored.set('wine-cellar-drinking-horizon', 'two_years');
+        stored.set('wine-cellar-drinking-marker', 'true');
+
+        const preferences = await loadPreferences();
+        expect(preferences.drinkingHorizon).toBe('two_years');
+        expect(preferences.showDrinkingMarker).toBe(true);
     });
 
     it('follows the system in the system mode', async () => {

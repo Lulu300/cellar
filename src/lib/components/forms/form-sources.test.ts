@@ -10,6 +10,7 @@ const bottle: BottleFormSource = {
     formatId: 'bottle',
     vintage: 2015,
     optimum: null,
+    drinkBefore: '2027-03',
     purchasePrice: 12.5,
     // Stored with a time, which the form cannot show
     purchaseDate: new Date('2025-03-01T18:30:00Z'),
@@ -30,8 +31,10 @@ describe('bottleFormValues', () => {
             purchasePrice: '12.5',
             purchaseDate: '2025-03-01',
             consumedDate: '2026-01-02',
-            barcode: 'CELLAR0001'
+            barcode: 'CELLAR0001',
+            drinkBefore: '2027-03'
         });
+        expect(bottleFormValues({ ...bottle, drinkBefore: null }).drinkBefore).toBe('');
     });
 
     // Found after BUG-14: the text fields showed "12.5" in French, where a French browser had

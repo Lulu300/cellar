@@ -16,6 +16,8 @@
     import SortableHeader from '#lib/components/table/SortableHeader.svelte';
     import WineColorBadge from '#lib/components/wines/WineColorBadge.svelte';
     import AvailabilityBadge from './AvailabilityBadge.svelte';
+    import DrinkingChip from './DrinkingChip.svelte';
+    import { drinkingText, soonRank } from './drinking.js';
     import { nextSort, type BottleColumn } from './bottle-table.js';
     import type { BottleSort, TableBottle } from '#lib/utils/bottle-sort.js';
     import { formatCurrency, formatDate } from '#lib/utils/format.js';
@@ -38,7 +40,7 @@
         linkWine = false
     }: {
         bottles: B[];
-        /** In their order; only the notes cannot be sorted on. */
+        /** In their order; the notes and when to drink cannot be sorted on. */
         columns: BottleColumn[];
         sort: BottleSort;
         onSort: (sort: BottleSort) => void;
@@ -67,7 +69,8 @@
         origin: m['common.origin'](),
         purchasePrice: m['common.price'](),
         barcode: m['common.barcode'](),
-        notes: m['common.notes']()
+        notes: m['common.notes'](),
+        drinking: m['drinking.column']()
     });
     const notAvailable = $derived(m['common.not_available']());
     const allSelected = $derived(
@@ -96,8 +99,8 @@
                     </TableHead>
                 {/if}
                 {#each columns as column (column)}
-                    {#if column === 'notes'}
-                        <TableHead>{labels.notes}</TableHead>
+                    {#if column === 'notes' || column === 'drinking'}
+                        <TableHead>{labels[column]}</TableHead>
                     {:else}
                         <SortableHeader
                             label={labels[column]}
@@ -177,6 +180,20 @@
                             <TableCell>{formatCurrency(bottle.purchasePrice)}</TableCell>
                         {:else if column === 'barcode'}
                             <TableCell>{bottle.barcode || notAvailable}</TableCell>
+                        {:else if column === 'drinking'}
+                            {@const dates = {
+                                drinkBefore: bottle.drinkBefore ?? null,
+                                optimum: bottle.optimum ?? null
+                            }}
+                            {@const rank = soonRank(dates)}
+                            <TableCell>
+                                <div class="flex flex-wrap items-center gap-x-2 gap-y-1">
+                                    {#if rank}<DrinkingChip {rank} />{/if}
+                                    <span class="text-sm text-muted-foreground">
+                                        {drinkingText(dates) || '-'}
+                                    </span>
+                                </div>
+                            </TableCell>
                         {:else}
                             <TableCell class="max-w-xs truncate" title={bottle.notes ?? ''}>
                                 {bottle.notes || '-'}

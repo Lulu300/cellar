@@ -1,4 +1,5 @@
 import { browser } from '$app/env';
+import { DrinkingHorizon } from '#lib/shared/drinking.js';
 import { themes } from '#lib/utils/theme-colors.js';
 import type { WineListView } from '#lib/utils/wine-filters.js';
 
@@ -12,8 +13,12 @@ const KEYS = {
     showImages: 'wine-cellar-show-images',
     wineListView: 'wine-cellar-wine-list-view',
     storageViewMode: 'wine-cellar-storage-view-mode',
-    containersAsColumns: 'wine-cellar-containers-layout'
+    containersAsColumns: 'wine-cellar-containers-layout',
+    drinkingHorizon: 'wine-cellar-drinking-horizon',
+    showDrinkingMarker: 'wine-cellar-drinking-marker'
 } as const;
+
+const HORIZONS: readonly string[] = Object.values(DrinkingHorizon);
 
 type PreferenceName = keyof typeof KEYS;
 
@@ -31,6 +36,10 @@ class Preferences {
     storageViewMode = $state<'table' | 'grid'>('table');
     /** Whether the storage table shows the containers as columns, or as rows. */
     containersAsColumns = $state(true);
+    /** How far ahead the storage page marks the bottles to drink. */
+    drinkingHorizon = $state<DrinkingHorizon>(DrinkingHorizon.THIS_YEAR);
+    /** Whether the storage page shows that marker when it opens. */
+    showDrinkingMarker = $state(false);
 
     #systemIsDark = $state(false);
     /** The 'system' mode follows the colour scheme of the system, also when it changes. */
@@ -70,6 +79,12 @@ class Preferences {
         this.wineListView = stored('wineListView') === 'list' ? 'list' : 'cards';
         this.storageViewMode = stored('storageViewMode') === 'grid' ? 'grid' : 'table';
         this.containersAsColumns = stored('containersAsColumns') !== 'false';
+        const horizon = stored('drinkingHorizon');
+        this.drinkingHorizon =
+            horizon !== null && HORIZONS.includes(horizon)
+                ? (horizon as DrinkingHorizon)
+                : DrinkingHorizon.THIS_YEAR;
+        this.showDrinkingMarker = stored('showDrinkingMarker') === 'true';
     }
 
     /** Changes a preference and keeps it for the next visits, or for this page if it cannot. */

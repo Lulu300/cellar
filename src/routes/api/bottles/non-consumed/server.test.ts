@@ -6,17 +6,18 @@ import { bottleData, insertWineDefinition } from '../../../../test/wine';
 import { GET } from './+server';
 
 describe('GET /api/bottles/non-consumed', () => {
-    // The storage page edits these bottles, and the API takes their format by id only.
-    it('gives the format and origin ids of each bottle', async () => {
+    // The storage page edits these bottles, and the API takes their format by id only; the form
+    // shows their « drink before ».
+    it('gives the format and origin ids and the « drink before » of each bottle', async () => {
         const definitionId = await insertWineDefinition();
-        createBottles(bottleData(definitionId), 1);
+        createBottles(bottleData(definitionId, { drinkBefore: '2027' }), 1);
 
         const response = await GET(
             fakeEvent<Parameters<typeof GET>[0]>({ path: '/api/bottles/non-consumed' })
         );
 
         expect(await response.json()).toMatchObject([
-            { formatId: 'bottle', format: 'Bottle', originId: null }
+            { formatId: 'bottle', format: 'Bottle', originId: null, drinkBefore: '2027' }
         ]);
     });
 

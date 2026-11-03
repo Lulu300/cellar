@@ -1,19 +1,28 @@
 <script
     lang="ts"
-    generics="B extends { id: string; availability: string; storageCase?: { id: string } | null }"
+    generics="B extends {
+        id: string;
+        availability: string;
+        drinkBefore: string | null;
+        storageCase?: { id: string } | null;
+    }"
 >
     import type { Snippet } from 'svelte';
     import type { BottleDialogs } from './bottle-dialogs.svelte.js';
     import BottleStatusDialog from './BottleStatusDialog.svelte';
+    import DrinkBeforeDialog from './DrinkBeforeDialog.svelte';
     import MoveBottlesDialog from './MoveBottlesDialog.svelte';
 
-    /** The status and move dialogs of a list of bottles, open while `dialogs` holds bottles. */
+    /**
+     * The status, move and « drink before » dialogs of a list of bottles, open while `dialogs`
+     * holds bottles.
+     */
     let {
         dialogs,
         children
     }: {
         dialogs: BottleDialogs<B>;
-        /** What the status dialog shows of its bottles above the status. */
+        /** What the status and « drink before » dialogs show of their bottles above the choices. */
         children?: Snippet<[B[]]>;
     } = $props();
 </script>
@@ -36,4 +45,15 @@
         onSaved={dialogs.saved}
         onMissing={dialogs.missing}
     />
+{/if}
+
+{#if dialogs.dating.length > 0}
+    <DrinkBeforeDialog
+        bottles={dialogs.dating}
+        onClose={() => (dialogs.dating = [])}
+        onSaved={dialogs.saved}
+        onMissing={dialogs.missing}
+    >
+        {@render children?.(dialogs.dating)}
+    </DrinkBeforeDialog>
 {/if}

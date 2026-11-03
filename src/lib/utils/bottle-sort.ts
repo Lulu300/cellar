@@ -12,6 +12,9 @@ export interface TableBottle {
     purchasePrice: number | null;
     barcode: string | null;
     notes: string | null;
+    /** For the « to drink » column, which only the lists that show it need. */
+    drinkBefore?: string | null;
+    optimum?: number | null;
     storageCase?: { name: string } | null;
     origin?: { name: string } | null;
     definition?: {

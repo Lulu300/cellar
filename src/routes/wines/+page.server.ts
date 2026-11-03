@@ -1,5 +1,9 @@
 import { z } from 'zod';
-import { createBottles, updateWineBottle } from '#lib/server/features/bottles/service.js';
+import {
+    createBottles,
+    listBottlesToDrink,
+    updateWineBottle
+} from '#lib/server/features/bottles/service.js';
 import {
     createDefinition,
     listWines,
@@ -18,11 +22,16 @@ import {
 import { wineDefinitionSchema, wineFromForm } from '#lib/shared/schemas/wine.js';
 import type { Actions, PageServerLoad } from './$types';
 
-// Public data only, as GET /api/wines and /api/images give it. The list shows only the bottles
-// still owned: leaving the consumed ones out keeps the page light as the history grows.
+// Public data only, as GET /api/wines, /api/images and /api/bottles/to-drink give it. The list
+// shows only the bottles still owned: leaving the consumed ones out keeps the page light as the
+// history grows.
 export const load: PageServerLoad = ({ depends }) => {
     depends(CELLAR);
-    return { wines: listWines({ ownedOnly: true }), imageUrls: imageUrlsById() };
+    return {
+        wines: listWines({ ownedOnly: true }),
+        imageUrls: imageUrlsById(),
+        toDrink: listBottlesToDrink()
+    };
 };
 
 /** The form of a request; its text fields stay far below the limit of a JSON body. */

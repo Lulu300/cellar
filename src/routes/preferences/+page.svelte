@@ -8,7 +8,8 @@
     import ChoiceGroup from '#lib/components/preferences/ChoiceGroup.svelte';
     import { moveChoice } from '#lib/components/preferences/radio-group.js';
     import { viewOptions } from '#lib/components/wines/wine-list.js';
-    import { Check, Palette, Languages } from '@lucide/svelte';
+    import { Check, Clock, Palette, Languages } from '@lucide/svelte';
+    import { DrinkingHorizon } from '#lib/shared/drinking.js';
     import { themes } from '#lib/utils/theme-colors.js';
     import { preferences, type ThemeId } from '#lib/stores/preferences.svelte.js';
     import { m } from '#lib/paraglide/messages.js';
@@ -219,6 +220,45 @@
                     ]}
                     value={preferences.containersAsColumns}
                     onchange={(asColumns) => preferences.set('containersAsColumns', asColumns)}
+                />
+            </CardContent>
+        </Card>
+
+        <Card>
+            <CardHeader>
+                <CardTitle class="flex items-center gap-2">
+                    <Clock class="h-5 w-5" />
+                    {m['drinking.column']()}
+                </CardTitle>
+            </CardHeader>
+            <CardContent class="space-y-4">
+                <ChoiceGroup
+                    label={m['preferences.drinking_horizon']()}
+                    description={m['preferences.drinking_horizon_description']()}
+                    options={[
+                        { value: DrinkingHorizon.THIS_MONTH, label: m['drinking.this_month']() },
+                        { value: DrinkingHorizon.THIS_YEAR, label: m['drinking.this_year']() },
+                        {
+                            value: DrinkingHorizon.NEXT_YEAR,
+                            label: m['preferences.horizon_next_year']()
+                        },
+                        {
+                            value: DrinkingHorizon.TWO_YEARS,
+                            label: m['preferences.horizon_two_years']()
+                        }
+                    ]}
+                    value={preferences.drinkingHorizon}
+                    onchange={(horizon) => preferences.set('drinkingHorizon', horizon)}
+                />
+                <ChoiceGroup
+                    label={m['preferences.drinking_marker']()}
+                    description={m['preferences.drinking_marker_description']()}
+                    options={[
+                        { value: true, label: m['preferences.show']() },
+                        { value: false, label: m['preferences.hide']() }
+                    ]}
+                    value={preferences.showDrinkingMarker}
+                    onchange={(show) => preferences.set('showDrinkingMarker', show)}
                 />
             </CardContent>
         </Card>

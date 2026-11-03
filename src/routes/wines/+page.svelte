@@ -3,6 +3,7 @@
     import WineListView from '#lib/components/wines/WineListView.svelte';
     import WineDefinitionDialog from '#lib/components/wines/WineDefinitionDialog.svelte';
     import WineBottleDialog from '#lib/components/bottles/WineBottleDialog.svelte';
+    import DrinkSoonBanner from '#lib/components/bottles/DrinkSoonBanner.svelte';
     import { Button } from '#lib/components/ui/button/index.js';
     import { auth } from '#lib/stores/auth.svelte.js';
     import { toasts } from '#lib/stores/toast.svelte.js';
@@ -80,6 +81,8 @@
             {/if}
         </div>
     </div>
+
+    <DrinkSoonBanner bottles={data.toDrink} />
 
     <WineListView
         wineList={data.wines}

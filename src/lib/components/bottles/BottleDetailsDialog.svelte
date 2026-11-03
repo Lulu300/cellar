@@ -1,6 +1,7 @@
 <script lang="ts">
     import type { ComponentProps } from 'svelte';
     import { goto } from '$app/navigation';
+    import { CalendarClock } from '@lucide/svelte';
     import { SvelteSet } from 'svelte/reactivity';
     import { Dialog } from '#lib/components/ui/dialog/index.js';
     import ScrollingDialogContent from '#lib/components/layout/ScrollingDialogContent.svelte';
@@ -121,6 +122,14 @@
                 </div>
                 {#if selectedBottles.size > 0}
                     <div class="flex flex-wrap gap-2">
+                        <Button
+                            variant="outline"
+                            size="sm"
+                            onclick={() => whenLoggedIn(() => (dialogs.dating = chosenBottles()))}
+                        >
+                            <CalendarClock class="h-4 w-4" aria-hidden="true" />
+                            {m['drinking.drink_before']()}
+                        </Button>
                         {#if auth.isAuthenticated}
                             <Button
                                 variant="outline"
@@ -169,6 +178,7 @@
             bottles={sortedBottles}
             columns={[
                 'location',
+                'drinking',
                 'availability',
                 'vintage',
                 'format',

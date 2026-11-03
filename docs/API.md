@@ -932,7 +932,7 @@ them.
 - **Session:** not needed.
 - **Body:** none.
 - **Response:** `200` with an array, in no particular order, of bottles with these fields only:
-  `id`, `vintage`, `optimum`, `formatId`, `format` (name), `purchasePrice`, `purchaseDate`,
+  `id`, `vintage`, `optimum`, `drinkBefore`, `formatId`, `format` (name), `purchasePrice`, `purchaseDate`,
   `currentValue`, `currentValueDate`, `originId`, `origin` (`{ "id", "name" }` or `null`),
   `barcode`, `notes`, `availability`, `definition`, the wine
   (`{ "id", "name", "producer", "appellation", "color", "colorHex" }`, `appellation` and `color`
@@ -946,6 +946,7 @@ them.
     "id": "1b2a0a28-…",
     "vintage": 2015,
     "optimum": null,
+    "drinkBefore": null,
     "formatId": "bottle",
     "format": "Bottle",
     "purchasePrice": 45,

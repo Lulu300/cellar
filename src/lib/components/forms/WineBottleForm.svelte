@@ -6,6 +6,7 @@
     import { m } from '#lib/paraglide/messages.js';
     import ExistingBottleLocations from '#lib/components/forms/ExistingBottleLocations.svelte';
     import { availabilityLabel } from '#lib/components/bottles/availability.js';
+    import DrinkBeforeFields from '#lib/components/bottles/DrinkBeforeFields.svelte';
     import { Button } from '#lib/components/ui/button/index.js';
     import { DialogFooter } from '#lib/components/ui/dialog/index.js';
     import { Input } from '#lib/components/ui/input/index.js';
@@ -70,6 +71,7 @@
     // available again, it goes back to it, which the case field then shows chosen.
     const formerCase = untrack(() => (editedId ? bottle?.storageCase?.name : undefined));
     let availability = $state(initial.availability);
+    let drinkBefore = $state(initial.drinkBefore);
     const consumed = $derived(availability === BottleAvailability.CONSUMED);
 
     let wines = $state<{ id: string; name: string }[]>([]);
@@ -226,6 +228,11 @@
             m['placeholders.optimum_example']()
         )}
     </div>
+
+    <FormField label={m['drinking.drink_before']()} error={errors.drinkBefore}>
+        <DrinkBeforeFields bind:value={drinkBefore} optional />
+        <input type="hidden" name="drinkBefore" value={drinkBefore} />
+    </FormField>
 
     {#if !editedId}
         <FormField

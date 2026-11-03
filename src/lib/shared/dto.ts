@@ -29,6 +29,7 @@ import type {
     getWineShortages,
     listBottlesForAdmin,
     listBottlesNotConsumed,
+    listBottlesToDrink,
     listBottlesWithDefinitions,
     WineBottleWithFormat
 } from '#lib/server/features/bottles/service.js';
@@ -102,6 +103,9 @@ export type ListedBottleDTO = WineGroupDTO['bottles'][number];
 
 /** GET /api/bottles: a bottle with its wine, format, case and origin. */
 export type BottleWithDefinitionDTO = ReturnType<typeof listBottlesWithDefinitions>[number];
+
+/** GET /api/bottles/to-drink: a bottle to drink soon, with its wine and its rank. */
+export type BottleToDrinkDTO = ReturnType<typeof listBottlesToDrink>[number];
 
 /** GET /api/definitions */
 export type DefinitionDTO = ReturnType<typeof listDefinitions>[number];

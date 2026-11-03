@@ -2,9 +2,11 @@ import { describe, expect, it } from 'vitest';
 import { bottleSchema } from '#lib/shared/schemas/bottle.js';
 import {
     compareDrinking,
+    DrinkingHorizon,
     DrinkingRank,
     drinkingRank,
     monthOf,
+    rankWithin,
     type DrinkingDates
 } from './drinking';
 
@@ -112,5 +114,38 @@ describe('the drinkBefore field', () => {
         for (const value of ['03', '-03', '2027-13', '2027-00', '2027-3', '27', '0999', 2027]) {
             expect(parse(value).success, String(value)).toBe(false);
         }
+    });
+});
+
+describe('rankWithin', () => {
+    const within = (
+        horizon: DrinkingHorizon,
+        drinkBefore: string | null,
+        optimum: number | null = null
+    ) => rankWithin(dates(drinkBefore, optimum), horizon, now);
+
+    it('keeps the late bottles and this month only, this month', () => {
+        expect(within(DrinkingHorizon.THIS_MONTH, '2026-02')).toBe(DrinkingRank.LATE);
+        expect(within(DrinkingHorizon.THIS_MONTH, '2026-11')).toBe(DrinkingRank.THIS_MONTH);
+        expect(within(DrinkingHorizon.THIS_MONTH, '2026')).toBeNull();
+        expect(within(DrinkingHorizon.THIS_MONTH, null, 2020)).toBeNull();
+    });
+
+    it('keeps the bottles to drink soon this year, as the banner does', () => {
+        expect(within(DrinkingHorizon.THIS_YEAR, '2026')).toBe(DrinkingRank.THIS_YEAR);
+        expect(within(DrinkingHorizon.THIS_YEAR, null, 2026)).toBe(DrinkingRank.OPTIMUM_REACHED);
+        expect(within(DrinkingHorizon.THIS_YEAR, '2027-01')).toBeNull();
+    });
+
+    it('adds the bottles due next year, then the year after, by date or else by optimum', () => {
+        expect(within(DrinkingHorizon.NEXT_YEAR, '2027-12')).toBe(DrinkingRank.LATER);
+        expect(within(DrinkingHorizon.NEXT_YEAR, null, 2027)).toBe(DrinkingRank.LATER);
+        expect(within(DrinkingHorizon.NEXT_YEAR, '2028')).toBeNull();
+        expect(within(DrinkingHorizon.TWO_YEARS, '2028')).toBe(DrinkingRank.LATER);
+        expect(within(DrinkingHorizon.TWO_YEARS, null, 2029)).toBeNull();
+    });
+
+    it('marks nothing for a bottle with neither date nor optimum', () => {
+        expect(within(DrinkingHorizon.TWO_YEARS, null)).toBeNull();
     });
 });

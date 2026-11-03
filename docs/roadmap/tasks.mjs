@@ -2737,7 +2737,8 @@ export const tasks = [
 		todo: [
 			'Décision « À boire (FEAT-05) » : champ « À boire avant » (migration), boutons en un clic, sélection multiple ; ordre et date dépassée ; API, exports et imports suivent.',
 			'Bandeau de l’accueil qui déplie la liste ; captures sur téléphone et ordinateur montrées au mainteneur, qui n’est pas encore convaincu par la forme, avant le merge.',
-			'Repère sur la page Stockage et dans la liste d’une case (FEAT-04), horizon et interrupteur réglés dans les préférences.'
+			'Repère sur la page Stockage et dans la liste d’une case (FEAT-04), horizon et interrupteur réglés dans les préférences.',
+			'MCP (règle 10, décision « MCP le plus complet possible (FEAT-12) ») : lister les bouteilles à boire bientôt dans le même ordre que le bandeau, filtrer par année optimale (le filtre « apogée » demandé pendant FEAT-12 et renvoyé ici), lire et poser « À boire avant » sur une ou plusieurs bouteilles ; descriptions et docs suivent.'
 		],
 		done: 'Des bouteilles marquées « ce mois-ci », une date dépassée et une année optimale atteinte apparaissent dans le bon ordre dans le bandeau et sur le stockage quand l’interrupteur est allumé ; une bouteille bue disparaît de la liste et garde sa date ; le mainteneur a validé les captures ; testé.',
 		deps: ['REL-10'], src: ['Décision « À boire (FEAT-05) »']

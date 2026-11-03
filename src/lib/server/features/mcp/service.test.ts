@@ -21,6 +21,7 @@ import {
     addBottles,
     addWine,
     bottlesByBarcode,
+    bottlesToDrink,
     changeBottleNotes,
     choices,
     deleteBottles,
@@ -297,6 +298,59 @@ describe('listBottles', () => {
         });
         expect(() => list({ caseId: 'no-such-case' })).toThrow(NotFoundError);
     });
+
+    it('keeps the bottles whose optimum falls within the years given, both included', async () => {
+        await insertBottles(barolo, [
+            { id: 'peak-2024', optimum: 2024 },
+            { id: 'peak-2026', optimum: 2026 },
+            { id: 'peak-2030', optimum: 2030 }
+        ]);
+
+        expect(idsOf(list({ optimumTo: 2026 })).sort()).toEqual(['peak-2024', 'peak-2026']);
+        expect(idsOf(list({ optimumFrom: 2026, optimumTo: 2030 })).sort()).toEqual([
+            'peak-2026',
+            'peak-2030'
+        ]);
+        expect(idsOf(list({ optimumFrom: 2027 }))).toEqual(['peak-2030']);
+    });
+});
+
+describe('bottlesToDrink', () => {
+    beforeEach(() => {
+        vi.useFakeTimers({ toFake: ['Date'], now: new Date(2026, 10, 15) });
+        onTestFinished(() => {
+            vi.useRealTimers();
+        });
+    });
+
+    it('lists the bottles to drink soon in the order of the banner, with their rank, wine and location', async () => {
+        const { cases } = createContainer({ name: 'Rack', cases: ['1'], caseCapacities: [6] });
+        await insertBottles(margaux, [
+            { id: 'peak', optimum: 2025 },
+            { id: 'this-month', drinkBefore: '2026-11', storageCaseId: cases[0].id },
+            { id: 'next-year', drinkBefore: '2027' },
+            { id: 'late', drinkBefore: '2026-02' },
+            { id: 'drunk', drinkBefore: '2026-02', availability: 'consumed' }
+        ]);
+
+        const { total, bottles } = bottlesToDrink({ limit: 50 });
+
+        expect(total).toBe(3);
+        expect(bottles.map(({ id, rank }) => [id, rank])).toEqual([
+            ['late', 'late'],
+            ['this-month', 'this_month'],
+            ['peak', 'optimum_reached']
+        ]);
+        expect(bottles[1]).toMatchObject({
+            drinkBefore: '2026-11',
+            location: { container: 'Rack', case: 'Rack1' },
+            wine: { id: margaux, name: 'Château Margaux' }
+        });
+        expect(bottlesToDrink({ limit: 1, offset: 1 })).toMatchObject({
+            total: 3,
+            bottles: [{ id: 'this-month' }]
+        });
+    });
 });
 
 describe('wineShortages', () => {
@@ -428,6 +482,7 @@ const purchase = {
     originId: null,
     vintage: 2018,
     optimum: null,
+    drinkBefore: null,
     purchasePrice: 40,
     purchaseDate: null,
     caseId: null,
@@ -659,6 +714,7 @@ describe('editBottles', () => {
             purchasePrice: 45.5,
             currentValue: 60,
             optimum: 2030,
+            drinkBefore: '2027-03',
             purchaseDate: new Date('2026-10-01'),
             barcode: undefined
         });
@@ -668,6 +724,7 @@ describe('editBottles', () => {
                 id: 'a',
                 vintage: 2015,
                 optimum: 2030,
+                drinkBefore: '2027-03',
                 purchasePrice: 45.5,
                 purchaseDate: '2026-10-01',
                 currentValue: 60,

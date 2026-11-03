@@ -2,6 +2,7 @@ import {
     createBottles,
     deleteBottlesById,
     getWineShortages,
+    listBottlesToDrink,
     listBottlesWithDefinitions,
     listCaseBottles,
     updateBottles,
@@ -91,6 +92,7 @@ function bottleSummary(bottle: Bottle) {
         availability: bottle.availability,
         vintage: bottle.vintage,
         optimum: bottle.optimum,
+        drinkBefore: bottle.drinkBefore,
         format: bottle.format,
         ...(inCellar(bottle) ? { location } : { formerLocation: location }),
         barcode: bottle.barcode,
@@ -225,6 +227,8 @@ export interface BottleSearch extends Page {
     consumedTo?: Bound;
     purchasedFrom?: Bound;
     purchasedTo?: Bound;
+    optimumFrom?: number;
+    optimumTo?: number;
 }
 
 /** Whether `date` falls from `from` to `to`, both days included. */
@@ -239,11 +243,17 @@ function within(date: Date | null, from: Bound, to: Bound): boolean {
 /** Two days, the latest first, a missing one last. */
 const latestFirst = (a: string | null, b: string | null) => (b ?? '').localeCompare(a ?? '');
 
+/** Whether the optimum year falls from `from` to `to`, both included; any year without bounds. */
+function optimumWithin(optimum: number | null, from?: number, to?: number): boolean {
+    if (from === undefined && to === undefined) return true;
+    return optimum !== null && optimum >= (from ?? optimum) && optimum <= (to ?? optimum);
+}
+
 /**
  * The bottles of the whole cellar, or those that the case `caseId` holds, with this availability,
- * drunk and bought within these days, each with its wine: the latest drunk first, then the latest
- * bought. The page asked for, with `total` counting them all. Throws a NotFoundError for an unknown
- * case.
+ * drunk and bought within these days, at their best within these years, each with its wine: the
+ * latest drunk first, then the latest bought. The page asked for, with `total` counting them all.
+ * Throws a NotFoundError for an unknown case.
  */
 export function listBottles(search: BottleSearch) {
     const bottles = search.caseId ? listCaseBottles(search.caseId) : listBottlesWithDefinitions();
@@ -252,7 +262,8 @@ export function listBottles(search: BottleSearch) {
             (bottle) =>
                 (!search.availability || bottle.availability === search.availability) &&
                 within(bottle.consumedDate, search.consumedFrom, search.consumedTo) &&
-                within(bottle.purchaseDate, search.purchasedFrom, search.purchasedTo)
+                within(bottle.purchaseDate, search.purchasedFrom, search.purchasedTo) &&
+                optimumWithin(bottle.optimum, search.optimumFrom, search.optimumTo)
         )
         .map(bottleWithWine)
         .sort(
@@ -264,6 +275,18 @@ export function listBottles(search: BottleSearch) {
                 a.id.localeCompare(b.id)
         );
     return { total: found.length, bottles: pageOf(found, search) };
+}
+
+/**
+ * The bottles in the cellar to drink soon, in the order of the banner of the wine list, each with
+ * its wine and its rank: the page asked for, with `total` counting them all.
+ */
+export function bottlesToDrink(page: Page) {
+    const found = listBottlesToDrink().map(({ rank, ...bottle }) => ({
+        rank,
+        ...bottleWithWine(bottle)
+    }));
+    return { total: found.length, bottles: pageOf(found, page) };
 }
 
 /** The wines below their target quantity, the largest shortage first. */
@@ -359,6 +382,7 @@ function writtenBottle(bottle: WineBottleWithFormat) {
         availability: bottle.availability,
         vintage: bottle.vintage,
         optimum: bottle.optimum,
+        drinkBefore: bottle.drinkBefore,
         format: bottle.format,
         ...(inCellar(bottle)
             ? { caseId: bottle.storageCaseId }
@@ -395,6 +419,7 @@ export type NewBottles = Pick<
     | 'originId'
     | 'vintage'
     | 'optimum'
+    | 'drinkBefore'
     | 'purchasePrice'
     | 'purchaseDate'
     | 'barcode'
@@ -470,6 +495,7 @@ export type BottleEdits = Pick<
     | 'currentValueDate'
     | 'vintage'
     | 'optimum'
+    | 'drinkBefore'
     | 'purchaseDate'
     | 'formatId'
     | 'originId'

@@ -2499,8 +2499,9 @@ README-Docker says how to set up an assistant (see
   bottle drunk or taken away, and how errors read.
 - **Answers:** a tool answers one text item that holds JSON. The fields that are empty are left out.
   Prices are in the currency of the cellar (the app shows euros), dates are `YYYY-MM-DD`. A
-  bottle's `availability` is `available` (in the cellar), `out_of_cellar` or `consumed`, and its
-  `optimum` is the year it is at its best.
+  bottle's `availability` is `available` (in the cellar), `out_of_cellar` or `consumed`, its
+  `optimum` is the year it is at its best, and its `drinkBefore` the year (`YYYY`) or the month
+  (`YYYY-MM`) by the end of which to drink it.
 - **Where a bottle is:** a bottle `available` gives its case as `location` (read tools) or `caseId`
   (write tools). A bottle `out_of_cellar` or `consumed` keeps the case it left, without taking a
   place there: it gives it as `formerLocation` or `formerCaseId` instead, so that an assistant does
@@ -2543,7 +2544,7 @@ The tools that read:
   - **Parameters:** `wineId`: string, required, as `search_wines` gives it.
   - **Answer:** the fields of a wine of `search_wines` from `id` to `grapes`, with `description`,
     `website` and `targetQuantity`, its bottles still owned in `bottles` and those drunk in
-    `consumed`. Each bottle has `id`, `availability`, `vintage`, `optimum`, `format`, `location`
+    `consumed`. Each bottle has `id`, `availability`, `vintage`, `optimum`, `drinkBefore`, `format`, `location`
     (`container`, `case`) when it is in the cellar or `formerLocation` (the same) when it is not,
     `barcode`, `origin`, `purchasePrice`, `purchaseDate`, `currentValue`, `consumedDate` and
     `notes`.
@@ -2553,20 +2554,29 @@ The tools that read:
     `producer`, `color`, `type`): the code as given, then in other capitals, then the codes that
     end with it. `[]` when none has it.
 - `get_statistics`: no parameters; the answer of [`GET /api/statistics`](#get-apistatistics).
-- `list_bottles`: the bottles of the whole cellar, or of one case, by availability and by day: what
-  is in case B2, what was drunk this month, what is out of the cellar, what was bought last year.
+- `list_bottles`: the bottles of the whole cellar, or of one case, by availability, by day and by
+  optimum year: what is in case B2, what was drunk this month, what is out of the cellar, what was
+  bought last year, what is at its best now.
   - **Parameters:** all optional: `caseId`: string (from `get_free_space`), only the bottles that
     the case holds, those in the cellar, as
     [`GET /api/storage-cases/{id}/bottles`](#get-apistorage-casesidbottles) lists them; an unknown
     id is refused (not found); `availability`: `available`, `out_of_cellar` or `consumed`, every
     bottle when left out; `consumedFrom` and `consumedTo`: `YYYY-MM-DD`, the days a bottle was drunk
     on, both included: a bottle without a `consumedDate`, so any bottle not drunk, is left out when
-    either is given; `purchasedFrom` and `purchasedTo`: the same for the `purchaseDate`; `limit`:
+    either is given; `purchasedFrom` and `purchasedTo`: the same for the `purchaseDate`;
+    `optimumFrom` and `optimumTo`: integers 0-9999, the years of the `optimum`, both included: a
+    bottle without an optimum is left out when either is given; `limit`:
     integer from 1 to 200, default 50; `offset`: integer from 0, default 0, how many bottles to
     skip, to read past `limit`.
   - **Answer:** `{ "total", "bottles" }`: the bottles found, as `find_bottle_by_barcode` gives them,
     each with its `wine`, the latest drunk first, then the latest bought, then by the name of their
     wine, then by id, from `offset`; `total` counts them all.
+- `list_bottles_to_drink`: the bottles in the cellar to drink soon, as the banner of the wine list
+  shows them and [`GET /api/bottles/to-drink`](#get-apibottlesto-drink) lists them.
+  - **Parameters:** `limit` and `offset`, as for `list_bottles`.
+  - **Answer:** `{ "total", "bottles" }`: the bottles, as `list_bottles` gives them, each with its
+    `rank` (`late`, `this_month`, `this_year`, `optimum_reached`), in the order of
+    `GET /api/bottles/to-drink`, from `offset`; `total` counts them all.
 - `get_wine_shortage`: no parameters; the wines below their target quantity, the largest shortage
   first, with `id`, `name`, `producer`, `color`, `type`, `appellation`, `region`, `country`,
   `targetQuantity`, `inCellar`, `missing` and `averagePrice`.
@@ -2605,10 +2615,10 @@ one is not dropped; each one writes all or nothing.
   - **Parameters:** `wineId`: string, required; `formatId`: string, required (from
     `list_choices`); `quantity`: integer 1-100, default 1; `caseId`: string, optional (from
     `get_free_space`), the `storageCaseId` of the bottles; and, optional, the
-    [bottle fields](#bottle-fields) `vintage`, `optimum`, `originId` (from `list_choices`),
+    [bottle fields](#bottle-fields) `vintage`, `optimum`, `drinkBefore`, `originId` (from `list_choices`),
     `purchasePrice`, `purchaseDate`, `barcode` (with `quantity` 1 only) and `notes`.
   - **Answer:** an array of the bottles created, each with `id`, `wineId`, `availability`,
-    `vintage`, `optimum`, `format`, `caseId` (or `formerCaseId` for a bottle not in the cellar, as
+    `vintage`, `optimum`, `drinkBefore`, `format`, `caseId` (or `formerCaseId` for a bottle not in the cellar, as
     in the answers of the tools below), `barcode`, `originId`, `purchasePrice`, `purchaseDate`,
     `currentValue`, `currentValueDate`, `consumedDate` and `notes`. An origin that `list_choices`
     lacks is added in the app; the description says to leave `originId` out meanwhile.
@@ -2668,7 +2678,7 @@ one is not dropped; each one writes all or nothing.
   [`PATCH /api/bottles`](#patch-apibottles) does; their other fields stay.
   - **Parameters:** `bottleIds` as for `mark_bottles_drunk`; and at least one of the
     [bottle fields](#bottle-fields) `purchasePrice`, `purchaseDate`, `currentValue`,
-    `currentValueDate`, `vintage`, `optimum`, `formatId`, `originId` and `barcode` (one bottle
+    `currentValueDate`, `vintage`, `optimum`, `drinkBefore`, `formatId`, `originId` and `barcode` (one bottle
     only). `null` removes an optional field. The notes, the case and the availability have their
     own tools.
   - **Answer:** an array of the bottles changed, as `add_bottles` answers them.

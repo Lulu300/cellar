@@ -112,6 +112,7 @@ describe('POST /mcp', () => {
             ['find_bottle_by_barcode', true],
             ['get_statistics', true],
             ['list_bottles', true],
+            ['list_bottles_to_drink', true],
             ['get_wine_shortage', true],
             ['get_wishlist', true],
             ['get_free_space', true],
@@ -600,7 +601,8 @@ describe('POST /mcp', () => {
                 ['update_wish', { wishId: 'a', quantity: 0 }],
                 ['delete_bottles', { bottleIds: [] }],
                 ['list_bottles', { availability: 'drunk' }],
-                ['list_bottles', { consumedFrom: 'last month' }]
+                ['list_bottles', { consumedFrom: 'last month' }],
+                ['update_bottles', { bottleIds: ['a'], drinkBefore: '03' }]
             ] as const) {
                 const { result } = await modernCall(name, args, WRITE);
                 expect(result.isError, `${name} ${JSON.stringify(args)}`).toBe(true);

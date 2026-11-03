@@ -124,6 +124,8 @@ beforeEach(async () => {
         storageCaseId: 'rack1',
         barcode: 'WINE000001',
         purchaseDate: new Date('2024-05-01T00:00:00Z'),
+        optimum: 2030,
+        drinkBefore: '2027-03',
         ...timestamps
     });
 });

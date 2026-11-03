@@ -1,7 +1,7 @@
 import { expect, test } from '@playwright/test';
 import { addWine, logIn, openFromMenu, pick } from './helpers.js';
 
-test('add a container on the storage page, put bottles in its cases, move three from the map, mark one to drink this month and see it in the banner, find the wine in the cellar, then colour it from the admin', async ({
+test('add a container on the storage page, put bottles in its cases, move three from the map, mark one to drink this month and see it on the map and in the banner, find the wine in the cellar, then colour it from the admin', async ({
     page,
     browser
 }) => {
@@ -125,6 +125,18 @@ test('add a container on the storage page, put bottles in its cases, move three 
     const dating = page.getByRole('dialog', { name: 'Drink before' });
     await dating.getByRole('button', { name: /^This month/ }).click();
     await expect(dating).toBeHidden();
+    await page.keyboard.press('Escape');
+    await expect(rack2).toBeHidden();
+
+    // The marker of the map, off at first, names it in its case.
+    const marker = page.getByRole('button', { name: 'Bottles to drink' });
+    await expect(marker).toHaveAttribute('aria-pressed', 'false');
+    await marker.click();
+    await expect(
+        page.getByRole('button', { name: 'Rack2: 2 of 5 bottles. To drink: 1 this month' })
+    ).toBeVisible();
+    await marker.click();
+    await page.getByRole('button', { name: 'Rack2: 2 of 5 bottles' }).click();
 
     // The name of the wine opens its page, whose "Show in the cellar" highlights its cases.
     await rack2.getByRole('link', { name: 'Cuvée Stored' }).first().click();

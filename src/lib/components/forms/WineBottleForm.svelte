@@ -229,10 +229,17 @@
         )}
     </div>
 
-    <FormField label={m['drinking.drink_before']()} error={errors.drinkBefore}>
-        <DrinkBeforeFields bind:value={drinkBefore} optional />
+    <div>
+        <DrinkBeforeFields
+            bind:value={drinkBefore}
+            optional
+            legend={m['drinking.drink_before']()}
+        />
         <input type="hidden" name="drinkBefore" value={drinkBefore} />
-    </FormField>
+        {#if errors.drinkBefore}
+            <p class="mt-2 text-sm text-destructive">{errors.drinkBefore}</p>
+        {/if}
+    </div>
 
     {#if !editedId}
         <FormField

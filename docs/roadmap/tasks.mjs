@@ -17,6 +17,8 @@ export const states = [
 
 // Versions, de la plus ancienne à la plus récente. Chaque phase appartient à une version (`version`) ;
 // la page de suivi s’ouvre sur les versions sans date de publication (`released`) et replie les autres.
+// Un bloc à venir n’a pas de numéro : son id est son nom, remplacé par le numéro de version à sa sortie
+// (décision « Blocs sans numéro ») ; leur ordre ici n’est qu’un conseil.
 export const versions = [
 	{
 		id: '1.0.0',
@@ -67,19 +69,29 @@ export const versions = [
 		goal: 'Un survol lisible sur chaque bouton, en clair comme en sombre, à commencer par le nombre de bouteilles des cartes de vin, avec une règle commune à tous les boutons.'
 	},
 	{
-		id: '1.5.0',
-		title: 'À boire et dégustation',
-		goal: 'Savoir quelles bouteilles boire bientôt, et garder une fiche de chaque bouteille bue.'
+		id: 'À boire',
+		title: 'Les bouteilles à boire bientôt',
+		goal: 'Savoir quelles bouteilles boire bientôt.'
 	},
 	{
-		id: '1.6.0',
+		id: 'Dégustation',
+		title: 'Des fiches de dégustation à sa main',
+		goal: 'Des fiches de dégustation structurées et personnalisables, imprimables en A4, à remplir quand on boit une bouteille, plusieurs fiches et leurs versions, et un MCP qui aide à les remplir et à les faire évoluer. Sur sa propre branche.'
+	},
+	{
+		id: 'Producteurs',
 		title: 'Producteurs et revue de l’import',
 		goal: 'Une fiche pour chaque producteur, et un import CSV qui se règle à la main avant d’écrire.'
 	},
 	{
-		id: '1.7.0',
-		title: 'Notifications',
+		id: 'Notifications',
+		title: 'Notifications par ntfy ou webhook',
 		goal: 'Des messages par ntfy ou webhook : sauvegarde ratée, bouteilles à boire, stock minimum, bouteilles restées hors cave, mise à jour disponible.'
+	},
+	{
+		id: 'Statistiques de dégustation',
+		title: 'Ce que disent les dégustations',
+		goal: 'Relire ses dégustations dans leur ensemble, une fois qu’il y en a assez.'
 	}
 ];
 
@@ -206,21 +218,33 @@ export const phases = [
 	},
 	{
 		id: 'P17',
-		version: '1.5.0',
-		title: 'À boire et dégustation',
-		goal: 'Pour la 1.5.0 : la vie d’une bouteille jusqu’à ce qu’on la boive. Les deux tâches ajoutent leur repère et leur fiche à la liste d’une case du plan (FEAT-04). Ordre : FEAT-05 et FEAT-06 ; DEP-10 (reportée de la 1.4.0) ; puis REL-11.'
+		version: 'À boire',
+		title: 'À boire',
+		goal: 'La vie d’une bouteille jusqu’à ce qu’on la boive ; la tâche ajoute son repère à la liste d’une case du plan (FEAT-04). Ordre : FEAT-05 ; DEP-10, si ce bloc est le premier publié après le 2026-11-06 (sinon elle passe dans celui-là) ; puis REL-11.'
+	},
+	{
+		id: 'P20',
+		version: 'Dégustation',
+		title: 'Fiches de dégustation',
+		goal: 'Décision « Fiches de dégustation (FEAT-06, FEAT-14 à FEAT-16) ». Sur la branche d’intégration `feat/tasting`, envoyée sur GitHub (décision « Blocs sans numéro ») : chaque tâche part de cette branche et y revient ; la branche rejoint develop quand le mainteneur valide le bloc entier. Ordre : FEAT-06 ; FEAT-14 ; FEAT-15 ; FEAT-16 ; puis REL-17.'
 	},
 	{
 		id: 'P18',
-		version: '1.6.0',
+		version: 'Producteurs',
 		title: 'Producteurs et revue de l’import',
-		goal: 'Pour la 1.6.0 : les producteurs d’abord, parce que la revue de l’import doit savoir relier ou créer un producteur. Ordre : FEAT-07 ; FEAT-08 ; puis REL-12.'
+		goal: 'Les producteurs d’abord, parce que la revue de l’import doit savoir relier ou créer un producteur. Ordre : FEAT-07 ; FEAT-08 ; puis REL-12.'
 	},
 	{
 		id: 'P19',
-		version: '1.7.0',
+		version: 'Notifications',
 		title: 'Notifications',
-		goal: 'Pour la 1.7.0 : les notifications, qui utilisent « À boire » (FEAT-05), le statut hors cave et la vérification des mises à jour. Ordre : FEAT-09 ; puis REL-13.'
+		goal: 'Les notifications, qui utilisent « À boire » (FEAT-05), le statut hors cave et la vérification des mises à jour. Ordre : FEAT-09 ; puis REL-13.'
+	},
+	{
+		id: 'P21',
+		version: 'Statistiques de dégustation',
+		title: 'Statistiques de dégustation',
+		goal: 'Après le bloc « Dégustation », dont elles lisent les fiches. Ordre : FEAT-17 ; puis REL-18.'
 	}
 ];
 
@@ -339,7 +363,8 @@ export const decisions = [
 	{ topic: 'Millésimes des statistiques (UI-25)', choice: 'Chaque nom sous une barre tient sur une ligne, coupé par « … », et se lit en entier en touchant la barre (décision du mainteneur). Exception : le graphique des millésimes écrit « ’17 » sur deux chiffres, à toutes les largeurs, puisqu’« 2… » ne dirait rien ; l’année entière reste dans la ligne sous le graphique (décision du coordinateur, 2026-10-31).' },
 	{ topic: 'Alerte minimatch (DEP-08)', choice: 'GHSA-g3hv-75wg-m249 (modérée) touche minimatch 10.2.6, tiré par archiver 8.0.0 puis readdir-glob 3.0.0, dans l’image. Acceptée pour la 1.1.0 sans override ni masquage, comme les alertes esbuild : Cellar n’appelle que `archive.file()`, jamais `glob()` ni `directory()`, et readdir-glob laisse `optimizationLevel` à 1 alors que la faille demande 2 ou plus. Le correctif, minimatch 11.0.1, était trop récent (installable le 2026-11-03) et readdir-glob n’accepte que `^10.2.2`. On ne retarde pas la 1.1.0 pour lui (mainteneur) ; à revoir à la prochaine revue des dépendances (décision du 2026-10-31).' },
 	{ topic: 'Doc de l’API et MCP à jour', choice: 'Désormais, chaque tâche qui change ce que l’API accepte ou répond met à jour docs/API.md et la description OpenAPI (`pnpm openapi`) dans la même branche ; chaque tâche qui change ce que les outils du MCP lisent ou écrivent, ou qui ajoute une fonctionnalité qu’un assistant pourrait utiliser par eux, met à jour les outils du MCP et leur doc, ou le rapport dit pourquoi pas. Règle écrite dans AGENTS.md (décision du mainteneur, 2026-10-31).' },
-	{ topic: 'Versions de 1.3.0 à 1.7.0', choice: 'Après la 1.2.0 (MCP) : 1.3.0 la navigation, les photos d’étiquette et la page Achats, la liste d’envies étant ce que les utilisateurs demandent le plus ; 1.4.0 les couleurs des vins et le plan de la cave ; 1.5.0 « À boire » et la fiche de dégustation ; 1.6.0 les producteurs et la revue de l’import CSV ; 1.7.0 les notifications. Chaque fonctionnalité a été détaillée avec le mainteneur avant ce découpage (décision du 2026-10-31).' },
+	{ topic: 'Versions de 1.3.0 à 1.7.0', choice: 'Après la 1.2.0 (MCP) : 1.3.0 la navigation, les photos d’étiquette et la page Achats, la liste d’envies étant ce que les utilisateurs demandent le plus ; 1.4.0 les couleurs des vins et le plan de la cave ; 1.5.0 « À boire » et la fiche de dégustation ; 1.6.0 les producteurs et la revue de l’import CSV ; 1.7.0 les notifications. Chaque fonctionnalité a été détaillée avec le mainteneur avant ce découpage (décision du 2026-10-31). Depuis le 2026-11-03, les versions à venir ne sont plus numérotées (décision « Blocs sans numéro »).' },
+	{ topic: 'Blocs sans numéro', choice: 'Depuis le 2026-11-03, la feuille de route ne numérote plus les versions à venir : chaque bloc (« À boire », « Dégustation », « Producteurs », « Notifications », « Statistiques de dégustation ») est une future version, que le mainteneur prend dans l’ordre qu’il veut ; il reçoit le numéro suivant à sa sortie, et l’ordre affiché n’est qu’un conseil. Un gros bloc peut vivre longtemps sur sa propre branche d’intégration, créée depuis develop et envoyée sur GitHub pour qu’elle existe ailleurs que sur le poste de travail (la CI sur cette branche se décidera plus tard) ; pendant ce temps, les autres blocs avancent sur develop et sortent. Ses tâches partent de cette branche et y reviennent par fast-forward ; après chaque version publiée entre-temps, la branche est remise à jour sur develop (rebase). Ses migrations restent modifiables jusqu’à son arrivée dans develop, puisque aucune version ne les a figées : à chaque remise à jour, celles de la branche sont supprimées puis recréées par `pnpm db:generate`, pour suivre celles de develop. La branche rejoint develop par fast-forward quand le mainteneur valide le bloc entier, puis le bloc sort comme les autres. Au démarrage d’un tel bloc, AGENTS.md et les règles des agents autorisent l’envoi de cette branche, jamais de `main` ni d’un tag. Premier cas : `feat/tasting`, pour « Dégustation » (décision du 2026-11-03).' },
 	{ topic: 'Navigation (UI-28)', choice: 'Choisie sur maquette : des sections au survol, Cave (Mes vins, Producteurs, Stockage, Hors cave, Historique), Achats (Liste d’envies, Pénurie), Statistiques (ses sous-pages), Outils (Codes-barres) ; survoler ou viser au clavier une section montre ses pages, un clic ouvre sa première page, et ses sous-pages y sont des onglets, comme l’admin. Une icône d’engrenage regroupe Préférences, Admin (avec le signal « mise à jour disponible ») et Déconnexion. Achats porte un compteur rouge des vins en pénurie, ou à défaut un point sans chiffre de la couleur du thème quand la liste d’envies n’est pas vide, ou rien ; son menu donne le nombre de chaque onglet. Hors cave reste à portée : un lien « N hors cave » sous les filtres de Mes vins. Sur téléphone, l’app installée a une barre d’onglets en bas (Vins, Stockage, Hors cave, Achats, Plus) ; dans le navigateur, le menu ☰ reprend les sections avec leurs titres (décision du 2026-10-31).' },
 	{ topic: 'Photos des vins (FEAT-01)', choice: 'Un vin peut avoir plusieurs photos : une principale, montrée dans la liste des vins, les autres seulement sur la page du vin. Sur téléphone, le champ propose « Prendre une photo » (appareil photo, sans HTTPS) et « Choisir un fichier ». Avant l’envoi, un aperçu permet de pivoter et de recadrer ; l’image est réduite (environ 1 600 px au plus grand côté, JPEG), tournée dans le bon sens, et ses métadonnées, dont la position GPS, sont retirées ; partout, ordinateur compris. Les images déjà enregistrées restent telles quelles. Une bibliothèque de recadrage serait une dépendance, à proposer au mainteneur (décision du 2026-10-31).' },
 	{ topic: 'Liste d’envies et achats (FEAT-02)', choice: 'La page Pénurie devient « Achats », avec deux onglets, « Liste d’envies » et « Pénurie » (le stock minimum d’aujourd’hui), chacun avec son nombre. Une envie est soit un simple texte, avec une photo si on veut, soit un vin complet créé tout de suite ; toutes deux ont une quantité facultative et une note libre. Depuis une envie liée à un vin, « Ajouter une bouteille » ouvre le formulaire avec l’enchaînement habituel ; au dernier enregistrement, on choisit de retirer le vin de la liste ou non. Depuis une envie en texte, « Créer la fiche du vin » ouvre le formulaire du vin, avec la photo de l’envie reprise, puis enchaîne sur les bouteilles. Une bouteille ajoutée ailleurs, d’un vin de la liste, propose le même retrait au dernier enregistrement. Rien ne sort de la liste sans l’accord de l’utilisateur (décision du 2026-10-31).' },
@@ -355,7 +380,7 @@ export const decisions = [
 	{ topic: 'Couleurs des vins (FEAT-03)', choice: 'Chaque couleur de vin a une vraie couleur, enregistrée en base ; les couleurs de départ reçoivent celles des étiquettes d’aujourd’hui. Créée depuis un formulaire, une couleur reçoit une teinte par défaut ou neutre ; dans Admin › Data, le sélecteur s’affiche dès la création ou la modification. Choisi sur maquette : sur la page Stockage, chaque place occupée prend la couleur de son vin ; les camemberts des statistiques prennent les vraies couleurs ; la liste des vins garde l’étiquette, colorée, et ajoute une bande à gauche de la carte ; les listes de bouteilles montrent l’étiquette colorée à côté du nom du vin. Pas de carte teintée (décision du 2026-10-31). Précisé le 2026-11-01 : les couleurs de départ sont les teintes de vin de la maquette (Rouge #7b1e2b, Blanc #ead98b, Rosé #f2a08c, Jaune #d4952a, N/A #9ca3af) ; une couleur créée depuis un formulaire reçoit le gris de N/A, sauf un nom reconnu, qui reprend sa teinte de départ. Changé le 2026-11-02, sur captures : le contour « seulement quand le contraste manque » donnait des bouteilles avec contour, d’autres sans, et un orange entre les deux, ce que le mainteneur refuse ; toute couleur reçoit désormais le même contour, dans sa propre teinte mêlée de 40 % de noir en clair et de 40 % de blanc en sombre, sur le stockage (une silhouette de bouteille sans étiquette ; une place vide est la même silhouette en contour), les étiquettes, la bande des cartes et la légende des statistiques. Une couleur choisie par l’utilisateur peut avoir un contour sous 3:1 (le blanc pur en clair : 2,85:1) : accepté.' },
 	{ topic: 'Plan de la cave (FEAT-04)', choice: 'La page Stockage devient le plan : un clic sur une case ouvre la liste de ses bouteilles (vin, millésime, couleur), d’où l’on ouvre une bouteille, la marque bue ou la déplace ; on en coche plusieurs puis « Déplacer vers… » une autre case, sans glisser-déposer. Une case reste un bac, sans place précise. La page d’un vin a un bouton « Voir dans la cave », qui met en évidence les cases où il est. La disposition des conteneurs ne change pas (décision du 2026-10-31). Précisé le 2026-11-02 : le choix de la case d’un déplacement est le même sur les trois écrans qui déplacent (liste des bouteilles d’un vin, scan en lot, plan), groupé par conteneur avec la place libre de chaque case, les cases sans place et la case quittée grisées, sans recherche par nom ; chaque bouteille de la case a un menu « ⋯ » (marquer bue, déplacer, modifier) ; « Voir dans la cave » entoure les cases du vin d’un anneau avec une épingle, sous une ligne « Cases contenant … » et « Tout afficher » ; un visiteur voit les bouteilles d’une case sans pouvoir agir ; le MCP liste les bouteilles d’une case (`list_bottles` avec `caseId`).' },
 	{ topic: 'À boire (FEAT-05)', choice: 'Une bouteille, et jamais un vin, peut porter « À boire avant » (une année, un mois facultatif), posé en un clic par « Ce mois-ci », « Cette année » ou « Choisir… », sur une ou plusieurs bouteilles d’un coup. L’année optimale reste facultative et prend le relais quand rien n’est posé. Ordre : date dépassée (signalée, gardée jusqu’à ce que l’utilisateur change ou retire la date), ce mois-ci, cette année, année optimale atteinte, puis par date. Pas d’entrée de menu : un bandeau sur l’accueil (« 3 bouteilles à boire bientôt, dont 1 en retard »), qui déplie la liste ; à revoir sur captures avant le merge. Sur la page Stockage, un repère sur les bouteilles à boire dans un horizon réglé dans les préférences, affiché par un interrupteur dont la valeur par défaut, éteinte, se règle aussi dans les préférences. Une bouteille bue quitte la liste et garde ses valeurs dans son historique (décision du 2026-10-31).' },
-	{ topic: 'Fiche de dégustation (FEAT-06)', choice: 'Une seule fiche par bouteille bue : une note sur 5, l’occasion, le plat et une note libre, tous facultatifs ; l’occasion et le plat en texte libre, avec les valeurs déjà saisies proposées. Marquer une bouteille bue ouvre la fiche dans le même dialogue, avec « Enregistrer » et « Plus tard » ; une fiche laissée pour plus tard se signale dans l’historique, d’où on la complète. La note du vin reste l’avis global de l’utilisateur ; la moyenne des dégustations s’affiche à côté. La page du vin liste ses dégustations, la plus récente en premier ; le MCP pourra les lire (décision du 2026-10-31).' },
+	{ topic: 'Fiches de dégustation (FEAT-06, FEAT-14 à FEAT-16)', choice: 'Revue avec le mainteneur le 2026-11-03, après l’avis d’un utilisateur régulier ; remplace la fiche simple décidée le 2026-10-31. Deux usages : une fiche vierge guide la dégustation (quoi regarder, quels mots employer), consultée dans Outils et téléchargée en PDF A4, pour l’imprimer ou l’afficher en grand sur le téléphone ; la même fiche se remplit, si on le veut, quand on boit une bouteille. Hors fiche, des champs rapides restent toujours proposés : une note sur 5, une note libre, l’occasion et le plat, tous facultatifs (l’occasion et le plat en texte libre, avec les valeurs déjà saisies proposées) ; marquer une bouteille bue les ouvre dans le même dialogue, avec « Enregistrer » et « Plus tard », et une dégustation laissée pour plus tard se signale dans l’historique, d’où on la complète. La note du vin reste l’avis global de l’utilisateur, la moyenne des dégustations s’affiche à côté, et la page du vin liste ses dégustations, la plus récente en premier. La fiche est structurée, pas dessinée librement : des parties (par défaut Œil, Nez, Bouche, Conclusion), des rubriques, et des champs typés (choix unique, choix multiple, échelle, texte libre), avec quelques réglages d’affichage (colonnes, liste ou pastilles, couleur d’un terme). L’application la dessine dans un style propre à la fiche, proche du papier (termes en pastilles qu’on touche et qui se surlignent, palette des couleurs du vin, échelles en barres), utilisable au téléphone, et qui tient sur une page A4. Une fiche par défaut est fournie, inspirée de la structure de la fiche de la COAM montrée par le mainteneur et du vocabulaire courant de la dégustation, sans reprendre sa mise en page, ses textes ni son logo. Plusieurs fiches : chacun peut en créer, en dupliquer et les modifier ; chaque type de vin (vin, mousseux, champagne, spiritueux…) a sa fiche par défaut ; à la dégustation, l’application propose celle du type de la bouteille, et on peut en choisir une autre ou n’en remplir aucune. Versions : une version publiée ne change plus ; chaque dégustation garde la version de sa fiche, chaque champ garde un identifiant stable d’une version à l’autre, et une dégustation s’affiche toujours avec sa version. Passer des dégustations à une nouvelle version fait partie du bloc : ce qui se reporte seul (champs gardés, champs et options ajoutés) est reporté, ce qui serait perdu ou déplacé (champ retiré, texte qui change de rubrique) est proposé à l’utilisateur ; dans l’application fiche par fiche, et par le MCP en lot, l’assistant proposant la correspondance et l’appliquant après confirmation. Le MCP lit et écrit les dégustations, propose une fiche remplie d’après le récit d’une dégustation, que l’utilisateur valide, et crée une fiche ou une version d’après une structure, par exemple lue dans un PDF. Les statistiques de dégustation forment un autre bloc (décisions du 2026-11-03).' },
 	{ topic: 'Producteurs (FEAT-07)', choice: 'Le producteur devient une vraie liste : la migration crée un producteur par nom déjà saisi, en regroupant les noms égaux à la casse, aux accents et aux espaces près, et Admin › Data propose « Fusionner deux producteurs » pour les autres doublons, au choix de l’utilisateur. Seul le nom est obligatoire ; la fiche peut porter pays et région, site web, adresse ou contact, description et photo. Elle montre ses vins, les bouteilles en cave et bues, et la moyenne des dégustations. Le champ du formulaire du vin devient une liste avec recherche, qui crée le producteur comme aujourd’hui, comme l’import CSV. Le nom d’un producteur mène à sa fiche ; une page liste les producteurs (Cave › Producteurs) ; la suppression est refusée tant que des vins l’utilisent (décision du 2026-10-31).' },
 	{ topic: 'Revue de l’import CSV (FEAT-08)', choice: 'Remplace « Après la 1.0 : compte rendu de l’import ». L’import CSV vérifie d’abord, puis montre trois parties, « Prêt à importer », « Déjà en cave » et « À régler », où l’on règle chaque ligne : choisir parmi plusieurs vins, choisir ou créer une valeur inconnue, corriger une cellule invalide, passer ou importer une ligne déjà en cave, ou ignorer la ligne ; « Importer » écrit tout d’un coup. Les choix des imports précédents ne sont que des suggestions, signalées « pré-rempli d’après vos imports précédents ». À la fin, les lignes ignorées se téléchargent en CSV. L’import d’un export (JSON) reste sans revue (décision du 2026-10-31).' },
 	{ topic: 'Notifications (FEAT-09)', choice: 'Admin › Notifications : ntfy (adresse du sujet, jeton facultatif) et un webhook JSON générique, un bouton « Envoyer un test », un jeton jamais réaffiché, la langue des messages (français ou anglais). Chaque événement s’active à part : sauvegarde automatique ratée (actif par défaut), récapitulatif « À boire » chaque semaine ou chaque mois au choix (rien s’il est vide), vin passé sous son stock minimum, récapitulatif hebdomadaire des bouteilles hors cave depuis plus de N jours (N réglable), mise à jour disponible. Cellar vérifie une fois par jour les versions publiées sur GitHub et l’affiche dans l’admin, notification ou pas. D’autres canaux seulement à la demande (décision du 2026-10-31).' },
@@ -2703,7 +2728,7 @@ export const tasks = [
 		done: 'v1.4.1 est publiée sur `main` et son image se télécharge sans connexion ; develop repasse à 1.5.0-rc.0.',
 		deps: ['UI-33'], src: ['Décision « Version corrective 1.4.1 »']
 	},
-	// ───────── P17 À boire et dégustation
+	// ───────── P17 À boire
 	{
 		id: 'FEAT-05', phase: 'P17', size: 'L', sev: 'evolution',
 		title: 'À boire : les bouteilles à boire bientôt',
@@ -2718,19 +2743,6 @@ export const tasks = [
 		deps: ['REL-10'], src: ['Décision « À boire (FEAT-05) »']
 	},
 	{
-		id: 'FEAT-06', phase: 'P17', size: 'M', sev: 'evolution',
-		title: 'Fiche de dégustation',
-		why: 'Marquer une bouteille bue ne garde que sa date : rien sur l’occasion, le plat ou ce qu’on en a pensé, alors que c’est ce qu’on veut relire avant d’en racheter, et ce qu’un assistant pourrait utiliser par le MCP.',
-		where: ['src/lib/server/db/schema.ts', 'drizzle/', 'src/lib/server/features/bottles/', 'src/lib/components/bottles/', 'src/routes/wines/[id]/', 'src/routes/cellar-history/', 'src/lib/server/features/mcp/', 'docs/API.md'],
-		todo: [
-			'Décision « Fiche de dégustation (FEAT-06) » : table des dégustations (migration), une par bouteille ; fiche dans le dialogue « bue », « Plus tard » et signal dans l’historique ; liste et moyenne sur la page du vin ; API, sauvegardes, exports et imports suivent.',
-			'La fiche dans la liste d’une case (FEAT-04) ; les dégustations lisibles par les outils de lecture du MCP (API-10).',
-			'Mise en avant sans contrainte : la fiche s’ouvre déjà dépliée, aucun champ n’est obligatoire.'
-		],
-		done: 'Une bouteille bue avec sa fiche montre la note, l’occasion, le plat et la note libre sur la page du vin, et la moyenne à côté de la note du vin ; une fiche laissée pour plus tard se complète depuis l’historique ; un client MCP lit les dégustations ; testé.',
-		deps: ['REL-10'], src: ['Décision « Fiche de dégustation (FEAT-06) »']
-	},
-	{
 		id: 'DEP-10', phase: 'P17', size: 'S', sev: 'mineur',
 		title: 'Revue des dépendances d’après la 1.4.0',
 		why: 'Ce que DEP-09 n’a pas pu prendre, la 1.3.0 étant publiée avant que les correctifs soient éligibles (choix du mainteneur) : node 24.22.2, SvelteKit, adapter-node, Paraglide, minimatch 11 et la suite.',
@@ -2743,14 +2755,80 @@ export const tasks = [
 	},
 	{
 		id: 'REL-11', phase: 'P17', size: 'S', sev: 'evolution',
-		title: 'Publication de la 1.5.0',
-		why: 'La 1.5.0 apporte aux utilisateurs ce que sa phase a livré.',
+		title: 'Publication du bloc « À boire »',
+		why: 'Le bloc apporte aux utilisateurs ce que sa phase a livré.',
 		where: ['releases.json', 'CHANGELOG.md', 'UPGRADING.md'],
 		todo: [
-			'Résumé 1.5.0 complété à chaque tâche ; banc depuis la version précédente ; release selon RELEASING.md, avec le mainteneur.'
+			'Résumé complété à chaque tâche ; bancs depuis la version précédente et la 1.0.0 ; release selon RELEASING.md, avec le mainteneur, sous le numéro de version suivant (décision « Blocs sans numéro »).'
 		],
-		done: 'v1.5.0 est publiée sur `main` et son image se télécharge sans connexion ; develop passe à la rc suivante.',
-		deps: ['FEAT-05', 'FEAT-06', 'DEP-10'], src: ['Décision « Versions après la 1.0 »']
+		done: 'La version est publiée sur `main` et son image se télécharge sans connexion ; develop passe à la rc suivante.',
+		deps: ['FEAT-05', 'DEP-10'], src: ['Décision « Blocs sans numéro »']
+	},
+	// ───────── P20 Fiches de dégustation
+	{
+		id: 'FEAT-06', phase: 'P20', size: 'L', sev: 'evolution',
+		title: 'Fiches de dégustation : structure, fiche par défaut, Outils et PDF',
+		why: 'Marquer une bouteille bue ne garde que sa date. Une fiche de dégustation guide la dégustation et garde ce qu’on en a pensé ; avant de la remplir, il faut sa structure, une fiche par défaut, et pouvoir la consulter et l’imprimer.',
+		where: ['src/lib/server/db/schema.ts', 'drizzle/', 'src/lib/server/features/', 'src/lib/shared/schemas/', 'src/routes/', 'src/lib/components/', 'src/lib/i18n/locales/', 'src/lib/server/features/mcp/', 'docs/API.md', 'docs/openapi.json'],
+		todo: [
+			'Décision « Fiches de dégustation (FEAT-06, FEAT-14 à FEAT-16) » : tables des fiches et de leurs versions (migration) ; la structure d’une version (parties, rubriques, champs typés, réglages d’affichage, identifiants stables) validée par un schéma zod partagé ; une version publiée ne change plus.',
+			'La fiche par défaut, créée à l’installation et à la mise à jour, et proposée pour tous les types de vin ; sa langue (celle de qui l’ouvre en premier, ou les deux) est à proposer au mainteneur.',
+			'Le rendu de la fiche, dans son propre style (papier, pastilles, palette des couleurs, échelles), qui tient sur une page A4 ; la fiche vierge dans Outils, et son PDF A4 avec `jspdf`, déjà là ; captures montrées au mainteneur avant le merge.',
+			'API (lecture des fiches et de leurs versions), OpenAPI, sauvegardes, export et import JSON ; lecture par le MCP.'
+		],
+		done: 'La fiche par défaut s’affiche dans Outils, au téléphone et à l’ordinateur, en clair et en sombre, et son PDF tient sur une page A4 ; une version publiée ne peut plus changer ; le mainteneur a validé les captures ; testé.',
+		deps: ['REL-16'], src: ['Décision « Fiches de dégustation (FEAT-06, FEAT-14 à FEAT-16) »']
+	},
+	{
+		id: 'FEAT-14', phase: 'P20', size: 'L', sev: 'evolution',
+		title: 'Une dégustation quand on boit une bouteille',
+		why: 'Une bouteille bue ne garde que sa date : ni ce qu’on en a pensé, ni l’occasion, ni le plat, alors que c’est ce qu’on veut relire avant d’en racheter, et ce qu’un assistant peut utiliser.',
+		where: ['src/lib/server/db/schema.ts', 'drizzle/', 'src/lib/server/features/bottles/', 'src/lib/components/bottles/', 'src/routes/wines/[id]/', 'src/routes/cellar-history/', 'src/routes/preferences/', 'src/lib/components/storage/', 'src/lib/server/features/mcp/', 'docs/API.md'],
+		todo: [
+			'Table des dégustations (migration), une par bouteille bue ; les champs rapides (note sur 5, note libre, occasion, plat) dans le dialogue « bue », avec « Enregistrer » et « Plus tard » ; une dégustation laissée pour plus tard se signale dans l’historique.',
+			'Remplir une fiche, au choix : celle du type de la bouteille est proposée, une autre se choisit ; elle se remplit dans son propre rendu (FEAT-06), pensé pour le téléphone ; la dégustation garde la version de la fiche.',
+			'Page du vin : ses dégustations, la plus récente en premier, avec la fiche remplie, et la moyenne à côté de la note du vin ; la dégustation dans la liste d’une case du plan (FEAT-04).',
+			'API, OpenAPI, sauvegardes, exports et imports ; MCP : lire et écrire une dégustation, champs rapides et fiche, avec une description qui demande de faire valider à l’utilisateur la fiche proposée avant de l’enregistrer.'
+		],
+		done: 'Une bouteille bue avec ses champs rapides et une fiche remplie les montre sur la page du vin ; la fiche proposée est celle de son type, et une autre se choisit ; une dégustation laissée pour plus tard se complète depuis l’historique ; un assistant enregistre par le MCP une fiche remplie d’après un récit ; testé.',
+		deps: ['FEAT-06'], src: ['Décision « Fiches de dégustation (FEAT-06, FEAT-14 à FEAT-16) »']
+	},
+	{
+		id: 'FEAT-15', phase: 'P20', size: 'L', sev: 'evolution',
+		title: 'Personnaliser les fiches, avec leurs versions',
+		why: 'Aucune fiche ne convient à tout le monde : chacun doit pouvoir adapter la sienne, en avoir une par type de vin, et la corriger sans abîmer ce qu’il a déjà rempli.',
+		where: ['src/lib/server/features/', 'src/routes/', 'src/lib/components/', 'src/lib/i18n/locales/', 'src/lib/server/features/mcp/', 'docs/API.md'],
+		todo: [
+			'Éditeur dans l’application : créer, dupliquer, renommer une fiche ; ajouter, déplacer et retirer parties, rubriques, champs et termes ; les réglages d’affichage ; un aperçu A4 ; publier un brouillon crée une nouvelle version, sans toucher aux dégustations déjà faites.',
+			'La fiche par défaut de chaque type de vin ; ce que devient une fiche déjà utilisée qu’on veut supprimer est à proposer au mainteneur.',
+			'MCP : créer une fiche ou une nouvelle version d’après une structure, par exemple lue par l’assistant dans un PDF, que l’utilisateur retouche ensuite dans l’éditeur ; refus détaillés.'
+		],
+		done: 'Une fiche dupliquée, modifiée et publiée en nouvelle version laisse intactes les dégustations faites avec l’ancienne ; chaque type de vin propose sa fiche ; un assistant crée une fiche par le MCP ; le mainteneur a validé les captures ; testé.',
+		deps: ['FEAT-06'], src: ['Décision « Fiches de dégustation (FEAT-06, FEAT-14 à FEAT-16) »']
+	},
+	{
+		id: 'FEAT-16', phase: 'P20', size: 'L', sev: 'evolution',
+		title: 'Passer des dégustations à une nouvelle version de leur fiche',
+		why: 'Pour garder des dégustations comparables, on veut qu’elles suivent la dernière version de leur fiche ; une version qui retire ou déplace un champ ne peut pas s’appliquer seule.',
+		where: ['src/lib/server/features/', 'src/routes/', 'src/lib/components/', 'src/lib/i18n/locales/', 'src/lib/server/features/mcp/', 'docs/API.md'],
+		todo: [
+			'Pour une dégustation : ce qui se reporte seul (champs gardés par leur identifiant, champs et options ajoutés) et ce qui demande un choix (champ retiré, texte qui change de rubrique) ; rien ne se perd sans confirmation.',
+			'Dans l’application, fiche par fiche, depuis la dégustation et depuis la liste des dégustations d’une version ancienne.',
+			'MCP, en lot : lister les dégustations par fiche et par version ; proposer une migration sans rien écrire (correspondance et pertes) ; l’appliquer après confirmation ; refus détaillés.'
+		],
+		done: 'Après une version qui ajoute un champ, en retire un autre et déplace un texte, une dégustation passe à la nouvelle version dans l’application après un choix pour le champ retiré, et dix dégustations passent en lot par le MCP après confirmation ; rien n’est perdu sans confirmation ; testé.',
+		deps: ['FEAT-14', 'FEAT-15'], src: ['Décision « Fiches de dégustation (FEAT-06, FEAT-14 à FEAT-16) »']
+	},
+	{
+		id: 'REL-17', phase: 'P20', size: 'S', sev: 'evolution',
+		title: 'Publication du bloc « Dégustation »',
+		why: 'Le bloc apporte aux utilisateurs ce que sa phase a livré.',
+		where: ['releases.json', 'CHANGELOG.md', 'UPGRADING.md'],
+		todo: [
+			'La branche `feat/tasting` remise à jour sur develop, ses migrations recréées, puis rejointe par fast-forward quand le mainteneur valide le bloc ; résumé complété à chaque tâche ; bancs depuis la version précédente et la 1.0.0 ; release selon RELEASING.md, avec le mainteneur, sous le numéro de version suivant (décision « Blocs sans numéro »).'
+		],
+		done: 'La version est publiée sur `main` et son image se télécharge sans connexion ; develop passe à la rc suivante.',
+		deps: ['FEAT-06', 'FEAT-14', 'FEAT-15', 'FEAT-16'], src: ['Décision « Blocs sans numéro »']
 	},
 	// ───────── P18 Producteurs et revue de l’import
 	{
@@ -2763,8 +2841,8 @@ export const tasks = [
 			'Fiche, page Cave › Producteurs, lien depuis la carte et la page du vin, champ avec recherche et création dans le formulaire, import CSV ; API, sauvegardes, exports et imports suivent, sans casser les scripts qui envoient `producer` en texte (sinon action de mise à jour, à faire valider).',
 			'Statistiques par producteur (UI-28) branchées sur la nouvelle table.'
 		],
-		done: 'Après la mise à jour, chaque vin a son producteur, les variantes de casse sont fusionnées et les autres doublons se fusionnent dans l’admin ; la fiche montre ses vins, ses bouteilles en cave et bues, et la moyenne des dégustations ; testé, migration comprise.',
-		deps: ['REL-11'], src: ['Décision « Producteurs (FEAT-07) »']
+		done: 'Après la mise à jour, chaque vin a son producteur, les variantes de casse sont fusionnées et les autres doublons se fusionnent dans l’admin ; la fiche montre ses vins, ses bouteilles en cave et bues, et la moyenne des dégustations si le bloc « Dégustation » est sorti ; testé, migration comprise.',
+		deps: ['REL-16'], src: ['Décision « Producteurs (FEAT-07) »']
 	},
 	{
 		id: 'FEAT-08', phase: 'P18', size: 'L', sev: 'evolution',
@@ -2781,14 +2859,14 @@ export const tasks = [
 	},
 	{
 		id: 'REL-12', phase: 'P18', size: 'S', sev: 'evolution',
-		title: 'Publication de la 1.6.0',
-		why: 'La 1.6.0 apporte aux utilisateurs ce que sa phase a livré.',
+		title: 'Publication du bloc « Producteurs »',
+		why: 'Le bloc apporte aux utilisateurs ce que sa phase a livré.',
 		where: ['releases.json', 'CHANGELOG.md', 'UPGRADING.md'],
 		todo: [
-			'Résumé 1.6.0 complété à chaque tâche ; banc depuis la version précédente ; release selon RELEASING.md, avec le mainteneur.'
+			'Résumé complété à chaque tâche ; bancs depuis la version précédente et la 1.0.0 ; release selon RELEASING.md, avec le mainteneur, sous le numéro de version suivant (décision « Blocs sans numéro »).'
 		],
-		done: 'v1.6.0 est publiée sur `main` et son image se télécharge sans connexion ; develop passe à la rc suivante.',
-		deps: ['FEAT-07', 'FEAT-08'], src: ['Décision « Versions après la 1.0 »']
+		done: 'La version est publiée sur `main` et son image se télécharge sans connexion ; develop passe à la rc suivante.',
+		deps: ['FEAT-07', 'FEAT-08'], src: ['Décision « Blocs sans numéro »']
 	},
 	// ───────── P19 Notifications
 	{
@@ -2802,17 +2880,40 @@ export const tasks = [
 			'Les adresses et jetons ne sortent jamais dans les journaux ; un échec d’envoi est journalisé sans bloquer l’app.'
 		],
 		done: 'Un serveur ntfy de test et un webhook de test reçoivent chacun des événements activés, dans la langue choisie, et rien des événements coupés ; une sauvegarde ratée envoie son message ; la mise à jour disponible s’affiche dans l’admin ; testé.',
-		deps: ['REL-12'], src: ['Décision « Notifications (FEAT-09) »']
+		deps: ['FEAT-05'], src: ['Décision « Notifications (FEAT-09) »']
 	},
 	{
 		id: 'REL-13', phase: 'P19', size: 'S', sev: 'evolution',
-		title: 'Publication de la 1.7.0',
-		why: 'La 1.7.0 apporte aux utilisateurs ce que sa phase a livré.',
+		title: 'Publication du bloc « Notifications »',
+		why: 'Le bloc apporte aux utilisateurs ce que sa phase a livré.',
 		where: ['releases.json', 'CHANGELOG.md', 'UPGRADING.md'],
 		todo: [
-			'Résumé 1.7.0 complété à chaque tâche ; banc depuis la version précédente ; release selon RELEASING.md, avec le mainteneur.'
+			'Résumé complété à chaque tâche ; bancs depuis la version précédente et la 1.0.0 ; release selon RELEASING.md, avec le mainteneur, sous le numéro de version suivant (décision « Blocs sans numéro »).'
 		],
-		done: 'v1.7.0 est publiée sur `main` et son image se télécharge sans connexion ; develop passe à la rc suivante.',
-		deps: ['FEAT-09'], src: ['Décision « Versions après la 1.0 »']
+		done: 'La version est publiée sur `main` et son image se télécharge sans connexion ; develop passe à la rc suivante.',
+		deps: ['FEAT-09'], src: ['Décision « Blocs sans numéro »']
+	},
+	// ───────── P21 Statistiques de dégustation
+	{
+		id: 'FEAT-17', phase: 'P21', size: 'M', sev: 'evolution',
+		title: 'Statistiques de dégustation',
+		why: 'Une fois des dégustations remplies, on voudra voir ce qu’elles disent dans leur ensemble : notes par vin, région ou producteur, termes qui reviennent, évolution d’un même vin.',
+		where: ['src/routes/statistics/', 'src/lib/components/statistics/', 'src/lib/server/features/'],
+		todo: [
+			'À détailler avec le mainteneur avant le bloc, quand des dégustations existent.'
+		],
+		done: 'À fixer avec le mainteneur.',
+		deps: ['REL-17'], src: ['Décision « Fiches de dégustation (FEAT-06, FEAT-14 à FEAT-16) »']
+	},
+	{
+		id: 'REL-18', phase: 'P21', size: 'S', sev: 'evolution',
+		title: 'Publication du bloc « Statistiques de dégustation »',
+		why: 'Le bloc apporte aux utilisateurs ce que sa phase a livré.',
+		where: ['releases.json', 'CHANGELOG.md', 'UPGRADING.md'],
+		todo: [
+			'Résumé complété à chaque tâche ; bancs depuis la version précédente et la 1.0.0 ; release selon RELEASING.md, avec le mainteneur, sous le numéro de version suivant (décision « Blocs sans numéro »).'
+		],
+		done: 'La version est publiée sur `main` et son image se télécharge sans connexion ; develop passe à la rc suivante.',
+		deps: ['FEAT-17'], src: ['Décision « Blocs sans numéro »']
 	}
 ];

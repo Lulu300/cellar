@@ -445,10 +445,12 @@ function versionSection(v) {
 	if (!phases) return '';
 	const all = versionTasks(v);
 	const when = v.released ? 'publiée le ' + longDate(v.released) : v === currentVersion ? 'en cours' : 'à venir';
-	return `<section class="version" aria-labelledby="v-${v.id}">
+	// A block not yet released is named, not numbered: its name may hold spaces.
+	const anchor = 'v-' + v.id.replace(/\s+/g, '-');
+	return `<section class="version" aria-labelledby="${anchor}">
 		<div class="version-head">
-			<span class="version-id">${v.id}</span>
-			<h2 id="v-${v.id}">${esc(v.title)}</h2>
+			<span class="version-id">${esc(v.id)}</span>
+			<h2 id="${anchor}">${esc(v.title)}</h2>
 			<span class="phase-count">${when} · ${counts(all).done} / ${all.length}</span>
 			<p class="version-goal">${md(v.goal)}</p>
 			${progressBar(all)}

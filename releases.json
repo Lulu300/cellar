@@ -1,7 +1,7 @@
 [
   {
     "version": "1.5.0",
-    "summary": "1.5.0 shows which bottles to drink soon, and keeps a tasting sheet for each bottle drunk.",
+    "summary": "1.5.0 shows which bottles to drink soon.",
     "mandatoryStop": false,
     "actions": []
   },

@@ -58,7 +58,7 @@
                 size="sm"
                 class="ml-auto"
                 aria-expanded={open}
-                aria-controls="{id}-list"
+                aria-controls={open ? `${id}-list` : undefined}
                 onclick={() => (open = !open)}
             >
                 {open ? m['drinking.hide_list']() : m['drinking.show_list']()}

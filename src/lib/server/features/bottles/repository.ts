@@ -172,6 +172,7 @@ export function listBottlesByAvailability(availabilities: BottleAvailability[]) 
 export function listCaseDrinkingDates() {
     return db
         .select({
+            // Never null: the where leaves those out.
             storageCaseId: sql<string>`${wineBottles.storageCaseId}`,
             drinkBefore: wineBottles.drinkBefore,
             optimum: wineBottles.optimum

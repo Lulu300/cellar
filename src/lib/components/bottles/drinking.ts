@@ -1,11 +1,13 @@
 import { m } from '#lib/paraglide/messages.js';
 import { getLocale } from '#lib/paraglide/runtime.js';
 import {
-    DrinkingRank,
     monthOf,
+    parseDrinkBefore,
+    RANK_ORDER,
     rankWithin,
     type DrinkingDates,
     type DrinkingHorizon,
+    type DrinkingRank,
     type Month
 } from '#lib/shared/drinking.js';
 
@@ -15,6 +17,19 @@ const RANK_LABELS: Record<DrinkingRank, () => string> = {
     this_year: m['drinking.this_year'],
     optimum_reached: m['drinking.optimum_reached'],
     later: m['drinking.later']
+};
+
+/**
+ * The colour of each rank, which only doubles its shape: late and this month keep the destructive
+ * and warning colours and optimum reached the success colour, which no theme changes, this year
+ * the theme's text colour, later the muted grey.
+ */
+export const RANK_TEXT: Record<DrinkingRank, string> = {
+    late: 'text-destructive',
+    this_month: 'text-warning',
+    this_year: 'text-primary-text',
+    optimum_reached: 'text-success',
+    later: 'text-muted-foreground'
 };
 
 /** The name of a rank: « En retard », « Ce mois-ci »… */
@@ -56,11 +71,12 @@ export function marksByCase(
         ranks.set(rank, (ranks.get(rank) ?? 0) + 1);
         counts.set(bottle.storageCaseId, ranks);
     }
-    const order = Object.values(DrinkingRank);
     return new Map(
         [...counts].map(([caseId, ranks]) => [
             caseId,
-            order.flatMap((rank) => (ranks.has(rank) ? [{ rank, count: ranks.get(rank)! }] : []))
+            RANK_ORDER.flatMap((rank) =>
+                ranks.has(rank) ? [{ rank, count: ranks.get(rank)! }] : []
+            )
         ])
     );
 }
@@ -80,7 +96,7 @@ function monthText(year: number, month: number): string {
 
 /** A « drink before » as the lists say it: « avant fin nov. 2026 », « avant fin 2026 ». */
 export function drinkBeforeText(drinkBefore: string): string {
-    const [year, month] = drinkBefore.split('-').map(Number);
+    const { year, month } = parseDrinkBefore(drinkBefore);
     return m['drinking.before_end_of']({ date: month ? monthText(year, month) : String(year) });
 }
 

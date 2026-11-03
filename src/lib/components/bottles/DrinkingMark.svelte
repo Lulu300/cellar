@@ -1,15 +1,14 @@
 <script lang="ts">
     import type { DrinkingRank } from '#lib/shared/drinking.js';
     import { cn } from '#lib/utils.js';
+    import { RANK_TEXT } from './drinking.js';
 
     /**
      * How soon to drink a bottle, as a shape that tells it without its colour, the same wherever a
      * rank shows: late a triangle (a warning), this month a filled disc, this year a hollow ring,
      * optimum reached a diamond, later a short dash. Drawn on a 12-unit grid, so that every shape
-     * keeps its weight at any `size`. The colour only doubles the shape: late and this month keep
-     * the destructive and warning colours and optimum reached the success colour, which no theme
-     * changes, this year the theme's text colour, later the muted grey. Decorative: the rank is
-     * always said in text beside it.
+     * keeps its weight at any `size`; its colour (RANK_TEXT) only doubles it. Decorative: the rank
+     * is always said in text beside it.
      */
     let {
         rank,
@@ -21,21 +20,13 @@
         size?: number;
         class?: string;
     } = $props();
-
-    const TONES: Record<DrinkingRank, string> = {
-        late: 'text-destructive',
-        this_month: 'text-warning',
-        this_year: 'text-primary-text',
-        optimum_reached: 'text-success',
-        later: 'text-muted-foreground'
-    };
 </script>
 
 <svg
     viewBox="0 0 12 12"
     width={size}
     height={size}
-    class={cn('inline-block shrink-0', TONES[rank], className)}
+    class={cn('inline-block shrink-0', RANK_TEXT[rank], className)}
     aria-hidden="true"
 >
     {#if rank === 'late'}

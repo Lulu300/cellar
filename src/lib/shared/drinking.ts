@@ -18,7 +18,8 @@ export const DrinkingRank = {
 
 export type DrinkingRank = (typeof DrinkingRank)[keyof typeof DrinkingRank];
 
-const RANK_ORDER: readonly DrinkingRank[] = Object.values(DrinkingRank);
+/** The ranks, the most urgent first. */
+export const RANK_ORDER: readonly DrinkingRank[] = Object.values(DrinkingRank);
 
 /** The ranks of the bottles to drink soon: the drink-soon list leaves the later ones out. */
 export const SOON: readonly DrinkingRank[] = RANK_ORDER.filter(
@@ -43,7 +44,7 @@ export interface DrinkingDates {
 }
 
 /** The year and the month, if any, of a « drink before ». */
-function parsed(drinkBefore: string): { year: number; month: number | null } {
+export function parseDrinkBefore(drinkBefore: string): { year: number; month: number | null } {
     const [year, month] = drinkBefore.split('-').map(Number);
     return { year, month: month ?? null };
 }
@@ -54,7 +55,7 @@ function parsed(drinkBefore: string): { year: number; month: number | null } {
  */
 function deadline({ drinkBefore, optimum }: DrinkingDates): Month | null {
     if (drinkBefore !== null) {
-        const { year, month } = parsed(drinkBefore);
+        const { year, month } = parseDrinkBefore(drinkBefore);
         return { year, month: month ?? 12 };
     }
     return optimum === null ? null : { year: optimum, month: 12 };
@@ -68,7 +69,7 @@ export function drinkingRank(bottle: DrinkingDates, now: Month): DrinkingRank | 
         if (bottle.optimum === null) return null;
         return bottle.optimum <= now.year ? DrinkingRank.OPTIMUM_REACHED : DrinkingRank.LATER;
     }
-    const { year, month } = parsed(bottle.drinkBefore);
+    const { year, month } = parseDrinkBefore(bottle.drinkBefore);
     if (monthNumber({ year, month: month ?? 12 }) < monthNumber(now)) return DrinkingRank.LATE;
     if (year > now.year) return DrinkingRank.LATER;
     return month === now.month ? DrinkingRank.THIS_MONTH : DrinkingRank.THIS_YEAR;

@@ -101,7 +101,7 @@
                     class={tile}
                     disabled={changes.sending}
                     aria-expanded={choosing}
-                    aria-controls="{id}-choose"
+                    aria-controls={choosing ? `${id}-choose` : undefined}
                     onclick={() => (choosing = !choosing)}
                 >
                     <CalendarCog class="h-5 w-5" aria-hidden="true" />

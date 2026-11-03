@@ -7,10 +7,16 @@ import CaseLoad from './CaseLoad.svelte';
 const RED = '#7b1e2b';
 const PALE = '#ead98b';
 
-function renderCase(colors: string[], capacity: number, highlighted = false) {
+function renderCase(
+    colors: string[],
+    capacity: number,
+    highlighted = false,
+    marks: { rank: 'late' | 'this_year'; count: number }[] = []
+) {
     return render(CaseLoad, {
         props: {
             highlighted,
+            marks,
             storageCase: {
                 id: 'a1',
                 name: 'A1',
@@ -68,5 +74,19 @@ describe('CaseLoad', () => {
         expect(highlighted).toContain('aria-label="A1: 1 of 6 bottles, holds the wine shown"');
         expect(highlighted).toContain('ring-primary');
         expect(renderCase([RED], 6)).not.toContain('ring-primary');
+    });
+
+    // FEAT-05: the badges are drawn only; the name of the case says them.
+    it('names the bottles to drink of the case, by rank, after what it holds', () => {
+        useLocale('fr');
+        const body = renderCase([RED, PALE], 6, false, [
+            { rank: 'late', count: 1 },
+            { rank: 'this_year', count: 1 }
+        ]);
+
+        expect(body).toContain(
+            'aria-label="A1 : 2 sur 6 bouteilles. À boire : 1 en retard, 1 cette année"'
+        );
+        expect(renderCase([RED], 6)).not.toContain('À boire');
     });
 });

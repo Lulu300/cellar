@@ -1222,5 +1222,8 @@
   "preferences.horizon_next_year": "D’ici l’an prochain",
   "preferences.horizon_two_years": "D’ici deux ans",
   "preferences.drinking_marker": "Repère sur la page Stockage",
-  "preferences.drinking_marker_description": "Si la page Stockage montre les bouteilles à boire à son ouverture."
+  "preferences.drinking_marker_description": "Si la page Stockage montre les bouteilles à boire à son ouverture.",
+  "drinking.count_later": "{count, number} plus tard",
+  "drinking.case_marks": "À boire : {marks}",
+  "drinking.storage_toggle": "Bouteilles à boire"
 }

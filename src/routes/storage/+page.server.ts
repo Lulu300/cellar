@@ -1,3 +1,4 @@
+import { listCaseDrinkingDates } from '#lib/server/features/bottles/service.js';
 import { getDefinitionDetails } from '#lib/server/features/catalog/service.js';
 import { storageOverview, wineLocations } from '#lib/server/features/storage/service.js';
 import { NotFoundError } from '#lib/server/http/errors.js';
@@ -5,13 +6,16 @@ import { CELLAR } from '#lib/shared/dependencies.js';
 import type { PageServerLoad } from './$types';
 
 // Public data only: the containers and cases that GET /api/storage-containers and
-// /api/storage-cases give, with the bottles that GET /api/storage-occupancy counts, and the cases
-// of the wine of `?wine=`, which GET /api/wines/{id}/locations gives.
+// /api/storage-cases give, with the bottles that GET /api/storage-occupancy counts, the cases
+// of the wine of `?wine=`, which GET /api/wines/{id}/locations gives, and the dates of the
+// bottles of each case, which GET /api/bottles gives: the browser marks those to drink within
+// the horizon of its preferences.
 export const load: PageServerLoad = ({ depends, url }) => {
     depends(CELLAR);
     return {
         containers: storageOverview(),
-        highlight: casesHoldingWine(url.searchParams.get('wine'))
+        highlight: casesHoldingWine(url.searchParams.get('wine')),
+        drinking: listCaseDrinkingDates()
     };
 };
 

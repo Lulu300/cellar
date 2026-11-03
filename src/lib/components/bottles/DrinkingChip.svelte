@@ -1,8 +1,7 @@
 <script lang="ts">
     import { Badge } from '#lib/components/ui/badge/index.js';
-    import { m } from '#lib/paraglide/messages.js';
     import type { DrinkingRank } from '#lib/shared/drinking.js';
-    import { rankLabel } from './drinking.js';
+    import { countedLabel, rankLabel } from './drinking.js';
     import DrinkingMark from './DrinkingMark.svelte';
 
     /**
@@ -20,16 +19,7 @@
         later: 'text-muted-foreground'
     };
 
-    const COUNTED: Partial<Record<DrinkingRank, (inputs: { count: number }) => string>> = {
-        late: m['drinking.count_late'],
-        this_month: m['drinking.count_this_month'],
-        this_year: m['drinking.count_this_year'],
-        optimum_reached: m['drinking.count_optimum_reached']
-    };
-
-    const text = $derived(
-        count !== undefined && COUNTED[rank] ? COUNTED[rank]({ count }) : rankLabel(rank)
-    );
+    const text = $derived(count === undefined ? rankLabel(rank) : countedLabel(rank, count));
 </script>
 
 <Badge variant="outline" class="gap-1 {TONES[rank]}">

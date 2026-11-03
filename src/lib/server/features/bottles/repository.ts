@@ -165,6 +165,28 @@ export function listBottlesByAvailability(availabilities: BottleAvailability[]) 
         .map(toBottleWithDefinition);
 }
 
+/**
+ * The case and the dates of each bottle in the cellar that a case holds and that has a « drink
+ * before » or an optimum year: what the storage page marks.
+ */
+export function listCaseDrinkingDates() {
+    return db
+        .select({
+            storageCaseId: sql<string>`${wineBottles.storageCaseId}`,
+            drinkBefore: wineBottles.drinkBefore,
+            optimum: wineBottles.optimum
+        })
+        .from(wineBottles)
+        .where(
+            and(
+                eq(wineBottles.availability, BottleAvailability.AVAILABLE),
+                isNotNull(wineBottles.storageCaseId),
+                or(isNotNull(wineBottles.drinkBefore), isNotNull(wineBottles.optimum))
+            )
+        )
+        .all();
+}
+
 /** How many bottles have this availability. */
 export function countBottlesByAvailability(availability: BottleAvailability): number {
     return db

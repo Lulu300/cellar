@@ -1,7 +1,8 @@
 <script lang="ts">
     import { pageTitle } from '#lib/components/layout/navigation.js';
     import { onMount, untrack } from 'svelte';
-    import { List, MapPin, RotateCcw } from '@lucide/svelte';
+    import { Clock, List, MapPin, RotateCcw } from '@lucide/svelte';
+    import { marksByCase } from '#lib/components/bottles/drinking.js';
     import { m } from '#lib/paraglide/messages.js';
     import AllBottlesDialog from '#lib/components/storage/AllBottlesDialog.svelte';
     import CaseBottlesDialog from '#lib/components/storage/CaseBottlesDialog.svelte';
@@ -27,10 +28,19 @@
     // The server renders the defaults: the preferences of the browser apply once mounted.
     let viewMode = $state<'table' | 'grid'>('table');
     let containersAsColumns = $state(true);
+    let showDrinking = $state(false);
     onMount(() => {
         viewMode = preferences.storageViewMode;
         containersAsColumns = preferences.containersAsColumns;
+        showDrinking = preferences.showDrinkingMarker;
     });
+
+    // The bottles to drink of each case within the horizon of the preferences, in this browser's
+    // month, while the marker is shown.
+    const horizon = $derived(showDrinking ? preferences.drinkingHorizon : undefined);
+    const marks = $derived(
+        horizon ? marksByCase(data.drinking, horizon) : new Map<string, never>()
+    );
 
     const containersPerPage = 20;
     const containers = $derived(data.containers);
@@ -122,6 +132,15 @@
                 </Button>
             </div>
 
+            <Button
+                variant={showDrinking ? 'default' : 'outline'}
+                aria-pressed={showDrinking}
+                onclick={() => (showDrinking = !showDrinking)}
+            >
+                <Clock class="h-4 w-4 mr-2" aria-hidden="true" />
+                {m['drinking.storage_toggle']()}
+            </Button>
+
             {#if viewMode === 'table'}
                 <Button
                     variant="outline"
@@ -175,7 +194,7 @@
         {/snippet}
 
         {#if viewMode === 'grid'}
-            <StorageGrid containers={pageOfContainers} {highlighted} {onOpen} {onEdit} />
+            <StorageGrid containers={pageOfContainers} {highlighted} {marks} {onOpen} {onEdit} />
             <div class="mt-6">{@render pagination()}</div>
         {:else}
             <Card>
@@ -188,6 +207,7 @@
                         containers={pageOfContainers}
                         {containersAsColumns}
                         {highlighted}
+                        {marks}
                         {onOpen}
                         {onEdit}
                     />
@@ -233,5 +253,9 @@
 <AllBottlesDialog bind:open={showAllBottlesDialog} />
 
 {#if openedCase}
-    <CaseBottlesDialog storageCase={openedCase} onClose={() => (openedCaseId = null)} />
+    <CaseBottlesDialog
+        storageCase={openedCase}
+        drinkingHorizon={horizon}
+        onClose={() => (openedCaseId = null)}
+    />
 {/if}

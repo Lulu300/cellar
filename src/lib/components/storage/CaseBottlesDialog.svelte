@@ -15,6 +15,7 @@
     import { Dialog } from '#lib/components/ui/dialog/index.js';
     import { m } from '#lib/paraglide/messages.js';
     import { CELLAR } from '#lib/shared/dependencies.js';
+    import type { DrinkingHorizon } from '#lib/shared/drinking.js';
     import type { BottleWithDefinitionDTO, Jsonified } from '#lib/shared/dto.js';
     import { sortBottles, type BottleSort } from '#lib/utils/bottle-sort.js';
 
@@ -26,10 +27,13 @@
      */
     let {
         storageCase,
+        drinkingHorizon,
         onClose
     }: {
         /** The case as the storage page shows it, which a change reloads. */
         storageCase: { id: string; name: string; capacity: number; bottles: number };
+        /** While the page marks the bottles to drink, those within this horizon get a chip. */
+        drinkingHorizon?: DrinkingHorizon;
         onClose: () => void;
     } = $props();
 
@@ -128,11 +132,12 @@
         {:else if failed}
             <p class="text-center py-8 text-destructive">{m['storage.failed_to_load_bottles']()}</p>
         {:else}
-            <!-- The wine alone, which shows the vintage after the producer: a column more would
-                 not fit a phone. -->
+            <!-- The wine alone, which shows the vintage after the producer and, while the page
+                 marks the bottles to drink, their chip: a column more would not fit a phone. -->
             <BottleTable
                 bottles={sortedBottles}
                 columns={['definition']}
+                {drinkingHorizon}
                 {sort}
                 onSort={(next) => (sort = next)}
                 emptyMessage={m['storage.case_empty']()}

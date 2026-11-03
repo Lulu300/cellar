@@ -29,7 +29,14 @@ beforeAll(async () => {
         { storageCaseId: rack[0], availability: BottleAvailability.AVAILABLE },
         { storageCaseId: rack[0], availability: BottleAvailability.AVAILABLE },
         // Out of the cellar, it keeps its case without being in it.
-        { storageCaseId: rack[1], availability: BottleAvailability.OUT_OF_CELLAR }
+        {
+            storageCaseId: rack[1],
+            availability: BottleAvailability.OUT_OF_CELLAR,
+            drinkBefore: '2026-11'
+        },
+        { storageCaseId: rack[2], availability: BottleAvailability.AVAILABLE, optimum: 2024 },
+        { storageCaseId: rack[2], availability: BottleAvailability.AVAILABLE, drinkBefore: '2027' },
+        { availability: BottleAvailability.AVAILABLE, drinkBefore: '2026' }
     ]);
 });
 
@@ -48,5 +55,16 @@ describe('the load of /storage', () => {
     it('highlights nothing without a wine, or for a wine that does not exist', () => {
         expect(loadStorage().highlight).toBeNull();
         expect(loadStorage('?wine=unknown').highlight).toBeNull();
+    });
+
+    // The storage marker (FEAT-05): the browser ranks them within the horizon it is set to.
+    it('gives the dates of the bottles in the cellar that a case holds, and only those', () => {
+        expect(loadStorage().drinking).toEqual(
+            expect.arrayContaining([
+                { storageCaseId: rack[2], drinkBefore: null, optimum: 2024 },
+                { storageCaseId: rack[2], drinkBefore: '2027', optimum: null }
+            ])
+        );
+        expect(loadStorage().drinking).toHaveLength(2);
     });
 });

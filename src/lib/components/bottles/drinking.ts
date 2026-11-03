@@ -1,11 +1,11 @@
 import { m } from '#lib/paraglide/messages.js';
 import { getLocale } from '#lib/paraglide/runtime.js';
 import {
-    drinkingRank,
+    DrinkingRank,
     monthOf,
-    SOON,
+    rankWithin,
     type DrinkingDates,
-    type DrinkingRank,
+    type DrinkingHorizon,
     type Month
 } from '#lib/shared/drinking.js';
 
@@ -20,11 +20,56 @@ const RANK_LABELS: Record<DrinkingRank, () => string> = {
 /** The name of a rank: « En retard », « Ce mois-ci »… */
 export const rankLabel = (rank: DrinkingRank): string => RANK_LABELS[rank]();
 
-/** The rank of a bottle to drink soon in the browser's month, null for any other bottle. */
-export function soonRank(bottle: DrinkingDates, now: Month = monthOf(new Date())) {
-    const rank = drinkingRank(bottle, now);
-    return rank !== null && SOON.includes(rank) ? rank : null;
+const COUNTED_LABELS: Record<DrinkingRank, (inputs: { count: number }) => string> = {
+    late: m['drinking.count_late'],
+    this_month: m['drinking.count_this_month'],
+    this_year: m['drinking.count_this_year'],
+    optimum_reached: m['drinking.count_optimum_reached'],
+    later: m['drinking.count_later']
+};
+
+/** How many bottles have a rank: « 2 en retard ». */
+export const countedLabel = (rank: DrinkingRank, count: number): string =>
+    COUNTED_LABELS[rank]({ count });
+
+/** The rank of a bottle within `horizon`, in the browser's month: null when it is not marked. */
+export const markedRank = (
+    bottle: DrinkingDates,
+    horizon: DrinkingHorizon,
+    now: Month = monthOf(new Date())
+) => rankWithin(bottle, horizon, now);
+
+/** How many bottles of a case have a rank, the most urgent first. */
+export type CaseMarks = { rank: DrinkingRank; count: number }[];
+
+/** The marks of each case that holds bottles to drink within `horizon`, by case id. */
+export function marksByCase(
+    bottles: (DrinkingDates & { storageCaseId: string })[],
+    horizon: DrinkingHorizon,
+    now: Month = monthOf(new Date())
+): Map<string, CaseMarks> {
+    const counts = new Map<string, Map<DrinkingRank, number>>();
+    for (const bottle of bottles) {
+        const rank = rankWithin(bottle, horizon, now);
+        if (rank === null) continue;
+        const ranks = counts.get(bottle.storageCaseId) ?? new Map<DrinkingRank, number>();
+        ranks.set(rank, (ranks.get(rank) ?? 0) + 1);
+        counts.set(bottle.storageCaseId, ranks);
+    }
+    const order = Object.values(DrinkingRank);
+    return new Map(
+        [...counts].map(([caseId, ranks]) => [
+            caseId,
+            order.flatMap((rank) => (ranks.has(rank) ? [{ rank, count: ranks.get(rank)! }] : []))
+        ])
+    );
 }
+
+/** What a screen reader hears of the marks of a case: « À boire : 1 en retard, 2 cette année ». */
+export const marksName = (marks: CaseMarks): string =>
+    m['drinking.case_marks']({
+        marks: marks.map(({ rank, count }) => countedLabel(rank, count)).join(', ')
+    });
 
 /** « nov. 2026 » */
 function monthText(year: number, month: number): string {

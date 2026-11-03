@@ -25,12 +25,14 @@ import {
     listBottlesNotConsumed,
     listBottlesWithDefinitions,
     listBottlesWithoutDefinitions,
+    listCaseDrinkingDates,
     updateBottle,
     winesBelowTarget
 } from './repository';
 
 export {
     countBottlesByAvailability,
+    listCaseDrinkingDates,
     listBottlesForAdmin,
     listBottlesNotConsumed,
     listBottlesWithDefinitions,

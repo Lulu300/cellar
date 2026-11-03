@@ -6,22 +6,28 @@
     import { wineColorStyle } from '#lib/utils/wine-color.js';
     import { utilization, utilizationColor } from './storage.js';
     import { chosenTile, quietButton } from '#lib/components/layout/button-states.js';
+    import { marksName, type CaseMarks } from '#lib/components/bottles/drinking.js';
+    import DrinkingMark from '#lib/components/bottles/DrinkingMark.svelte';
 
     /**
      * A case with a bottle icon per place, filled for each bottle it holds, and how full it is: a
      * button that opens its bottles. A large case draws 24 places at most, 15 in the compact form
      * of the grid, then the number of the others: a case of 1,000 places would make a heavy page.
+     * With `marks`, a badge for each rank of its bottles to drink, with their number.
      */
     let {
         storageCase,
         compact = false,
         highlighted = false,
+        marks = [],
         onOpen
     }: {
         storageCase: StorageContainerDTO['cases'][number];
         compact?: boolean;
         /** Whether it holds the wine that the page looks for. */
         highlighted?: boolean;
+        /** How many of its bottles to drink it holds, by rank, while the page shows them. */
+        marks?: CaseMarks;
         onOpen: () => void;
     } = $props();
 
@@ -72,6 +78,22 @@
     {name}
 {/snippet}
 
+<!-- The shapes and numbers are drawn only: the name of the button says them. -->
+{#snippet drinking()}
+    {#if marks.length > 0}
+        <span class="flex flex-wrap justify-center gap-1" aria-hidden="true">
+            {#each marks as { rank, count } (rank)}
+                <span
+                    class="inline-flex items-center gap-0.5 rounded-full border bg-card px-1.5 text-xs font-medium leading-4"
+                >
+                    <DrinkingMark {rank} size={9} />
+                    {count}
+                </span>
+            {/each}
+        </span>
+    {/if}
+{/snippet}
+
 {#snippet badge()}
     <span class="px-1 py-0.5 rounded text-xs {utilizationColor(percent)}">
         {formatPercent(percent)}
@@ -88,14 +110,18 @@
             ? `ring-2 ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-card ${chosenTile}`
             : quietButton
     ]}
-    aria-label={highlighted
-        ? m['storage.open_case_holding_wine']({ name, bottles, capacity })
-        : m['storage.open_case']({ name, bottles, capacity })}
+    aria-label={[
+        highlighted
+            ? m['storage.open_case_holding_wine']({ name, bottles, capacity })
+            : m['storage.open_case']({ name, bottles, capacity }),
+        ...(marks.length > 0 ? [marksName(marks)] : [])
+    ].join('. ')}
     onclick={onOpen}
 >
     {#if compact}
-        <div class="flex justify-between items-center mb-1">
+        <div class="flex flex-wrap justify-between items-center gap-x-2 gap-y-1 mb-1">
             <span class="text-sm font-medium">{@render title()}</span>
+            {@render drinking()}
             <span class="text-xs text-muted-foreground">{bottles}/{capacity}</span>
         </div>
         <div class="flex flex-wrap gap-0.5">
@@ -106,6 +132,7 @@
     {:else}
         <div class="space-y-2">
             <div class="text-xs font-medium">{@render title()}</div>
+            {@render drinking()}
             <div class="flex flex-wrap justify-center items-center gap-1">
                 {@render icons('h-4 w-4')}
                 {@render more()}

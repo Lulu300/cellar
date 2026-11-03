@@ -17,7 +17,8 @@
     import WineColorBadge from '#lib/components/wines/WineColorBadge.svelte';
     import AvailabilityBadge from './AvailabilityBadge.svelte';
     import DrinkingChip from './DrinkingChip.svelte';
-    import { drinkingText, soonRank } from './drinking.js';
+    import { drinkingText, markedRank } from './drinking.js';
+    import { DrinkingHorizon } from '#lib/shared/drinking.js';
     import { nextSort, type BottleColumn } from './bottle-table.js';
     import type { BottleSort, TableBottle } from '#lib/utils/bottle-sort.js';
     import { formatCurrency, formatDate } from '#lib/utils/format.js';
@@ -37,7 +38,8 @@
         onToggleAll,
         onEdit,
         actions,
-        linkWine = false
+        linkWine = false,
+        drinkingHorizon
     }: {
         bottles: B[];
         /** In their order; the notes and when to drink cannot be sorted on. */
@@ -56,6 +58,11 @@
         actions?: Snippet<[B]>;
         /** Whether the name of the wine links to its page. */
         linkWine?: boolean;
+        /**
+         * The bottles whose « drinking » column gets a chip, those to drink soon without it. Given
+         * without that column, the wine cell shows the chip.
+         */
+        drinkingHorizon?: DrinkingHorizon;
     } = $props();
 
     const labels = $derived({
@@ -81,6 +88,13 @@
     const columnCount = $derived(columns.length + Number(!!selection) + Number(hasActions));
     // The wine cell shows the vintage when no column does.
     const vintageInWineCell = $derived(!columns.includes('vintage'));
+    // The chip of a bottle to drink, in the wine cell when no column shows it.
+    const chipInWineCell = $derived(!!drinkingHorizon && !columns.includes('drinking'));
+    const rankOf = (bottle: B) =>
+        markedRank(
+            { drinkBefore: bottle.drinkBefore ?? null, optimum: bottle.optimum ?? null },
+            drinkingHorizon ?? DrinkingHorizon.THIS_YEAR
+        );
 </script>
 
 <div class="rounded-md border">
@@ -151,6 +165,10 @@
                                                 hex={bottle.definition.colorHex}
                                             />
                                         {/if}
+                                        {#if chipInWineCell}
+                                            {@const rank = rankOf(bottle)}
+                                            {#if rank}<DrinkingChip {rank} />{/if}
+                                        {/if}
                                     </div>
                                     <span class="text-sm text-muted-foreground">
                                         {bottle.definition?.producer ?? ''}
@@ -181,16 +199,15 @@
                         {:else if column === 'barcode'}
                             <TableCell>{bottle.barcode || notAvailable}</TableCell>
                         {:else if column === 'drinking'}
-                            {@const dates = {
-                                drinkBefore: bottle.drinkBefore ?? null,
-                                optimum: bottle.optimum ?? null
-                            }}
-                            {@const rank = soonRank(dates)}
+                            {@const rank = rankOf(bottle)}
                             <TableCell>
                                 <div class="flex flex-wrap items-center gap-x-2 gap-y-1">
                                     {#if rank}<DrinkingChip {rank} />{/if}
                                     <span class="text-sm text-muted-foreground">
-                                        {drinkingText(dates) || '-'}
+                                        {drinkingText({
+                                            drinkBefore: bottle.drinkBefore ?? null,
+                                            optimum: bottle.optimum ?? null
+                                        }) || '-'}
                                     </span>
                                 </div>
                             </TableCell>

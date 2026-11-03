@@ -248,6 +248,7 @@
                         }
                     ]}
                     value={preferences.drinkingHorizon}
+                    wrap
                     onchange={(horizon) => preferences.set('drinkingHorizon', horizon)}
                 />
                 <ChoiceGroup

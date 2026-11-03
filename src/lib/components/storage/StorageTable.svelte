@@ -1,5 +1,6 @@
 <script lang="ts">
     import { m } from '#lib/paraglide/messages.js';
+    import type { CaseMarks } from '#lib/components/bottles/drinking.js';
     import type { StorageContainerDTO } from '#lib/shared/dto.js';
     import CaseLoad from './CaseLoad.svelte';
     import ContainerBadge from './ContainerBadge.svelte';
@@ -13,6 +14,7 @@
         containers,
         containersAsColumns,
         highlighted,
+        marks,
         onOpen,
         onEdit
     }: {
@@ -20,6 +22,8 @@
         containersAsColumns: boolean;
         /** The ids of the cases that hold the wine the page looks for. */
         highlighted: ReadonlySet<string>;
+        /** The bottles to drink of each case, by rank, while the page shows them. */
+        marks: ReadonlyMap<string, CaseMarks>;
         /** Opens the bottles of a case. */
         onOpen: (storageCase: StorageContainerDTO['cases'][number]) => void;
         /** Shows the button that edits a container; absent for a visitor. */
@@ -51,6 +55,7 @@
             <CaseLoad
                 {storageCase}
                 highlighted={highlighted.has(storageCase.id)}
+                marks={marks.get(storageCase.id)}
                 onOpen={() => onOpen(storageCase)}
             />
         </td>

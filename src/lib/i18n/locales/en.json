@@ -1222,5 +1222,8 @@
   "preferences.horizon_next_year": "By next year",
   "preferences.horizon_two_years": "Within two years",
   "preferences.drinking_marker": "Marker on the storage page",
-  "preferences.drinking_marker_description": "Whether the storage page shows the bottles to drink when it opens."
+  "preferences.drinking_marker_description": "Whether the storage page shows the bottles to drink when it opens.",
+  "drinking.count_later": "{count, number} later",
+  "drinking.case_marks": "To drink: {marks}",
+  "drinking.storage_toggle": "Bottles to drink"
 }

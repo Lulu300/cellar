@@ -6,6 +6,7 @@ import { existingCase, keepingCasesWithinCapacity } from '#lib/server/features/s
 import { NotFoundError, ValidationError } from '#lib/server/http/errors.js';
 import type { BottleChanges, BottleInput } from '#lib/shared/schemas/bottle.js';
 import { BottleAvailability } from '#lib/shared/bottle-availability.js';
+import { compareDrinking, drinkingRank, monthOf, SOON, type Month } from '#lib/shared/drinking.js';
 import { LONG_TEXT_MAX_LENGTH } from '#lib/shared/schemas/common.js';
 import type { BottleSortColumn, SortDirection } from '#lib/shared/schemas/bottle-list.js';
 import { sortBottles } from '#lib/utils/bottle-sort.js';
@@ -204,6 +205,26 @@ export function listBottlePage({
 export function listCaseBottles(caseId: string) {
     existingCase(caseId);
     return listBottlesInCase(caseId);
+}
+
+/**
+ * The bottles in the cellar to drink soon in the month `now`, each with its rank: those whose date
+ * has passed, then this month's, this year's, those whose optimum year has come; by date within a
+ * rank, then by wine, vintage and id. A bottle drunk or taken out leaves the list, its date kept.
+ */
+export function listBottlesToDrink(now: Month = monthOf(new Date())) {
+    return listBottlesByAvailability([BottleAvailability.AVAILABLE])
+        .flatMap((bottle) => {
+            const rank = drinkingRank(bottle, now);
+            return rank !== null && SOON.includes(rank) ? [{ ...bottle, rank }] : [];
+        })
+        .sort(
+            (a, b) =>
+                compareDrinking(a, b, now) ||
+                compareText(a.definition.name, b.definition.name) ||
+                (a.vintage ?? 0) - (b.vintage ?? 0) ||
+                a.id.localeCompare(b.id)
+        );
 }
 
 /** updateBottles for one bottle. */

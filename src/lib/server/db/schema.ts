@@ -266,6 +266,8 @@ export const wineBottles = sqliteTable(
             .notNull(),
         vintage: integer('vintage'),
         optimum: integer('optimum'),
+        // « À boire avant »: YYYY or YYYY-MM (src/lib/shared/drinking.ts).
+        drinkBefore: text('drink_before'),
         originId: text('origin_id').references(() => origins.id),
         formatId: text('format_id')
             .references(() => wineFormats.id)

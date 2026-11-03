@@ -232,6 +232,29 @@ describe('PATCH /api/bottles', () => {
         expect(rowsOf(ids).map((row) => row.availability)).toEqual(Array(3).fill('out_of_cellar'));
     });
 
+    it('sets « drink before » on several bottles, then removes it', async () => {
+        const response = await patch({ ids, changes: { drinkBefore: '2027-03' } });
+
+        expect(response.status).toBe(200);
+        expect(rowsOf(ids).map((row) => row.drinkBefore)).toEqual(Array(3).fill('2027-03'));
+
+        await patch({ ids, changes: { drinkBefore: null } });
+        expect(rowsOf(ids).map((row) => row.drinkBefore)).toEqual(Array(3).fill(null));
+    });
+
+    it('answers 422 to a month without a year, and changes none', async () => {
+        const response = await patch({ ids, changes: { drinkBefore: '03' } });
+
+        expect(response.status).toBe(422);
+        expect(await response.json()).toMatchObject({
+            error: {
+                code: 'invalid_body',
+                details: [{ path: 'changes.drinkBefore', message: expect.any(String) }]
+            }
+        });
+        expect(rowsOf(ids).map((row) => row.drinkBefore)).toEqual(Array(3).fill(null));
+    });
+
     // POST and PATCH count the same UTF-16 units, an emoji two (API-12).
     it('takes back the notes of 5,000 UTF-16 units with emoji that POST took', async () => {
         const notes = '🍷'.repeat(2_499) + 'ab';

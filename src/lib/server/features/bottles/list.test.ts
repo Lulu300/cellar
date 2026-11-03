@@ -3,7 +3,13 @@ import { db } from '#lib/server/db/index.js';
 import { wineBottles, wineDefinitions } from '#lib/server/db/schema.js';
 import { BottleAvailability } from '#lib/shared/bottle-availability.js';
 import { bottleData, insertWineDefinition } from '../../../../test/wine';
-import { createBottles, listBottlePage, listBottlesWithDefinitions } from './service';
+import {
+    createBottles,
+    listBottlePage,
+    listBottlesToDrink,
+    listBottlesWithDefinitions,
+    updateBottles
+} from './service';
 
 const { AVAILABLE, OUT_OF_CELLAR, CONSUMED } = BottleAvailability;
 
@@ -132,5 +138,53 @@ describe('listBottlesWithDefinitions', () => {
         expect(ids(listBottlesWithDefinitions()).sort()).toEqual(
             [margauxBottle.id, angelusBottle.id].sort()
         );
+    });
+});
+
+describe('listBottlesToDrink', () => {
+    const november = { year: 2026, month: 11 };
+    const toDrink = () => listBottlesToDrink(november);
+
+    it('lists the bottles to drink soon in the order of the rule, with their rank', () => {
+        const later = addBottle({ drinkBefore: '2027-01' });
+        const optimum = addBottle({ optimum: 2025 });
+        const thisYear = addBottle({ drinkBefore: '2026' });
+        const thisMonth = addBottle({ drinkBefore: '2026-11' });
+        const late = addBottle({ drinkBefore: '2026-09', optimum: 2030 });
+        addBottle();
+
+        expect(toDrink().map(({ id, rank }) => [id, rank])).toEqual([
+            [late.id, 'late'],
+            [thisMonth.id, 'this_month'],
+            [thisYear.id, 'this_year'],
+            [optimum.id, 'optimum_reached']
+        ]);
+        expect(ids(toDrink())).not.toContain(later.id);
+        expect(toDrink()[0]).toMatchObject({ definition: { name: 'Château Margaux' } });
+    });
+
+    it('breaks a tie by wine, then vintage, then id', () => {
+        const margaux2015 = addBottle({ drinkBefore: '2026', vintage: 2015 });
+        const margaux2010 = addBottle({ drinkBefore: '2026-12', vintage: 2010 });
+        const angelus = addBottle({ drinkBefore: '2026' }, otherWine);
+        const twins = createBottles(bottleData(margaux, { drinkBefore: '2026', vintage: 2015 }), 2);
+
+        expect(ids(toDrink())).toEqual([
+            angelus.id,
+            margaux2010.id,
+            ...[margaux2015.id, ...ids(twins)].sort()
+        ]);
+    });
+
+    it('leaves out a bottle drunk or taken out, which keeps its date', () => {
+        const drunk = addBottle({ drinkBefore: '2026-11' });
+        const out = addBottle({ drinkBefore: '2026-11' });
+        const kept = addBottle({ drinkBefore: '2026-11' });
+
+        const [consumed] = updateBottles([drunk.id], { availability: CONSUMED });
+        updateBottles([out.id], { availability: OUT_OF_CELLAR });
+
+        expect(ids(toDrink())).toEqual([kept.id]);
+        expect(consumed.drinkBefore).toBe('2026-11');
     });
 });

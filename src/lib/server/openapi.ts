@@ -235,6 +235,11 @@ const operations: Record<string, Operation> = {
         summary: 'The bottles not consumed',
         answers: ok
     },
+    'GET /api/bottles/to-drink': {
+        tag: 'bottles',
+        summary: 'The bottles to drink soon, the most urgent first',
+        answers: ok
+    },
 
     ...referenceTable('/api/countries', namedSchema),
     ...referenceTable('/api/regions', regionSchema, {

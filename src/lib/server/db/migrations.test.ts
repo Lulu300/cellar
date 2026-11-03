@@ -470,7 +470,8 @@ describe('migration adding the constraints and indexes', () => {
 
         migrateSchema(database);
 
-        expect(rows(database, 'SELECT * FROM wine_bottles')).toEqual(before);
+        // Matched rather than equal: the columns of later migrations come in too.
+        expect(rows(database, 'SELECT * FROM wine_bottles')).toMatchObject(before);
         expect(rows(database, 'SELECT image_id FROM wine_definitions')).toEqual([
             { image_id: 'label' }
         ]);
@@ -806,7 +807,8 @@ describe('migration cutting the notes and descriptions to 5,000 characters', () 
         const cut = `${'a'.repeat(4_999)}b`;
         const withCut = <Row extends { id: unknown }>(list: Row[], column: string) =>
             list.map((row) => (row.id === 'long' ? { ...row, [column]: cut } : row));
-        expect(rows()).toEqual({
+        // Matched rather than equal: the columns of later migrations come in too.
+        expect(rows()).toMatchObject({
             wines: withCut(before.wines as { id: unknown }[], 'description'),
             bottles: withCut(before.bottles as { id: unknown }[], 'notes')
         });
@@ -1031,7 +1033,8 @@ describe('migration removing the negative prices and values', () => {
             price: { purchase_price: null, notes: price('-1') },
             value: { current_value: null, notes: value('-0.5') }
         };
-        expect(rows()).toEqual(before.map((row) => ({ ...row, ...repairs[row.id] })));
+        // Matched rather than equal: the columns of later migrations come in too.
+        expect(rows()).toMatchObject(before.map((row) => ({ ...row, ...repairs[row.id] })));
     });
 
     // Notes hold 5,000 characters at most since 0.10.0 (migration 0011): they are cut after the

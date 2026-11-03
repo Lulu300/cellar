@@ -227,6 +227,7 @@ request needs one.
 | DELETE | `/api/bottles/{id}`                      | yes                      |
 | PATCH  | `/api/bottles/{id}`                      | yes                      |
 | GET    | `/api/bottles/non-consumed`              | no                       |
+| GET    | `/api/bottles/to-drink`                  | no                       |
 | GET    | `/api/countries`                         | no                       |
 | POST   | `/api/countries`                         | yes                      |
 | DELETE | `/api/countries/{id}`                    | yes                      |
@@ -718,6 +719,9 @@ The fields of a bottle in the body of `POST /api/bottles`, `PATCH /api/bottles` 
 - `originId`: id of an origin (`GET /api/origins`), optional.
 - `vintage`: integer 0-9999, optional; `0` means no vintage and is stored as `null`.
 - `optimum`: integer 0-9999, optional: the year the bottle is at its best.
+- `drinkBefore`: string, optional: « drink before », a year (`"2027"`) or a month of a year
+  (`"2027-03"`), by the end of which to drink the bottle; empty or `null` for none. A month without
+  a year, or any other text, answers `422 invalid_body`. Bottles from before 1.5.0 have none.
 - `purchasePrice`: number, 0 or more, optional; a negative one answers `422 invalid_body`.
 - `purchaseDate`: date, optional.
 - `currentValue`: number, 0 or more, optional; a negative one answers `422 invalid_body`.
@@ -765,6 +769,7 @@ Lists every bottle, whatever its availability, with its wine, format, case and o
     "definitionId": "margaux",
     "vintage": 2015,
     "optimum": null,
+    "drinkBefore": "2027",
     "formatId": "bottle",
     "format": "Bottle",
     "originId": null,
@@ -961,6 +966,48 @@ them.
       "colorHex": "#7b1e2b"
     },
     "storageCase": { "id": "5da8a7f8-…", "name": "A1" }
+  }
+]
+```
+
+### `GET /api/bottles/to-drink`
+
+Lists the bottles in the cellar (`available`) to drink soon, the most urgent first, as the banner
+of the wine list shows them. A bottle with a `drinkBefore` is ranked by it; one without is ranked by
+its `optimum`; one with neither is left out. Months and years are those of the server's clock.
+
+- **Session:** not needed.
+- **Body:** none.
+- **Response:** `200` with an array of bottles, with the fields of
+  [`GET /api/bottles`](#get-apibottles) and `rank`, in this order:
+  1. `late`: its `drinkBefore` has passed (a year alone passes once its December is over);
+  2. `this_month`: its `drinkBefore` is this month;
+  3. `this_year`: its `drinkBefore` is this year, a later month or the year alone;
+  4. `optimum_reached`: no `drinkBefore`, and its `optimum` is this year or earlier.
+
+  Within a rank, the earliest date first (a year alone counting as its December), then by wine
+  name, vintage and id. A bottle whose date or optimum comes after this year is not listed, nor one
+  `out_of_cellar` or `consumed`, which keeps its `drinkBefore`.
+
+- **Errors:** none besides the common ones.
+
+```json
+[
+  {
+    "id": "1b2a0a28-…",
+    "definitionId": "margaux",
+    "vintage": 2015,
+    "optimum": 2030,
+    "drinkBefore": "2026-09",
+    "rank": "late",
+    "format": "Bottle",
+    "availability": "available",
+    "storageCase": {
+      "id": "5da8a7f8-…",
+      "name": "A1",
+      "container": { "id": "0e94db48-…", "name": "A" }
+    },
+    "definition": { "id": "margaux", "name": "Château Margaux", "color": "Red" }
   }
 ]
 ```
@@ -2921,7 +2968,7 @@ Lists every bottle, consumed ones included, newest first, with the names of what
 - **Body:** none.
 - **Response:** `200` with an array of bottles. Each has `id`, `definitionId`, `wineName`,
   `producer`, `appellationName`, `regionName`, `countryName`, `typeName`, `colorName`, `vintage`,
-  `optimum`, `originId`, `originName`, `formatId`, `formatName`, `barcode`, `purchasePrice`,
+  `optimum`, `drinkBefore`, `originId`, `originName`, `formatId`, `formatName`, `barcode`, `purchasePrice`,
   `purchaseDate`, `currentValue`, `currentValueDate`, `storageCaseId`, `storageCaseName`, `notes`,
   `availability` (`available`, `out_of_cellar` or `consumed`), `consumedDate`, `createdAt` and
   `updatedAt`.
@@ -2941,6 +2988,7 @@ Lists every bottle, consumed ones included, newest first, with the names of what
     "colorName": "Red",
     "vintage": 2015,
     "optimum": 2030,
+    "drinkBefore": null,
     "originId": null,
     "originName": null,
     "formatId": "f75…",

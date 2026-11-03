@@ -39,6 +39,20 @@ const barcode = z
     .nullish()
     .transform((value) => (value == null ? null : storedBarcode(String(value))));
 
+/**
+ * « À boire avant »: a year, YYYY, or a month of a year, YYYY-MM, by the end of which to drink the
+ * bottle; null, empty or left out for none.
+ */
+const drinkBefore = z
+    .string()
+    .trim()
+    // Or empty, as a form sends it: the pattern of the OpenAPI description says so too.
+    .regex(/^([1-9]\d{3}(-(0[1-9]|1[0-2]))?)?$/, {
+        message: 'A year, YYYY, or a month of a year, YYYY-MM'
+    })
+    .nullish()
+    .transform((value) => value || null);
+
 const availability = z.enum(BottleAvailability);
 
 /** Every field of a bottle, as a POST or an import gives them. */
@@ -48,6 +62,7 @@ export const bottleSchema = z.object({
     originId: optionalId,
     vintage,
     optimum: year,
+    drinkBefore,
     purchasePrice: amount,
     purchaseDate: optionalDate,
     currentValue: amount,
@@ -116,6 +131,7 @@ export function bottleFromForm(form: FormData) {
             'storageCaseId',
             'notes',
             'barcode',
+            'drinkBefore',
             'availability',
             'consumedDate'
         ]),

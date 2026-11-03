@@ -1082,6 +1082,17 @@
                       }
                     ]
                   },
+                  "drinkBefore": {
+                    "anyOf": [
+                      {
+                        "type": "string",
+                        "pattern": "^([1-9]\\d{3}(-(0[1-9]|1[0-2]))?)?$"
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
                   "purchasePrice": {
                     "anyOf": [
                       {
@@ -1304,6 +1315,17 @@
                             "type": "integer",
                             "minimum": 0,
                             "maximum": 9999
+                          },
+                          {
+                            "type": "null"
+                          }
+                        ]
+                      },
+                      "drinkBefore": {
+                        "anyOf": [
+                          {
+                            "type": "string",
+                            "pattern": "^([1-9]\\d{3}(-(0[1-9]|1[0-2]))?)?$"
                           },
                           {
                             "type": "null"
@@ -1545,6 +1567,17 @@
                       }
                     ]
                   },
+                  "drinkBefore": {
+                    "anyOf": [
+                      {
+                        "type": "string",
+                        "pattern": "^([1-9]\\d{3}(-(0[1-9]|1[0-2]))?)?$"
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
                   "purchasePrice": {
                     "anyOf": [
                       {
@@ -1725,6 +1758,27 @@
         ],
         "summary": "The bottles not consumed",
         "operationId": "getBottlesNonConsumed",
+        "security": [],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {}
+            }
+          },
+          "default": {
+            "$ref": "#/components/responses/Error"
+          }
+        }
+      }
+    },
+    "/api/bottles/to-drink": {
+      "get": {
+        "tags": [
+          "Bottles"
+        ],
+        "summary": "The bottles to drink soon, the most urgent first",
+        "operationId": "getBottlesToDrink",
         "security": [],
         "responses": {
           "200": {

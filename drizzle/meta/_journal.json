@@ -141,6 +141,13 @@
       "when": 1793570592282,
       "tag": "0019_starting_wine_color_hex",
       "breakpoints": true
+    },
+    {
+      "idx": 20,
+      "version": "6",
+      "when": 1793738837597,
+      "tag": "0020_drink_before",
+      "breakpoints": true
     }
   ]
 }

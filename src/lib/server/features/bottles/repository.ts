@@ -246,6 +246,7 @@ export function listBottlesForAdmin() {
             colorName: wineColors.color,
             vintage: wineBottles.vintage,
             optimum: wineBottles.optimum,
+            drinkBefore: wineBottles.drinkBefore,
             originId: wineBottles.originId,
             originName: origins.name,
             formatId: wineBottles.formatId,

@@ -135,6 +135,9 @@ test('log in, add a wine and two bottles from the wine list, and buy a wine of t
     await expect.poll(() => query().get('view')).toBe('list');
     const row = page.getByRole('row').filter({ hasText: 'Château Journey' });
     await expect(row.getByRole('button', { name: '2 bottles' })).toBeVisible();
+    // The mouse clicks the screen, not the page: the row must be on it, under the banner of the
+    // bottles to drink that the other journeys leave.
+    await row.scrollIntoViewIfNeeded();
     const region = (await row.getByRole('cell').nth(1).boundingBox())!;
     await page.mouse.click(region.x + region.width / 2, region.y + region.height / 2);
     await expect(page.getByText('Available Bottles (2)')).toBeVisible();

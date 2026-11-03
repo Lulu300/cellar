@@ -1,7 +1,7 @@
 import { expect, test } from '@playwright/test';
 import { addWine, logIn, openFromMenu, pick } from './helpers.js';
 
-test('add a container on the storage page, put bottles in its cases, move three from the map, find the wine in the cellar, then colour it from the admin', async ({
+test('add a container on the storage page, put bottles in its cases, move three from the map, mark one to drink this month and see it in the banner, find the wine in the cellar, then colour it from the admin', async ({
     page,
     browser
 }) => {
@@ -119,6 +119,13 @@ test('add a container on the storage page, put bottles in its cases, move three 
     await expect(status).toBeHidden();
     await expect(rack2.getByRole('row').filter({ hasText: 'Cuvée Stored' })).toHaveCount(2);
 
+    // Another is to drink this month, in one click from its menu (FEAT-05).
+    await rack2.getByRole('button', { name: 'Actions for Cuvée Stored 2018' }).first().click();
+    await page.getByRole('menuitem', { name: 'Drink before' }).click();
+    const dating = page.getByRole('dialog', { name: 'Drink before' });
+    await dating.getByRole('button', { name: /^This month/ }).click();
+    await expect(dating).toBeHidden();
+
     // The name of the wine opens its page, whose "Show in the cellar" highlights its cases.
     await rack2.getByRole('link', { name: 'Cuvée Stored' }).first().click();
     await page.getByRole('link', { name: 'Show in the cellar' }).click();
@@ -133,6 +140,16 @@ test('add a container on the storage page, put bottles in its cases, move three 
     await page.getByRole('button', { name: 'Show all' }).click();
     await expect(page).toHaveURL(/\/storage$/);
     await expect(page.getByRole('button', { name: 'Rack1: 1 of 5 bottles' })).toBeVisible();
+
+    // The banner of the wine list counts it this month, and unfolds it under that rank.
+    await openFromMenu(page, 'Cellar', 'My Wines');
+    await expect(page.getByText('1 this month')).toBeVisible();
+    await page.getByRole('button', { name: 'Show the list' }).click();
+    await expect(
+        page
+            .getByRole('region', { name: 'This month · 1' })
+            .getByRole('link', { name: /Cuvée Stored/ })
+    ).toBeVisible();
 
     // A visitor sees what a case holds; ticking a bottle asks to log in, and ticks nothing.
     const visitorContext = await browser.newContext();

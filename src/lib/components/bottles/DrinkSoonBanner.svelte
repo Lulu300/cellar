@@ -15,6 +15,7 @@
     import BottleChangeDialogs from './BottleChangeDialogs.svelte';
     import BottleRowMenu from './BottleRowMenu.svelte';
     import DrinkingChip from './DrinkingChip.svelte';
+    import DrinkingMark from './DrinkingMark.svelte';
     import { drinkingText, rankLabel } from './drinking.js';
     import WineBottleDialog from './WineBottleDialog.svelte';
 
@@ -74,10 +75,11 @@
                         <h3
                             id="{id}-{group.rank}"
                             class={cn(
-                                'text-xs font-semibold uppercase tracking-wide',
+                                'flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wide',
                                 group.rank === 'late' ? 'text-destructive' : 'text-muted-foreground'
                             )}
                         >
+                            <DrinkingMark rank={group.rank} size={11} />
                             {rankLabel(group.rank)} · {group.bottles.length}
                         </h3>
                         <ul class="divide-y">

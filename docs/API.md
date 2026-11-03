@@ -982,8 +982,9 @@ its `optimum`; one with neither is left out. Months and years are those of the s
 - **Response:** `200` with an array of bottles, with the fields of
   [`GET /api/bottles`](#get-apibottles) and `rank`, in this order:
   1. `late`: its `drinkBefore` has passed (a year alone passes once its December is over);
-  2. `this_month`: its `drinkBefore` is this month;
-  3. `this_year`: its `drinkBefore` is this year, a later month or the year alone;
+  2. `this_month`: its `drinkBefore` ends this month (a year alone in its December);
+  3. `this_year`: its `drinkBefore` is a later month of this year, or this year alone before
+     December;
   4. `optimum_reached`: no `drinkBefore`, and its `optimum` is this year or earlier.
 
   Within a rank, the earliest date first (a year alone counting as its December), then by wine

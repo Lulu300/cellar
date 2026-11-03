@@ -72,7 +72,8 @@ export function drinkingRank(bottle: DrinkingDates, now: Month): DrinkingRank | 
     const { year, month } = parseDrinkBefore(bottle.drinkBefore);
     if (monthNumber({ year, month: month ?? 12 }) < monthNumber(now)) return DrinkingRank.LATE;
     if (year > now.year) return DrinkingRank.LATER;
-    return month === now.month ? DrinkingRank.THIS_MONTH : DrinkingRank.THIS_YEAR;
+    // A year alone ends in December: then it is this month's.
+    return (month ?? 12) === now.month ? DrinkingRank.THIS_MONTH : DrinkingRank.THIS_YEAR;
 }
 
 /**

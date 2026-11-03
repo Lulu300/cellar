@@ -31,9 +31,15 @@ describe('drinkingRank', () => {
         expect(rank('2026')).toBe(DrinkingRank.THIS_YEAR);
     });
 
-    it('keeps a year alone this year until its December is over', () => {
-        expect(drinkingRank(dates('2026'), { year: 2026, month: 12 })).toBe(DrinkingRank.THIS_YEAR);
+    // Decided after the review of FEAT-05: a date is « this month » when it ends this month.
+    it('ranks a year alone this month in its December, then late', () => {
+        expect(drinkingRank(dates('2026'), { year: 2026, month: 12 })).toBe(
+            DrinkingRank.THIS_MONTH
+        );
         expect(drinkingRank(dates('2026'), { year: 2027, month: 1 })).toBe(DrinkingRank.LATE);
+        expect(
+            rankWithin(dates('2026'), DrinkingHorizon.THIS_MONTH, { year: 2026, month: 12 })
+        ).toBe(DrinkingRank.THIS_MONTH);
     });
 
     it('ranks a date after this year later', () => {

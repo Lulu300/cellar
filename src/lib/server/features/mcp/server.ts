@@ -333,7 +333,7 @@ function createServer({ authInfo }: McpRequestContext): McpServer {
         {
             title: 'Bottles to drink soon',
             description:
-                "The bottles in the cellar to drink soon, the most urgent first, as the banner of the app's wine list shows them, each with its rank, its wine and its location. late: its drinkBefore has passed, and it stays late until the owner changes or removes the date; this_month and this_year: its drinkBefore; optimum_reached: no drinkBefore, and its optimum is this year or earlier. Within a rank, the earliest date first. Months and years are those of the server's clock. A bottle dated after this year is not listed: list_bottles with optimumFrom and optimumTo finds bottles by optimum. update_bottles sets or removes drinkBefore. total counts every bottle found; offset reads past limit.",
+                "The bottles in the cellar to drink soon, the most urgent first, as the banner of the app's wine list shows them, each with its rank, its wine and its location. late: its drinkBefore has passed, and it stays late until the owner changes or removes the date; this_month: its drinkBefore ends this month (a year alone in its December); this_year: it ends later this year; optimum_reached: no drinkBefore, and its optimum is this year or earlier. Within a rank, the earliest date first. Months and years are those of the server's clock. A bottle dated after this year is not listed: list_bottles with optimumFrom and optimumTo finds bottles by optimum. update_bottles sets or removes drinkBefore. total counts every bottle found; offset reads past limit.",
             inputSchema: z.strictObject(pageParams('bottles')),
             annotations: READ_ONLY
         },

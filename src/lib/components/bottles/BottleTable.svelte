@@ -18,6 +18,7 @@
     import AvailabilityBadge from './AvailabilityBadge.svelte';
     import DrinkingChip from './DrinkingChip.svelte';
     import { drinkingText, markedRank } from './drinking.js';
+    import { BottleAvailability } from '#lib/shared/bottle-availability.js';
     import { DrinkingHorizon } from '#lib/shared/drinking.js';
     import { nextSort, type BottleColumn } from './bottle-table.js';
     import type { BottleSort, TableBottle } from '#lib/utils/bottle-sort.js';
@@ -88,13 +89,16 @@
     const columnCount = $derived(columns.length + Number(!!selection) + Number(hasActions));
     // The wine cell shows the vintage when no column does.
     const vintageInWineCell = $derived(!columns.includes('vintage'));
-    // The chip of a bottle to drink, in the wine cell when no column shows it.
+    // The chip of a bottle to drink, in the wine cell when no column shows it. Only a bottle in the
+    // cellar is to drink, as on the banner and the map: one taken out or drunk keeps its date only.
     const chipInWineCell = $derived(!!drinkingHorizon && !columns.includes('drinking'));
     const rankOf = (bottle: B) =>
-        markedRank(
-            { drinkBefore: bottle.drinkBefore ?? null, optimum: bottle.optimum ?? null },
-            drinkingHorizon ?? DrinkingHorizon.THIS_YEAR
-        );
+        bottle.availability === BottleAvailability.AVAILABLE
+            ? markedRank(
+                  { drinkBefore: bottle.drinkBefore ?? null, optimum: bottle.optimum ?? null },
+                  drinkingHorizon ?? DrinkingHorizon.THIS_YEAR
+              )
+            : null;
 </script>
 
 <div class="rounded-md border">

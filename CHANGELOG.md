@@ -4,6 +4,46 @@
 
 Upgrade actions are also collected in [UPGRADING.md](UPGRADING.md).
 
+## 1.5.0
+
+1.5.0 shows which bottles to drink soon.
+
+A bottle can now carry a date to drink it before: a year, or a month of a year. Set it in one click with « This month » or « This year », or choose a year and a month, on one bottle from its menu or on several ticked ones, from the bottle list of a wine or of a storage case; the bottle form has the field too. Without a date, the optimum year of the bottle takes over. The wine list opens with a banner of the bottles to drink soon: those whose date has passed, which stay flagged as late until you change or remove the date, then this month's, this year's, and those that reached their optimum year. It unfolds their list. A bottle drunk or taken out of the cellar leaves the list and keeps its date. On the storage page, a « Bottles to drink » button marks the cases that hold some; the preferences set how far ahead it looks and whether it is on when the page opens. The API, the exports and imports and the MCP tools follow: assistants can list the bottles to drink soon, find bottles by optimum year and set the date. Bottles from earlier versions have no date, and nothing needs doing to upgrade.
+
+### Upgrade actions
+
+None.
+
+### Changes
+
+#### Features
+
+- **bottles:** Add « drink before » and the list of bottles to drink soon (0f6bd60)
+- **mcp:** List the bottles to drink soon, filter by optimum, set « drink before » (f537e37)
+- **bottles:** Banner of the bottles to drink soon, and « drink before » in one click (8817bfe)
+- **bottles:** One shape per rank of the bottles to drink (76af63a)
+- **storage:** Mark the cases that hold bottles to drink (e5b0694)
+
+#### Bug fixes
+
+- **bottles:** No « to drink » chip for a bottle out of the cellar (1c56f2f)
+- **bottles:** Name the year and month of the bottle form by their labels (83ddba7)
+- **bottles:** A date that ends this month is this month's, a year alone in December too (93256d8)
+
+#### Refactoring
+
+- **bottles:** Share the rank order, the date parser and the colours (b216d23)
+
+#### Documentation
+
+- **release:** « drink before » and the bottles to drink soon in 1.5.0 (9a2b42c)
+
+#### Other changes
+
+- **e2e:** Mark a bottle to drink this month and find it in the banner (56ca9c4)
+- **e2e:** Find the bottle to drink this month on the map (28c9500)
+- **backup:** A JSON export and import keep « drink before » (2e71c5a)
+
 ## 1.4.1
 
 1.4.1 makes the buttons react visibly when the pointer is over them, in the light and the dark theme.

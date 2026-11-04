@@ -220,7 +220,7 @@ export const phases = [
 		id: 'P17',
 		version: 'À boire',
 		title: 'À boire',
-		goal: 'La vie d’une bouteille jusqu’à ce qu’on la boive ; la tâche ajoute son repère à la liste d’une case du plan (FEAT-04). Ordre : FEAT-05 ; DEP-10, si ce bloc est le premier publié après le 2026-11-06 (sinon elle passe dans celui-là) ; puis REL-11.'
+		goal: 'La vie d’une bouteille jusqu’à ce qu’on la boive ; la tâche ajoute son repère à la liste d’une case du plan (FEAT-04). Ordre : FEAT-05 ; puis REL-11. Sort le 2026-11-04 sans DEP-10, qui passe au bloc suivant (décision « Dépendances après la 1.4.0 »).'
 	},
 	{
 		id: 'P20',
@@ -232,7 +232,7 @@ export const phases = [
 		id: 'P18',
 		version: 'Producteurs',
 		title: 'Producteurs et revue de l’import',
-		goal: 'Les producteurs d’abord, parce que la revue de l’import doit savoir relier ou créer un producteur. Ordre : FEAT-07 ; FEAT-08 ; puis REL-12.'
+		goal: 'Les producteurs d’abord, parce que la revue de l’import doit savoir relier ou créer un producteur. Ordre : FEAT-07 ; FEAT-08 ; puis REL-12. DEP-10 est rangée ici par défaut : elle se fait sur develop juste avant la prochaine sortie, quel que soit le bloc (décision « Dépendances après la 1.4.0 »).'
 	},
 	{
 		id: 'P19',
@@ -373,7 +373,7 @@ export const decisions = [
 	{ topic: 'Cartes de vin (UI-32)', choice: 'Choisie sur maquette (https://claude.ai/artifact/9GrYNvpP1LUCF8jfT3Rwze, planche « C3 », 2026-11-01) : la carte devient horizontale, photo en portrait de 100 × 140 px à gauche. Règle de base, à ne jamais rompre : toutes les cartes ont la même taille et chaque élément est au même endroit ; chaque champ tient sur une ligne, la description a deux lignes réservées. Un texte coupé défile au survol (le mainteneur préfère ce mouvement sur les cartes). Le classement, le millésime et le prix sont précédés d’icônes, pas de libellés. La grille garde des cartes de 340 px au moins. Densité estimée sur un écran de 1 920 px : 4 cartes par ligne au lieu de 6, mais 8 cartes entières à l’écran au lieu de 6.' },
 	{ topic: 'Actions MCP (FEAT-11)', choice: 'Un utilisateur a essayé le MCP : il a demandé un vin pour son repas, puis voulu sortir la bouteille de la cave, et seul « marquer bue » existait. Le mainteneur ajoute à la 1.4.0 quatre groupes d’actions : sortir des bouteilles de la cave, les y remettre dans une case et annuler un « bu » fait par erreur ; modifier un vin (quantité cible, description, producteur…) et les champs des bouteilles (prix, valeur, millésime, apogée, code-barres) ; lister les bouteilles de toute la cave par état et par date ; changer la quantité ou la note d’un souhait, et supprimer une bouteille ajoutée par erreur (action destructive, annoncée comme telle au client). L’admin reste hors du MCP. Les applications Claude web et mobile ne l’atteignent pas : leurs connecteurs partent d’Internet et attendent OAuth ; Claude Code et les clients locaux, avec l’en-tête du jeton, fonctionnent (décision du 2026-11-01).' },
 	{ topic: 'MCP le plus complet possible (FEAT-12)', choice: 'Le mainteneur veut que l’assistant qui utilise le MCP ait le plus de contexte possible : les actions, leurs descriptions, la documentation et les erreurs. Une erreur rend donc aussi le détail du refus (les `details` de l’API), et une relecture de tous les outils, du point de vue d’un assistant, complète ce qui manque. Une bouteille marquée bue garde la case où elle était, sans y prendre de place, comme une bouteille hors cave : la remettre en cave la replace dans cette case, et l’assistant comme l’application peuvent dire où elle était. Les bouteilles bues avant la 1.4.0 ont déjà perdu leur case (décision du 2026-11-02). Précisé le même jour : le formulaire d’une bouteille bue dit dans quelle case elle était ; le MCP lit les listes au-delà de 200 (`offset`) ; pas de filtre sur l’apogée (avec « À boire », FEAT-05), ni de création d’origine ou de format, ni de suppression d’un vin, des conteneurs ou des appellations par le MCP.' },
-	{ topic: 'Dépendances après la 1.4.0', choice: 'Le mainteneur veut sortir la 1.4.0 vite : la revue des dépendances (DEP-10), qui attendait que les correctifs aient 7 jours (le 2026-11-05 ou 06), part dans la première version publiée après cette date. La 1.4.0 sort avec les dépendances de la 1.3.2 (décision du 2026-11-02).' },
+	{ topic: 'Dépendances après la 1.4.0', choice: 'Le mainteneur veut sortir la 1.4.0 vite : la revue des dépendances (DEP-10), qui attendait que les correctifs aient 7 jours (le 2026-11-05 ou 06), part dans la première version publiée après cette date. La 1.4.0 sort avec les dépendances de la 1.3.2 (décision du 2026-11-02). Le 2026-11-04, le mainteneur sort aussi le bloc « À boire » avant cette date : DEP-10 se fait sur develop juste avant la sortie suivante, quel que soit le bloc.' },
 	{ topic: 'Version corrective 1.4.1', choice: 'Le mainteneur veut corriger le survol des boutons dans une 1.4.1, avant la 1.5.0 (2026-11-02) : sur une carte de vin, le survol du nombre de bouteilles se voit à peine, surtout en thème sombre, et d’autres boutons ont peut-être le même défaut ; il veut une règle commune, pour un comportement prévisible et lisible. Comme pour la 1.3.1 : develop était passé à 1.5.0-rc.0 sans qu’aucune image ni base ne tourne sous ce numéro hors de la CI, donc il repasse à 1.4.1-rc.0, et l’entrée 1.5.0 de `releases.json` revient au démarrage de la 1.5.0.' },
 	{ topic: 'Survol des boutons (UI-33)', choice: 'Choisi sur captures le 2026-11-02, une règle par sorte de bouton : un bouton plein (principal, secondaire, suppression, interrupteur) mêle au survol 15 % de la couleur du texte de la page à son fond, donc s’assombrit en clair et s’éclaircit en sombre (jetons `--primary-hover`, `--secondary-hover`, `--destructive-hover`) ; un bouton discret (transparent, icône, ligne de menu, section du menu, tri, case du stockage, croix d’un dialogue) prend au survol le fond `accent` entier et son texte, en clair comme en sombre, et les boutons à icône faits main aussi ; un bouton à contour et une liste déroulante gardent le survol de shadcn, la liste déroulante gagnant celui qui lui manquait en clair ; un choix non retenu suit la règle des boutons discrets, un choix retenu celle des boutons pleins, sans zoom ; liens et onglets inchangés ; un focus clavier net (anneau de 3 px en `--ring` entier) sur chaque bouton, lien et onglet ; un bouton désactivé à 50 %, sans survol, avec le curseur normal, faits main compris ; pas d’état appuyé à part, et seules les couleurs changent. L’`accent` n’est pas renforcé. Exception à la règle de `ui/` : `ui/button/button.svelte`, `ui/select/select-trigger.svelte` et `ui/dialog/dialog-content.svelte` portent des classes modifiées à la main, signalées par un commentaire, parce que le défaut est dans leurs variantes. Tous les conteneurs du stockage ont la même pastille neutre.' },
 	{ topic: 'Vue liste (FEAT-10)', choice: 'Choisie sur maquette (planche « D3 ») : une vue liste à côté des cartes, sans défilement (le mainteneur n’en veut pas dans la liste) ; un texte long passe à la ligne. Un sélecteur « Cartes / Liste » sur la page et la vue par défaut dans les préférences. Demandée avec UI-32, placée en tête de la 1.4.0 parce que c’est une nouvelle fonction et non un correctif.' },
@@ -2746,12 +2746,12 @@ export const tasks = [
 		deps: ['REL-10'], src: ['Décision « À boire (FEAT-05) »']
 	},
 	{
-		id: 'DEP-10', phase: 'P17', size: 'S', sev: 'mineur',
+		id: 'DEP-10', phase: 'P18', size: 'S', sev: 'mineur',
 		title: 'Revue des dépendances d’après la 1.4.0',
 		why: 'Ce que DEP-09 n’a pas pu prendre, la 1.3.0 étant publiée avant que les correctifs soient éligibles (choix du mainteneur) : node 24.22.2, SvelteKit, adapter-node, Paraglide, minimatch 11 et la suite.',
 		where: ['package.json', 'pnpm-lock.yaml', '.github/workflows/', 'Dockerfile'],
 		todo: [
-			'Comme DEP-08 et DEP-09 : correctifs publiés depuis au moins 7 jours, une mise à jour par commit, portes à chaque fois ; l’alerte minimatch revue ; `pnpm audit --prod` vide ou chaque alerte justifiée. Reportée de la 1.4.0 (décision « Dépendances après la 1.4.0 ») : dans la première version publiée après le 2026-11-06, juste avant sa release.'
+			'Comme DEP-08 et DEP-09 : correctifs publiés depuis au moins 7 jours, une mise à jour par commit, portes à chaque fois ; l’alerte minimatch revue ; `pnpm audit --prod` vide ou chaque alerte justifiée. Reportée de la 1.4.0 puis du bloc « À boire » (décision « Dépendances après la 1.4.0 ») : sur develop, juste avant la sortie suivante, quel que soit le bloc.'
 		],
 		done: 'Chaque dépendance, action et image de base est à son dernier correctif publié depuis au moins 7 jours, ou l’écart est justifié.',
 		deps: ['DEP-09'], src: ['Trouvé pendant DEP-09']
@@ -2765,7 +2765,7 @@ export const tasks = [
 			'Résumé complété à chaque tâche ; bancs depuis la version précédente et la 1.0.0 ; release selon RELEASING.md, avec le mainteneur, sous le numéro de version suivant (décision « Blocs sans numéro »).'
 		],
 		done: 'La version est publiée sur `main` et son image se télécharge sans connexion ; develop passe à la rc suivante.',
-		deps: ['FEAT-05', 'DEP-10'], src: ['Décision « Blocs sans numéro »']
+		deps: ['FEAT-05'], src: ['Décision « Blocs sans numéro »']
 	},
 	// ───────── P20 Fiches de dégustation
 	{

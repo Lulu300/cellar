@@ -69,8 +69,9 @@ export const versions = [
 		goal: 'Un survol lisible sur chaque bouton, en clair comme en sombre, à commencer par le nombre de bouteilles des cartes de vin, avec une règle commune à tous les boutons.'
 	},
 	{
-		id: 'À boire',
+		id: '1.5.0',
 		title: 'Les bouteilles à boire bientôt',
+		released: '2026-11-04',
 		goal: 'Savoir quelles bouteilles boire bientôt.'
 	},
 	{
@@ -218,9 +219,9 @@ export const phases = [
 	},
 	{
 		id: 'P17',
-		version: 'À boire',
+		version: '1.5.0',
 		title: 'À boire',
-		goal: 'La vie d’une bouteille jusqu’à ce qu’on la boive ; la tâche ajoute son repère à la liste d’une case du plan (FEAT-04). Ordre : FEAT-05 ; puis REL-11. Sort le 2026-11-04 sans DEP-10, qui passe au bloc suivant (décision « Dépendances après la 1.4.0 »).'
+		goal: 'La vie d’une bouteille jusqu’à ce qu’on la boive ; la tâche ajoute son repère à la liste d’une case du plan (FEAT-04). Ordre : FEAT-05 ; puis REL-11. Sort le 2026-11-04 sans DEP-10, qui passe au bloc suivant (décision « Dépendances après la 1.4.0 »). Publiée en 1.5.0 le 2026-11-04.'
 	},
 	{
 		id: 'P20',
@@ -2762,7 +2763,8 @@ export const tasks = [
 		why: 'Le bloc apporte aux utilisateurs ce que sa phase a livré.',
 		where: ['releases.json', 'CHANGELOG.md', 'UPGRADING.md'],
 		todo: [
-			'Résumé complété à chaque tâche ; bancs depuis la version précédente et la 1.0.0 ; release selon RELEASING.md, avec le mainteneur, sous le numéro de version suivant (décision « Blocs sans numéro »).'
+			'Résumé complété à chaque tâche ; bancs depuis la version précédente et la 1.0.0 ; release selon RELEASING.md, avec le mainteneur, sous le numéro de version suivant (décision « Blocs sans numéro »).',
+			'Fait le 2026-11-04, en 1.5.0, sans DEP-10 (2037716f) : le banc apprend le champ `drinkBefore` de la 1.5.0 (copie d’avant : `upgrade-test.sh.bak-before-1.5`) ; bancs de la 1.4.1 et de la 1.0.0 vers la 1.5.0, 176 sur 176 chacun ; CI 41807818489 verte sur a9d333e6 ; `main` avancée, tag v1.5.0, release 41808560050 verte ; image publique sans connexion (`1.5.0`, `1.5`, `latest`, amd64 et arm64). develop passe à 1.6.0-rc.0 (d5054da0, CI 41810016449 verte), avec une entrée 1.6.0 au résumé provisoire. L’envoi de develop a été refusé quatre fois par SSH (clé tantôt acceptée, tantôt refusée, puis une erreur 500 de GitHub) avant de passer.'
 		],
 		done: 'La version est publiée sur `main` et son image se télécharge sans connexion ; develop passe à la rc suivante.',
 		deps: ['FEAT-05'], src: ['Décision « Blocs sans numéro »']

@@ -93,6 +93,7 @@
   "REL-08": {"state":"done","note":"Publiée le 2026-10-31 : tag v1.2.0 sur 89510c66, release 41236223388 verte après relance d’un échec de cache, image publique 1.2.0 / 1.2 / latest (amd64, arm64) ; bancs 1.1.0 et 1.0.0 vers 1.2.0 à 176 sur 176.","updatedAt":"2026-10-31T20:03:20.969Z"},
   "REL-09": {"state":"done","note":"Publiée le 2026-11-01 : tag v1.3.0 sur 5bb5dfdd, release 41256588054 verte, image publique 1.3.0 / 1.3 / latest (amd64, arm64) ; bancs 1.2.0 et 1.0.0 vers 1.3.0 à 176 sur 176 après avoir appris au banc le champ wishes.","updatedAt":"2026-11-01T00:33:03.821Z"},
   "REL-10": {"state":"done","note":"58fa59cd, v1.4.0","updatedAt":"2026-11-02T15:55:45.359Z"},
+  "REL-11": {"state":"done","note":"a9d333e6, v1.5.0","updatedAt":"2026-11-04T09:53:25.997Z"},
   "REL-14": {"state":"done","note":"2c3defa7","updatedAt":"2026-11-01T10:41:16.553Z"},
   "REL-15": {"state":"done","note":"856f70ee","updatedAt":"2026-11-01T14:13:50.102Z"},
   "REL-16": {"state":"done","note":"499ff1fc, tag v1.4.1","updatedAt":"2026-11-02T19:46:33.547Z"},

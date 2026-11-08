@@ -336,7 +336,7 @@
             <CardContent>
                 {#if availableBottles.length > 0}
                     <div
-                        class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-4 3xl:grid-cols-5 4xl:grid-cols-6 gap-4"
+                        class="grid grid-cols-[repeat(auto-fill,minmax(min(14rem,100%),1fr))] gap-4"
                     >
                         {#each availableBottles as bottle (bottle.id)}
                             {@render card(bottle)}
@@ -372,7 +372,7 @@
             <CardContent>
                 {#if consumedBottles.length > 0}
                     <div
-                        class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-4 3xl:grid-cols-5 4xl:grid-cols-6 gap-4"
+                        class="grid grid-cols-[repeat(auto-fill,minmax(min(14rem,100%),1fr))] gap-4"
                     >
                         {#each consumedBottles as bottle (bottle.id)}
                             {@render card(bottle)}

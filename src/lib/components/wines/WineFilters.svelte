@@ -87,9 +87,7 @@
     ] satisfies { value: VintageMode; label: string }[]);
 </script>
 
-<div
-    class="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 2xl:grid-cols-6 3xl:grid-cols-8 4xl:grid-cols-10 gap-4 min-h-[80px]"
->
+<div class="grid grid-cols-[repeat(auto-fill,minmax(min(13rem,100%),1fr))] gap-4 min-h-[80px]">
     <div class="space-y-2">
         <Label for="search">{m['wines.search']()}</Label>
         <DebouncedInput

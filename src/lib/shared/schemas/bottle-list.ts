@@ -17,6 +17,9 @@ export type SortDirection = 'asc' | 'desc';
 export const PAGE_SIZES = [25, 50, 75, 100] as const;
 const DEFAULT_PAGE_SIZE = 50;
 
+/** The query of a URL, as `URL.searchParams` and the page state of SvelteKit give it. */
+export type QueryParams = Pick<URLSearchParams, 'get'> & Iterable<[string, string]>;
+
 /** A date sorts the newest first, any other column from its lowest value. */
 export function defaultDirection(column: string): SortDirection {
     return column === 'purchaseDate' || column === 'consumedDate' ? 'desc' : 'asc';
@@ -30,7 +33,7 @@ export function defaultDirection(column: string): SortDirection {
  * `dir` without `sort`.
  */
 export function parseBottlePageQuery<Column extends string>(
-    params: URLSearchParams,
+    params: QueryParams,
     columns: readonly [Column, ...Column[]],
     defaultSort: Column
 ) {

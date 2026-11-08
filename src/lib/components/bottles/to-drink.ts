@@ -1,6 +1,6 @@
 import { z } from 'zod';
 import { SOON, type DrinkingRank } from '#lib/shared/drinking.js';
-import { parseBottlePageQuery } from '#lib/shared/schemas/bottle-list.js';
+import { parseBottlePageQuery, type QueryParams } from '#lib/shared/schemas/bottle-list.js';
 import { compareText } from '#lib/utils/compare.js';
 
 /** What the page of the bottles to drink reads of a bottle, beyond what its table shows. */
@@ -19,15 +19,22 @@ export interface ToDrinkBottle {
     };
 }
 
-/** The columns of the page, which it sorts on: how urgent by default, as the banner orders them. */
+/** The columns of the page, in their order, which it sorts on: how urgent by default. */
 export const TO_DRINK_COLUMNS = [
-    'urgency',
     'definition',
     'color',
     'vintage',
+    'urgency',
     'optimum',
     'drinkBefore',
     'location'
+] as const;
+
+/** The columns of the view by wine: those, and how many bottles a row holds after the vintage. */
+export const WINE_ROW_COLUMNS = [
+    ...TO_DRINK_COLUMNS.slice(0, 3),
+    'count',
+    ...TO_DRINK_COLUMNS.slice(3)
 ] as const;
 
 /** One row per bottle, or one per wine and vintage. */
@@ -49,7 +56,7 @@ export type ToDrinkFilters = Omit<z.output<typeof filtersSchema>, 'view'>;
  * (`?view=wine&rank=late&color=<id>&search=&sort=optimum&dir=asc&page=2&perPage=50`), so that a
  * reload or the way back finds them. A missing or invalid value gives its default.
  */
-export function readToDrinkQuery(params: URLSearchParams) {
+export function readToDrinkQuery(params: QueryParams) {
     return {
         ...filtersSchema.parse(Object.fromEntries(params)),
         ...parseBottlePageQuery(params, TO_DRINK_COLUMNS, 'urgency')

@@ -146,6 +146,7 @@
   "UI-31": {"state":"done","note":"2b08f1f6..a1f3170f","updatedAt":"2026-11-01T10:24:16.499Z"},
   "UI-32": {"state":"done","note":"1a00c279..18897dd0","updatedAt":"2026-11-01T14:00:08.292Z"},
   "UI-33": {"state":"done","note":"f5432028..5623eda6","updatedAt":"2026-11-02T19:31:39.478Z"},
+  "UI-35": {"state":"done","note":"44ba0824..3a92d6ab","updatedAt":"2026-11-08T15:16:47.987Z"},
   "audit-A7-m1": {"state":"done","note":"Réglé avec R1 : exception Paraglide et son commentaire retirés le 2026-10-17 (0b8318d0).","updatedAt":"2026-10-28T15:22:15.705Z"},
   "audit-A7-m12": {"state":"done","note":"Réglé par REL-05 : le prune --no-optional écarte kysely de l’image (5ba8e8c4).","updatedAt":"2026-10-28T15:22:15.812Z"},
   "audit-A7-m2": {"state":"done","note":"La phrase sur la redirection côté serveur n’est plus dans releases.json.","updatedAt":"2026-10-28T15:22:15.758Z"},

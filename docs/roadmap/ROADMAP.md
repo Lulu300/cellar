@@ -182,7 +182,7 @@ Revue du code du 2026-10-08, commit `556c7bb`. Ce fichier est la version pour le
 | 1.4.1 | P16b · Survol des boutons | Pour la 1.4.1, avant P17 (décision « Version corrective 1.4.1 ») : UI-33 ; puis REL-16. Publiée en 1.4.1 le 2026-11-02. | UI-33, REL-16 | 2 / 2 |
 | 1.5.0 | P17 · À boire | La vie d’une bouteille jusqu’à ce qu’on la boive ; la tâche ajoute son repère à la liste d’une case du plan (FEAT-04). Ordre : FEAT-05 ; puis REL-11. Sort le 2026-11-04 sans DEP-10, qui passe au bloc suivant (décision « Dépendances après la 1.4.0 »). Publiée en 1.5.0 le 2026-11-04. | FEAT-05, REL-11 | 2 / 2 |
 | 1.5.1 | P17b · La page « À boire » | Pour la 1.5.1, avant le bloc suivant (décision « Page À boire (1.5.1) ») : FEAT-18 ; DEP-10 ; puis REL-19. Publiée en 1.5.1 le 2026-11-08. | DEP-10, FEAT-18, REL-19 | 3 / 3 |
-| 1.5.2 | P17c · Largeur des pages | Pour la 1.5.2, avant le bloc suivant (décision « Largeur des pages (1.5.2) ») : UI-35 ; puis REL-20. | UI-35, REL-20 | 0 / 2 |
+| 1.5.2 | P17c · Largeur des pages | Pour la 1.5.2, avant le bloc suivant (décision « Largeur des pages (1.5.2) ») : UI-35 ; puis REL-20. | UI-35, REL-20 | 1 / 2 |
 | Dégustation | P20 · Fiches de dégustation | Décision « Fiches de dégustation (FEAT-06, FEAT-14 à FEAT-16) ». Sur la branche d’intégration `feat/tasting`, envoyée sur GitHub (décision « Blocs sans numéro ») : chaque tâche part de cette branche et y revient ; la branche rejoint develop quand le mainteneur valide le bloc entier. Ordre : FEAT-06 ; FEAT-14 ; FEAT-15 ; FEAT-16 ; puis REL-17. | FEAT-06, FEAT-14, FEAT-15, FEAT-16, REL-17 | 0 / 5 |
 | Producteurs | P18 · Producteurs et revue de l’import | Les producteurs d’abord, parce que la revue de l’import doit savoir relier ou créer un producteur. Ordre : FEAT-07 ; FEAT-08 ; puis REL-12. UI-34 est rangée ici par défaut : elle se place où le mainteneur veut, une fois le comportement du visiteur choisi. DEP-11 aussi : elle se fait sur develop juste avant la sortie suivante, quel que soit le bloc. | DEP-11, UI-34, FEAT-07, FEAT-08, REL-12 | 0 / 5 |
 | Notifications | P19 · Notifications | Les notifications, qui utilisent « À boire » (FEAT-05), le statut hors cave et la vérification des mises à jour. Ordre : FEAT-09 ; puis REL-13. | FEAT-09, REL-13 | 0 / 2 |
@@ -3684,7 +3684,9 @@ Pour la 1.5.2, avant le bloc suivant (décision « Largeur des pages (1.5.2) »)
 
 ### UI-35 · Choisir la largeur des pages, et un plan en pleine largeur
 
-Sévérité **évolution** · effort **M** · dépend de REL-19 · statut **À faire**
+Sévérité **évolution** · effort **M** · dépend de REL-19 · statut **Fait**
+
+**Suivi** (2026-11-08) : 44ba0824..3a92d6ab
 
 **Problème** : Le cadre unique des pages laisse près de 200 px vides de chaque côté sur un écran de 1920 px ; le plan de la cave, qui se lit comme un tableau, défile alors de côté alors qu’il tiendrait à l’écran.
 

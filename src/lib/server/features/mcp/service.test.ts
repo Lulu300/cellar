@@ -8,6 +8,7 @@ import {
     storageCases,
     storageContainers,
     wineBottles,
+    wineColors,
     wineDefinitions,
     wishes
 } from '#lib/server/db/schema.js';
@@ -350,6 +351,51 @@ describe('bottlesToDrink', () => {
             total: 3,
             bottles: [{ id: 'this-month' }]
         });
+    });
+
+    it('keeps one rank and one color, and orders by optimum, the oldest first', async () => {
+        const timestamps = { createdAt: new Date(), updatedAt: new Date() };
+        db.insert(wineColors)
+            .values({ id: 'white', color: 'White', ...timestamps })
+            .run();
+        db.insert(wineDefinitions)
+            .values({
+                id: 'chablis',
+                name: 'Chablis',
+                appellationId: 'mgx',
+                typeId: 'still',
+                colorId: 'white',
+                ...timestamps
+            })
+            .run();
+        onTestFinished(() => {
+            db.delete(wineBottles).run();
+            db.delete(wineDefinitions).where(eq(wineDefinitions.id, 'chablis')).run();
+            db.delete(wineColors).where(eq(wineColors.id, 'white')).run();
+        });
+        await insertBottles(margaux, [
+            { id: 'late', drinkBefore: '2026-02', optimum: 2030 },
+            { id: 'peak-2024', optimum: 2024 },
+            { id: 'peak-2012', optimum: 2012 }
+        ]);
+        await insertBottles('chablis', [{ id: 'white-peak', optimum: 2020 }]);
+        const ids = (search: Parameters<typeof bottlesToDrink>[0]) =>
+            bottlesToDrink(search).bottles.map(({ id }) => id);
+
+        expect(ids({ limit: 50, rank: 'optimum_reached', colorId: 'red' })).toEqual([
+            'peak-2012',
+            'peak-2024'
+        ]);
+        expect(ids({ limit: 50, colorId: 'white' })).toEqual(['white-peak']);
+        expect(ids({ limit: 50, order: 'optimum' })).toEqual([
+            'peak-2012',
+            'white-peak',
+            'peak-2024',
+            'late'
+        ]);
+        expect(() => bottlesToDrink({ limit: 50, colorId: 'no-such-color' })).toThrow(
+            NotFoundError
+        );
     });
 });
 

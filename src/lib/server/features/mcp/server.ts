@@ -14,6 +14,7 @@ import type { ApiError } from '#lib/server/http/errors.js';
 import { apiErrorOf } from '#lib/server/http/handler.js';
 import { runAsWrite } from '#lib/server/write-gate.js';
 import { BottleAvailability } from '#lib/shared/bottle-availability.js';
+import { SOON, type DrinkingRank } from '#lib/shared/drinking.js';
 import {
     BARCODE_MAX_LENGTH,
     bottleChangesSchema,
@@ -62,7 +63,7 @@ import { assertMcpWrite, ReadOnlyTokenError, type McpAccess } from './token';
 /** The most results that one search or list returns. */
 const MAX_SEARCH_LIMIT = 200;
 
-const INSTRUCTIONS = `Cellar manages a home wine cellar. A wine (name, producer, appellation, color…) has bottles. A bottle is "available" (in the cellar, most often in a case of a storage container), "out_of_cellar" (taken out, not drunk yet: set aside for a meal, brought to friends) or "consumed" (drunk). A bottle in the cellar gives its "location"; one out of the cellar or drunk gives its "formerLocation" instead, the case it left, where put_bottles_back returns it: the bottle is not in that case now. "optimum" is the year a bottle is at its best. "drinkBefore" is the year (YYYY) or the month (YYYY-MM) by the end of which the owner wants a bottle drunk; without one, the optimum takes over: list_bottles_to_drink gives the bottles to drink soon, as the app's wine list shows them. Prices are numbers in the cellar's currency, which the app shows as euros; dates are YYYY-MM-DD. A field left out of an answer is empty.
+const INSTRUCTIONS = `Cellar manages a home wine cellar. A wine (name, producer, appellation, color…) has bottles. A bottle is "available" (in the cellar, most often in a case of a storage container), "out_of_cellar" (taken out, not drunk yet: set aside for a meal, brought to friends) or "consumed" (drunk). A bottle in the cellar gives its "location"; one out of the cellar or drunk gives its "formerLocation" instead, the case it left, where put_bottles_back returns it: the bottle is not in that case now. "optimum" is the year a bottle is at its best. "drinkBefore" is the year (YYYY) or the month (YYYY-MM) by the end of which the owner wants a bottle drunk; without one, the optimum takes over: list_bottles_to_drink gives the bottles to drink soon, as the app's page « To drink » lists them. Prices are numbers in the cellar's currency, which the app shows as euros; dates are YYYY-MM-DD. A field left out of an answer is empty.
 
 The tools that change the cellar run only when its owner allowed changes for this token, and each one writes all or nothing. They take the ids that the other tools give: a wine from search_wines, a bottle from get_wine, list_bottles or find_bottle_by_barcode, a case from get_free_space, a format, color, type, classification or origin from list_choices, an appellation from search_appellations, a wish from get_wishlist. A bottle drunk is marked with mark_bottles_drunk, one taken away without being drunk with take_bottles_out; delete_bottles is only for bottles added by mistake.
 
@@ -333,11 +334,28 @@ function createServer({ authInfo }: McpRequestContext): McpServer {
         {
             title: 'Bottles to drink soon',
             description:
-                "The bottles in the cellar to drink soon, the most urgent first, as the banner of the app's wine list shows them, each with its rank, its wine and its location. late: its drinkBefore has passed, and it stays late until the owner changes or removes the date; this_month: its drinkBefore ends this month (a year alone in its December); this_year: it ends later this year; optimum_reached: no drinkBefore, and its optimum is this year or earlier. Within a rank, the earliest date first. Months and years are those of the server's clock. A bottle dated after this year is not listed: list_bottles with optimumFrom and optimumTo finds bottles by optimum. update_bottles sets or removes drinkBefore. total counts every bottle found; offset reads past limit.",
-            inputSchema: z.strictObject(pageParams('bottles')),
+                "The bottles in the cellar to drink soon, the most urgent first, as the app's page « To drink » lists them, each with its rank, its wine and its location: which bottles to open first, which reds are at their best. late: its drinkBefore has passed, and it stays late until the owner changes or removes the date; this_month: its drinkBefore ends this month (a year alone in its December); this_year: it ends later this year; optimum_reached: no drinkBefore, and its optimum is this year or earlier. Within a rank, the earliest date first. Months and years are those of the server's clock. rank and colorId keep one rank, one color of wine; order optimum lists the oldest optimum first, as the app's page of the bottles to drink sorts them. A bottle dated after this year is not listed: list_bottles with optimumFrom and optimumTo finds bottles by optimum. update_bottles sets or removes drinkBefore. total counts every bottle found; offset reads past limit.",
+            inputSchema: z.strictObject({
+                rank: z
+                    .enum(SOON as [DrinkingRank, ...DrinkingRank[]])
+                    .optional()
+                    .describe('Only the bottles of this rank. Left out, every rank.'),
+                colorId: id
+                    .optional()
+                    .describe(
+                        'Only the bottles of wines of this color: an id of list_choices. An unknown id is refused.'
+                    ),
+                order: z
+                    .enum(['urgency', 'optimum'])
+                    .default('urgency')
+                    .describe(
+                        'urgency: the most urgent first, as the banner. optimum: the oldest optimum first, a tie in the order of urgency, a bottle without an optimum last.'
+                    ),
+                ...pageParams('bottles')
+            }),
             annotations: READ_ONLY
         },
-        (page) => answer('list_bottles_to_drink', () => bottlesToDrink(page))
+        (search) => answer('list_bottles_to_drink', () => bottlesToDrink(search))
     );
 
     server.registerTool(

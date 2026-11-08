@@ -20,6 +20,7 @@ import {
     wineTypeHandlers
 } from '#lib/server/features/catalog/service.js';
 import { appellationHandlers } from '#lib/server/features/geography/service.js';
+import { NotFoundError } from '#lib/server/http/errors.js';
 import { storageOverview } from '#lib/server/features/storage/service.js';
 import {
     changeWish,
@@ -30,11 +31,13 @@ import {
 } from '#lib/server/features/wishlist/service.js';
 import { findBarcodeMatches } from '#lib/shared/barcode.js';
 import { BottleAvailability } from '#lib/shared/bottle-availability.js';
+import type { DrinkingRank } from '#lib/shared/drinking.js';
 import type { BottleWithDefinitionDTO, WineGroupDTO } from '#lib/shared/dto.js';
 import type { BottleChanges, BottleInput } from '#lib/shared/schemas/bottle.js';
 import type { WineDefinitionInput } from '#lib/shared/schemas/wine.js';
 import type { WishInput } from '#lib/shared/schemas/wish.js';
 import { containerLabel } from '#lib/shared/storage.js';
+import { sortBottles } from '#lib/utils/bottle-sort.js';
 import { compareText } from '#lib/utils/compare.js';
 import { today } from '#lib/utils/format.js';
 
@@ -277,16 +280,35 @@ export function listBottles(search: BottleSearch) {
     return { total: found.length, bottles: pageOf(found, search) };
 }
 
+export interface ToDrinkSearch extends Page {
+    rank?: DrinkingRank;
+    colorId?: string;
+    /** The order of the banner, or the oldest optimum first. */
+    order?: 'urgency' | 'optimum';
+}
+
 /**
- * The bottles in the cellar to drink soon, in the order of the banner of the wine list, each with
- * its wine and its rank: the page asked for, with `total` counting them all.
+ * The bottles in the cellar to drink soon, of this rank and this colour of wine, each with its wine
+ * and its rank: in the order of the banner of the wine list, or by optimum, the oldest first, as
+ * the page of the bottles to drink sorts them (a tie keeps the banner's order, a bottle without an
+ * optimum goes last). The page asked for, with `total` counting them all. Throws a NotFoundError
+ * for an unknown colour.
  */
-export function bottlesToDrink(page: Page) {
-    const found = listBottlesToDrink().map(({ rank, ...bottle }) => ({
-        rank,
+export function bottlesToDrink({ rank, colorId, order = 'urgency', ...page }: ToDrinkSearch) {
+    if (colorId && !wineColorHandlers.list().some((color) => color.id === colorId)) {
+        throw new NotFoundError('Wine color not found');
+    }
+    const found = listBottlesToDrink().filter(
+        (bottle) =>
+            (!rank || bottle.rank === rank) && (!colorId || bottle.definition.colorId === colorId)
+    );
+    const ordered =
+        order === 'optimum' ? sortBottles(found, { column: 'optimum', direction: 'asc' }) : found;
+    const bottles = ordered.map(({ rank: bottleRank, ...bottle }) => ({
+        rank: bottleRank,
         ...bottleWithWine(bottle)
     }));
-    return { total: found.length, bottles: pageOf(found, page) };
+    return { total: bottles.length, bottles: pageOf(bottles, page) };
 }
 
 /** The wines below their target quantity, the largest shortage first. */

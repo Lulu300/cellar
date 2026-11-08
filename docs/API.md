@@ -973,8 +973,9 @@ them.
 
 ### `GET /api/bottles/to-drink`
 
-Lists the bottles in the cellar (`available`) to drink soon, the most urgent first, as the banner
-of the wine list shows them. A bottle with a `drinkBefore` is ranked by it; one without is ranked by
+Lists the bottles in the cellar (`available`) to drink soon, the most urgent first, as the page
+« To drink » (`/to-drink`) lists them by default; the banner of the wine list counts them and shows
+the first eight. A bottle with a `drinkBefore` is ranked by it; one without is ranked by
 its `optimum`; one with neither is left out. Months and years are those of the server's clock.
 
 - **Session:** not needed.
@@ -2573,12 +2574,17 @@ The tools that read:
   - **Answer:** `{ "total", "bottles" }`: the bottles found, as `find_bottle_by_barcode` gives them,
     each with its `wine`, the latest drunk first, then the latest bought, then by the name of their
     wine, then by id, from `offset`; `total` counts them all.
-- `list_bottles_to_drink`: the bottles in the cellar to drink soon, as the banner of the wine list
-  shows them and [`GET /api/bottles/to-drink`](#get-apibottlesto-drink) lists them.
-  - **Parameters:** `limit` and `offset`, as for `list_bottles`.
-  - **Answer:** `{ "total", "bottles" }`: the bottles, as `list_bottles` gives them, each with its
-    `rank` (`late`, `this_month`, `this_year`, `optimum_reached`), in the order of
-    `GET /api/bottles/to-drink`, from `offset`; `total` counts them all.
+- `list_bottles_to_drink`: the bottles in the cellar to drink soon, as the page « To drink » of the
+  app and [`GET /api/bottles/to-drink`](#get-apibottlesto-drink) list them.
+  - **Parameters:** all optional: `rank`: `late`, `this_month`, `this_year` or `optimum_reached`,
+    only the bottles of that rank; `colorId`: string (from `list_choices`), only the bottles of
+    wines of that color; an unknown id is refused (not found); `order`: `urgency` (default), the
+    order of `GET /api/bottles/to-drink`, or `optimum`, the oldest `optimum` first, as the page of
+    the bottles to drink sorts them: a tie keeps the order of urgency, and a bottle without an
+    optimum comes last; `limit` and `offset`, as for `list_bottles`.
+  - **Answer:** `{ "total", "bottles" }`: the bottles found, as `list_bottles` gives them, each with
+    its `rank` (`late`, `this_month`, `this_year`, `optimum_reached`), in the order asked, from
+    `offset`; `total` counts them all.
 - `get_wine_shortage`: no parameters; the wines below their target quantity, the largest shortage
   first, with `id`, `name`, `producer`, `color`, `type`, `appellation`, `region`, `country`,
   `targetQuantity`, `inCellar`, `missing` and `averagePrice`.

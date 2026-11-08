@@ -22,11 +22,6 @@
                     mode === 'dark' ||
                     (mode !== 'light' && matchMedia('(prefers-color-scheme: dark)').matches);
                 var root = document.documentElement;
-                // The page width of the preferences, which app.css reads, would also jump once
-                // the app has loaded.
-                root.dataset.pageWidth = localStorage.getItem('wine-cellar-page-width') || '';
-                root.dataset.cellarMapFullWidth =
-                    localStorage.getItem('wine-cellar-cellar-map-full-width') || '';
                 root.classList.toggle('dark', dark);
                 var cache = JSON.parse(localStorage.getItem('wine-cellar-theme-colors'));
                 if (cache && cache.dark === dark) {
@@ -37,6 +32,11 @@
                         .querySelector('meta[name="theme-color"]')
                         .setAttribute('content', cache.variables.card);
                 }
+                // The page width of the preferences, which app.css reads, would also change once
+                // the app has loaded.
+                root.dataset.pageWidth = localStorage.getItem('wine-cellar-page-width') || '';
+                root.dataset.cellarMapFullWidth =
+                    localStorage.getItem('wine-cellar-cellar-map-full-width') || '';
             } catch (error) {
                 // Without storage, the app applies the theme once it has loaded.
             }

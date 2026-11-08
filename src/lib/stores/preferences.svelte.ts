@@ -23,8 +23,8 @@ const KEYS = {
 const HORIZONS: readonly string[] = Object.values(DrinkingHorizon);
 
 /** How much of a large screen the frame of the pages takes (app.css, `page-frame`). */
-export const PAGE_WIDTHS = ['narrow', 'normal', 'wide', 'full'] as const;
-export type PageWidth = (typeof PAGE_WIDTHS)[number];
+const PAGE_WIDTHS = ['narrow', 'normal', 'wide', 'full'] as const;
+type PageWidth = (typeof PAGE_WIDTHS)[number];
 
 type PreferenceName = keyof typeof KEYS;
 

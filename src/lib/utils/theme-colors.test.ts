@@ -12,12 +12,14 @@ function fakeBrowser(stored: Record<string, string>, systemIsDark = false) {
     const classes = new Set<string>();
     const storage = new Map(Object.entries(stored));
     const themeColor = { content: '#ffffff' };
+    const dataset: Record<string, string> = {};
     vi.stubGlobal('document', {
         querySelector: (selector: string) =>
             selector === 'meta[name="theme-color"]'
                 ? { setAttribute: (_: 'content', value: string) => (themeColor.content = value) }
                 : null,
         documentElement: {
+            dataset,
             classList: {
                 toggle: (name: string, force: boolean) =>
                     force ? classes.add(name) : classes.delete(name)
@@ -34,7 +36,7 @@ function fakeBrowser(stored: Record<string, string>, systemIsDark = false) {
         setItem: (key: string, value: string) => storage.set(key, value)
     });
     vi.stubGlobal('matchMedia', () => ({ matches: systemIsDark }));
-    return { variables, classes, storage, themeColor };
+    return { variables, classes, storage, themeColor, dataset };
 }
 
 const runInlineScript = () => new Function(inlineScript)();
@@ -111,6 +113,24 @@ describe('the theme before the app has loaded', () => {
             }
         });
         expect(runInlineScript).not.toThrow();
+    });
+});
+
+// app.css draws the frame of the pages from these, before the app has loaded too.
+describe('the page width before the app has loaded', () => {
+    it('applies the stored width and cellar map switch', () => {
+        const page = fakeBrowser({
+            'wine-cellar-page-width': 'narrow',
+            'wine-cellar-cellar-map-full-width': 'false'
+        });
+        runInlineScript();
+        expect(page.dataset).toEqual({ pageWidth: 'narrow', cellarMapFullWidth: 'false' });
+    });
+
+    it('leaves the defaults to app.css when nothing is stored', () => {
+        const page = fakeBrowser({});
+        runInlineScript();
+        expect(page.dataset).toEqual({ pageWidth: '', cellarMapFullWidth: '' });
     });
 });
 

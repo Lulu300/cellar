@@ -1,3 +1,4 @@
+import { readFileSync } from 'node:fs';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 vi.mock('$app/env', () => ({ browser: true }));
@@ -121,5 +122,36 @@ describe('preferences', () => {
 
         preferences.set('showImages', false);
         expect(preferences.showImages).toBe(false);
+    });
+});
+
+/** The widths of the frame of the pages at lg, xl and 2xl, from the rule of app.css for `selector`. */
+function frameWidths(selector: string) {
+    const css = readFileSync('src/app.css', 'utf8').replace(/\/\*[\s\S]*?\*\//g, '');
+    const rule = css
+        .split('}')
+        .map((block) => block.split('{'))
+        .find(
+            ([selectors, body]) =>
+                selectors.split(',').some((one) => one.trim() === selector) &&
+                body.includes('--page-frame')
+        );
+    return ['lg', 'xl', '2xl'].map(
+        (breakpoint) => rule?.[1].match(new RegExp(`--page-frame-${breakpoint}: ([^;]+);`))?.[1]
+    );
+}
+
+describe('the frame of the pages', () => {
+    it.each([
+        [':root', ['90%', '85%', '80%']],
+        [":root[data-page-width='narrow']", ['80%', '75%', '70%']],
+        [":root[data-page-width='wide']", ['95%', '95%', '95%']],
+        [":root[data-page-width='full']", ['100%', '100%', '100%']],
+        [
+            ":root:not([data-cellar-map-full-width='false']) [data-cellar-map]",
+            ['100%', '100%', '100%']
+        ]
+    ])('takes the width chosen for %s', (selector, widths) => {
+        expect(frameWidths(selector)).toEqual(widths);
     });
 });

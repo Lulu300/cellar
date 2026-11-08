@@ -2,7 +2,7 @@
     import type { ComponentProps } from 'svelte';
     import { invalidate } from '$app/navigation';
     import { SvelteSet } from 'svelte/reactivity';
-    import { ChevronDown, Clock, MapPin } from '@lucide/svelte';
+    import { ChevronDown, ChevronRight, Clock, MapPin } from '@lucide/svelte';
     import { Button } from '#lib/components/ui/button/index.js';
     import { Card, CardContent, CardHeader, CardTitle } from '#lib/components/ui/card/index.js';
     import { m } from '#lib/paraglide/messages.js';
@@ -20,18 +20,23 @@
     import WineBottleDialog from './WineBottleDialog.svelte';
 
     /**
-     * The banner of the wine list: how many bottles to drink soon, by rank, which unfolds their
-     * list, each with its menu. Hidden when there is none.
+     * The banner of the wine list: how many bottles to drink soon, by rank, which unfolds the most
+     * urgent ones, each with its menu, and leads to the page of them all. Hidden when there is none.
      */
     let { bottles }: { bottles: BottleToDrinkDTO[] } = $props();
 
+    // Chosen on screenshots: about one screen of a phone. The page of /to-drink shows them all.
+    const SHOWN = 8;
+
     let open = $state(false);
-    const groups = $derived(
+    const byRank = (list: BottleToDrinkDTO[]) =>
         SOON.map((rank) => ({
             rank,
-            bottles: bottles.filter((bottle) => bottle.rank === rank)
-        })).filter((group) => group.bottles.length > 0)
-    );
+            bottles: list.filter((bottle) => bottle.rank === rank)
+        })).filter((group) => group.bottles.length > 0);
+    const counted = $derived(byRank(bottles));
+    // The list is the most urgent first: its head, under the headings of its ranks.
+    const shown = $derived(byRank(bottles.slice(0, SHOWN)));
 
     // A change of status, place or date changes the list and the wine cards behind it.
     const dialogs = new BottleDialogs<BottleToDrinkDTO>(new SvelteSet(), () => invalidate(CELLAR));
@@ -49,7 +54,7 @@
                 {m['drinking.soon_title']()}
             </CardTitle>
             <ul class="flex flex-wrap items-center gap-1.5" aria-label={m['drinking.by_rank']()}>
-                {#each groups as group (group.rank)}
+                {#each counted as group (group.rank)}
                     <li><DrinkingChip rank={group.rank} count={group.bottles.length} /></li>
                 {/each}
             </ul>
@@ -70,7 +75,7 @@
         </CardHeader>
         {#if open}
             <CardContent id="{id}-list" class="mt-3 space-y-3 border-t px-4 pt-3">
-                {#each groups as group (group.rank)}
+                {#each shown as group (group.rank)}
                     <section aria-labelledby="{id}-{group.rank}">
                         <h3
                             id="{id}-{group.rank}"
@@ -80,7 +85,7 @@
                             )}
                         >
                             <DrinkingMark rank={group.rank} size={11} />
-                            {rankLabel(group.rank)} · {group.bottles.length}
+                            {rankLabel(group.rank)}
                         </h3>
                         <ul class="divide-y">
                             {#each group.bottles as bottle (bottle.id)}
@@ -125,6 +130,13 @@
                         </ul>
                     </section>
                 {/each}
+                <a
+                    href="/to-drink"
+                    class="inline-flex items-center text-sm font-medium text-primary-text underline decoration-primary/40 underline-offset-[3px] hover:decoration-primary"
+                >
+                    {m['drinking.see_all']({ count: bottles.length })}
+                    <ChevronRight class="h-4 w-4" aria-hidden="true" />
+                </a>
             </CardContent>
         {/if}
     </Card>

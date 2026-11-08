@@ -162,6 +162,20 @@ describe('groupByWine', () => {
         expect(row.storageCase).toEqual({ name: 'B2, A1' });
     });
 
+    it('names the first two cases of a row, then how many others', () => {
+        const inCase = (id: string, name: string) =>
+            bottle(id, 'optimum_reached', margaux, { storageCase: { name } });
+        const [row] = groupByWine([
+            inCase('a', 'Cave1'),
+            inCase('b', 'Cave4'),
+            inCase('c', 'Cave1'),
+            inCase('d', 'Frigo2'),
+            inCase('e', 'Cave7')
+        ]);
+
+        expect(row.storageCase).toEqual({ name: 'Cave1, Cave4 +2' });
+    });
+
     it('keeps a wine without vintage apart from its vintages', () => {
         const rows = groupByWine([
             bottle('a', 'late', margaux, { vintage: null }),

@@ -1227,5 +1227,11 @@
   "drinking.case_marks": "To drink: {marks}",
   "drinking.storage_toggle": "Bottles to drink",
   "drinking.urgency": "Urgency",
-  "drinking.optimum": "Peak"
+  "drinking.optimum": "Peak",
+  "drinking.see_all": "{count, plural, one {See the bottle} other {See the # bottles}}",
+  "drinking.page_subtitle": "The bottles in the cellar to drink soon, the most urgent first.",
+  "drinking.by_bottle": "By bottle",
+  "drinking.by_wine": "By wine",
+  "drinking.more_cases": "{cases} +{count, number}",
+  "drinking.bottles_of_wines": "{bottles, plural, one {# bottle} other {# bottles}} ({wines, plural, one {# wine} other {# wines}})"
 }

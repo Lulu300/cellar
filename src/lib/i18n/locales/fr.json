@@ -1227,5 +1227,11 @@
   "drinking.case_marks": "À boire : {marks}",
   "drinking.storage_toggle": "Bouteilles à boire",
   "drinking.urgency": "Urgence",
-  "drinking.optimum": "Apogée"
+  "drinking.optimum": "Apogée",
+  "drinking.see_all": "{count, plural, one {Voir la bouteille} other {Voir les # bouteilles}}",
+  "drinking.page_subtitle": "Les bouteilles de la cave à boire bientôt, les plus urgentes d’abord.",
+  "drinking.by_bottle": "Par bouteille",
+  "drinking.by_wine": "Par vin",
+  "drinking.more_cases": "{cases} +{count, number}",
+  "drinking.bottles_of_wines": "{bottles, plural, one {# bouteille} other {# bouteilles}} ({wines, plural, one {# vin} other {# vins}})"
 }

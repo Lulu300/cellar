@@ -1,7 +1,7 @@
 import { expect, test } from '@playwright/test';
 import { addWine, logIn, openFromMenu, pick } from './helpers.js';
 
-test('add a container on the storage page, put bottles in its cases, move three from the map, mark one to drink this month and see it on the map and in the banner, find the wine in the cellar, then colour it from the admin', async ({
+test('add a container on the storage page, put bottles in its cases, move three from the map, mark one to drink this month and see it on the map, in the banner and on its page, find the wine in the cellar, then colour it from the admin', async ({
     page,
     browser
 }) => {
@@ -158,10 +158,20 @@ test('add a container on the storage page, put bottles in its cases, move three 
     await expect(page.getByText('1 this month')).toBeVisible();
     await page.getByRole('button', { name: 'Show the list' }).click();
     await expect(
-        page
-            .getByRole('region', { name: 'This month · 1' })
-            .getByRole('link', { name: /Cuvée Stored/ })
+        page.getByRole('region', { name: 'This month' }).getByRole('link', { name: /Cuvée Stored/ })
     ).toBeVisible();
+
+    // The banner leads to the page of every bottle to drink, which finds it among this month's
+    // (FEAT-18).
+    await page.getByRole('link', { name: /^See the/ }).click();
+    await expect(page.getByRole('heading', { name: 'To drink', level: 1 })).toBeVisible();
+    const thisMonth = page.getByRole('button', { name: '1 this month' });
+    await thisMonth.click();
+    await expect(thisMonth).toHaveAttribute('aria-pressed', 'true');
+    await expect(page).toHaveURL(/rank=this_month/);
+    const rows = page.getByRole('row').filter({ has: page.getByRole('link') });
+    await expect(rows).toHaveCount(1);
+    await expect(rows.getByRole('link', { name: 'Cuvée Stored' })).toBeVisible();
 
     // A visitor sees what a case holds; ticking a bottle asks to log in, and ticks nothing.
     const visitorContext = await browser.newContext();

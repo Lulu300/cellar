@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { m } from '#lib/paraglide/messages.js';
 import { SOON, type DrinkingRank } from '#lib/shared/drinking.js';
 import { parseBottlePageQuery, type QueryParams } from '#lib/shared/schemas/bottle-list.js';
 import { compareText } from '#lib/utils/compare.js';
@@ -38,7 +39,7 @@ export const WINE_ROW_COLUMNS = [
 ] as const;
 
 /** One row per bottle, or one per wine and vintage. */
-export const TO_DRINK_VIEWS = ['bottle', 'wine'] as const;
+const TO_DRINK_VIEWS = ['bottle', 'wine'] as const;
 export type ToDrinkView = (typeof TO_DRINK_VIEWS)[number];
 
 const filtersSchema = z.object({
@@ -80,12 +81,6 @@ export function filterToDrink<B extends ToDrinkBottle>(
     );
 }
 
-/** How many bottles a filter's choice holds, beside its name. */
-export interface FilterChoice<Value extends string> {
-    value: Value;
-    count: number;
-}
-
 /**
  * The choices of the rank and colour filters, each with the number of bottles that the other
  * filters leave it, so that a choice says what it would show. Only the ranks and colours of the
@@ -117,14 +112,22 @@ export type WineRow<B extends ToDrinkBottle> = Omit<B, 'storageCase'> & {
     id: string;
     count: number;
     bottles: B[];
-    /** Every case that holds one of its bottles. */
+    /** The cases that hold its bottles: the first two, then how many others. */
     storageCase: { name: string } | null;
 };
+
+/** Cases named in a row: the first two, then « +N » for the others (« Cave1, Cave4 +1 »). */
+function caseNames(cases: string[]): string {
+    const named = cases.slice(0, 2).join(', ');
+    return cases.length > 2
+        ? m['drinking.more_cases']({ cases: named, count: cases.length - 2 })
+        : named;
+}
 
 /**
  * One row per wine and vintage, in the order of the first bottle of each: given the bottles the
  * most urgent first, as the server lists them, each row takes the rank and the dates of its most
- * urgent bottle, and names every case that holds one, in the order of its bottles.
+ * urgent bottle, and names the cases that hold its bottles, in the order of its bottles.
  */
 export function groupByWine<B extends ToDrinkBottle>(bottles: B[]): WineRow<B>[] {
     const groups = new Map<string, B[]>();
@@ -139,7 +142,7 @@ export function groupByWine<B extends ToDrinkBottle>(bottles: B[]): WineRow<B>[]
             id,
             count: group.length,
             bottles: group,
-            storageCase: cases.length > 0 ? { name: cases.join(', ') } : null
+            storageCase: cases.length > 0 ? { name: caseNames(cases) } : null
         };
     });
 }

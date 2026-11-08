@@ -1,7 +1,7 @@
 [
   {
     "version": "1.5.2",
-    "summary": "1.5.2 lets you choose how wide the pages are, and shows the cellar map across the whole screen.",
+    "summary": "1.5.2 lets you choose how wide the pages are, and shows the cellar map across the whole screen.\n\nPreferences has a new « Layout » card. « Page width » offers Narrow, Normal (the width so far, and the default), Wide and Full width: it applies to every page and to the header on a screen of 1024 pixels or more, while phones and small tablets keep their 16-pixel margin. « Full-width cellar map », on by default, lets the storage page take the whole screen whatever the page width, so that a cellar of many containers no longer scrolls sideways where the screen is wide enough. The wine filters and the bottles on a wine's page now fill the width they are given, with as many columns as fit.",
     "mandatoryStop": false,
     "actions": []
   },

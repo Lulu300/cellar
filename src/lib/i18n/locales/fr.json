@@ -94,6 +94,7 @@
   "common.all": "Tous",
   "common.type": "Type",
   "common.color": "Couleur",
+  "common.bottles": "Bouteilles",
   "common.region": "Région",
   "common.country": "Pays",
   "common.origin": "Origine",
@@ -240,7 +241,6 @@
   "wines.less_than": "Moins de",
   "wines.show_images": "Afficher images",
   "wines.view": "Affichage",
-  "common.bottles": "Bouteilles",
   "wines.more_actions": "Plus d’actions",
   "wines.all_origins": "Toutes origines",
   "wines.no_vintage": "Sans millésime",
@@ -1233,5 +1233,6 @@
   "drinking.by_bottle": "Par bouteille",
   "drinking.by_wine": "Par vin",
   "drinking.more_cases": "{cases} +{count, number}",
-  "drinking.bottles_of_wines": "{bottles, plural, one {# bouteille} other {# bouteilles}} ({wines, plural, one {# vin} other {# vins}})"
+  "drinking.bottles_of_wines": "{bottles, plural, one {# bouteille} other {# bouteilles}} ({wines, plural, one {# vin} other {# vins}})",
+  "drinking.select_bottles": "{count, plural, one {Sélectionner la bouteille} other {Sélectionner les # bouteilles}}"
 }

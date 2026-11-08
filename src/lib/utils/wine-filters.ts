@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { changedParams } from '#lib/utils/pagination.js';
 import { ownedBottles, WINE_GROUP_SORT_KEYS } from '#lib/utils/wine-group-sort.js';
 
 /** The fields of a bottle that the filters of the wine list read. */
@@ -97,14 +98,8 @@ export function readWineListQuery(params: Iterable<[string, string]>): WineListQ
 }
 
 /** The URL parameters of these changes: a value back to its default leaves the URL. */
-export function wineListParams(changes: Partial<WineListQuery>): Record<string, string | null> {
-    return Object.fromEntries(
-        Object.entries(changes).map(([name, value]) => [
-            name,
-            value === DEFAULT_QUERY[name as keyof WineListQuery] ? null : value
-        ])
-    );
-}
+export const wineListParams = (changes: Partial<WineListQuery>) =>
+    changedParams(changes, DEFAULT_QUERY);
 
 /** The fields of a wine that the filters of the wine list read. */
 interface FilterWine {

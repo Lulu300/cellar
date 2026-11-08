@@ -37,6 +37,7 @@
         emptyMessage,
         selection,
         onToggle,
+        selectLabel,
         onToggleAll,
         onEdit,
         actions,
@@ -52,6 +53,8 @@
         /** With a selection, each row gets a checkbox. */
         selection?: { has(id: string): boolean };
         onToggle?: (bottle: B) => void;
+        /** What a row's checkbox is called, when the row holds several bottles. */
+        selectLabel?: (bottle: B) => string;
         /** Selects every bottle shown, or none of them. */
         onToggleAll?: (select: boolean) => void;
         /** With it, each row gets an edit button. */
@@ -145,7 +148,8 @@
                                 bind:checked={
                                     () => selection.has(bottle.id), () => onToggle?.(bottle)
                                 }
-                                aria-label={m['bottle_table.select_bottle']()}
+                                aria-label={selectLabel?.(bottle) ??
+                                    m['bottle_table.select_bottle']()}
                             />
                         </TableCell>
                     {/if}

@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import type { SortColumn } from '#lib/utils/bottle-sort.js';
 
 /** The columns that the bottle tables sort on. */
 export type BottleSortColumn =
@@ -32,7 +33,7 @@ export function defaultDirection(column: string): SortDirection {
  * goes with the column asked, so the default sort takes its own direction, also when the URL gives
  * `dir` without `sort`.
  */
-export function parseBottlePageQuery<Column extends string>(
+export function parseBottlePageQuery<Column extends SortColumn>(
     params: QueryParams,
     columns: readonly [Column, ...Column[]],
     defaultSort: Column

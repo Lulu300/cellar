@@ -16,9 +16,10 @@
         filterToDrink,
         groupByWine,
         readToDrinkQuery,
+        shownFilters,
         TO_DRINK_COLUMNS,
-        WINE_ROW_COLUMNS,
-        type ToDrinkView
+        toDrinkParams,
+        WINE_ROW_COLUMNS
     } from '#lib/components/bottles/to-drink.js';
     import WineBottleDialog from '#lib/components/bottles/WineBottleDialog.svelte';
     import ToggleChip from '#lib/components/forms/ToggleChip.svelte';
@@ -46,24 +47,14 @@
     // The view, filters, sort and page live in the URL: a reload or the way back finds them.
     const query = $derived(readToDrinkQuery(page.url.searchParams));
 
-    /** Shows the first page with these changes; a value back to its default leaves the URL. */
-    function change(changes: {
-        view?: ToDrinkView;
-        rank?: string;
-        color?: string;
-        search?: string;
-    }) {
-        const params = Object.fromEntries(
-            Object.entries(changes).map(([name, value]) => [
-                name,
-                value === '' || value === 'bottle' ? null : value
-            ])
-        );
-        showTablePage({ ...params, page: null });
+    /** Shows the first page with a new view or filter. */
+    function change(changes: Parameters<typeof toDrinkParams>[0]) {
+        showTablePage({ ...toDrinkParams(changes), page: null });
     }
 
-    const shown = $derived(filterToDrink(data.bottles, query));
-    const choices = $derived(filterChoices(data.bottles, query));
+    const filters = $derived(shownFilters(data.bottles, query));
+    const shown = $derived(filterToDrink(data.bottles, filters));
+    const choices = $derived(filterChoices(data.bottles, filters));
     const colors = $derived(
         new Map(data.bottles.map(({ definition }) => [definition.colorId, definition]))
     );
@@ -109,7 +100,7 @@
     ]);
 
     const rankChoice = (rank: DrinkingRank) => () =>
-        change({ rank: query.rank === rank ? '' : rank });
+        change({ rank: filters.rank === rank ? '' : rank });
 </script>
 
 <svelte:head>
@@ -168,7 +159,7 @@
                         {m['drinking.urgency']()}
                     </span>
                     {#each choices.ranks as { value: rank, count } (rank)}
-                        <ToggleChip pressed={query.rank === rank} onclick={rankChoice(rank)}>
+                        <ToggleChip pressed={filters.rank === rank} onclick={rankChoice(rank)}>
                             <DrinkingMark {rank} size={10} />
                             {countedLabel(rank, count)}
                         </ToggleChip>
@@ -185,8 +176,8 @@
                     {#each choices.colors as { value: color, count } (color)}
                         {@const wine = colors.get(color)!}
                         <ToggleChip
-                            pressed={query.color === color}
-                            onclick={() => change({ color: query.color === color ? '' : color })}
+                            pressed={filters.color === color}
+                            onclick={() => change({ color: filters.color === color ? '' : color })}
                         >
                             <span
                                 class="wine-color size-3 rounded-full border border-(--wine-edge) bg-(--wine)"
@@ -257,6 +248,7 @@
                     showTablePage({ sort: column, dir: direction, page: null })}
                 emptyMessage={m['storage.no_bottles_found']()}
                 selection={wineSelection}
+                selectLabel={(row) => m['drinking.select_bottles']({ count: row.count })}
                 onToggle={(row) => toggle(row.bottles)}
                 onToggleAll={(on) =>
                     select(

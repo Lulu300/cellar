@@ -94,6 +94,7 @@
   "common.all": "All",
   "common.type": "Type",
   "common.color": "Color",
+  "common.bottles": "Bottles",
   "common.region": "Region",
   "common.country": "Country",
   "common.origin": "Origin",
@@ -240,7 +241,6 @@
   "wines.less_than": "Less than",
   "wines.show_images": "Show images",
   "wines.view": "View",
-  "common.bottles": "Bottles",
   "wines.more_actions": "More actions",
   "wines.all_origins": "All origins",
   "wines.no_vintage": "Without vintage",
@@ -1233,5 +1233,6 @@
   "drinking.by_bottle": "By bottle",
   "drinking.by_wine": "By wine",
   "drinking.more_cases": "{cases} +{count, number}",
-  "drinking.bottles_of_wines": "{bottles, plural, one {# bottle} other {# bottles}} ({wines, plural, one {# wine} other {# wines}})"
+  "drinking.bottles_of_wines": "{bottles, plural, one {# bottle} other {# bottles}} ({wines, plural, one {# wine} other {# wines}})",
+  "drinking.select_bottles": "{count, plural, one {Select the bottle} other {Select the # bottles}}"
 }

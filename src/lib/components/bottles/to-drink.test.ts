@@ -5,6 +5,8 @@ import {
     filterToDrink,
     groupByWine,
     readToDrinkQuery,
+    shownFilters,
+    toDrinkParams,
     type ToDrinkBottle
 } from './to-drink';
 
@@ -21,6 +23,7 @@ function bottle(
     return {
         id,
         vintage: 2015,
+        optimum: null,
         rank,
         storageCase: null,
         definition: { id: wine.id, name: wine.name, producer: wine.producer ?? null, ...color },
@@ -71,6 +74,33 @@ describe('readToDrinkQuery', () => {
     });
 });
 
+describe('toDrinkParams', () => {
+    it('leaves the defaults out of the URL, each against its own default', () => {
+        expect(toDrinkParams({ view: 'bottle', rank: '', color: 'red', search: 'bottle' })).toEqual(
+            {
+                view: null,
+                rank: null,
+                color: 'red',
+                search: 'bottle'
+            }
+        );
+        expect(toDrinkParams({ view: 'wine', search: '' })).toEqual({ view: 'wine', search: null });
+    });
+});
+
+describe('shownFilters', () => {
+    const bottles = [bottle('a', 'late', margaux)];
+
+    it('forgets a colour that no bottle has any more, and keeps the rest', () => {
+        expect(shownFilters(bottles, { rank: 'this_year', color: 'white', search: 'x' })).toEqual({
+            rank: 'this_year',
+            color: '',
+            search: 'x'
+        });
+        expect(shownFilters(bottles, { rank: '', color: 'red', search: '' }).color).toBe('red');
+    });
+});
+
 describe('filterToDrink', () => {
     const bottles = [
         bottle('a', 'late', margaux),
@@ -118,6 +148,17 @@ describe('filterChoices', () => {
         ]);
     });
 
+    it('keeps offering the rank chosen once its last bottle has left it, to clear it', () => {
+        const { ranks } = filterChoices(bottles, { rank: 'this_year', color: '', search: '' });
+        expect(ranks).toContainEqual({ value: 'this_year', count: 0 });
+        expect(ranks.map(({ value }) => value)).toEqual([
+            'late',
+            'this_month',
+            'this_year',
+            'optimum_reached'
+        ]);
+    });
+
     it('counts each choice within the other filters, its own left aside', () => {
         const choices = filterChoices(bottles, { rank: 'late', color: 'red', search: '' });
         expect(choices.ranks).toEqual([
@@ -159,17 +200,27 @@ describe('groupByWine', () => {
         ]);
 
         expect(row.rank).toBe('this_month');
-        expect(row.storageCase).toEqual({ name: 'B2, A1' });
+        expect(row.storageCase).toEqual({ name: 'A1, B2' });
     });
 
-    it('names the first two cases of a row, then how many others', () => {
+    it('gives a row the oldest optimum of its bottles', () => {
+        const [row] = groupByWine([
+            bottle('a', 'this_month', margaux),
+            bottle('b', 'optimum_reached', margaux, { optimum: 2018 }),
+            bottle('c', 'optimum_reached', margaux, { optimum: 2015 })
+        ]);
+        expect(row.optimum).toBe(2015);
+        expect(groupByWine([bottle('d', 'late', margaux)])[0].optimum).toBeNull();
+    });
+
+    it('names the first two cases of a row by name, then how many others', () => {
         const inCase = (id: string, name: string) =>
             bottle(id, 'optimum_reached', margaux, { storageCase: { name } });
         const [row] = groupByWine([
-            inCase('a', 'Cave1'),
+            inCase('a', 'Frigo2'),
             inCase('b', 'Cave4'),
-            inCase('c', 'Cave1'),
-            inCase('d', 'Frigo2'),
+            inCase('c', 'Frigo2'),
+            inCase('d', 'Cave1'),
             inCase('e', 'Cave7')
         ]);
 

@@ -22,3 +22,16 @@ export function withQuery(url: string | URL, changes: Record<string, string | nu
     }
     return changed;
 }
+
+/** The query parameters of these changes to a list's query: a value back to its default leaves the URL. */
+export function changedParams<Query extends Record<string, string>>(
+    changes: Partial<Query>,
+    defaults: Query
+): Record<string, string | null> {
+    return Object.fromEntries(
+        Object.entries(changes).map(([name, value]) => [
+            name,
+            value === defaults[name] ? null : (value ?? null)
+        ])
+    );
+}

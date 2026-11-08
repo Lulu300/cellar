@@ -1,5 +1,11 @@
 [
   {
+    "version": "1.5.2",
+    "summary": "1.5.2 lets you choose how wide the pages are, and shows the cellar map across the whole screen.",
+    "mandatoryStop": false,
+    "actions": []
+  },
+  {
     "version": "1.5.1",
     "summary": "1.5.1 gives the bottles to drink soon a page of their own, to sort and filter them.\n\nThe « To drink soon » banner of the wine list stays short: it keeps its counts, and unfolded it shows the eight most urgent bottles, then « See the N bottles », which opens the new « To drink » page. That page lists every bottle to drink soon, the most urgent first. Sort it by any column: urgency, peak year (the oldest first), vintage, colour, « drink before » or location. Filter it by urgency, by wine colour or by name, and switch between one row per bottle and one row per wine and vintage, with its number of bottles. Tick bottles to give them a « drink before », move them or change their status, or use the ⋯ menu of a bottle. The sort, filters and view stay when you reload the page or come back to it. An assistant connected through MCP can ask for the bottles to drink of one urgency or one colour, sorted by peak year.\n\nThe dependencies were reviewed again: SvelteKit and its Node adapter take their latest fixes, among them one that keeps the server from crashing on a streamed MCP answer; the image keeps Node.js 24.22.1.",
     "mandatoryStop": false,

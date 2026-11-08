@@ -29,6 +29,12 @@
     let { children, data } = $props();
 
     $effect(() => applyTheme(preferences.theme, preferences.isDark));
+    // Read by the frame of app.css, which app.html sets first, before the page is drawn
+    $effect(() => {
+        const root = document.documentElement;
+        root.dataset.pageWidth = preferences.pageWidth;
+        root.dataset.cellarMapFullWidth = String(preferences.cellarMapFullWidth);
+    });
 
     let loginDialog: LoginDialog;
     // The ☰ menu, which lists the sections where the top bar does not fit or a finger cannot hover it
@@ -105,9 +111,7 @@
 
 <div class="min-h-screen bg-background">
     <header class="border-b bg-card text-card-foreground">
-        <div
-            class="container mx-auto py-4 max-w-none w-full px-4 lg:w-[90%] xl:w-[85%] 2xl:w-[80%]"
-        >
+        <div class="page-frame py-4">
             <div class="flex justify-between items-center gap-2">
                 <!-- Not a heading: each page has its own h1. -->
                 <div
@@ -174,8 +178,12 @@
         </div>
     </header>
 
-    <!-- Room for the tab bar, which would cover the end of the page -->
-    <main class="standalone:max-md:pb-[calc(4rem+env(safe-area-inset-bottom))]">
+    <!-- Room for the tab bar, which would cover the end of the page. The cellar map may take the
+         whole screen while the header keeps the chosen width (app.css). -->
+    <main
+        class="page-frame py-8 standalone:max-md:pb-[calc(4rem+env(safe-area-inset-bottom))]"
+        data-cellar-map={page.route.id === '/storage' || undefined}
+    >
         {@render children?.()}
     </main>
 

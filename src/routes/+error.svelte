@@ -10,7 +10,5 @@
     <title>{pageTitle(String(page.status))}</title>
 </svelte:head>
 
-<div class="container mx-auto py-8 max-w-none w-full px-4 lg:w-[90%] xl:w-[85%] 2xl:w-[80%]">
-    <ErrorMessage heading="h1" />
-    <Button href="/wines" variant="outline">{m['error_page.back_to_wines']()}</Button>
-</div>
+<ErrorMessage heading="h1" />
+<Button href="/wines" variant="outline">{m['error_page.back_to_wines']()}</Button>

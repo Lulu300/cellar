@@ -50,48 +50,46 @@
     <meta name="description" content={m['wines.subtitle']()} />
 </svelte:head>
 
-<div class="container mx-auto py-8 max-w-none w-full px-4 lg:w-[90%] xl:w-[85%] 2xl:w-[80%]">
-    <div class="flex flex-wrap justify-between items-center gap-4 mb-8">
-        <div>
-            <h1 class="text-3xl font-bold">{m['wines.title']()}</h1>
-            <p class="text-muted-foreground">{m['wines.subtitle']()}</p>
-        </div>
-
-        <div class="flex flex-wrap gap-2">
-            {#if auth.isAuthenticated}
-                <Button onclick={() => openWineDialog('add')}>
-                    {m['forms.add_wine']()}
-                </Button>
-                <Button onclick={() => openBottleDialog()} variant="outline">
-                    {m['common.add_bottle']()}
-                </Button>
-            {:else}
-                <Button
-                    onclick={() => toasts.add(m['auth.please_login_to_add_wines'](), 'warning')}
-                    variant="outline"
-                >
-                    {m['forms.add_wine']()}
-                </Button>
-                <Button
-                    onclick={() => toasts.add(m['auth.please_login_to_add_bottles'](), 'warning')}
-                    variant="outline"
-                >
-                    {m['common.add_bottle']()}
-                </Button>
-            {/if}
-        </div>
+<div class="flex flex-wrap justify-between items-center gap-4 mb-8">
+    <div>
+        <h1 class="text-3xl font-bold">{m['wines.title']()}</h1>
+        <p class="text-muted-foreground">{m['wines.subtitle']()}</p>
     </div>
 
-    <DrinkSoonBanner bottles={data.toDrink} />
-
-    <WineListView
-        wineList={data.wines}
-        imageUrls={data.imageUrls}
-        onEditWine={(wine) => openWineDialog('edit', wine)}
-        onDuplicateWine={(wine) => openWineDialog('duplicate', wine)}
-        onAddBottle={(wine) => openBottleDialog(wine.id)}
-    />
+    <div class="flex flex-wrap gap-2">
+        {#if auth.isAuthenticated}
+            <Button onclick={() => openWineDialog('add')}>
+                {m['forms.add_wine']()}
+            </Button>
+            <Button onclick={() => openBottleDialog()} variant="outline">
+                {m['common.add_bottle']()}
+            </Button>
+        {:else}
+            <Button
+                onclick={() => toasts.add(m['auth.please_login_to_add_wines'](), 'warning')}
+                variant="outline"
+            >
+                {m['forms.add_wine']()}
+            </Button>
+            <Button
+                onclick={() => toasts.add(m['auth.please_login_to_add_bottles'](), 'warning')}
+                variant="outline"
+            >
+                {m['common.add_bottle']()}
+            </Button>
+        {/if}
+    </div>
 </div>
+
+<DrinkSoonBanner bottles={data.toDrink} />
+
+<WineListView
+    wineList={data.wines}
+    imageUrls={data.imageUrls}
+    onEditWine={(wine) => openWineDialog('edit', wine)}
+    onDuplicateWine={(wine) => openWineDialog('duplicate', wine)}
+    onAddBottle={(wine) => openBottleDialog(wine.id)}
+/>
 
 <WineDefinitionDialog
     bind:open={showWineDialog}

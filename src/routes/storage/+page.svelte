@@ -98,153 +98,148 @@
     <meta name="description" content={m['storage.subtitle']()} />
 </svelte:head>
 
-<div class="container mx-auto py-8 max-w-none w-full px-4 lg:w-[90%] xl:w-[85%] 2xl:w-[80%]">
-    <div class="flex flex-wrap justify-between items-center gap-4 mb-6">
-        <div>
-            <h1 class="text-3xl font-bold tracking-tight">{m['storage.title']()}</h1>
-            <p class="text-muted-foreground">{m['storage.subtitle']()}</p>
-        </div>
-
-        <div class="flex flex-wrap gap-2 items-center">
-            <Button onclick={() => (showAllBottlesDialog = true)} variant="outline">
-                <List class="h-4 w-4 mr-2" />
-                {m['storage.view_all_bottles']()}
-            </Button>
-
-            <Button onclick={addContainer} variant={auth.isAuthenticated ? 'default' : 'outline'}>
-                + {m['storage.add_container']()}
-            </Button>
-
-            <div class="flex gap-1 border rounded-md p-1">
-                <Button
-                    variant={viewMode === 'table' ? 'default' : 'ghost'}
-                    size="sm"
-                    onclick={() => (viewMode = 'table')}
-                >
-                    {m['common.table']()}
-                </Button>
-                <Button
-                    variant={viewMode === 'grid' ? 'default' : 'ghost'}
-                    size="sm"
-                    onclick={() => (viewMode = 'grid')}
-                >
-                    {m['common.grid']()}
-                </Button>
-            </div>
-
-            <Button
-                variant={showDrinking ? 'default' : 'outline'}
-                aria-pressed={showDrinking}
-                onclick={() => (showDrinking = !showDrinking)}
-            >
-                <Clock class="h-4 w-4 mr-2" aria-hidden="true" />
-                {m['drinking.storage_toggle']()}
-            </Button>
-
-            {#if viewMode === 'table'}
-                <Button
-                    variant="outline"
-                    onclick={() => (containersAsColumns = !containersAsColumns)}
-                >
-                    <RotateCcw class="h-4 w-4 mr-2" />
-                    {containersAsColumns
-                        ? m['storage.containers_as_rows']()
-                        : m['storage.containers_as_columns']()}
-                </Button>
-            {/if}
-        </div>
+<div class="flex flex-wrap justify-between items-center gap-4 mb-6">
+    <div>
+        <h1 class="text-3xl font-bold tracking-tight">{m['storage.title']()}</h1>
+        <p class="text-muted-foreground">{m['storage.subtitle']()}</p>
     </div>
 
-    {#if highlight}
-        <div
-            class="mb-4 flex flex-wrap items-center gap-x-3 gap-y-2 rounded-lg border border-primary/40 bg-primary/10 px-4 py-2"
-        >
-            <MapPin class="h-4 w-4 shrink-0 text-primary-text" aria-hidden="true" />
-            <p class="text-sm">
-                {m['storage.cases_holding_wine']({
-                    wine: highlight.name,
-                    cases: highlight.cases.map(({ name }) => name).join(', ')
-                })}
-            </p>
+    <div class="flex flex-wrap gap-2 items-center">
+        <Button onclick={() => (showAllBottlesDialog = true)} variant="outline">
+            <List class="h-4 w-4 mr-2" />
+            {m['storage.view_all_bottles']()}
+        </Button>
+
+        <Button onclick={addContainer} variant={auth.isAuthenticated ? 'default' : 'outline'}>
+            + {m['storage.add_container']()}
+        </Button>
+
+        <div class="flex gap-1 border rounded-md p-1">
             <Button
-                variant="outline"
+                variant={viewMode === 'table' ? 'default' : 'ghost'}
                 size="sm"
-                class="ml-auto"
-                onclick={() => showTablePage({ wine: null })}
+                onclick={() => (viewMode = 'table')}
             >
-                {m['common.show_all']()}
+                {m['common.table']()}
+            </Button>
+            <Button
+                variant={viewMode === 'grid' ? 'default' : 'ghost'}
+                size="sm"
+                onclick={() => (viewMode = 'grid')}
+            >
+                {m['common.grid']()}
             </Button>
         </div>
-    {/if}
 
-    {#if containers.length === 0}
+        <Button
+            variant={showDrinking ? 'default' : 'outline'}
+            aria-pressed={showDrinking}
+            onclick={() => (showDrinking = !showDrinking)}
+        >
+            <Clock class="h-4 w-4 mr-2" aria-hidden="true" />
+            {m['drinking.storage_toggle']()}
+        </Button>
+
+        {#if viewMode === 'table'}
+            <Button variant="outline" onclick={() => (containersAsColumns = !containersAsColumns)}>
+                <RotateCcw class="h-4 w-4 mr-2" />
+                {containersAsColumns
+                    ? m['storage.containers_as_rows']()
+                    : m['storage.containers_as_columns']()}
+            </Button>
+        {/if}
+    </div>
+</div>
+
+{#if highlight}
+    <div
+        class="mb-4 flex flex-wrap items-center gap-x-3 gap-y-2 rounded-lg border border-primary/40 bg-primary/10 px-4 py-2"
+    >
+        <MapPin class="h-4 w-4 shrink-0 text-primary-text" aria-hidden="true" />
+        <p class="text-sm">
+            {m['storage.cases_holding_wine']({
+                wine: highlight.name,
+                cases: highlight.cases.map(({ name }) => name).join(', ')
+            })}
+        </p>
+        <Button
+            variant="outline"
+            size="sm"
+            class="ml-auto"
+            onclick={() => showTablePage({ wine: null })}
+        >
+            {m['common.show_all']()}
+        </Button>
+    </div>
+{/if}
+
+{#if containers.length === 0}
+    <Card>
+        <CardContent class="p-6 text-center">
+            <p class="text-muted-foreground">{m['storage.no_storage_data']()}</p>
+        </CardContent>
+    </Card>
+{:else}
+    {#snippet pagination()}
+        <Pagination
+            page={shownPage}
+            perPage={containersPerPage}
+            total={containers.length}
+            onPageChange={(next) => (page = next)}
+        />
+    {/snippet}
+
+    {#if viewMode === 'grid'}
+        <StorageGrid containers={pageOfContainers} {highlighted} {marks} {onOpen} {onEdit} />
+        <div class="mt-6">{@render pagination()}</div>
+    {:else}
         <Card>
-            <CardContent class="p-6 text-center">
-                <p class="text-muted-foreground">{m['storage.no_storage_data']()}</p>
+            <CardHeader>
+                <CardTitle>{m['storage.storage_overview']()}</CardTitle>
+            </CardHeader>
+            <CardContent>
+                <div class="mb-4">{@render pagination()}</div>
+                <StorageTable
+                    containers={pageOfContainers}
+                    {containersAsColumns}
+                    {highlighted}
+                    {marks}
+                    {onOpen}
+                    {onEdit}
+                />
             </CardContent>
         </Card>
-    {:else}
-        {#snippet pagination()}
-            <Pagination
-                page={shownPage}
-                perPage={containersPerPage}
-                total={containers.length}
-                onPageChange={(next) => (page = next)}
-            />
-        {/snippet}
-
-        {#if viewMode === 'grid'}
-            <StorageGrid containers={pageOfContainers} {highlighted} {marks} {onOpen} {onEdit} />
-            <div class="mt-6">{@render pagination()}</div>
-        {:else}
-            <Card>
-                <CardHeader>
-                    <CardTitle>{m['storage.storage_overview']()}</CardTitle>
-                </CardHeader>
-                <CardContent>
-                    <div class="mb-4">{@render pagination()}</div>
-                    <StorageTable
-                        containers={pageOfContainers}
-                        {containersAsColumns}
-                        {highlighted}
-                        {marks}
-                        {onOpen}
-                        {onEdit}
-                    />
-                </CardContent>
-            </Card>
-        {/if}
-
-        <div class="mt-6 grid grid-cols-1 md:grid-cols-3 gap-4">
-            <Card>
-                <CardContent class="p-6">
-                    <div class="text-2xl font-bold">{containers.length}</div>
-                    <div class="text-sm text-muted-foreground">
-                        {m['common.storage_containers']()}
-                    </div>
-                </CardContent>
-            </Card>
-
-            <Card>
-                <CardContent class="p-6">
-                    <div class="text-2xl font-bold">{cases.length}</div>
-                    <div class="text-sm text-muted-foreground">{m['common.storage_cases']()}</div>
-                </CardContent>
-            </Card>
-
-            <Card>
-                <CardContent class="p-6">
-                    <div class="text-2xl font-bold">{totalBottles}/{totalCapacity}</div>
-                    <div class="text-sm text-muted-foreground">
-                        {m['storage.bottles_full']({
-                            percent: formatPercent(utilization(totalCapacity, totalBottles))
-                        })}
-                    </div>
-                </CardContent>
-            </Card>
-        </div>
     {/if}
-</div>
+
+    <div class="mt-6 grid grid-cols-1 md:grid-cols-3 gap-4">
+        <Card>
+            <CardContent class="p-6">
+                <div class="text-2xl font-bold">{containers.length}</div>
+                <div class="text-sm text-muted-foreground">
+                    {m['common.storage_containers']()}
+                </div>
+            </CardContent>
+        </Card>
+
+        <Card>
+            <CardContent class="p-6">
+                <div class="text-2xl font-bold">{cases.length}</div>
+                <div class="text-sm text-muted-foreground">{m['common.storage_cases']()}</div>
+            </CardContent>
+        </Card>
+
+        <Card>
+            <CardContent class="p-6">
+                <div class="text-2xl font-bold">{totalBottles}/{totalCapacity}</div>
+                <div class="text-sm text-muted-foreground">
+                    {m['storage.bottles_full']({
+                        percent: formatPercent(utilization(totalCapacity, totalBottles))
+                    })}
+                </div>
+            </CardContent>
+        </Card>
+    </div>
+{/if}
 
 {#if draft}
     <ContainerDialog bind:open={showContainerDialog} {draft} />

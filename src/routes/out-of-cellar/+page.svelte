@@ -63,72 +63,70 @@
     <meta name="description" content={m['out_of_cellar.subtitle']()} />
 </svelte:head>
 
-<div class="container mx-auto py-8 max-w-none w-full px-4 lg:w-[90%] xl:w-[85%] 2xl:w-[80%]">
-    <div class="flex justify-between items-center mb-8">
-        <div>
-            <h1 class="text-3xl font-bold">{m['navigation.out_of_cellar']()}</h1>
-            <p class="text-muted-foreground">{m['out_of_cellar.subtitle']()}</p>
-        </div>
-
-        <BackButton />
+<div class="flex justify-between items-center mb-8">
+    <div>
+        <h1 class="text-3xl font-bold">{m['navigation.out_of_cellar']()}</h1>
+        <p class="text-muted-foreground">{m['out_of_cellar.subtitle']()}</p>
     </div>
 
-    <div class="space-y-4">
-        <div class="flex justify-between items-center">
-            <p class="text-sm text-muted-foreground">
-                {m['out_of_cellar.total_bottles_out']({ count: data.total })}
-            </p>
-            <div class="flex items-center gap-2">
-                {#if selectedBottles.size > 0}
-                    <span class="text-sm text-muted-foreground">
-                        {m['common.selected_count']({ count: selectedBottles.size })}
-                    </span>
-                    <Button variant="ghost" size="sm" onclick={clearSelection}>
-                        {m['common.clear_selection']()}
+    <BackButton />
+</div>
+
+<div class="space-y-4">
+    <div class="flex justify-between items-center">
+        <p class="text-sm text-muted-foreground">
+            {m['out_of_cellar.total_bottles_out']({ count: data.total })}
+        </p>
+        <div class="flex items-center gap-2">
+            {#if selectedBottles.size > 0}
+                <span class="text-sm text-muted-foreground">
+                    {m['common.selected_count']({ count: selectedBottles.size })}
+                </span>
+                <Button variant="ghost" size="sm" onclick={clearSelection}>
+                    {m['common.clear_selection']()}
+                </Button>
+                {#if auth.isAuthenticated}
+                    <Button
+                        variant="default"
+                        size="sm"
+                        onclick={() => (statusBottles = [...selectedBottles.values()])}
+                    >
+                        {m['out_of_cellar.change_availability_selected']()}
                     </Button>
-                    {#if auth.isAuthenticated}
-                        <Button
-                            variant="default"
-                            size="sm"
-                            onclick={() => (statusBottles = [...selectedBottles.values()])}
-                        >
-                            {m['out_of_cellar.change_availability_selected']()}
-                        </Button>
-                    {:else}
-                        <Button
-                            variant="outline"
-                            size="sm"
-                            onclick={() =>
-                                toasts.add(m['bottles.log_in_to_change_availability'](), 'warning')}
-                        >
-                            {m['out_of_cellar.change_availability_selected']()}
-                        </Button>
-                    {/if}
+                {:else}
+                    <Button
+                        variant="outline"
+                        size="sm"
+                        onclick={() =>
+                            toasts.add(m['bottles.log_in_to_change_availability'](), 'warning')}
+                    >
+                        {m['out_of_cellar.change_availability_selected']()}
+                    </Button>
                 {/if}
-            </div>
+            {/if}
         </div>
-
-        <PageSizeSelect perPage={data.perPage} />
-
-        <BottleTable
-            bottles={data.bottles}
-            columns={[...data.columns, 'notes']}
-            sort={{ column: data.sort, direction: data.direction }}
-            onSort={({ column, direction }) =>
-                showTablePage({ sort: column, dir: direction, page: null })}
-            emptyMessage={m['out_of_cellar.no_bottles_out_of_cellar']()}
-            selection={selectedBottles}
-            onToggle={toggleBottleSelection}
-            onToggleAll={selectAllVisible}
-        />
-
-        <Pagination
-            page={data.page}
-            perPage={data.perPage}
-            total={data.total}
-            onPageChange={(page) => showTablePage({ page })}
-        />
     </div>
+
+    <PageSizeSelect perPage={data.perPage} />
+
+    <BottleTable
+        bottles={data.bottles}
+        columns={[...data.columns, 'notes']}
+        sort={{ column: data.sort, direction: data.direction }}
+        onSort={({ column, direction }) =>
+            showTablePage({ sort: column, dir: direction, page: null })}
+        emptyMessage={m['out_of_cellar.no_bottles_out_of_cellar']()}
+        selection={selectedBottles}
+        onToggle={toggleBottleSelection}
+        onToggleAll={selectAllVisible}
+    />
+
+    <Pagination
+        page={data.page}
+        perPage={data.perPage}
+        total={data.total}
+        onPageChange={(page) => showTablePage({ page })}
+    />
 </div>
 
 {#if statusBottles.length > 0}

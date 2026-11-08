@@ -168,6 +168,46 @@
     }
 }
 
+/* The frame of the header and of the pages. From lg up, its width is the one chosen in the
+   preferences (preferences.svelte.ts), which app.html and the layout put on <html>; an unknown value
+   keeps the normal width. Below lg, every choice keeps the 16 px gutter alone. The cellar map takes
+   the whole screen unless the preferences keep it in the frame. */
+:root {
+    --page-frame-lg: 90%;
+    --page-frame-xl: 85%;
+    --page-frame-2xl: 80%;
+}
+:root[data-page-width='narrow'] {
+    --page-frame-lg: 80%;
+    --page-frame-xl: 75%;
+    --page-frame-2xl: 70%;
+}
+:root[data-page-width='wide'] {
+    --page-frame-lg: 95%;
+    --page-frame-xl: 95%;
+    --page-frame-2xl: 95%;
+}
+:root[data-page-width='full'],
+:root:not([data-cellar-map-full-width='false']) [data-cellar-map] {
+    --page-frame-lg: 100%;
+    --page-frame-xl: 100%;
+    --page-frame-2xl: 100%;
+}
+@utility page-frame {
+    width: 100%;
+    margin-inline: auto;
+    padding-inline: 1rem;
+    @variant lg {
+        width: var(--page-frame-lg);
+    }
+    @variant xl {
+        width: var(--page-frame-xl);
+    }
+    @variant 2xl {
+        width: var(--page-frame-2xl);
+    }
+}
+
 /* An element drawn in a wine colour, whose CSS variables wineColorStyle (wine-color.ts) sets:
    `--wine-edge` is its edge on the surface of the current mode. */
 @utility wine-color {

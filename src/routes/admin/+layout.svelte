@@ -18,27 +18,25 @@
     ]);
 </script>
 
-<div class="container mx-auto py-8 max-w-none w-full px-4 lg:w-[90%] xl:w-[85%] 2xl:w-[80%]">
-    <div class="mb-6">
-        <h1 class="flex items-center gap-2 text-3xl font-bold">
-            <Settings class="h-8 w-8" />
-            {m['admin.title']()}
-        </h1>
-        <p class="mt-1 text-sm text-muted-foreground">
-            {m['preferences.version']({ version: __APP_VERSION__ })}
-            ·
-            <a
-                href={API_DOC}
-                target="_blank"
-                rel="noopener noreferrer"
-                class="underline underline-offset-2 hover:text-foreground">{m['admin.api_doc']()}</a
-            >
-        </p>
-    </div>
-
-    <SectionTabs label={m['admin.title']()} items={sections} />
-
-    <UpgradeBanner {...data.upgrade} />
-
-    {@render children()}
+<div class="mb-6">
+    <h1 class="flex items-center gap-2 text-3xl font-bold">
+        <Settings class="h-8 w-8" />
+        {m['admin.title']()}
+    </h1>
+    <p class="mt-1 text-sm text-muted-foreground">
+        {m['preferences.version']({ version: __APP_VERSION__ })}
+        ·
+        <a
+            href={API_DOC}
+            target="_blank"
+            rel="noopener noreferrer"
+            class="underline underline-offset-2 hover:text-foreground">{m['admin.api_doc']()}</a
+        >
+    </p>
 </div>
+
+<SectionTabs label={m['admin.title']()} items={sections} />
+
+<UpgradeBanner {...data.upgrade} />
+
+{@render children()}

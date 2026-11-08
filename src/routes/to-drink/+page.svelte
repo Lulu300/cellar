@@ -119,167 +119,162 @@
     />
 {/snippet}
 
-<div class="container mx-auto py-8 max-w-none w-full px-4 lg:w-[90%] xl:w-[85%] 2xl:w-[80%]">
-    <div class="flex flex-wrap justify-between items-center gap-4 mb-8">
-        <div>
-            <h1 class="text-3xl font-bold">{m['drinking.column']()}</h1>
-            <p class="text-muted-foreground">{m['drinking.page_subtitle']()}</p>
-        </div>
-        <BackButton />
+<div class="flex flex-wrap justify-between items-center gap-4 mb-8">
+    <div>
+        <h1 class="text-3xl font-bold">{m['drinking.column']()}</h1>
+        <p class="text-muted-foreground">{m['drinking.page_subtitle']()}</p>
     </div>
+    <BackButton />
+</div>
 
-    <div class="space-y-4">
-        <Card class="py-4">
-            <CardContent class="space-y-3 px-4">
-                <div class="flex flex-wrap items-end gap-x-6 gap-y-3">
-                    <div class="w-full space-y-2 sm:w-72">
-                        <Label for="to-drink-search">{m['wines.search']()}</Label>
-                        <DebouncedInput
-                            id="to-drink-search"
-                            value={query.search}
-                            onChange={(search) => change({ search })}
-                            placeholder={m['storage.search_placeholder']()}
-                        />
-                    </div>
-                    <ChoiceButtons
-                        aria-label={m['wines.view']()}
-                        class="p-0.5"
-                        buttonClass="h-7"
-                        options={views}
-                        value={query.view}
-                        onchange={(view) => change({ view })}
+<div class="space-y-4">
+    <Card class="py-4">
+        <CardContent class="space-y-3 px-4">
+            <div class="flex flex-wrap items-end gap-x-6 gap-y-3">
+                <div class="w-full space-y-2 sm:w-72">
+                    <Label for="to-drink-search">{m['wines.search']()}</Label>
+                    <DebouncedInput
+                        id="to-drink-search"
+                        value={query.search}
+                        onChange={(search) => change({ search })}
+                        placeholder={m['storage.search_placeholder']()}
                     />
                 </div>
-                <div
-                    class="flex flex-wrap items-center gap-1.5"
-                    role="group"
-                    aria-labelledby="to-drink-ranks"
-                >
-                    <span id="to-drink-ranks" class="mr-1 w-20 text-sm text-muted-foreground">
-                        {m['drinking.urgency']()}
-                    </span>
-                    {#each choices.ranks as { value: rank, count } (rank)}
-                        <ToggleChip pressed={filters.rank === rank} onclick={rankChoice(rank)}>
-                            <DrinkingMark {rank} size={10} />
-                            {countedLabel(rank, count)}
-                        </ToggleChip>
-                    {/each}
-                </div>
-                <div
-                    class="flex flex-wrap items-center gap-1.5"
-                    role="group"
-                    aria-labelledby="to-drink-colors"
-                >
-                    <span id="to-drink-colors" class="mr-1 w-20 text-sm text-muted-foreground">
-                        {m['common.color']()}
-                    </span>
-                    {#each choices.colors as { value: color, count } (color)}
-                        {@const wine = colors.get(color)!}
-                        <ToggleChip
-                            pressed={filters.color === color}
-                            onclick={() => change({ color: filters.color === color ? '' : color })}
-                        >
-                            <span
-                                class="wine-color size-3 rounded-full border border-(--wine-edge) bg-(--wine)"
-                                style={wineColorStyle(wine.colorHex)}
-                                aria-hidden="true"
-                            ></span>
-                            {wine.color}
-                            <span class="text-muted-foreground">{count}</span>
-                        </ToggleChip>
-                    {/each}
-                </div>
-            </CardContent>
-        </Card>
-
-        <div class="flex flex-wrap items-center justify-between gap-2">
-            <!-- Named after the rows of the view: the wines, or the bottles -->
-            <p class="text-sm text-muted-foreground">
-                {query.view === 'wine'
-                    ? m['wines.summary']({ wines: wineRows.length, bottles: shown.length })
-                    : m['drinking.bottles_of_wines']({
-                          bottles: shown.length,
-                          wines: wineRows.length
-                      })}
-            </p>
-            <PageSizeSelect perPage={query.perPage} />
-        </div>
-
-        {#if selected.size > 0}
-            <div class="flex flex-wrap items-center gap-2">
-                <span class="text-sm font-medium text-primary-text">
-                    {m['admin.bottles_selected']({ count: selected.size })}
-                </span>
-                <Button variant="ghost" size="sm" onclick={() => selected.clear()}>
-                    {m['common.clear_selection']()}
-                </Button>
-                <div class="flex flex-wrap gap-2 sm:ml-auto">
-                    <Button
-                        variant="outline"
-                        size="sm"
-                        onclick={() => whenLoggedIn(() => (dialogs.dating = chosen()))}
-                    >
-                        <CalendarClock class="h-4 w-4" aria-hidden="true" />
-                        {m['drinking.drink_before']()}
-                    </Button>
-                    <Button
-                        variant="outline"
-                        size="sm"
-                        onclick={() => whenLoggedIn(() => (dialogs.moving = chosen()))}
-                    >
-                        {m['admin.change_storage_location']()}
-                    </Button>
-                    <Button
-                        size="sm"
-                        onclick={() => whenLoggedIn(() => (dialogs.status = chosen()))}
-                    >
-                        {m['admin.change_bottle_availability']()}
-                    </Button>
-                </div>
+                <ChoiceButtons
+                    aria-label={m['wines.view']()}
+                    class="p-0.5"
+                    buttonClass="h-7"
+                    options={views}
+                    value={query.view}
+                    onchange={(view) => change({ view })}
+                />
             </div>
-        {/if}
+            <div
+                class="flex flex-wrap items-center gap-1.5"
+                role="group"
+                aria-labelledby="to-drink-ranks"
+            >
+                <span id="to-drink-ranks" class="mr-1 w-20 text-sm text-muted-foreground">
+                    {m['drinking.urgency']()}
+                </span>
+                {#each choices.ranks as { value: rank, count } (rank)}
+                    <ToggleChip pressed={filters.rank === rank} onclick={rankChoice(rank)}>
+                        <DrinkingMark {rank} size={10} />
+                        {countedLabel(rank, count)}
+                    </ToggleChip>
+                {/each}
+            </div>
+            <div
+                class="flex flex-wrap items-center gap-1.5"
+                role="group"
+                aria-labelledby="to-drink-colors"
+            >
+                <span id="to-drink-colors" class="mr-1 w-20 text-sm text-muted-foreground">
+                    {m['common.color']()}
+                </span>
+                {#each choices.colors as { value: color, count } (color)}
+                    {@const wine = colors.get(color)!}
+                    <ToggleChip
+                        pressed={filters.color === color}
+                        onclick={() => change({ color: filters.color === color ? '' : color })}
+                    >
+                        <span
+                            class="wine-color size-3 rounded-full border border-(--wine-edge) bg-(--wine)"
+                            style={wineColorStyle(wine.colorHex)}
+                            aria-hidden="true"
+                        ></span>
+                        {wine.color}
+                        <span class="text-muted-foreground">{count}</span>
+                    </ToggleChip>
+                {/each}
+            </div>
+        </CardContent>
+    </Card>
 
-        {#if query.view === 'wine'}
-            <BottleTable
-                bottles={pageSlice(wineRows)}
-                columns={[...WINE_ROW_COLUMNS]}
-                {sort}
-                onSort={({ column, direction }) =>
-                    showTablePage({ sort: column, dir: direction, page: null })}
-                emptyMessage={m['storage.no_bottles_found']()}
-                selection={wineSelection}
-                selectLabel={(row) => m['drinking.select_bottles']({ count: row.count })}
-                onToggle={(row) => toggle(row.bottles)}
-                onToggleAll={(on) =>
-                    select(
-                        pageSlice(wineRows).flatMap((row) => row.bottles),
-                        on
-                    )}
-                linkWine
-            />
-        {:else}
-            <BottleTable
-                bottles={pageSlice(bottleRows)}
-                columns={[...TO_DRINK_COLUMNS]}
-                {sort}
-                onSort={({ column, direction }) =>
-                    showTablePage({ sort: column, dir: direction, page: null })}
-                emptyMessage={m['storage.no_bottles_found']()}
-                selection={selected}
-                onToggle={(bottle) => toggle([bottle])}
-                onToggleAll={(on) => select(pageSlice(bottleRows), on)}
-                {actions}
-                linkWine
-            />
-        {/if}
-
-        <Pagination
-            page={shownPage}
-            perPage={query.perPage}
-            total={rowCount}
-            onPageChange={(page) => showTablePage({ page })}
-        />
+    <div class="flex flex-wrap items-center justify-between gap-2">
+        <!-- Named after the rows of the view: the wines, or the bottles -->
+        <p class="text-sm text-muted-foreground">
+            {query.view === 'wine'
+                ? m['wines.summary']({ wines: wineRows.length, bottles: shown.length })
+                : m['drinking.bottles_of_wines']({
+                      bottles: shown.length,
+                      wines: wineRows.length
+                  })}
+        </p>
+        <PageSizeSelect perPage={query.perPage} />
     </div>
+
+    {#if selected.size > 0}
+        <div class="flex flex-wrap items-center gap-2">
+            <span class="text-sm font-medium text-primary-text">
+                {m['admin.bottles_selected']({ count: selected.size })}
+            </span>
+            <Button variant="ghost" size="sm" onclick={() => selected.clear()}>
+                {m['common.clear_selection']()}
+            </Button>
+            <div class="flex flex-wrap gap-2 sm:ml-auto">
+                <Button
+                    variant="outline"
+                    size="sm"
+                    onclick={() => whenLoggedIn(() => (dialogs.dating = chosen()))}
+                >
+                    <CalendarClock class="h-4 w-4" aria-hidden="true" />
+                    {m['drinking.drink_before']()}
+                </Button>
+                <Button
+                    variant="outline"
+                    size="sm"
+                    onclick={() => whenLoggedIn(() => (dialogs.moving = chosen()))}
+                >
+                    {m['admin.change_storage_location']()}
+                </Button>
+                <Button size="sm" onclick={() => whenLoggedIn(() => (dialogs.status = chosen()))}>
+                    {m['admin.change_bottle_availability']()}
+                </Button>
+            </div>
+        </div>
+    {/if}
+
+    {#if query.view === 'wine'}
+        <BottleTable
+            bottles={pageSlice(wineRows)}
+            columns={[...WINE_ROW_COLUMNS]}
+            {sort}
+            onSort={({ column, direction }) =>
+                showTablePage({ sort: column, dir: direction, page: null })}
+            emptyMessage={m['storage.no_bottles_found']()}
+            selection={wineSelection}
+            selectLabel={(row) => m['drinking.select_bottles']({ count: row.count })}
+            onToggle={(row) => toggle(row.bottles)}
+            onToggleAll={(on) =>
+                select(
+                    pageSlice(wineRows).flatMap((row) => row.bottles),
+                    on
+                )}
+            linkWine
+        />
+    {:else}
+        <BottleTable
+            bottles={pageSlice(bottleRows)}
+            columns={[...TO_DRINK_COLUMNS]}
+            {sort}
+            onSort={({ column, direction }) =>
+                showTablePage({ sort: column, dir: direction, page: null })}
+            emptyMessage={m['storage.no_bottles_found']()}
+            selection={selected}
+            onToggle={(bottle) => toggle([bottle])}
+            onToggleAll={(on) => select(pageSlice(bottleRows), on)}
+            {actions}
+            linkWine
+        />
+    {/if}
+
+    <Pagination
+        page={shownPage}
+        perPage={query.perPage}
+        total={rowCount}
+        onPageChange={(page) => showTablePage({ page })}
+    />
 </div>
 
 <BottleChangeDialogs {dialogs}>

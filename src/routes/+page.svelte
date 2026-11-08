@@ -7,6 +7,6 @@
     <meta http-equiv="refresh" content="0; url=/wines" />
 </svelte:head>
 
-<p class="py-8 text-center">
+<p class="text-center">
     <a href="/wines" class="underline">{m['navigation.my_wines']()}</a>
 </p>

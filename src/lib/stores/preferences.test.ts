@@ -55,6 +55,28 @@ describe('preferences', () => {
         expect(preferences.containersAsColumns).toBe(true);
         expect(preferences.drinkingHorizon).toBe('this_year');
         expect(preferences.showDrinkingMarker).toBe(false);
+        expect(preferences.pageWidth).toBe('normal');
+        expect(preferences.cellarMapFullWidth).toBe(true);
+    });
+
+    it.each(['narrow', 'normal', 'wide', 'full'])('reads the page width %s', async (width) => {
+        stored.set('wine-cellar-page-width', width);
+        const preferences = await loadPreferences();
+        expect(preferences.pageWidth).toBe(width);
+    });
+
+    it('reads an unknown page width as the normal one', async () => {
+        stored.set('wine-cellar-page-width', 'huge');
+        const preferences = await loadPreferences();
+        expect(preferences.pageWidth).toBe('normal');
+    });
+
+    it('keeps the cellar map in the frame only when told so', async () => {
+        stored.set('wine-cellar-cellar-map-full-width', 'false');
+        const preferences = await loadPreferences();
+        expect(preferences.cellarMapFullWidth).toBe(false);
+        preferences.set('cellarMapFullWidth', true);
+        expect(stored.get('wine-cellar-cellar-map-full-width')).toBe('true');
     });
 
     it('reads the horizon and the marker of the bottles to drink', async () => {

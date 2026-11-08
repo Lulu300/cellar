@@ -15,10 +15,16 @@ const KEYS = {
     storageViewMode: 'wine-cellar-storage-view-mode',
     containersAsColumns: 'wine-cellar-containers-layout',
     drinkingHorizon: 'wine-cellar-drinking-horizon',
-    showDrinkingMarker: 'wine-cellar-drinking-marker'
+    showDrinkingMarker: 'wine-cellar-drinking-marker',
+    pageWidth: 'wine-cellar-page-width',
+    cellarMapFullWidth: 'wine-cellar-cellar-map-full-width'
 } as const;
 
 const HORIZONS: readonly string[] = Object.values(DrinkingHorizon);
+
+/** How much of a large screen the frame of the pages takes (app.css, `page-frame`). */
+export const PAGE_WIDTHS = ['narrow', 'normal', 'wide', 'full'] as const;
+export type PageWidth = (typeof PAGE_WIDTHS)[number];
 
 type PreferenceName = keyof typeof KEYS;
 
@@ -40,6 +46,9 @@ class Preferences {
     drinkingHorizon = $state<DrinkingHorizon>(DrinkingHorizon.THIS_YEAR);
     /** Whether the storage page shows that marker when it opens. */
     showDrinkingMarker = $state(false);
+    pageWidth = $state<PageWidth>('normal');
+    /** Whether the storage page takes the whole screen, whatever the page width. */
+    cellarMapFullWidth = $state(true);
 
     #systemIsDark = $state(false);
     /** The 'system' mode follows the colour scheme of the system, also when it changes. */
@@ -85,6 +94,9 @@ class Preferences {
                 ? (horizon as DrinkingHorizon)
                 : DrinkingHorizon.THIS_YEAR;
         this.showDrinkingMarker = stored('showDrinkingMarker') === 'true';
+        const width = stored('pageWidth');
+        this.pageWidth = PAGE_WIDTHS.find((known) => known === width) ?? 'normal';
+        this.cellarMapFullWidth = stored('cellarMapFullWidth') !== 'false';
     }
 
     /** Changes a preference and keeps it for the next visits, or for this page if it cannot. */

@@ -4,6 +4,64 @@
 
 Upgrade actions are also collected in [UPGRADING.md](UPGRADING.md).
 
+## 1.5.1
+
+1.5.1 gives the bottles to drink soon a page of their own, to sort and filter them.
+
+The « To drink soon » banner of the wine list stays short: it keeps its counts, and unfolded it shows the eight most urgent bottles, then « See the N bottles », which opens the new « To drink » page. That page lists every bottle to drink soon, the most urgent first. Sort it by any column: urgency, peak year (the oldest first), vintage, colour, « drink before » or location. Filter it by urgency, by wine colour or by name, and switch between one row per bottle and one row per wine and vintage, with its number of bottles. Tick bottles to give them a « drink before », move them or change their status, or use the ⋯ menu of a bottle. The sort, filters and view stay when you reload the page or come back to it. An assistant connected through MCP can ask for the bottles to drink of one urgency or one colour, sorted by peak year.
+
+The dependencies were reviewed again: SvelteKit and its Node adapter take their latest fixes, among them one that keeps the server from crashing on a streamed MCP answer; the image keeps Node.js 24.22.1.
+
+### Upgrade actions
+
+None.
+
+### Changes
+
+#### Features
+
+- **bottles:** Sort bottles by urgency, optimum and drink-before, group them by wine (1704073)
+- **bottles:** A page of the bottles to drink, reached from a shorter banner (22d258a)
+- **mcp:** Filter the bottles to drink by rank and colour, order them by optimum (1a13390)
+
+#### Bug fixes
+
+- **bottles:** Keep a stale filter clearable, and the search of the page as typed (34dbe3f)
+
+#### Refactoring
+
+- **bottles:** Read the to-drink query from SvelteKit's page state, columns in table order (15bd2ca)
+
+#### Documentation
+
+- **release:** Describe the page of the bottles to drink in 1.5.1 (4a3caa8)
+- **release:** Say which dependency fixes 1.5.1 takes (a10f39e)
+
+#### Build and CI
+
+- **deps:** Update svelte to 5.57.3 (55301fd)
+- **deps:** Update @sveltejs/kit to 3.1.1 (5cf4d44)
+- **deps:** Update @sveltejs/adapter-node to 6.0.1 (f0d646d)
+- **deps:** Update @inlang/paraglide-js to 2.29.3 (ec192cb)
+- **deps:** Update typescript-eslint to 8.72.1 (1f5fbe4)
+- **deps:** Update kysely to 0.28.19 (dccffd8)
+- **deps:** Update rolldown to 1.2.16 (82b2346)
+- **deps:** Update postcss to 8.5.32 (b07c38d)
+- **deps:** Update magic-string to 1.4.5 (16f100e)
+- **deps:** Update @types/estree to 1.0.10 (0e70558)
+- **deps:** Update @napi-rs/wasm-runtime to 1.2.6 (87c8d69)
+- **deps:** Update unbash to 6.0.3 (9d27a11)
+- **deps:** Update pnpm to 10.34.9 (2142053)
+- **deps:** Update @inlang/plugin-icu1 to 1.3.5 (4625244)
+- **deps:** Update eslint to 10.14.0 (0d3b34f)
+- **deps:** Update globals to 17.14.0 (9eb9e1c)
+- **deps:** Update knip to 6.44.1 (a44486e)
+- **deps:** Update acorn to 8.19.0 (faf40c3)
+- **deps:** Update svelte-eslint-parser to 1.10.0 (d14e3f6)
+- **deps:** Update tslib to 2.9.1 (2811921)
+- **deps:** Update detect-libc to 2.1.2 (1816c6e)
+- **deps:** Update @messageformat/parser to 5.2.0 (88e60ef)
+
 ## 1.5.0
 
 1.5.0 shows which bottles to drink soon.

@@ -178,10 +178,11 @@
         </div>
     </header>
 
-    <!-- Room for the tab bar, which would cover the end of the page. The cellar map may take the
-         whole screen while the header keeps the chosen width (app.css). -->
+    <!-- Room for the 4rem tab bar, which would cover the end of the page, above the usual 2rem.
+         The cellar map may take the whole screen while the header keeps the chosen width
+         (app.css). -->
     <main
-        class="page-frame py-8 standalone:max-md:pb-[calc(4rem+env(safe-area-inset-bottom))]"
+        class="page-frame py-8 standalone:max-md:pb-[calc(6rem+env(safe-area-inset-bottom))]"
         data-cellar-map={page.route.id === '/storage' || undefined}
     >
         {@render children?.()}

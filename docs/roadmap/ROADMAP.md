@@ -180,7 +180,7 @@ Revue du code du 2026-10-08, commit `556c7bb`. Ce fichier est la version pour le
 | 1.4.0 | P16 · Couleurs et plan de la cave | Pour la 1.4.0 : les couleurs des vins, puis le plan de la cave, qui s’appuie dessus. Ordre : FEAT-10 (vue liste, demandée avec UI-32) ; FEAT-03 ; FEAT-11 (actions MCP, demandées après l’essai d’un utilisateur) ; FEAT-04 ; FEAT-12 (MCP plus complet, demandé après FEAT-11) ; FEAT-13 (deux refus, trouvés pendant FEAT-12) ; puis REL-10. DEP-10 passe après la 1.4.0. Publiée en 1.4.0 le 2026-11-02. | FEAT-10, FEAT-03, FEAT-11, FEAT-04, FEAT-12, FEAT-13, REL-10 | 7 / 7 |
 | 1.4.1 | P16b · Survol des boutons | Pour la 1.4.1, avant P17 (décision « Version corrective 1.4.1 ») : UI-33 ; puis REL-16. Publiée en 1.4.1 le 2026-11-02. | UI-33, REL-16 | 2 / 2 |
 | 1.5.0 | P17 · À boire | La vie d’une bouteille jusqu’à ce qu’on la boive ; la tâche ajoute son repère à la liste d’une case du plan (FEAT-04). Ordre : FEAT-05 ; puis REL-11. Sort le 2026-11-04 sans DEP-10, qui passe au bloc suivant (décision « Dépendances après la 1.4.0 »). Publiée en 1.5.0 le 2026-11-04. | FEAT-05, REL-11 | 2 / 2 |
-| 1.5.1 | P17b · La page « À boire » | Pour la 1.5.1, avant le bloc suivant (décision « Page À boire (1.5.1) ») : FEAT-18 ; DEP-10 ; puis REL-19. | DEP-10, FEAT-18, REL-19 | 1 / 3 |
+| 1.5.1 | P17b · La page « À boire » | Pour la 1.5.1, avant le bloc suivant (décision « Page À boire (1.5.1) ») : FEAT-18 ; DEP-10 ; puis REL-19. | DEP-10, FEAT-18, REL-19 | 2 / 3 |
 | Dégustation | P20 · Fiches de dégustation | Décision « Fiches de dégustation (FEAT-06, FEAT-14 à FEAT-16) ». Sur la branche d’intégration `feat/tasting`, envoyée sur GitHub (décision « Blocs sans numéro ») : chaque tâche part de cette branche et y revient ; la branche rejoint develop quand le mainteneur valide le bloc entier. Ordre : FEAT-06 ; FEAT-14 ; FEAT-15 ; FEAT-16 ; puis REL-17. | FEAT-06, FEAT-14, FEAT-15, FEAT-16, REL-17 | 0 / 5 |
 | Producteurs | P18 · Producteurs et revue de l’import | Les producteurs d’abord, parce que la revue de l’import doit savoir relier ou créer un producteur. Ordre : FEAT-07 ; FEAT-08 ; puis REL-12. UI-34 est rangée ici par défaut : elle se place où le mainteneur veut, une fois le comportement du visiteur choisi. | UI-34, FEAT-07, FEAT-08, REL-12 | 0 / 4 |
 | Notifications | P19 · Notifications | Les notifications, qui utilisent « À boire » (FEAT-05), le statut hors cave et la vérification des mises à jour. Ordre : FEAT-09 ; puis REL-13. | FEAT-09, REL-13 | 0 / 2 |
@@ -3615,7 +3615,9 @@ Pour la 1.5.1, avant le bloc suivant (décision « Page À boire (1.5.1) ») : F
 
 ### DEP-10 · Revue des dépendances d’après la 1.4.0
 
-Sévérité **mineur** · effort **S** · dépend de DEP-09 · statut **À faire**
+Sévérité **mineur** · effort **S** · dépend de DEP-09 · statut **Fait**
+
+**Suivi** (2026-11-08) : 1d470717..a10f39e9
 
 **Problème** : Ce que DEP-09 n’a pas pu prendre, la 1.3.0 étant publiée avant que les correctifs soient éligibles (choix du mainteneur) : node 24.22.2, SvelteKit, adapter-node, Paraglide, minimatch 11 et la suite.
 

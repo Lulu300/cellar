@@ -1,3 +1,4 @@
+import { drinkBeforeMonth, monthOf, urgency, type DrinkingDates } from '#lib/shared/drinking.js';
 import type { BottleSortColumn, SortDirection } from '#lib/shared/schemas/bottle-list.js';
 import { compareValues } from '#lib/utils/compare.js';
 
@@ -12,10 +13,12 @@ export interface TableBottle {
     purchasePrice: number | null;
     barcode: string | null;
     notes: string | null;
-    /** For the « to drink » column, which only the lists that show it need. */
+    /** For the columns of when to drink it, which only the lists that show them need. */
     drinkBefore?: string | null;
     optimum?: number | null;
     storageCase?: { name: string } | null;
+    /** The bottles of a row that holds several, such as one per wine. */
+    count?: number;
     origin?: { name: string } | null;
     definition?: {
         id: string;
@@ -26,13 +29,23 @@ export interface TableBottle {
     } | null;
 }
 
-/** The columns that the bottle tables sort on: those of the server, and the vintage. */
-export type SortColumn = BottleSortColumn | 'vintage';
+/**
+ * The columns that the bottle tables sort on: those of the server, the vintage, and those of the
+ * bottles to drink: how urgent, the optimum year, the « drink before » and the colour of the wine.
+ */
+export type SortColumn =
+    BottleSortColumn | 'vintage' | 'urgency' | 'optimum' | 'drinkBefore' | 'color';
 
 export interface BottleSort {
     column: SortColumn;
     direction: SortDirection;
 }
+
+/** What the rule of when to drink reads of a bottle, null for a field the list does not give. */
+export const drinkingDates = (bottle: TableBottle): DrinkingDates => ({
+    drinkBefore: bottle.drinkBefore ?? null,
+    optimum: bottle.optimum ?? null
+});
 
 const text = (value: string | null | undefined) => value?.trim() || null;
 const time = (value: Date | string | null | undefined) =>
@@ -48,7 +61,12 @@ const sortValues: Record<SortColumn, (bottle: TableBottle) => string | number | 
     vintage: (bottle) => bottle.vintage,
     purchasePrice: (bottle) => bottle.purchasePrice,
     purchaseDate: (bottle) => time(bottle.purchaseDate),
-    consumedDate: (bottle) => time(bottle.consumedDate)
+    consumedDate: (bottle) => time(bottle.consumedDate),
+    // In the browser's month, as the chips of the table rank the bottles
+    urgency: (bottle) => urgency(drinkingDates(bottle), monthOf(new Date())),
+    optimum: (bottle) => bottle.optimum ?? null,
+    drinkBefore: (bottle) => (bottle.drinkBefore ? drinkBeforeMonth(bottle.drinkBefore) : null),
+    color: (bottle) => text(bottle.definition?.color)
 };
 
 /**

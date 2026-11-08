@@ -49,19 +49,22 @@ export function parseDrinkBefore(drinkBefore: string): { year: number; month: nu
     return { year, month: month ?? null };
 }
 
-/**
- * The last month to drink the bottle in, which orders bottles of a rank: that of its date,
- * December for a year alone, December of its optimum year when it has no date; null without either.
- */
-function deadline({ drinkBefore, optimum }: DrinkingDates): Month | null {
-    if (drinkBefore !== null) {
-        const { year, month } = parseDrinkBefore(drinkBefore);
-        return { year, month: month ?? 12 };
-    }
-    return optimum === null ? null : { year: optimum, month: 12 };
+const monthNumber = ({ year, month }: Month) => year * 12 + month;
+
+/** The last month of a « drink before », as a number that orders them; a year alone ends in December. */
+export function drinkBeforeMonth(drinkBefore: string): number {
+    const { year, month } = parseDrinkBefore(drinkBefore);
+    return monthNumber({ year, month: month ?? 12 });
 }
 
-const monthNumber = ({ year, month }: Month) => year * 12 + month;
+/**
+ * The last month to drink the bottle in, which orders bottles of a rank: that of its date,
+ * December of its optimum year when it has no date; null without either.
+ */
+function deadline({ drinkBefore, optimum }: DrinkingDates): number | null {
+    if (drinkBefore !== null) return drinkBeforeMonth(drinkBefore);
+    return optimum === null ? null : monthNumber({ year: optimum, month: 12 });
+}
 
 /** How soon to drink the bottle in the month `now`; null when it has neither date nor optimum. */
 export function drinkingRank(bottle: DrinkingDates, now: Month): DrinkingRank | null {
@@ -70,10 +73,21 @@ export function drinkingRank(bottle: DrinkingDates, now: Month): DrinkingRank | 
         return bottle.optimum <= now.year ? DrinkingRank.OPTIMUM_REACHED : DrinkingRank.LATER;
     }
     const { year, month } = parseDrinkBefore(bottle.drinkBefore);
-    if (monthNumber({ year, month: month ?? 12 }) < monthNumber(now)) return DrinkingRank.LATE;
+    if (drinkBeforeMonth(bottle.drinkBefore) < monthNumber(now)) return DrinkingRank.LATE;
     if (year > now.year) return DrinkingRank.LATER;
     // A year alone ends in December: then it is this month's.
     return (month ?? 12) === now.month ? DrinkingRank.THIS_MONTH : DrinkingRank.THIS_YEAR;
+}
+
+/**
+ * Where the bottle comes in the month `now` in the order of the drink-soon list, the lowest first:
+ * by rank, then by deadline. Null when it has neither date nor optimum. A number, which the bottle
+ * tables sort on.
+ */
+export function urgency(bottle: DrinkingDates, now: Month): number | null {
+    const rank = drinkingRank(bottle, now);
+    // A deadline is a month number, far below the million that separates two ranks.
+    return rank === null ? null : RANK_ORDER.indexOf(rank) * 1_000_000 + deadline(bottle)!;
 }
 
 /**
@@ -81,9 +95,7 @@ export function drinkingRank(bottle: DrinkingDates, now: Month): DrinkingRank | 
  * otherwise, for the caller to break the tie.
  */
 export function compareDrinking(a: DrinkingDates, b: DrinkingDates, now: Month): number {
-    const rankA = RANK_ORDER.indexOf(drinkingRank(a, now)!);
-    const rankB = RANK_ORDER.indexOf(drinkingRank(b, now)!);
-    return rankA - rankB || monthNumber(deadline(a)!) - monthNumber(deadline(b)!);
+    return urgency(a, now)! - urgency(b, now)!;
 }
 
 /** How far ahead the storage marker looks, a preference of the browser. */
@@ -122,5 +134,6 @@ export function rankWithin(
         return rank === DrinkingRank.LATE || rank === DrinkingRank.THIS_MONTH ? rank : null;
     }
     if (rank !== DrinkingRank.LATER) return rank;
-    return deadline(bottle)!.year <= now.year + YEARS_AHEAD[horizon] ? rank : null;
+    const lastMonth = monthNumber({ year: now.year + YEARS_AHEAD[horizon], month: 12 });
+    return deadline(bottle)! <= lastMonth ? rank : null;
 }

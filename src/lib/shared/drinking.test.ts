@@ -2,11 +2,13 @@ import { describe, expect, it } from 'vitest';
 import { bottleSchema } from '#lib/shared/schemas/bottle.js';
 import {
     compareDrinking,
+    drinkBeforeMonth,
     DrinkingHorizon,
     DrinkingRank,
     drinkingRank,
     monthOf,
     rankWithin,
+    urgency,
     type DrinkingDates
 } from './drinking';
 
@@ -93,6 +95,29 @@ describe('compareDrinking', () => {
     it('leaves a tie to the caller: same rank, same deadline', () => {
         expect(compareDrinking(dates('2026'), dates('2026-12'), now)).toBe(0);
         expect(compareDrinking(dates(null, 2020), dates(null, 2020), now)).toBe(0);
+    });
+});
+
+describe('urgency', () => {
+    it('puts any bottle of a rank before every bottle of the next one, whatever their dates', () => {
+        const lateLongAfter = urgency(dates('2026-10'), now)!;
+        const thisMonth = urgency(dates('2026-11'), now)!;
+        const optimumLongAgo = urgency(dates(null, 1990), now)!;
+        expect(lateLongAfter).toBeLessThan(thisMonth);
+        expect(thisMonth).toBeLessThan(optimumLongAgo);
+        expect(urgency(dates('1990'), now)).toBeLessThan(lateLongAfter);
+    });
+
+    it('gives none to a bottle with neither date nor optimum', () => {
+        expect(urgency(dates(null), now)).toBeNull();
+    });
+});
+
+describe('drinkBeforeMonth', () => {
+    it('ends a year alone in its December, after each of its months', () => {
+        expect(drinkBeforeMonth('2026')).toBe(drinkBeforeMonth('2026-12'));
+        expect(drinkBeforeMonth('2026-11')).toBeLessThan(drinkBeforeMonth('2026'));
+        expect(drinkBeforeMonth('2026')).toBeLessThan(drinkBeforeMonth('2027-01'));
     });
 });
 

@@ -1,0 +1,138 @@
+import { z } from 'zod';
+import { SOON, type DrinkingRank } from '#lib/shared/drinking.js';
+import { parseBottlePageQuery } from '#lib/shared/schemas/bottle-list.js';
+import { compareText } from '#lib/utils/compare.js';
+
+/** What the page of the bottles to drink reads of a bottle, beyond what its table shows. */
+export interface ToDrinkBottle {
+    id: string;
+    vintage: number | null;
+    rank: DrinkingRank;
+    storageCase: { name: string } | null;
+    definition: {
+        id: string;
+        name: string;
+        producer: string | null;
+        colorId: string;
+        color: string;
+        colorHex: string;
+    };
+}
+
+/** The columns of the page, which it sorts on: how urgent by default, as the banner orders them. */
+export const TO_DRINK_COLUMNS = [
+    'urgency',
+    'definition',
+    'color',
+    'vintage',
+    'optimum',
+    'drinkBefore',
+    'location'
+] as const;
+
+/** One row per bottle, or one per wine and vintage. */
+export const TO_DRINK_VIEWS = ['bottle', 'wine'] as const;
+export type ToDrinkView = (typeof TO_DRINK_VIEWS)[number];
+
+const filtersSchema = z.object({
+    view: z.enum(TO_DRINK_VIEWS).catch('bottle'),
+    // Empty for every rank or colour
+    rank: z.enum(['', ...SOON] as ['', ...DrinkingRank[]]).catch(''),
+    color: z.string().catch(''),
+    search: z.string().catch('')
+});
+
+export type ToDrinkFilters = Omit<z.output<typeof filtersSchema>, 'view'>;
+
+/**
+ * The view, filters, sort and page of the page, as its URL holds them
+ * (`?view=wine&rank=late&color=<id>&search=&sort=optimum&dir=asc&page=2&perPage=50`), so that a
+ * reload or the way back finds them. A missing or invalid value gives its default.
+ */
+export function readToDrinkQuery(params: URLSearchParams) {
+    return {
+        ...filtersSchema.parse(Object.fromEntries(params)),
+        ...parseBottlePageQuery(params, TO_DRINK_COLUMNS, 'urgency')
+    };
+}
+
+/** The bottles of this rank and colour whose wine's name or producer holds the search. */
+export function filterToDrink<B extends ToDrinkBottle>(
+    bottles: B[],
+    { rank, color, search }: ToDrinkFilters
+): B[] {
+    const text = search.trim().toLowerCase();
+    return bottles.filter(
+        ({ rank: bottleRank, definition }) =>
+            (!rank || bottleRank === rank) &&
+            (!color || definition.colorId === color) &&
+            (!text ||
+                [definition.name, definition.producer].some((field) =>
+                    field?.toLowerCase().includes(text)
+                ))
+    );
+}
+
+/** How many bottles a filter's choice holds, beside its name. */
+export interface FilterChoice<Value extends string> {
+    value: Value;
+    count: number;
+}
+
+/**
+ * The choices of the rank and colour filters, each with the number of bottles that the other
+ * filters leave it, so that a choice says what it would show. Only the ranks and colours of the
+ * list are offered: the ranks the most urgent first, the colours by name.
+ */
+export function filterChoices<B extends ToDrinkBottle>(bottles: B[], filters: ToDrinkFilters) {
+    const count = <Value extends string>(values: Value[], shown: Value[]) =>
+        [...new Set(values)].map((value) => ({
+            value,
+            count: shown.filter((other) => other === value).length
+        }));
+    const ranks = count(
+        SOON.filter((rank) => bottles.some((bottle) => bottle.rank === rank)),
+        filterToDrink(bottles, { ...filters, rank: '' }).map((bottle) => bottle.rank)
+    );
+    const colors = count(
+        bottles
+            .map(({ definition }) => definition)
+            .sort((a, b) => compareText(a.color, b.color))
+            .map((definition) => definition.colorId),
+        filterToDrink(bottles, { ...filters, color: '' }).map((bottle) => bottle.definition.colorId)
+    );
+    return { ranks, colors };
+}
+
+/** The bottles of one wine and vintage, on one row of the « by wine » view. */
+export type WineRow<B extends ToDrinkBottle> = Omit<B, 'storageCase'> & {
+    /** The wine and the vintage, which no bottle shares with another row. */
+    id: string;
+    count: number;
+    bottles: B[];
+    /** Every case that holds one of its bottles. */
+    storageCase: { name: string } | null;
+};
+
+/**
+ * One row per wine and vintage, in the order of the first bottle of each: given the bottles the
+ * most urgent first, as the server lists them, each row takes the rank and the dates of its most
+ * urgent bottle, and names every case that holds one, in the order of its bottles.
+ */
+export function groupByWine<B extends ToDrinkBottle>(bottles: B[]): WineRow<B>[] {
+    const groups = new Map<string, B[]>();
+    for (const bottle of bottles) {
+        const key = `${bottle.definition.id}:${bottle.vintage ?? ''}`;
+        groups.set(key, [...(groups.get(key) ?? []), bottle]);
+    }
+    return [...groups].map(([id, group]) => {
+        const cases = [...new Set(group.flatMap(({ storageCase }) => storageCase?.name ?? []))];
+        return {
+            ...group[0],
+            id,
+            count: group.length,
+            bottles: group,
+            storageCase: cases.length > 0 ? { name: cases.join(', ') } : null
+        };
+    });
+}

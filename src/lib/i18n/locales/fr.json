@@ -240,7 +240,7 @@
   "wines.less_than": "Moins de",
   "wines.show_images": "Afficher images",
   "wines.view": "Affichage",
-  "wines.bottles": "Bouteilles",
+  "common.bottles": "Bouteilles",
   "wines.more_actions": "Plus d’actions",
   "wines.all_origins": "Toutes origines",
   "wines.no_vintage": "Sans millésime",
@@ -1225,5 +1225,7 @@
   "preferences.drinking_marker_description": "Si la page Stockage montre les bouteilles à boire à son ouverture.",
   "drinking.count_later": "{count, number} plus tard",
   "drinking.case_marks": "À boire : {marks}",
-  "drinking.storage_toggle": "Bouteilles à boire"
+  "drinking.storage_toggle": "Bouteilles à boire",
+  "drinking.urgency": "Urgence",
+  "drinking.optimum": "Apogée"
 }

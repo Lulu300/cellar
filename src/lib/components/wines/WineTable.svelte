@@ -148,7 +148,7 @@
                 <Table.Head>{m['common.color']()}</Table.Head>
                 <Table.Head>{m['common.vintage']()}</Table.Head>
                 <Table.Head>{m['common.price']()}</Table.Head>
-                <Table.Head>{m['wines.bottles']()}</Table.Head>
+                <Table.Head>{m['common.bottles']()}</Table.Head>
                 <Table.Head>{m['wine_details.rating']()}</Table.Head>
                 {#if auth.isAuthenticated}
                     <Table.Head class="pe-4">

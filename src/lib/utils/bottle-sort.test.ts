@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 import { sortBottles, type TableBottle } from './bottle-sort';
 
 function bottle(id: string, fields: Partial<TableBottle> = {}): TableBottle {
@@ -70,5 +70,61 @@ describe('sortBottles', () => {
         const bottles = [bottle('b', { vintage: 2020 }), bottle('a', { vintage: 2010 })];
         sortBottles(bottles, { column: 'vintage', direction: 'asc' });
         expect(ids(bottles)).toEqual(['b', 'a']);
+    });
+
+    describe('on when to drink', () => {
+        afterEach(() => vi.useRealTimers());
+
+        it('sorts by urgency in the month of the browser, as the banner orders them', () => {
+            vi.useFakeTimers({ now: new Date(2026, 10, 15), toFake: ['Date'] });
+            const bottles = [
+                bottle('optimum', { optimum: 2010 }),
+                bottle('none'),
+                bottle('this-month', { drinkBefore: '2026-11' }),
+                bottle('late', { drinkBefore: '2026-10' }),
+                bottle('later', { drinkBefore: '2027' })
+            ];
+            expect(ids(sortBottles(bottles, { column: 'urgency', direction: 'asc' }))).toEqual([
+                'late',
+                'this-month',
+                'optimum',
+                'later',
+                'none'
+            ]);
+        });
+
+        it('sorts by optimum, the oldest first, and by « drink before », a year alone as its December', () => {
+            const bottles = [
+                bottle('year', { drinkBefore: '2026', optimum: 2030 }),
+                bottle('none'),
+                bottle('month', { drinkBefore: '2026-06', optimum: 2001 }),
+                bottle('earlier', { drinkBefore: '2025-03', optimum: 2015 })
+            ];
+            expect(ids(sortBottles(bottles, { column: 'optimum', direction: 'asc' }))).toEqual([
+                'month',
+                'earlier',
+                'year',
+                'none'
+            ]);
+            expect(ids(sortBottles(bottles, { column: 'drinkBefore', direction: 'asc' }))).toEqual([
+                'earlier',
+                'month',
+                'year',
+                'none'
+            ]);
+        });
+
+        it('sorts by the colour of the wine', () => {
+            const colored = (id: string, color: string) =>
+                bottle(id, {
+                    definition: { id, name: id, producer: null, color, colorHex: '#000' }
+                });
+            const bottles = [colored('r', 'Rouge'), colored('b', 'Blanc'), colored('o', 'Orange')];
+            expect(ids(sortBottles(bottles, { column: 'color', direction: 'asc' }))).toEqual([
+                'b',
+                'o',
+                'r'
+            ]);
+        });
     });
 });

@@ -29,7 +29,7 @@ export function defaultDirection(column: string): SortDirection {
  * goes with the column asked, so the default sort takes its own direction, also when the URL gives
  * `dir` without `sort`.
  */
-export function parseBottlePageQuery<Column extends BottleSortColumn>(
+export function parseBottlePageQuery<Column extends string>(
     params: URLSearchParams,
     columns: readonly [Column, ...Column[]],
     defaultSort: Column

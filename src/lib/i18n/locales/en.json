@@ -240,7 +240,7 @@
   "wines.less_than": "Less than",
   "wines.show_images": "Show images",
   "wines.view": "View",
-  "wines.bottles": "Bottles",
+  "common.bottles": "Bottles",
   "wines.more_actions": "More actions",
   "wines.all_origins": "All origins",
   "wines.no_vintage": "Without vintage",
@@ -1225,5 +1225,7 @@
   "preferences.drinking_marker_description": "Whether the storage page shows the bottles to drink when it opens.",
   "drinking.count_later": "{count, number} later",
   "drinking.case_marks": "To drink: {marks}",
-  "drinking.storage_toggle": "Bottles to drink"
+  "drinking.storage_toggle": "Bottles to drink",
+  "drinking.urgency": "Urgency",
+  "drinking.optimum": "Peak"
 }

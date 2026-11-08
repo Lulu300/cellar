@@ -17,16 +17,17 @@
     import WineColorBadge from '#lib/components/wines/WineColorBadge.svelte';
     import AvailabilityBadge from './AvailabilityBadge.svelte';
     import DrinkingChip from './DrinkingChip.svelte';
-    import { drinkingText, markedRank } from './drinking.js';
+    import { drinkBeforeText, drinkingText, markedRank } from './drinking.js';
     import { BottleAvailability } from '#lib/shared/bottle-availability.js';
     import { DrinkingHorizon } from '#lib/shared/drinking.js';
     import { nextSort, type BottleColumn } from './bottle-table.js';
-    import type { BottleSort, TableBottle } from '#lib/utils/bottle-sort.js';
+    import { drinkingDates, type BottleSort, type TableBottle } from '#lib/utils/bottle-sort.js';
     import { formatCurrency, formatDate } from '#lib/utils/format.js';
 
     /**
-     * The bottles of out-of-cellar, the history and the bottle dialogs. The parent sorts them: the
-     * table only says which sort the user asked for.
+     * The bottles of out-of-cellar, the history, the bottles to drink and the bottle dialogs, or
+     * rows of several bottles with their `count`. The parent sorts them: the table only says which
+     * sort the user asked for.
      */
     let {
         bottles,
@@ -43,7 +44,7 @@
         drinkingHorizon
     }: {
         bottles: B[];
-        /** In their order; the notes and when to drink cannot be sorted on. */
+        /** In their order; the notes, when to drink and the count cannot be sorted on. */
         columns: BottleColumn[];
         sort: BottleSort;
         onSort: (sort: BottleSort) => void;
@@ -78,7 +79,12 @@
         purchasePrice: m['common.price'](),
         barcode: m['common.barcode'](),
         notes: m['common.notes'](),
-        drinking: m['drinking.column']()
+        drinking: m['drinking.column'](),
+        urgency: m['drinking.urgency'](),
+        optimum: m['drinking.optimum'](),
+        drinkBefore: m['drinking.drink_before'](),
+        color: m['common.color'](),
+        count: m['common.bottles']()
     });
     const notAvailable = $derived(m['common.not_available']());
     const allSelected = $derived(
@@ -87,17 +93,15 @@
     const someSelected = $derived(bottles.some((bottle) => selection?.has(bottle.id)));
     const hasActions = $derived(!!onEdit || !!actions);
     const columnCount = $derived(columns.length + Number(!!selection) + Number(hasActions));
-    // The wine cell shows the vintage when no column does.
+    // The wine cell shows the vintage and the colour when no column does.
     const vintageInWineCell = $derived(!columns.includes('vintage'));
+    const colorInWineCell = $derived(!columns.includes('color'));
     // The chip of a bottle to drink, in the wine cell when no column shows it. Only a bottle in the
     // cellar is to drink, as on the banner and the map: one taken out or drunk keeps its date only.
     const chipInWineCell = $derived(!!drinkingHorizon && !columns.includes('drinking'));
     const rankOf = (bottle: B) =>
         bottle.availability === BottleAvailability.AVAILABLE
-            ? markedRank(
-                  { drinkBefore: bottle.drinkBefore ?? null, optimum: bottle.optimum ?? null },
-                  drinkingHorizon ?? DrinkingHorizon.THIS_YEAR
-              )
+            ? markedRank(drinkingDates(bottle), drinkingHorizon ?? DrinkingHorizon.THIS_YEAR)
             : null;
 </script>
 
@@ -117,7 +121,7 @@
                     </TableHead>
                 {/if}
                 {#each columns as column (column)}
-                    {#if column === 'notes' || column === 'drinking'}
+                    {#if column === 'notes' || column === 'drinking' || column === 'count'}
                         <TableHead>{labels[column]}</TableHead>
                     {:else}
                         <SortableHeader
@@ -163,7 +167,7 @@
                                                 {bottle.definition?.name ?? notAvailable}
                                             </span>
                                         {/if}
-                                        {#if bottle.definition}
+                                        {#if colorInWineCell && bottle.definition}
                                             <WineColorBadge
                                                 name={bottle.definition.color}
                                                 hex={bottle.definition.colorHex}
@@ -208,13 +212,32 @@
                                 <div class="flex flex-wrap items-center gap-x-2 gap-y-1">
                                     {#if rank}<DrinkingChip {rank} />{/if}
                                     <span class="text-sm text-muted-foreground">
-                                        {drinkingText({
-                                            drinkBefore: bottle.drinkBefore ?? null,
-                                            optimum: bottle.optimum ?? null
-                                        }) || '-'}
+                                        {drinkingText(drinkingDates(bottle)) || '-'}
                                     </span>
                                 </div>
                             </TableCell>
+                        {:else if column === 'urgency'}
+                            {@const rank = rankOf(bottle)}
+                            <TableCell
+                                >{#if rank}<DrinkingChip {rank} />{:else}-{/if}</TableCell
+                            >
+                        {:else if column === 'optimum'}
+                            <TableCell>{bottle.optimum ?? '-'}</TableCell>
+                        {:else if column === 'drinkBefore'}
+                            <TableCell class="whitespace-nowrap">
+                                {bottle.drinkBefore ? drinkBeforeText(bottle.drinkBefore) : '-'}
+                            </TableCell>
+                        {:else if column === 'color'}
+                            <TableCell>
+                                {#if bottle.definition}
+                                    <WineColorBadge
+                                        name={bottle.definition.color}
+                                        hex={bottle.definition.colorHex}
+                                    />
+                                {/if}
+                            </TableCell>
+                        {:else if column === 'count'}
+                            <TableCell>{bottle.count ?? 1}</TableCell>
                         {:else}
                             <TableCell class="max-w-xs truncate" title={bottle.notes ?? ''}>
                                 {bottle.notes || '-'}

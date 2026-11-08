@@ -2,8 +2,11 @@ import { defaultDirection } from '#lib/shared/schemas/bottle-list.js';
 import { m } from '#lib/paraglide/messages.js';
 import type { BottleSort, SortColumn } from '#lib/utils/bottle-sort.js';
 
-/** The columns of a bottle table: the sorted ones, the notes and when to drink the bottle. */
-export type BottleColumn = SortColumn | 'notes' | 'drinking';
+/**
+ * The columns of a bottle table: the sorted ones, the notes, when to drink the bottle, and how
+ * many bottles a row holds.
+ */
+export type BottleColumn = SortColumn | 'notes' | 'drinking' | 'count';
 
 /** The sort after a click on the header of `column`: the other direction, or its default one. */
 export function nextSort(sort: BottleSort, column: SortColumn): BottleSort {

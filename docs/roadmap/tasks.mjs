@@ -77,7 +77,13 @@ export const versions = [
 	{
 		id: '1.5.1',
 		title: 'La page « À boire »',
+		released: '2026-11-08',
 		goal: 'Une liste « À boire » qu’on peut trier et filtrer quand elle compte des centaines de bouteilles, et les dépendances à jour.'
+	},
+	{
+		id: '1.5.2',
+		title: 'Largeur des pages',
+		goal: 'Choisir la largeur des pages, et un plan de la cave qui prend tout l’écran.'
 	},
 	{
 		id: 'Dégustation',
@@ -232,7 +238,13 @@ export const phases = [
 		id: 'P17b',
 		version: '1.5.1',
 		title: 'La page « À boire »',
-		goal: 'Pour la 1.5.1, avant le bloc suivant (décision « Page À boire (1.5.1) ») : FEAT-18 ; DEP-10 ; puis REL-19.'
+		goal: 'Pour la 1.5.1, avant le bloc suivant (décision « Page À boire (1.5.1) ») : FEAT-18 ; DEP-10 ; puis REL-19. Publiée en 1.5.1 le 2026-11-08.'
+	},
+	{
+		id: 'P17c',
+		version: '1.5.2',
+		title: 'Largeur des pages',
+		goal: 'Pour la 1.5.2, avant le bloc suivant (décision « Largeur des pages (1.5.2) ») : UI-35 ; puis REL-20.'
 	},
 	{
 		id: 'P20',
@@ -388,6 +400,7 @@ export const decisions = [
 	{ topic: 'Dépendances après la 1.4.0', choice: 'Le mainteneur veut sortir la 1.4.0 vite : la revue des dépendances (DEP-10), qui attendait que les correctifs aient 7 jours (le 2026-11-05 ou 06), part dans la première version publiée après cette date. La 1.4.0 sort avec les dépendances de la 1.3.2 (décision du 2026-11-02). Le 2026-11-04, le mainteneur sort aussi le bloc « À boire » avant cette date : DEP-10 se fait sur develop juste avant la sortie suivante, quel que soit le bloc : ce sera la 1.5.1 (décision « Page À boire (1.5.1) »).' },
 	{ topic: 'Version corrective 1.4.1', choice: 'Le mainteneur veut corriger le survol des boutons dans une 1.4.1, avant la 1.5.0 (2026-11-02) : sur une carte de vin, le survol du nombre de bouteilles se voit à peine, surtout en thème sombre, et d’autres boutons ont peut-être le même défaut ; il veut une règle commune, pour un comportement prévisible et lisible. Comme pour la 1.3.1 : develop était passé à 1.5.0-rc.0 sans qu’aucune image ni base ne tourne sous ce numéro hors de la CI, donc il repasse à 1.4.1-rc.0, et l’entrée 1.5.0 de `releases.json` revient au démarrage de la 1.5.0.' },
 	{ topic: 'Page À boire (1.5.1)', choice: 'Retour d’un utilisateur sur la 1.5.0 (2026-11-08) : avec une année optimale saisie pour tous ses vins, le bandeau « À boire » compte plus de 180 bouteilles, presque toutes « à l’apogée », et on ne peut ni les trier par apogée ni les filtrer. Le mainteneur veut une 1.5.1 : le bandeau reste court (ses compteurs, puis les 5 à 10 plus urgentes une fois déplié) et mène par « Voir les N bouteilles » à une page « À boire » dédiée, sans entrée de menu ; la page reprend le tableau des bouteilles, triable par colonne (urgence par défaut, apogée, millésime, couleur, « à boire avant », case), filtrée par groupe, par couleur de vin et par nom, avec la sélection multiple et les actions des autres listes ; un interrupteur « Par vin / Par bouteille » regroupe les bouteilles d’un même vin sur une ligne, la vue par bouteille restant celle par défaut. Séparer « apogée dépassée depuis longtemps » de « à l’apogée » attend : le tri par apogée suffit d’abord. DEP-10 part dans cette version, juste avant sa release. Comme pour la 1.4.1, develop repasse de 1.6.0-rc.0 à 1.5.1-rc.0, aucune image ni base ne tournant sous ce numéro hors de la CI, et l’entrée 1.6.0 de `releases.json` revient au démarrage de la version suivante. Précisé sur captures le 2026-11-08 : 8 bouteilles dans le bandeau ; une ligne « Par vin » coche toutes ses bouteilles et n’a pas de menu ⋯ ; ses cases s’écrivent « Cave3, Cave6 +2 » ; sur téléphone, le tableau défile de côté dans son cadre ; un seul choix par rangée de filtres ; le lien du bandeau est toujours affiché ; le MCP filtre par groupe et par couleur et trie par apogée.' },
+	{ topic: 'Largeur des pages (1.5.2)', choice: 'Demande du mainteneur (2026-11-08) : les marges des côtés, réduites au début du projet, laissent encore près de 200 px vides de chaque côté sur un écran de 1920 px (le cadre unique de `+layout.svelte` prend 90 %, 85 % puis 80 % de la largeur), et le plan de la cave défile de côté alors qu’il tiendrait à l’écran. Pour une 1.5.2, juste après la 1.5.1 : dans les préférences, « Largeur des pages » à quatre choix (Étroite, Normale par défaut, qui est la largeur d’aujourd’hui, Large, Pleine largeur avec la seule marge de 16 px), appliquée à l’en-tête comme aux pages ; et un interrupteur « Plan de la cave en pleine largeur », activé par défaut, pour que le plan prenne tout l’écran même quand le reste garde ses marges. Les valeurs sont proposées sur captures (1280, 1920 et 2560 px) avant d’être construites ; la liste des vins (cartes et liste, et ses filtres à paliers fixes), le plan, un formulaire et les statistiques ne doivent rien étirer mal. develop passe à 1.5.2-rc.0 après la 1.5.1.' },
 	{ topic: 'Survol des boutons (UI-33)', choice: 'Choisi sur captures le 2026-11-02, une règle par sorte de bouton : un bouton plein (principal, secondaire, suppression, interrupteur) mêle au survol 15 % de la couleur du texte de la page à son fond, donc s’assombrit en clair et s’éclaircit en sombre (jetons `--primary-hover`, `--secondary-hover`, `--destructive-hover`) ; un bouton discret (transparent, icône, ligne de menu, section du menu, tri, case du stockage, croix d’un dialogue) prend au survol le fond `accent` entier et son texte, en clair comme en sombre, et les boutons à icône faits main aussi ; un bouton à contour et une liste déroulante gardent le survol de shadcn, la liste déroulante gagnant celui qui lui manquait en clair ; un choix non retenu suit la règle des boutons discrets, un choix retenu celle des boutons pleins, sans zoom ; liens et onglets inchangés ; un focus clavier net (anneau de 3 px en `--ring` entier) sur chaque bouton, lien et onglet ; un bouton désactivé à 50 %, sans survol, avec le curseur normal, faits main compris ; pas d’état appuyé à part, et seules les couleurs changent. L’`accent` n’est pas renforcé. Exception à la règle de `ui/` : `ui/button/button.svelte`, `ui/select/select-trigger.svelte` et `ui/dialog/dialog-content.svelte` portent des classes modifiées à la main, signalées par un commentaire, parce que le défaut est dans leurs variantes. Tous les conteneurs du stockage ont la même pastille neutre.' },
 	{ topic: 'Vue liste (FEAT-10)', choice: 'Choisie sur maquette (planche « D3 ») : une vue liste à côté des cartes, sans défilement (le mainteneur n’en veut pas dans la liste) ; un texte long passe à la ligne. Un sélecteur « Cartes / Liste » sur la page et la vue par défaut dans les préférences. Demandée avec UI-32, placée en tête de la 1.4.0 parce que c’est une nouvelle fonction et non un correctif.' },
 	{ topic: 'Couleurs des vins (FEAT-03)', choice: 'Chaque couleur de vin a une vraie couleur, enregistrée en base ; les couleurs de départ reçoivent celles des étiquettes d’aujourd’hui. Créée depuis un formulaire, une couleur reçoit une teinte par défaut ou neutre ; dans Admin › Data, le sélecteur s’affiche dès la création ou la modification. Choisi sur maquette : sur la page Stockage, chaque place occupée prend la couleur de son vin ; les camemberts des statistiques prennent les vraies couleurs ; la liste des vins garde l’étiquette, colorée, et ajoute une bande à gauche de la carte ; les listes de bouteilles montrent l’étiquette colorée à côté du nom du vin. Pas de carte teintée (décision du 2026-10-31). Précisé le 2026-11-01 : les couleurs de départ sont les teintes de vin de la maquette (Rouge #7b1e2b, Blanc #ead98b, Rosé #f2a08c, Jaune #d4952a, N/A #9ca3af) ; une couleur créée depuis un formulaire reçoit le gris de N/A, sauf un nom reconnu, qui reprend sa teinte de départ. Changé le 2026-11-02, sur captures : le contour « seulement quand le contraste manque » donnait des bouteilles avec contour, d’autres sans, et un orange entre les deux, ce que le mainteneur refuse ; toute couleur reçoit désormais le même contour, dans sa propre teinte mêlée de 40 % de noir en clair et de 40 % de blanc en sombre, sur le stockage (une silhouette de bouteille sans étiquette ; une place vide est la même silhouette en contour), les étiquettes, la bande des cartes et la légende des statistiques. Une couleur choisie par l’utilisateur peut avoir un contour sous 3:1 (le blanc pur en clair : 2,85:1) : accepté.' },
@@ -2807,10 +2820,37 @@ export const tasks = [
 		why: 'La 1.5.1 apporte la page « À boire » et les dépendances à jour sans attendre le bloc suivant.',
 		where: ['releases.json', 'CHANGELOG.md', 'UPGRADING.md', 'package.json'],
 		todo: [
-			'Avant FEAT-18 : develop repasse à 1.5.1-rc.0, l’entrée 1.6.0 de `releases.json` cède la place à l’entrée 1.5.1. Résumé 1.5.1 complété par FEAT-18 et DEP-10 ; bancs depuis la 1.5.0 et la 1.0.0 ; release selon RELEASING.md ; puis develop passe à 1.6.0-rc.0 avec une nouvelle entrée 1.6.0.'
+			'Avant FEAT-18 : develop repasse à 1.5.1-rc.0, l’entrée 1.6.0 de `releases.json` cède la place à l’entrée 1.5.1. Résumé 1.5.1 complété par FEAT-18 et DEP-10 ; bancs depuis la 1.5.0 et la 1.0.0 ; release selon RELEASING.md ; puis develop passe à 1.6.0-rc.0 avec une nouvelle entrée 1.6.0.',
+			'Fait le 2026-11-08 : develop était repassé à 1.5.1-rc.0 (7f39abfc) ; bancs de la 1.5.0 et de la 1.0.0 vers la 1.5.1, 176 sur 176 chacun, sans changer le banc ; CI 42488062702 verte sur b33d0ce8 ; `main` avancée, tag v1.5.1, release 42488642568 verte ; image publique sans connexion (`1.5.1`, `1.5`, `latest`, amd64 et arm64). develop passe à 1.5.2-rc.0 (de71bb94) et non à 1.6.0-rc.0, la 1.5.2 étant la sortie suivante (décision « Largeur des pages (1.5.2) »).'
 		],
 		done: 'v1.5.1 est publiée sur `main` et son image se télécharge sans connexion ; develop passe à 1.6.0-rc.0.',
 		deps: ['FEAT-18', 'DEP-10'], src: ['Décision « Page À boire (1.5.1) »']
+	},
+	// ───────── P17c Largeur des pages
+	{
+		id: 'UI-35', phase: 'P17c', size: 'M', sev: 'evolution',
+		title: 'Choisir la largeur des pages, et un plan en pleine largeur',
+		why: 'Le cadre unique des pages laisse près de 200 px vides de chaque côté sur un écran de 1920 px ; le plan de la cave, qui se lit comme un tableau, défile alors de côté alors qu’il tiendrait à l’écran.',
+		where: ['src/routes/+layout.svelte', 'src/lib/stores/preferences.svelte.ts', 'src/routes/preferences/', 'src/routes/storage/+page.svelte', 'src/lib/components/storage/StorageTable.svelte', 'src/lib/components/wines/WineFilters.svelte', 'src/lib/i18n/locales/'],
+		todo: [
+			'Dans les préférences, « Largeur des pages » : Étroite, Normale (par défaut, la largeur d’aujourd’hui), Large, Pleine largeur ; appliquée au cadre commun, en-tête compris, gardée comme les autres préférences de l’interface.',
+			'Un interrupteur « Plan de la cave en pleine largeur », activé par défaut : la page Stockage prend tout l’écran, quelle que soit la largeur choisie.',
+			'Valeurs proposées d’abord sur captures, à 1280, 1920 et 2560 px, clair et sombre : liste des vins en cartes et en liste avec ses filtres, plan de la cave, un formulaire, les statistiques ; puis construites selon le choix du mainteneur.',
+			'Le téléphone ne change pas (marge de 16 px).'
+		],
+		done: 'Chaque largeur s’applique à toutes les pages sans rien étirer mal ; avec l’interrupteur, le plan tient sans défilement là où la largeur de l’écran le permet.',
+		deps: ['REL-19'], src: ['Décision « Largeur des pages (1.5.2) »']
+	},
+	{
+		id: 'REL-20', phase: 'P17c', size: 'S', sev: 'evolution',
+		title: 'Publication de la 1.5.2',
+		why: 'La 1.5.2 apporte la largeur des pages sans attendre le bloc suivant.',
+		where: ['releases.json', 'CHANGELOG.md', 'UPGRADING.md', 'package.json'],
+		todo: [
+			'Résumé 1.5.2 complété par UI-35 ; bancs depuis la 1.5.1 et la 1.0.0 ; release selon RELEASING.md ; puis develop passe à 1.6.0-rc.0 avec une nouvelle entrée 1.6.0.'
+		],
+		done: 'v1.5.2 est publiée sur `main` et son image se télécharge sans connexion ; develop passe à 1.6.0-rc.0.',
+		deps: ['UI-35'], src: ['Décision « Largeur des pages (1.5.2) »']
 	},
 	// ───────── P20 Fiches de dégustation
 	{

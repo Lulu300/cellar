@@ -4,6 +4,37 @@
 
 Upgrade actions are also collected in [UPGRADING.md](UPGRADING.md).
 
+## 1.5.2
+
+1.5.2 lets you choose how wide the pages are, and shows the cellar map across the whole screen.
+
+Preferences has a new « Layout » card. « Page width » offers Narrow, Normal (the width so far, and the default), Wide and Full width: it applies to every page and to the header on a screen of 1024 pixels or more, while phones and small tablets keep their 16-pixel margin. « Full-width cellar map », on by default, lets the storage page take the whole screen whatever the page width, so that a cellar of many containers no longer scrolls sideways where the screen is wide enough. The wine filters and the bottles on a wine's page now fill the width they are given, with as many columns as fit.
+
+### Upgrade actions
+
+None.
+
+### Changes
+
+#### Features
+
+- **preferences:** Choose the page width, and a full-width cellar map (feac10c)
+
+#### Bug fixes
+
+- **wines:** Let the filters and the bottle cards fill the page frame (57962d9)
+- **layout:** Keep the gap above the tab bar of the installed app (f9060a9)
+- **layout:** Apply the stored page width even with a broken colour cache (475537d)
+
+#### Documentation
+
+- **releases:** Describe the page width in the 1.5.2 summary (324b873)
+
+#### Other changes
+
+- **preferences:** Cover the frame widths and their first paint (59f56fd)
+- **e2e:** Check a wide page, and compare with the page's own width (3a92d6a)
+
 ## 1.5.1
 
 1.5.1 gives the bottles to drink soon a page of their own, to sort and filter them.

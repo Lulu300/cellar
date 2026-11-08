@@ -244,7 +244,7 @@ export const phases = [
 		id: 'P18',
 		version: 'Producteurs',
 		title: 'Producteurs et revue de l’import',
-		goal: 'Les producteurs d’abord, parce que la revue de l’import doit savoir relier ou créer un producteur. Ordre : FEAT-07 ; FEAT-08 ; puis REL-12. UI-34 est rangée ici par défaut : elle se place où le mainteneur veut, une fois le comportement du visiteur choisi.'
+		goal: 'Les producteurs d’abord, parce que la revue de l’import doit savoir relier ou créer un producteur. Ordre : FEAT-07 ; FEAT-08 ; puis REL-12. UI-34 est rangée ici par défaut : elle se place où le mainteneur veut, une fois le comportement du visiteur choisi. DEP-11 aussi : elle se fait sur develop juste avant la sortie suivante, quel que soit le bloc.'
 	},
 	{
 		id: 'P19',
@@ -2764,7 +2764,9 @@ export const tasks = [
 		why: 'Ce que DEP-09 n’a pas pu prendre, la 1.3.0 étant publiée avant que les correctifs soient éligibles (choix du mainteneur) : node 24.22.2, SvelteKit, adapter-node, Paraglide, minimatch 11 et la suite.',
 		where: ['package.json', 'pnpm-lock.yaml', '.github/workflows/', 'Dockerfile'],
 		todo: [
-			'Comme DEP-08 et DEP-09 : correctifs publiés depuis au moins 7 jours, une mise à jour par commit, portes à chaque fois ; l’alerte minimatch revue ; `pnpm audit --prod` vide ou chaque alerte justifiée. Reportée de la 1.4.0 puis du bloc « À boire » (décision « Dépendances après la 1.4.0 ») : sur develop, juste avant la sortie suivante, quel que soit le bloc : la 1.5.1, après FEAT-18 (choix du mainteneur, 2026-11-08).'
+			'Comme DEP-08 et DEP-09 : correctifs publiés depuis au moins 7 jours, une mise à jour par commit, portes à chaque fois ; l’alerte minimatch revue ; `pnpm audit --prod` vide ou chaque alerte justifiée. Reportée de la 1.4.0 puis du bloc « À boire » (décision « Dépendances après la 1.4.0 ») : sur develop, juste avant la sortie suivante, quel que soit le bloc : la 1.5.1, après FEAT-18 (choix du mainteneur, 2026-11-08).',
+			'Fait en P17b (2026-11-08, 1d470717..a10f39e9, statut 7113fd2b, CI 42486440053 verte) : 13 correctifs (svelte 5.57.3, kit 3.1.1, adapter-node 6.0.1, paraglide-js 2.29.3, typescript-eslint 8.72.1, kysely, rolldown 1.2.16, postcss, magic-string, @types/estree, @napi-rs/wasm-runtime, unbash, pnpm 10.34.9) et les mineures d’outils de dev acceptées par le mainteneur (eslint 10.14.0, globals 17.14.0, knip 6.44.1, plugin-icu1 1.3.5 avec @inlang/sdk 4.1.0, et cinq indirectes), un commit chacune, portes à chaque fois ; aucun paquet de l’image ne change, image saine sur Node 24.22.1 ; messages compilés identiques ; audit inchangé (minimatch acceptée sans override ; esbuild et deepmerge en dev seulement). Laissés, au choix du mainteneur : @lucide/svelte 1.66 et les mineures de l’image (readable-stream, tar-stream, pako, core-js) ; Node 24.22.2 (éligible le 2026-11-12, sans correctif de sécurité). Outils de la revue dans p15-notes/dep-10-evidence/tools pour DEP-11.',
+			'Trouvé pendant DEP-10 : `.nvmrc` dit « 24 », donc `ci.yml` et `release.yml` prennent le dernier Node 24 au moment du run, sans la règle des 7 jours et pas forcément celui de l’image ; runed 0.35.1 (par bits-ui) attend `@sveltejs/kit` ^2.21.0 (avertissement d’avant la tâche).'
 		],
 		done: 'Chaque dépendance, action et image de base est à son dernier correctif publié depuis au moins 7 jours, ou l’écart est justifié.',
 		deps: ['DEP-09'], src: ['Trouvé pendant DEP-09']
@@ -2879,6 +2881,18 @@ export const tasks = [
 		deps: ['FEAT-06', 'FEAT-14', 'FEAT-15', 'FEAT-16'], src: ['Décision « Blocs sans numéro »']
 	},
 	// ───────── P18 Producteurs et revue de l’import
+	{
+		id: 'DEP-11', phase: 'P18', size: 'S', sev: 'mineur',
+		title: 'Revue des dépendances d’après la 1.5.1',
+		why: 'Ce que DEP-10 n’a pas pris : Node 24.22.2 et docker/login-action 4.8.0 (éligibles le 2026-11-12), les correctifs pas encore âgés de 7 jours le 2026-11-08 (tinybench, svelte-check, bits-ui, tailwindcss 4.3.4, vite 8.3.6, semver, cookie…), et les mineures repoussées (@lucide/svelte 1.66, readable-stream, tar-stream, pako, core-js).',
+		where: ['package.json', 'pnpm-lock.yaml', '.github/workflows/', 'Dockerfile', '.nvmrc'],
+		todo: [
+			'Comme DEP-10, avec ses outils (p15-notes/dep-10-evidence/tools) : correctifs publiés depuis au moins 7 jours, une mise à jour par commit, portes à chaque fois ; mineures proposées au mainteneur ; alerte minimatch revue ; juste avant la sortie suivante, quel que soit le bloc.',
+			'Trouvé pendant DEP-10 : `.nvmrc` dit « 24 » ; proposer de le fixer sur la version de l’image, pour que la CI teste le Node qu’on publie.'
+		],
+		done: 'Chaque dépendance, action et image de base est à son dernier correctif publié depuis au moins 7 jours, ou l’écart est justifié ; la CI tourne sur le Node de l’image.',
+		deps: ['DEP-10'], src: ['Trouvé pendant DEP-10']
+	},
 	{
 		id: 'UI-34', phase: 'P18', size: 'S', sev: 'mineur',
 		title: 'Une seule barre de sélection des bouteilles',

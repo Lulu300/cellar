@@ -75,6 +75,11 @@ export const versions = [
 		goal: 'Savoir quelles bouteilles boire bientôt.'
 	},
 	{
+		id: '1.5.1',
+		title: 'La page « À boire »',
+		goal: 'Une liste « À boire » qu’on peut trier et filtrer quand elle compte des centaines de bouteilles, et les dépendances à jour.'
+	},
+	{
 		id: 'Dégustation',
 		title: 'Des fiches de dégustation à sa main',
 		goal: 'Des fiches de dégustation structurées et personnalisables, imprimables en A4, à remplir quand on boit une bouteille, plusieurs fiches et leurs versions, et un MCP qui aide à les remplir et à les faire évoluer. Sur sa propre branche.'
@@ -224,6 +229,12 @@ export const phases = [
 		goal: 'La vie d’une bouteille jusqu’à ce qu’on la boive ; la tâche ajoute son repère à la liste d’une case du plan (FEAT-04). Ordre : FEAT-05 ; puis REL-11. Sort le 2026-11-04 sans DEP-10, qui passe au bloc suivant (décision « Dépendances après la 1.4.0 »). Publiée en 1.5.0 le 2026-11-04.'
 	},
 	{
+		id: 'P17b',
+		version: '1.5.1',
+		title: 'La page « À boire »',
+		goal: 'Pour la 1.5.1, avant le bloc suivant (décision « Page À boire (1.5.1) ») : FEAT-18 ; DEP-10 ; puis REL-19.'
+	},
+	{
 		id: 'P20',
 		version: 'Dégustation',
 		title: 'Fiches de dégustation',
@@ -233,7 +244,7 @@ export const phases = [
 		id: 'P18',
 		version: 'Producteurs',
 		title: 'Producteurs et revue de l’import',
-		goal: 'Les producteurs d’abord, parce que la revue de l’import doit savoir relier ou créer un producteur. Ordre : FEAT-07 ; FEAT-08 ; puis REL-12. DEP-10 est rangée ici par défaut : elle se fait sur develop juste avant la prochaine sortie, quel que soit le bloc (décision « Dépendances après la 1.4.0 »).'
+		goal: 'Les producteurs d’abord, parce que la revue de l’import doit savoir relier ou créer un producteur. Ordre : FEAT-07 ; FEAT-08 ; puis REL-12.'
 	},
 	{
 		id: 'P19',
@@ -374,8 +385,9 @@ export const decisions = [
 	{ topic: 'Cartes de vin (UI-32)', choice: 'Choisie sur maquette (https://claude.ai/artifact/9GrYNvpP1LUCF8jfT3Rwze, planche « C3 », 2026-11-01) : la carte devient horizontale, photo en portrait de 100 × 140 px à gauche. Règle de base, à ne jamais rompre : toutes les cartes ont la même taille et chaque élément est au même endroit ; chaque champ tient sur une ligne, la description a deux lignes réservées. Un texte coupé défile au survol (le mainteneur préfère ce mouvement sur les cartes). Le classement, le millésime et le prix sont précédés d’icônes, pas de libellés. La grille garde des cartes de 340 px au moins. Densité estimée sur un écran de 1 920 px : 4 cartes par ligne au lieu de 6, mais 8 cartes entières à l’écran au lieu de 6.' },
 	{ topic: 'Actions MCP (FEAT-11)', choice: 'Un utilisateur a essayé le MCP : il a demandé un vin pour son repas, puis voulu sortir la bouteille de la cave, et seul « marquer bue » existait. Le mainteneur ajoute à la 1.4.0 quatre groupes d’actions : sortir des bouteilles de la cave, les y remettre dans une case et annuler un « bu » fait par erreur ; modifier un vin (quantité cible, description, producteur…) et les champs des bouteilles (prix, valeur, millésime, apogée, code-barres) ; lister les bouteilles de toute la cave par état et par date ; changer la quantité ou la note d’un souhait, et supprimer une bouteille ajoutée par erreur (action destructive, annoncée comme telle au client). L’admin reste hors du MCP. Les applications Claude web et mobile ne l’atteignent pas : leurs connecteurs partent d’Internet et attendent OAuth ; Claude Code et les clients locaux, avec l’en-tête du jeton, fonctionnent (décision du 2026-11-01).' },
 	{ topic: 'MCP le plus complet possible (FEAT-12)', choice: 'Le mainteneur veut que l’assistant qui utilise le MCP ait le plus de contexte possible : les actions, leurs descriptions, la documentation et les erreurs. Une erreur rend donc aussi le détail du refus (les `details` de l’API), et une relecture de tous les outils, du point de vue d’un assistant, complète ce qui manque. Une bouteille marquée bue garde la case où elle était, sans y prendre de place, comme une bouteille hors cave : la remettre en cave la replace dans cette case, et l’assistant comme l’application peuvent dire où elle était. Les bouteilles bues avant la 1.4.0 ont déjà perdu leur case (décision du 2026-11-02). Précisé le même jour : le formulaire d’une bouteille bue dit dans quelle case elle était ; le MCP lit les listes au-delà de 200 (`offset`) ; pas de filtre sur l’apogée (avec « À boire », FEAT-05), ni de création d’origine ou de format, ni de suppression d’un vin, des conteneurs ou des appellations par le MCP.' },
-	{ topic: 'Dépendances après la 1.4.0', choice: 'Le mainteneur veut sortir la 1.4.0 vite : la revue des dépendances (DEP-10), qui attendait que les correctifs aient 7 jours (le 2026-11-05 ou 06), part dans la première version publiée après cette date. La 1.4.0 sort avec les dépendances de la 1.3.2 (décision du 2026-11-02). Le 2026-11-04, le mainteneur sort aussi le bloc « À boire » avant cette date : DEP-10 se fait sur develop juste avant la sortie suivante, quel que soit le bloc.' },
+	{ topic: 'Dépendances après la 1.4.0', choice: 'Le mainteneur veut sortir la 1.4.0 vite : la revue des dépendances (DEP-10), qui attendait que les correctifs aient 7 jours (le 2026-11-05 ou 06), part dans la première version publiée après cette date. La 1.4.0 sort avec les dépendances de la 1.3.2 (décision du 2026-11-02). Le 2026-11-04, le mainteneur sort aussi le bloc « À boire » avant cette date : DEP-10 se fait sur develop juste avant la sortie suivante, quel que soit le bloc : ce sera la 1.5.1 (décision « Page À boire (1.5.1) »).' },
 	{ topic: 'Version corrective 1.4.1', choice: 'Le mainteneur veut corriger le survol des boutons dans une 1.4.1, avant la 1.5.0 (2026-11-02) : sur une carte de vin, le survol du nombre de bouteilles se voit à peine, surtout en thème sombre, et d’autres boutons ont peut-être le même défaut ; il veut une règle commune, pour un comportement prévisible et lisible. Comme pour la 1.3.1 : develop était passé à 1.5.0-rc.0 sans qu’aucune image ni base ne tourne sous ce numéro hors de la CI, donc il repasse à 1.4.1-rc.0, et l’entrée 1.5.0 de `releases.json` revient au démarrage de la 1.5.0.' },
+	{ topic: 'Page À boire (1.5.1)', choice: 'Retour d’un utilisateur sur la 1.5.0 (2026-11-08) : avec une année optimale saisie pour tous ses vins, le bandeau « À boire » compte plus de 180 bouteilles, presque toutes « à l’apogée », et on ne peut ni les trier par apogée ni les filtrer. Le mainteneur veut une 1.5.1 : le bandeau reste court (ses compteurs, puis les 5 à 10 plus urgentes une fois déplié) et mène par « Voir les N bouteilles » à une page « À boire » dédiée, sans entrée de menu ; la page reprend le tableau des bouteilles, triable par colonne (urgence par défaut, apogée, millésime, couleur, « à boire avant », case), filtrée par groupe, par couleur de vin et par nom, avec la sélection multiple et les actions des autres listes ; un interrupteur « Par vin / Par bouteille » regroupe les bouteilles d’un même vin sur une ligne, la vue par bouteille restant celle par défaut. Séparer « apogée dépassée depuis longtemps » de « à l’apogée » attend : le tri par apogée suffit d’abord. DEP-10 part dans cette version, juste avant sa release. Comme pour la 1.4.1, develop repasse de 1.6.0-rc.0 à 1.5.1-rc.0, aucune image ni base ne tournant sous ce numéro hors de la CI, et l’entrée 1.6.0 de `releases.json` revient au démarrage de la version suivante.' },
 	{ topic: 'Survol des boutons (UI-33)', choice: 'Choisi sur captures le 2026-11-02, une règle par sorte de bouton : un bouton plein (principal, secondaire, suppression, interrupteur) mêle au survol 15 % de la couleur du texte de la page à son fond, donc s’assombrit en clair et s’éclaircit en sombre (jetons `--primary-hover`, `--secondary-hover`, `--destructive-hover`) ; un bouton discret (transparent, icône, ligne de menu, section du menu, tri, case du stockage, croix d’un dialogue) prend au survol le fond `accent` entier et son texte, en clair comme en sombre, et les boutons à icône faits main aussi ; un bouton à contour et une liste déroulante gardent le survol de shadcn, la liste déroulante gagnant celui qui lui manquait en clair ; un choix non retenu suit la règle des boutons discrets, un choix retenu celle des boutons pleins, sans zoom ; liens et onglets inchangés ; un focus clavier net (anneau de 3 px en `--ring` entier) sur chaque bouton, lien et onglet ; un bouton désactivé à 50 %, sans survol, avec le curseur normal, faits main compris ; pas d’état appuyé à part, et seules les couleurs changent. L’`accent` n’est pas renforcé. Exception à la règle de `ui/` : `ui/button/button.svelte`, `ui/select/select-trigger.svelte` et `ui/dialog/dialog-content.svelte` portent des classes modifiées à la main, signalées par un commentaire, parce que le défaut est dans leurs variantes. Tous les conteneurs du stockage ont la même pastille neutre.' },
 	{ topic: 'Vue liste (FEAT-10)', choice: 'Choisie sur maquette (planche « D3 ») : une vue liste à côté des cartes, sans défilement (le mainteneur n’en veut pas dans la liste) ; un texte long passe à la ligne. Un sélecteur « Cartes / Liste » sur la page et la vue par défaut dans les préférences. Demandée avec UI-32, placée en tête de la 1.4.0 parce que c’est une nouvelle fonction et non un correctif.' },
 	{ topic: 'Couleurs des vins (FEAT-03)', choice: 'Chaque couleur de vin a une vraie couleur, enregistrée en base ; les couleurs de départ reçoivent celles des étiquettes d’aujourd’hui. Créée depuis un formulaire, une couleur reçoit une teinte par défaut ou neutre ; dans Admin › Data, le sélecteur s’affiche dès la création ou la modification. Choisi sur maquette : sur la page Stockage, chaque place occupée prend la couleur de son vin ; les camemberts des statistiques prennent les vraies couleurs ; la liste des vins garde l’étiquette, colorée, et ajoute une bande à gauche de la carte ; les listes de bouteilles montrent l’étiquette colorée à côté du nom du vin. Pas de carte teintée (décision du 2026-10-31). Précisé le 2026-11-01 : les couleurs de départ sont les teintes de vin de la maquette (Rouge #7b1e2b, Blanc #ead98b, Rosé #f2a08c, Jaune #d4952a, N/A #9ca3af) ; une couleur créée depuis un formulaire reçoit le gris de N/A, sauf un nom reconnu, qui reprend sa teinte de départ. Changé le 2026-11-02, sur captures : le contour « seulement quand le contraste manque » donnait des bouteilles avec contour, d’autres sans, et un orange entre les deux, ce que le mainteneur refuse ; toute couleur reçoit désormais le même contour, dans sa propre teinte mêlée de 40 % de noir en clair et de 40 % de blanc en sombre, sur le stockage (une silhouette de bouteille sans étiquette ; une place vide est la même silhouette en contour), les étiquettes, la bande des cartes et la légende des statistiques. Une couleur choisie par l’utilisateur peut avoir un contour sous 3:1 (le blanc pur en clair : 2,85:1) : accepté.' },
@@ -2747,12 +2759,12 @@ export const tasks = [
 		deps: ['REL-10'], src: ['Décision « À boire (FEAT-05) »']
 	},
 	{
-		id: 'DEP-10', phase: 'P18', size: 'S', sev: 'mineur',
+		id: 'DEP-10', phase: 'P17b', size: 'S', sev: 'mineur',
 		title: 'Revue des dépendances d’après la 1.4.0',
 		why: 'Ce que DEP-09 n’a pas pu prendre, la 1.3.0 étant publiée avant que les correctifs soient éligibles (choix du mainteneur) : node 24.22.2, SvelteKit, adapter-node, Paraglide, minimatch 11 et la suite.',
 		where: ['package.json', 'pnpm-lock.yaml', '.github/workflows/', 'Dockerfile'],
 		todo: [
-			'Comme DEP-08 et DEP-09 : correctifs publiés depuis au moins 7 jours, une mise à jour par commit, portes à chaque fois ; l’alerte minimatch revue ; `pnpm audit --prod` vide ou chaque alerte justifiée. Reportée de la 1.4.0 puis du bloc « À boire » (décision « Dépendances après la 1.4.0 ») : sur develop, juste avant la sortie suivante, quel que soit le bloc.'
+			'Comme DEP-08 et DEP-09 : correctifs publiés depuis au moins 7 jours, une mise à jour par commit, portes à chaque fois ; l’alerte minimatch revue ; `pnpm audit --prod` vide ou chaque alerte justifiée. Reportée de la 1.4.0 puis du bloc « À boire » (décision « Dépendances après la 1.4.0 ») : sur develop, juste avant la sortie suivante, quel que soit le bloc : la 1.5.1, après FEAT-18 (choix du mainteneur, 2026-11-08).'
 		],
 		done: 'Chaque dépendance, action et image de base est à son dernier correctif publié depuis au moins 7 jours, ou l’écart est justifié.',
 		deps: ['DEP-09'], src: ['Trouvé pendant DEP-09']
@@ -2768,6 +2780,33 @@ export const tasks = [
 		],
 		done: 'La version est publiée sur `main` et son image se télécharge sans connexion ; develop passe à la rc suivante.',
 		deps: ['FEAT-05'], src: ['Décision « Blocs sans numéro »']
+	},
+	// ───────── P17b La page « À boire »
+	{
+		id: 'FEAT-18', phase: 'P17b', size: 'M', sev: 'evolution',
+		title: 'Une page « À boire » triable et filtrable',
+		why: 'Avec une année optimale sur tous ses vins, un utilisateur voit plus de 180 bouteilles dans le bandeau « À boire », presque toutes « à l’apogée », sans pouvoir les trier par apogée ni les filtrer.',
+		where: ['src/lib/components/bottles/DrinkSoonBanner.svelte', 'src/lib/components/bottles/BottleTable.svelte', 'src/routes/', 'src/lib/i18n/locales/'],
+		todo: [
+			'Le bandeau garde ses compteurs ; déplié, il ne montre que les plus urgentes (5 à 10, nombre proposé sur captures) et « Voir les N bouteilles », qui ouvre la page. Pas d’entrée de menu.',
+			'La page reprend le tableau des bouteilles : colonnes triables (urgence par défaut, dans l’ordre du bandeau ; apogée de la plus ancienne à la plus récente ; millésime, couleur, « à boire avant », case) ; filtres par groupe, par couleur de vin (avec sa couleur) et par nom ; sélection multiple et actions des autres listes ; pagination comme ailleurs.',
+			'Un interrupteur « Par vin / Par bouteille » regroupe les bouteilles d’un même vin et millésime sur une ligne (nombre, apogée, groupe le plus urgent) ; « Par bouteille » par défaut.',
+			'Formes proposées d’abord sur captures (1280 et 390 px, clair et sombre), avec une cave de plus de 180 bouteilles inventées, puis construites selon le choix du mainteneur.',
+			'Règle 10 d’AGENTS.md : si l’API ou le MCP gagnent un tri ou un filtre, docs/API.md, OpenAPI et les outils suivent ; sinon le rapport dit pourquoi.'
+		],
+		done: 'Avec plus de 180 bouteilles à boire, le bandeau reste court, et la page trie par apogée, filtre par groupe, couleur et nom, et regroupe par vin, au clavier et à 390 px.',
+		deps: ['REL-11'], src: ['Décision « Page À boire (1.5.1) »']
+	},
+	{
+		id: 'REL-19', phase: 'P17b', size: 'S', sev: 'evolution',
+		title: 'Publication de la 1.5.1',
+		why: 'La 1.5.1 apporte la page « À boire » et les dépendances à jour sans attendre le bloc suivant.',
+		where: ['releases.json', 'CHANGELOG.md', 'UPGRADING.md', 'package.json'],
+		todo: [
+			'Avant FEAT-18 : develop repasse à 1.5.1-rc.0, l’entrée 1.6.0 de `releases.json` cède la place à l’entrée 1.5.1. Résumé 1.5.1 complété par FEAT-18 et DEP-10 ; bancs depuis la 1.5.0 et la 1.0.0 ; release selon RELEASING.md ; puis develop passe à 1.6.0-rc.0 avec une nouvelle entrée 1.6.0.'
+		],
+		done: 'v1.5.1 est publiée sur `main` et son image se télécharge sans connexion ; develop passe à 1.6.0-rc.0.',
+		deps: ['FEAT-18', 'DEP-10'], src: ['Décision « Page À boire (1.5.1) »']
 	},
 	// ───────── P20 Fiches de dégustation
 	{

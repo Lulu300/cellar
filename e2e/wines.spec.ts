@@ -173,6 +173,15 @@ test('log in, add a wine and two bottles from the wine list, and buy a wine of t
         .getByRole('radiogroup', { name: 'Default Wine List View' })
         .getByRole('radio', { name: 'List' })
         .click();
+    // A wide page takes 95 % of the screen, header included (UI-35).
+    await page
+        .getByRole('radiogroup', { name: 'Page width' })
+        .getByRole('radio', { name: 'Wide' })
+        .click();
+    const screenWidth = await page.evaluate(() => document.documentElement.clientWidth);
+    await expect
+        .poll(async () => (await page.locator('header > div').boundingBox())?.width)
+        .toBeCloseTo(screenWidth * 0.95, 0);
     await openFromMenu(page, 'Cellar', 'My Wines');
     await expect(page.getByRole('table')).toBeVisible();
     await page.getByRole('radio', { name: 'Cards' }).click();

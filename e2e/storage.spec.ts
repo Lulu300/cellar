@@ -153,7 +153,7 @@ test('add a container on the storage page, put bottles in its cases, move three 
     await expect(page).toHaveURL(/\/storage$/);
     await expect(page.getByRole('button', { name: 'Rack1: 1 of 5 bottles' })).toBeVisible();
     // The map takes the whole width of the screen; the header keeps the page width (UI-35).
-    const screenWidth = page.viewportSize()!.width;
+    const screenWidth = await page.evaluate(() => document.documentElement.clientWidth);
     expect((await page.locator('main').boundingBox())!.width).toBe(screenWidth);
     expect((await page.locator('header > div').boundingBox())!.width).toBeLessThan(screenWidth);
 

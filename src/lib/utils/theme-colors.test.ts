@@ -127,6 +127,15 @@ describe('the page width before the app has loaded', () => {
         expect(page.dataset).toEqual({ pageWidth: 'narrow', cellarMapFullWidth: 'false' });
     });
 
+    it('applies them even when the colour cache does not parse', () => {
+        const page = fakeBrowser({
+            'wine-cellar-theme-colors': '{corrupt',
+            'wine-cellar-page-width': 'full'
+        });
+        runInlineScript();
+        expect(page.dataset.pageWidth).toBe('full');
+    });
+
     it('leaves the defaults to app.css when nothing is stored', () => {
         const page = fakeBrowser({});
         runInlineScript();

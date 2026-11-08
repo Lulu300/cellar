@@ -83,6 +83,7 @@ export const versions = [
 	{
 		id: '1.5.2',
 		title: 'Largeur des pages',
+		released: '2026-11-08',
 		goal: 'Choisir la largeur des pages, et un plan de la cave qui prend tout l’écran.'
 	},
 	{
@@ -244,7 +245,7 @@ export const phases = [
 		id: 'P17c',
 		version: '1.5.2',
 		title: 'Largeur des pages',
-		goal: 'Pour la 1.5.2, avant le bloc suivant (décision « Largeur des pages (1.5.2) ») : UI-35 ; puis REL-20.'
+		goal: 'Pour la 1.5.2, avant le bloc suivant (décision « Largeur des pages (1.5.2) ») : UI-35 ; puis REL-20. Publiée en 1.5.2 le 2026-11-08.'
 	},
 	{
 		id: 'P20',
@@ -2849,7 +2850,8 @@ export const tasks = [
 		why: 'La 1.5.2 apporte la largeur des pages sans attendre le bloc suivant.',
 		where: ['releases.json', 'CHANGELOG.md', 'UPGRADING.md', 'package.json'],
 		todo: [
-			'Résumé 1.5.2 complété par UI-35 ; bancs depuis la 1.5.1 et la 1.0.0 ; release selon RELEASING.md ; puis develop passe à 1.6.0-rc.0 avec une nouvelle entrée 1.6.0.'
+			'Résumé 1.5.2 complété par UI-35 ; bancs depuis la 1.5.1 et la 1.0.0 ; release selon RELEASING.md ; puis develop passe à 1.6.0-rc.0 avec une nouvelle entrée 1.6.0.',
+			'Fait le 2026-11-08 : bancs de la 1.5.1 et de la 1.0.0 vers la 1.5.2, 176 sur 176 chacun, sans changer le banc ; CI 42494866363 verte sur dfbc5ce3 ; `main` avancée, tag v1.5.2, release 42495611689 verte ; image publique sans connexion (`1.5.2`, `1.5`, `latest`, amd64 et arm64). develop passe à 1.6.0-rc.0, avec une entrée 1.6.0 au résumé provisoire. Les preuves de FEAT-18 et UI-35 sont allégées à la demande du mainteneur (p15-notes, de 160 à 13 Mo).'
 		],
 		done: 'v1.5.2 est publiée sur `main` et son image se télécharge sans connexion ; develop passe à 1.6.0-rc.0.',
 		deps: ['UI-35'], src: ['Décision « Largeur des pages (1.5.2) »']

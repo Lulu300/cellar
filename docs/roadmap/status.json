@@ -77,6 +77,7 @@
   "FEAT-11": {"state":"done","note":"d163a28a..40464b95","updatedAt":"2026-11-02T11:11:18.041Z"},
   "FEAT-12": {"state":"done","note":"16db2372..c94bfe33","updatedAt":"2026-11-02T14:47:11.039Z"},
   "FEAT-13": {"state":"done","note":"ff00d9a5..73d37adb","updatedAt":"2026-11-02T15:37:08.252Z"},
+  "FEAT-18": {"state":"done","note":"7f39abfc..34dbe3f5","updatedAt":"2026-11-08T11:11:38.927Z"},
   "QA-01": {"state":"done","note":"f73d895..45cef85 sur develop : Vitest, 165 tests (dont 3 it.fails BUG-01/API-01), base :memory: migrée, scripts/test-*.ts supprimés","updatedAt":"2026-10-10T15:00:00Z"},
   "QA-02": {"state":"done","note":"0bb18bd..8f64f06 sur develop : ESLint + Prettier (4 espaces), pnpm lint 0 erreur / 1634 avertissements, commit de formatage e0ab008 (ignoré par git blame)","updatedAt":"2026-10-10T16:00:00Z"},
   "QA-03": {"state":"done","note":"45cef85..0bb18bd sur develop : pnpm i18n:check (0 manquante, 0 doublon), 22 clés ajoutées, ~105 inutilisées supprimées","updatedAt":"2026-10-10T15:20:00Z"},

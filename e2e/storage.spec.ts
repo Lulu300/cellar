@@ -200,7 +200,8 @@ test('add a container on the storage page, put bottles in its cases, move three 
     await expect(page).toHaveURL(/rank=ready/);
     await expect(rows).toHaveCount(1);
     await expect(rows.getByText('Ready', { exact: true })).toBeVisible();
-    await expect(rows.getByText(`${year - 1}\u00a0– ${year + 1}`)).toBeVisible();
+    // The end keeps the month of the date it had, this month, with the year chosen.
+    await expect(rows.getByText(new RegExp(`^${year - 1}\\s– \\S+ ${year + 1}$`))).toBeVisible();
 
     // A visitor sees what a case holds; ticking a bottle asks to log in, and ticks nothing.
     const visitorContext = await browser.newContext();

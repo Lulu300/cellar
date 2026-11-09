@@ -15,8 +15,7 @@ export type Wish = Omit<Jsonified<WishDTO>, 'createdAt' | 'updatedAt'>;
 export type WishFields = Partial<WishInput>;
 
 /** Adds a wish; throws the ApiError of a refusal. */
-export const addWish = (wish: WishFields) =>
-    request<Wish>('/api/wishes', { method: 'POST', json: wish });
+const addWish = (wish: WishFields) => request<Wish>('/api/wishes', { method: 'POST', json: wish });
 
 /** Replaces every field of a wish; throws the ApiError of a refusal. */
 export const replaceWish = (id: string, wish: WishFields) =>

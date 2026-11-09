@@ -4,6 +4,45 @@
 
 Upgrade actions are also collected in [UPGRADING.md](UPGRADING.md).
 
+## 1.5.3
+
+1.5.3 makes the Purchases pages clearer, and removes a target quantity in one click.
+
+Each wine of the Shortage tab has a « Remove the target quantity » button. The page of a wine now shows its target quantity, with the same button while the wine is short of it. The target goes at once, the wine leaves the Shortage tab, and a message gives the number removed, should you want to type it again in the wine's form. On the wishlist, a wish for a wine of your cellar now says « I bought some » instead of « Add bottle »: it still opens the bottle form, then offers to take the wine off the list. The form that adds a wish now takes the whole wish at once: the photo of the label, the name, a note and a « Planned quantity », then « Add the wish »; a wine of your cellar suggested under the name is chosen with « Choose » and added the same way. The planned quantity of a wish is only a reminder and raises no alert: the target quantity of a wine is what puts it in the Shortage tab. The dialog that edits a wish follows the same order.
+
+### Upgrade actions
+
+None.
+
+### Changes
+
+#### Features
+
+- **shortage:** Remove a target quantity in one click (d3ed20f)
+- **wishlist:** Say « I bought some » and add a wish whole (43f6b4b)
+- **wines:** Show a wine's target quantity whenever it has one (16bbc04)
+
+#### Bug fixes
+
+- **wishlist:** Keep the photo preview and the focus when a wine is chosen (ce893aa)
+- **shortage:** Land the focus and say why a target cannot be removed (1bc6b41)
+- **shortage:** Keep the focus on the button when a removal fails (d574a45)
+- **wishlist:** Put the focus back in the name field after adding a wish (f6987b8)
+- **wishlist:** Keep the focus on the add button when a wish is refused (d8ea841)
+
+#### Refactoring
+
+- **wishlist:** Keep addWish to the module (4c62836)
+
+#### Documentation
+
+- **releases:** Describe the clearer purchases of 1.5.3 (aad5043)
+- **releases:** Say that a wine's page shows its target quantity (b17f304)
+
+#### Other changes
+
+- **wines:** Restore the target that the shortage test sets (002ca78)
+
 ## 1.5.2
 
 1.5.2 lets you choose how wide the pages are, and shows the cellar map across the whole screen.

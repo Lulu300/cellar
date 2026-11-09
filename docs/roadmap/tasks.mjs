@@ -93,8 +93,9 @@ export const versions = [
 		goal: 'Retirer la quantité cible d’un vin en un clic, et une liste d’envies qu’on ne confond plus avec la cave.'
 	},
 	{
-		id: 'Période de dégustation',
+		id: '1.6.0',
 		title: 'Une période de dégustation',
+		released: '2026-11-09',
 		goal: 'Dire qu’une bouteille se boit « de 2027 à 2032 » ou « dès 2028 », et voir sur la page « À boire » celles qui sont prêtes. Un petit bloc, juste après la 1.5.3.'
 	},
 	{
@@ -266,9 +267,9 @@ export const phases = [
 	},
 	{
 		id: 'P22',
-		version: 'Période de dégustation',
+		version: '1.6.0',
 		title: 'Période de dégustation',
-		goal: 'Juste après la 1.5.3, avant les autres blocs (décision « Période de dégustation (FEAT-19) ») : FEAT-19 ; puis REL-22. Une version mineure à elle seule, à cause de sa migration.'
+		goal: 'Juste après la 1.5.3, avant les autres blocs (décision « Période de dégustation (FEAT-19) ») : FEAT-19 ; puis REL-22. Une version mineure à elle seule, à cause de sa migration. Publiée en 1.6.0 le 2026-11-09.'
 	},
 	{
 		id: 'P20',
@@ -3025,7 +3026,8 @@ export const tasks = [
 		why: 'Le bloc apporte la période de dégustation sans attendre les autres.',
 		where: ['releases.json', 'CHANGELOG.md', 'UPGRADING.md', 'package.json'],
 		todo: [
-			'Résumé complété par FEAT-19 ; bancs depuis la version précédente et la 1.0.0, avec `drinkFrom` dans les champs ignorés ; release selon RELEASING.md, avec le mainteneur, sous le numéro de version suivant (décision « Blocs sans numéro »).'
+			'Résumé complété par FEAT-19 ; bancs depuis la version précédente et la 1.0.0, avec `drinkFrom` dans les champs ignorés ; release selon RELEASING.md, avec le mainteneur, sous le numéro de version suivant (décision « Blocs sans numéro »).',
+			'Fait le 2026-11-09 : publiée en 1.6.0 ; le banc ignore `drinkFrom` en passant la 1.6.0 (ligne ajoutée à `upgrade-test.sh`, copie `upgrade-test.sh.bak-before-1.6`) ; bancs de la 1.5.3 et de la 1.0.0 vers la 1.6.0, 176 sur 176 chacun ; CI 42703890646 verte sur c2432ae1 ; `main` avancée, tag v1.6.0, release 42705048890 verte ; image publique sans connexion (`1.6.0`, `1.6`, `latest`, amd64 et arm64). develop passe à 1.7.0-rc.0, avec une entrée 1.7.0 au résumé provisoire. DEP-11 reste pour la sortie suivante (éligible le 2026-11-12).'
 		],
 		done: 'La version est publiée sur `main` et son image se télécharge sans connexion ; develop passe à la rc suivante.',
 		deps: ['FEAT-19'], src: ['Décision « Période de dégustation (FEAT-19) »']

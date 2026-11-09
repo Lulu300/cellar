@@ -1,5 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { addsBottles, offerToRemoveBought } from './wishes';
+import type { ImageUploads } from '#lib/components/forms/image-uploads.js';
+import { addsBottles, addWholeWish, offerToRemoveBought } from './wishes';
 
 const { invalidate, confirm } = vi.hoisted(() => ({ invalidate: vi.fn(), confirm: vi.fn() }));
 vi.mock('$app/navigation', () => ({ invalidate }));
@@ -52,5 +53,72 @@ describe('addsBottles', () => {
         expect(addsBottles(false, false)).toBe(true);
         expect(addsBottles(true, true)).toBe(true);
         expect(addsBottles(true, false)).toBe(false);
+    });
+});
+
+// The add form sends the whole wish at once: no edit afterwards for its note or quantity (UI-36).
+describe('addWholeWish', () => {
+    let posted: { url: string; body: unknown }[];
+    const uploads = {
+        startSave: vi.fn(),
+        upload: vi.fn(async () => ({ imageId: 'photo-1' })),
+        saved: vi.fn(),
+        endSave: vi.fn()
+    };
+    const photo = new File(['label'], 'label.jpg', { type: 'image/jpeg' });
+
+    beforeEach(() => {
+        posted = [];
+        vi.stubGlobal(
+            'fetch',
+            vi.fn(async (url: string, init: RequestInit) => {
+                posted.push({ url, body: JSON.parse(init.body as string) });
+                return Response.json({ id: 'wish-1' }, { status: 201 });
+            })
+        );
+    });
+
+    it('sends a name with its photo, note and quantity in one request', async () => {
+        const wish = await addWholeWish(uploads as unknown as ImageUploads, {
+            wine: null,
+            text: 'Puligny-Montrachet',
+            file: photo,
+            imageId: '',
+            note: 'Seen at the fair',
+            quantity: 2
+        });
+
+        expect(wish).toEqual({ id: 'wish-1' });
+        expect(uploads.upload).toHaveBeenCalledWith(photo);
+        expect(posted).toEqual([
+            {
+                url: '/api/wishes',
+                body: {
+                    text: 'Puligny-Montrachet',
+                    imageId: 'photo-1',
+                    note: 'Seen at the fair',
+                    quantity: 2
+                }
+            }
+        ]);
+    });
+
+    it('sends a wine of the cellar with its note and quantity, without the photo chosen for a name', async () => {
+        await addWholeWish(uploads as unknown as ImageUploads, {
+            wine: { id: 'wine-1' },
+            text: 'chab',
+            file: photo,
+            imageId: '',
+            note: 'The 2020 if possible',
+            quantity: null
+        });
+
+        expect(uploads.upload).not.toHaveBeenCalled();
+        expect(posted).toEqual([
+            {
+                url: '/api/wishes',
+                body: { definitionId: 'wine-1', note: 'The 2020 if possible', quantity: null }
+            }
+        ]);
     });
 });

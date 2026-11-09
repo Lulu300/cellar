@@ -17,7 +17,10 @@
     import { NAME_MAX_LENGTH } from '#lib/shared/schemas/common.js';
     import { replaceWish, saveWithPhoto, type Wish } from './wishes.js';
 
-    /** Changes a wish: its quantity and note, and the name and photo of a text wish. */
+    /**
+     * Changes a wish, in the order of the form that adds one: the photo and the name of a text
+     * wish, then its note and quantity.
+     */
     let { wish, onClose }: { wish: Wish; onClose: () => void } = $props();
 
     const formId = $props.id();
@@ -60,6 +63,7 @@
             {#if initial.wine}
                 <p class="font-medium">{initial.wine.name}</p>
             {:else}
+                <PhotoField label={m['wishlist.photo']()} bind:imageId bind:file bind:previewUrl />
                 <FormField label="{m['forms.wine_name']()} *" id="{formId}-text">
                     <Input
                         id="{formId}-text"
@@ -69,6 +73,9 @@
                     />
                 </FormField>
             {/if}
+            <FormField label={m['common.notes']()} id="{formId}-note">
+                <LongTextarea id="{formId}-note" bind:value={note} rows={3} />
+            </FormField>
             <FormField
                 label={m['wishlist.quantity']()}
                 id="{formId}-quantity"
@@ -84,12 +91,6 @@
                     inputmode="numeric"
                 />
             </FormField>
-            <FormField label={m['common.notes']()} id="{formId}-note">
-                <LongTextarea id="{formId}-note" bind:value={note} rows={3} />
-            </FormField>
-            {#if !initial.wine}
-                <PhotoField label={m['wishlist.photo']()} bind:imageId bind:file bind:previewUrl />
-            {/if}
         </form>
         <DialogFooter class="gap-2">
             <Button type="button" variant="outline" onclick={onClose}>{m['common.cancel']()}</Button

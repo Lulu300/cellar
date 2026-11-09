@@ -48,6 +48,36 @@ export async function saveWithPhoto(
     }
 }
 
+/** What the form that adds a wish holds: a wine of the cellar chosen, or a name with its photo. */
+export interface NewWish {
+    wine: { id: string } | null;
+    text: string;
+    file: File | null;
+    imageId: string;
+    note: string;
+    quantity: number | null;
+}
+
+/**
+ * Adds the wish of the add form whole, its note and quantity with it, in one request after the
+ * upload of its photo, as saveWithPhoto does. A wish for a wine of the cellar shows the photos of
+ * that wine: a photo chosen for a name is left out.
+ */
+export function addWholeWish(
+    uploads: ImageUploads,
+    { wine, text, file, imageId, note, quantity }: NewWish
+): Promise<Wish | null> {
+    const fields = { quantity: quantity ?? null, note };
+    return saveWithPhoto(
+        uploads,
+        wine ? { file: null, imageId: '' } : { file, imageId },
+        (photoId) =>
+            addWish(
+                wine ? { ...fields, definitionId: wine.id } : { ...fields, text, imageId: photoId }
+            )
+    );
+}
+
 /**
  * Removes a wish, then reloads the pages and the menu, saying so in a toast; a refusal is said
  * in a toast too. Returns whether it was removed.

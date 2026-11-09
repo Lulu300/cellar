@@ -119,9 +119,13 @@
             {#if auth.isAuthenticated}
                 <div class="pt-2">
                     {#if wish.wine}
-                        <Button size="sm" onclick={() => onAddBottle(wish)}>
-                            <Plus class="mr-2 h-4 w-4" />
-                            {m['common.add_bottle']()}
+                        <Button
+                            size="sm"
+                            aria-label={m['wishlist.bought_some_named']({ name })}
+                            onclick={() => onAddBottle(wish)}
+                        >
+                            <BottleWine class="mr-2 h-4 w-4" aria-hidden="true" />
+                            {m['wishlist.bought_some']()}
                         </Button>
                     {:else}
                         <Button size="sm" onclick={() => onCreateWine(wish)}>

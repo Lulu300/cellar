@@ -91,6 +91,7 @@ test('log in, add a wine and two bottles from the wine list, and buy a wine of t
     await expect(wish).toBeVisible();
     await expect(wish).toContainText('Seen at the wine fair');
     await expect(wish).toContainText('2 bottles to buy');
+    await expect(page.getByLabel('Wine Name')).toBeFocused();
     // Without a wine in shortage, Purchases shows a dot, named by the number of wishes.
     await expect(
         page.getByRole('navigation', { name: 'Menu' }).getByRole('link', { name: /^Purchases/ })

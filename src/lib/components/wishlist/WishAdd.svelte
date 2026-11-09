@@ -81,6 +81,9 @@
             imageId = previewUrl = '';
             file = null;
         }
+        // The empty form disables its button, which loses the focus: the next wish starts here.
+        await tick();
+        nameField?.focus();
     }
 </script>
 

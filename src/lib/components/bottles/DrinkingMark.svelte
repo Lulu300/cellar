@@ -6,9 +6,9 @@
     /**
      * How soon to drink a bottle, as a shape that tells it without its colour, the same wherever a
      * rank shows: late a triangle (a warning), this month a filled disc, this year a hollow ring,
-     * optimum reached a diamond, ready an outlined diamond, later a short dash. Drawn on a 12-unit grid, so that every shape
-     * keeps its weight at any `size`; its colour (RANK_TEXT) only doubles it. Decorative: the rank
-     * is always said in text beside it.
+     * optimum reached a diamond, ready an outlined diamond, later a short dash. Drawn on a 12-unit
+     * grid, so that every shape keeps its weight at any `size`; its colour (RANK_TEXT) only doubles
+     * it. Decorative: the rank is always said in text beside it.
      */
     let {
         rank,

@@ -1250,7 +1250,7 @@
   "drinking.urgency": "Urgency",
   "drinking.optimum": "Peak",
   "drinking.see_all": "{count, plural, one {See the bottle} other {See the # bottles}}",
-  "drinking.page_subtitle": "The bottles in the cellar to drink soon, the most urgent first.",
+  "drinking.page_subtitle": "The bottles in the cellar to drink soon, then those ready to drink, the most urgent first.",
   "drinking.by_bottle": "By bottle",
   "drinking.by_wine": "By wine",
   "drinking.more_cases": "{cases} +{count, number}",

@@ -1810,7 +1810,7 @@
         "tags": [
           "Bottles"
         ],
-        "summary": "The bottles to drink soon, the most urgent first",
+        "summary": "The bottles to drink soon, then those ready to drink, the most urgent first",
         "operationId": "getBottlesToDrink",
         "security": [],
         "responses": {

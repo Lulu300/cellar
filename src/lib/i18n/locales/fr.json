@@ -1250,7 +1250,7 @@
   "drinking.urgency": "Urgence",
   "drinking.optimum": "Apogée",
   "drinking.see_all": "{count, plural, one {Voir la bouteille} other {Voir les # bouteilles}}",
-  "drinking.page_subtitle": "Les bouteilles de la cave à boire bientôt, les plus urgentes d’abord.",
+  "drinking.page_subtitle": "Les bouteilles de la cave à boire bientôt, puis celles prêtes à boire, les plus urgentes d’abord.",
   "drinking.by_bottle": "Par bouteille",
   "drinking.by_wine": "Par vin",
   "drinking.more_cases": "{cases} +{count, number}",

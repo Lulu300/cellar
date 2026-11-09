@@ -237,7 +237,7 @@ const operations: Record<string, Operation> = {
     },
     'GET /api/bottles/to-drink': {
         tag: 'bottles',
-        summary: 'The bottles to drink soon, the most urgent first',
+        summary: 'The bottles to drink soon, then those ready to drink, the most urgent first',
         answers: ok
     },
 

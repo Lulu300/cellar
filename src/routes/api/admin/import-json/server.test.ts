@@ -125,6 +125,7 @@ beforeEach(async () => {
         barcode: 'WINE000001',
         purchaseDate: new Date('2024-05-01T00:00:00Z'),
         optimum: 2030,
+        drinkFrom: '2026-09',
         drinkBefore: '2027-03',
         ...timestamps
     });
@@ -332,6 +333,43 @@ describe('POST /api/admin/import-json', () => {
         expect(await db.select({ imageId: wineDefinitions.imageId }).from(wineDefinitions)).toEqual(
             [{ imageId: 'label' }]
         );
+    });
+
+    // FEAT-19: the drinking window start came in 1.6.0.
+    it('imports an export made before bottles had a window start, with none', async () => {
+        const data = JSON.parse(JSON.stringify(await snapshot()));
+        delete data.wineBottles[0].drinkFrom;
+
+        expect((await importZip(craftedZip(data))).status).toBe(200);
+
+        expect(await db.select().from(wineBottles)).toEqual([
+            expect.objectContaining({
+                id: 'b1',
+                drinkFrom: null,
+                drinkBefore: '2027-03',
+                optimum: 2030
+            })
+        ]);
+    });
+
+    it('refuses a bottle whose window ends before it starts, as the bottle routes do', async () => {
+        const before = await snapshot();
+        const data = JSON.parse(JSON.stringify(before));
+        data.wineBottles[0].drinkFrom = '2027-04';
+
+        const response = await importZip(craftedZip(data));
+
+        expect(response.status).toBe(422);
+        expect((await response.json()).error).toMatchObject({
+            code: 'invalid_export',
+            details: {
+                problem: 'invalid_row',
+                table: 'wineBottles',
+                row: 1,
+                problems: [{ code: 'invalid', column: 'drinkFrom' }]
+            }
+        });
+        expect(await snapshot()).toEqual(before);
     });
 
     it('gives a wine of a hand-made export its main photo once, among its photos', async () => {

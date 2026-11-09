@@ -95,6 +95,26 @@ describe('POST /api/bottles', () => {
         expect(await db.select().from(wineBottles)).toEqual(before);
     });
 
+    it('answers 422 to a drinking window that ends before it starts, and creates nothing', async () => {
+        const before = db.select().from(wineBottles).all().length;
+
+        const response = await post({
+            definitionId,
+            formatId: 'bottle',
+            drinkFrom: '2027-03',
+            drinkBefore: '2027-02'
+        });
+
+        expect(response.status).toBe(422);
+        expect(await response.json()).toMatchObject({
+            error: {
+                code: 'window_ends_before_start',
+                details: { bottles: [{ drinkFrom: '2027-03', drinkBefore: '2027-02' }] }
+            }
+        });
+        expect(db.select().from(wineBottles).all()).toHaveLength(before);
+    });
+
     it('answers 422 to a manual barcode for several bottles, and creates nothing', async () => {
         const before = await db.select().from(wineBottles);
 
@@ -240,6 +260,36 @@ describe('PATCH /api/bottles', () => {
 
         await patch({ ids, changes: { drinkBefore: null } });
         expect(rowsOf(ids).map((row) => row.drinkBefore)).toEqual(Array(3).fill(null));
+    });
+
+    it('sets a drinking window on several bottles, and answers it', async () => {
+        const response = await patch({
+            ids,
+            changes: { drinkFrom: '2026-09', drinkBefore: '2027' }
+        });
+
+        expect(response.status).toBe(200);
+        const { bottles } = await response.json();
+        expect(bottles[0]).toMatchObject({ drinkFrom: '2026-09', drinkBefore: '2027' });
+        await patch({ ids, changes: { drinkFrom: null, drinkBefore: null } });
+        expect(rowsOf(ids).map((row) => row.drinkFrom)).toEqual(Array(3).fill(null));
+    });
+
+    // FEAT-19: refused in the service, against what each bottle has.
+    it('answers 422 naming the bottles whose window would end before it starts, and changes none', async () => {
+        await patch({ ids: [ids[0]], changes: { drinkFrom: '2028' } });
+
+        const response = await patch({ ids, changes: { drinkBefore: '2027' } });
+
+        expect(response.status).toBe(422);
+        expect(await response.json()).toMatchObject({
+            error: {
+                code: 'window_ends_before_start',
+                details: { bottles: [{ id: ids[0], drinkFrom: '2028', drinkBefore: '2027' }] }
+            }
+        });
+        expect(rowsOf(ids).map((row) => row.drinkBefore)).toEqual(Array(3).fill(null));
+        await patch({ ids: [ids[0]], changes: { drinkFrom: null } });
     });
 
     it('answers 422 to a month without a year, and changes none', async () => {

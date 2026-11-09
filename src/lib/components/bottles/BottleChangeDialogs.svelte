@@ -3,18 +3,20 @@
     generics="B extends {
         id: string;
         availability: string;
+        drinkFrom: string | null;
         drinkBefore: string | null;
+        optimum: number | null;
         storageCase?: { id: string } | null;
     }"
 >
     import type { Snippet } from 'svelte';
     import type { BottleDialogs } from './bottle-dialogs.svelte.js';
     import BottleStatusDialog from './BottleStatusDialog.svelte';
-    import DrinkBeforeDialog from './DrinkBeforeDialog.svelte';
+    import DrinkingWindowDialog from './DrinkingWindowDialog.svelte';
     import MoveBottlesDialog from './MoveBottlesDialog.svelte';
 
     /**
-     * The status, move and « drink before » dialogs of a list of bottles, open while `dialogs`
+     * The status, move and drinking window dialogs of a list of bottles, open while `dialogs`
      * holds bottles.
      */
     let {
@@ -22,7 +24,7 @@
         children
     }: {
         dialogs: BottleDialogs<B>;
-        /** What the status and « drink before » dialogs show of their bottles above the choices. */
+        /** What the status and drinking window dialogs show of their bottles above the choices. */
         children?: Snippet<[B[]]>;
     } = $props();
 </script>
@@ -48,12 +50,12 @@
 {/if}
 
 {#if dialogs.dating.length > 0}
-    <DrinkBeforeDialog
+    <DrinkingWindowDialog
         bottles={dialogs.dating}
         onClose={() => (dialogs.dating = [])}
         onSaved={dialogs.saved}
         onMissing={dialogs.missing}
     >
         {@render children?.(dialogs.dating)}
-    </DrinkBeforeDialog>
+    </DrinkingWindowDialog>
 {/if}

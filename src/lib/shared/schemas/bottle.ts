@@ -40,10 +40,11 @@ const barcode = z
     .transform((value) => (value == null ? null : storedBarcode(String(value))));
 
 /**
- * « À boire avant »: a year, YYYY, or a month of a year, YYYY-MM, by the end of which to drink the
- * bottle; null, empty or left out for none.
+ * A start or an end of the drinking window, « à partir de » or « avant fin »: a year, YYYY, or a
+ * month of a year, YYYY-MM; null, empty or left out for none. That the end does not come before the
+ * start is checked with the bottle stored (bottles service), as a PATCH may give only one of them.
  */
-const drinkBefore = z
+const yearMonth = z
     .string()
     .trim()
     // Or empty, as a form sends it: the pattern of the OpenAPI description says so too.
@@ -62,7 +63,8 @@ export const bottleSchema = z.object({
     originId: optionalId,
     vintage,
     optimum: year,
-    drinkBefore,
+    drinkFrom: yearMonth,
+    drinkBefore: yearMonth,
     purchasePrice: amount,
     purchaseDate: optionalDate,
     currentValue: amount,
@@ -131,6 +133,7 @@ export function bottleFromForm(form: FormData) {
             'storageCaseId',
             'notes',
             'barcode',
+            'drinkFrom',
             'drinkBefore',
             'availability',
             'consumedDate'

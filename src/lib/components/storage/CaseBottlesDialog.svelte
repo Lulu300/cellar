@@ -105,7 +105,7 @@
             onclick={() => (dialogs.dating = bottles.filter(({ id }) => selected.has(id)))}
         >
             <CalendarClock class="h-4 w-4" aria-hidden="true" />
-            {m['drinking.drink_before']()}
+            {m['drinking.window']()}
         </Button>
         <Button
             size="sm"

@@ -150,6 +150,7 @@ export function csvExportRows(name: ExportTableName): Record<string, unknown>[] 
                     colorName: wineColors.color,
                     vintage: wineBottles.vintage,
                     optimum: wineBottles.optimum,
+                    drinkFrom: wineBottles.drinkFrom,
                     drinkBefore: wineBottles.drinkBefore,
                     originId: wineBottles.originId,
                     originName: origins.name,

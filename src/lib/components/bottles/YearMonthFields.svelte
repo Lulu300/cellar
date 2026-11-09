@@ -6,46 +6,48 @@
     import { monthOf } from '#lib/shared/drinking.js';
 
     /**
-     * A « drink before »: a year, from this one to 15 years on, and a month or the whole year,
-     * as YYYY or YYYY-MM. With `optional`, the year may be left without a date, as an empty value;
-     * a date already set before this year stays among the years.
+     * One end of a drinking window, a group named by `legend`: a year, or « Aucune date » for an
+     * empty value, and a month or the whole year, as YYYY or YYYY-MM. The years go from this one
+     * to 15 years on, and for the `start` of a window from 15 years back, as a guide may give a
+     * window already open; a date already set out of that range stays among them.
      */
     let {
         value = $bindable(),
-        optional = false,
-        disabled = false,
-        legend
+        legend,
+        start = false,
+        disabled = false
     }: {
         value: string;
-        optional?: boolean;
+        /** The name of the two selects together. */
+        legend: string;
+        /** The start of a window, whose year alone begins in January. */
+        start?: boolean;
         disabled?: boolean;
-        /** The name of the two selects together, where nothing else names them. */
-        legend?: string;
     } = $props();
 
     const thisYear = monthOf(new Date()).year;
     const [initialYear = '', initialMonth = ''] = value.split('-');
-    // svelte-ignore state_referenced_locally
-    let year = $state(initialYear || (optional ? '' : String(thisYear)));
+    let year = $state(initialYear);
     let month = $state(initialMonth);
     $effect(() => {
         value = year && month ? `${year}-${month}` : year;
     });
 
     // The props are read once: the dialog and the form mount the fields for each bottle.
-    const firstYear = Math.min(Number(initialYear) || thisYear, thisYear);
-    const lastYear = Math.max(Number(initialYear) || thisYear, thisYear + 15);
     // svelte-ignore state_referenced_locally
+    const firstYear = Math.min(Number(initialYear) || thisYear, start ? thisYear - 15 : thisYear);
+    const lastYear = Math.max(Number(initialYear) || thisYear, thisYear + 15);
     const years = [
-        ...(optional ? [{ value: '', label: m['drinking.no_date']() }] : []),
+        { value: '', label: m['drinking.no_date']() },
         ...Array.from({ length: lastYear - firstYear + 1 }, (_, i) => {
             const text = String(firstYear + i);
             return { value: text, label: text };
         })
     ];
     const monthName = new Intl.DateTimeFormat(getLocale(), { month: 'long' });
+    // svelte-ignore state_referenced_locally
     const months = [
-        { value: '', label: m['drinking.whole_year']() },
+        { value: '', label: start ? m['drinking.start_of_year']() : m['drinking.whole_year']() },
         ...Array.from({ length: 12 }, (_, i) => {
             const name = monthName.format(new Date(2000, i, 1));
             return {
@@ -58,7 +60,9 @@
     const id = $props.id();
 </script>
 
-{#snippet fields()}
+<!-- A group named by `legend`, so that each select keeps its own label. -->
+<fieldset class="space-y-2">
+    <legend class="mb-2 text-sm font-medium leading-none">{legend}</legend>
     <div class="grid grid-cols-2 gap-3">
         <div class="space-y-2">
             <Label for="{id}-year">{m['drinking.year']()}</Label>
@@ -74,14 +78,4 @@
             />
         </div>
     </div>
-{/snippet}
-
-<!-- In a form, a group named by `legend`, so that each select keeps its own label. -->
-{#if legend}
-    <fieldset class="space-y-2">
-        <legend class="mb-2 text-sm font-medium leading-none">{legend}</legend>
-        {@render fields()}
-    </fieldset>
-{:else}
-    {@render fields()}
-{/if}
+</fieldset>

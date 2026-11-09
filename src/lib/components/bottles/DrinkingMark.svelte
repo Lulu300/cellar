@@ -6,7 +6,7 @@
     /**
      * How soon to drink a bottle, as a shape that tells it without its colour, the same wherever a
      * rank shows: late a triangle (a warning), this month a filled disc, this year a hollow ring,
-     * optimum reached a diamond, later a short dash. Drawn on a 12-unit grid, so that every shape
+     * optimum reached a diamond, ready an outlined diamond, later a short dash. Drawn on a 12-unit grid, so that every shape
      * keeps its weight at any `size`; its colour (RANK_TEXT) only doubles it. Decorative: the rank
      * is always said in text beside it.
      */
@@ -37,6 +37,14 @@
         <circle cx="6" cy="6" r="4.2" fill="none" stroke="currentColor" stroke-width="2.2" />
     {:else if rank === 'optimum_reached'}
         <path d="M6 0.2 11.8 6 6 11.8 0.2 6Z" fill="currentColor" stroke-linejoin="round" />
+    {:else if rank === 'ready'}
+        <path
+            d="M6 1.3 10.7 6 6 10.7 1.3 6Z"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="1.9"
+            stroke-linejoin="round"
+        />
     {:else}
         <rect x="1" y="4.6" width="10" height="2.8" rx="1" fill="currentColor" />
     {/if}

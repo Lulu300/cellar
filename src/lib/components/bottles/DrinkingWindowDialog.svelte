@@ -11,16 +11,17 @@
     } from '#lib/components/ui/dialog/index.js';
     import { m } from '#lib/paraglide/messages.js';
     import { toasts } from '#lib/stores/toast.svelte.js';
+    import type { DrinkingDates } from '#lib/shared/drinking.js';
     import { cn } from '#lib/utils.js';
     import { BottleChanges } from './bottle-changes.svelte.js';
     import ConfirmButtons from './ConfirmButtons.svelte';
-    import DrinkBeforeFields from './DrinkBeforeFields.svelte';
-    import { drinkBeforeText, quickDates } from './drinking.js';
+    import DrinkingWindowFields from './DrinkingWindowFields.svelte';
+    import { drinkBeforeText, quickDates, windowText } from './drinking.js';
 
     /**
-     * Gives bottles a « drink before »: this month or this year in one click, or a year and a
-     * month chosen, or removes it. The screen mounts it to open it, with the bottles to change, and
-     * unmounts it on `onClose`.
+     * Gives bottles a drinking window: an end this month or this year in one click, which removes
+     * the start, or a start and an end chosen, or removes both. The screen mounts it to open it,
+     * with the bottles to change, and unmounts it on `onClose`.
      */
     let {
         bottles,
@@ -29,7 +30,7 @@
         onMissing,
         children
     }: {
-        bottles: { id: string; drinkBefore: string | null }[];
+        bottles: (DrinkingDates & { id: string })[];
         onClose: () => void;
         /** After the change, before the dialog closes: the screen reloads its bottles. */
         onSaved: () => Promise<void> | void;
@@ -40,19 +41,23 @@
     } = $props();
 
     const { thisMonth, thisYear } = quickDates();
-    const dates = $derived(new Set(bottles.map(({ drinkBefore }) => drinkBefore)));
-    const shared = $derived(dates.size === 1 ? [...dates][0] : undefined);
-    const dated = $derived(bottles.some(({ drinkBefore }) => drinkBefore !== null));
+    const windowOf = ({ drinkFrom, drinkBefore }: DrinkingDates) => `${drinkFrom}/${drinkBefore}`;
+    // The window of all the bottles, when they share one.
+    const shared = $derived(new Set(bottles.map(windowOf)).size === 1 ? bottles[0] : undefined);
+    const dated = $derived(
+        bottles.some(({ drinkFrom, drinkBefore }) => drinkFrom !== null || drinkBefore !== null)
+    );
     const current = $derived.by(() => {
         if (shared === undefined) return m['drinking.mixed_dates']();
-        return shared === null
-            ? m['drinking.no_date']()
-            : m['drinking.current']({ date: drinkBeforeText(shared) });
+        const text = windowText(shared);
+        return text ? m['drinking.current']({ date: text }) : m['drinking.no_date']();
     });
 
     let choosing = $state(false);
     // svelte-ignore state_referenced_locally
-    let chosen = $state(shared ?? '');
+    let chosenFrom = $state(shared?.drinkFrom ?? '');
+    // svelte-ignore state_referenced_locally
+    let chosenBefore = $state(shared?.drinkBefore ?? '');
 
     const changes = new BottleChanges({
         onSaved: async (count) => {
@@ -63,10 +68,10 @@
         onMissing: (ids) => onMissing(ids)
     });
 
-    function save(drinkBefore: string | null) {
+    function save(drinkFrom: string | null, drinkBefore: string | null) {
         changes.send(
             bottles.map(({ id }) => id),
-            { changes: { drinkBefore } }
+            { changes: { drinkFrom: drinkFrom || null, drinkBefore: drinkBefore || null } }
         );
     }
 
@@ -75,7 +80,12 @@
 </script>
 
 {#snippet quick(label: string, value: string, Icon: typeof CalendarDays)}
-    <Button variant="outline" class={tile} disabled={changes.sending} onclick={() => save(value)}>
+    <Button
+        variant="outline"
+        class={tile}
+        disabled={changes.sending}
+        onclick={() => save(null, value)}
+    >
         <Icon class="h-5 w-5" aria-hidden="true" />
         <span>{label}</span>
         <span class="text-xs font-normal text-muted-foreground">{drinkBeforeText(value)}</span>
@@ -86,7 +96,7 @@
 <Dialog bind:open={() => true, (open) => !open && !changes.sending && onClose()}>
     <DialogContent class="max-w-md" showCloseButton={!changes.sending}>
         <DialogHeader>
-            <DialogTitle>{m['drinking.drink_before']()}</DialogTitle>
+            <DialogTitle>{m['drinking.window']()}</DialogTitle>
             <DialogDescription>
                 {m['common.n_bottles']({ count: bottles.length })} · {current}
             </DialogDescription>
@@ -117,14 +127,19 @@
             </div>
             {#if choosing}
                 <div id="{id}-choose" class="space-y-4 rounded-md border p-3">
-                    <DrinkBeforeFields bind:value={chosen} disabled={changes.sending} />
+                    <DrinkingWindowFields
+                        bind:drinkFrom={chosenFrom}
+                        bind:drinkBefore={chosenBefore}
+                        disabled={changes.sending}
+                    />
                     <ConfirmButtons
                         sending={changes.sending}
                         onCancel={() => (choosing = false)}
-                        onConfirm={() => save(chosen)}
+                        onConfirm={() => save(chosenFrom, chosenBefore)}
                     />
                 </div>
             {/if}
+            <p class="text-sm text-muted-foreground">{m['drinking.tiles_hint']()}</p>
             {#if dated || !choosing}
                 <div class="flex flex-wrap items-center justify-between gap-2 border-t pt-3">
                     {#if dated}
@@ -132,9 +147,9 @@
                             variant="ghost"
                             size="sm"
                             disabled={changes.sending}
-                            onclick={() => save(null)}
+                            onclick={() => save(null, null)}
                         >
-                            {m['drinking.remove_date']()}
+                            {m['drinking.remove_dates']()}
                         </Button>
                     {/if}
                     {#if !choosing}

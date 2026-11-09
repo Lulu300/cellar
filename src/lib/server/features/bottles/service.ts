@@ -6,7 +6,15 @@ import { existingCase, keepingCasesWithinCapacity } from '#lib/server/features/s
 import { NotFoundError, ValidationError } from '#lib/server/http/errors.js';
 import type { BottleChanges, BottleInput } from '#lib/shared/schemas/bottle.js';
 import { BottleAvailability } from '#lib/shared/bottle-availability.js';
-import { compareDrinking, drinkingRank, monthOf, SOON, type Month } from '#lib/shared/drinking.js';
+import {
+    compareDrinking,
+    drinkingRank,
+    endsBeforeStart,
+    monthOf,
+    TO_DRINK,
+    type DrinkingDates,
+    type Month
+} from '#lib/shared/drinking.js';
 import { LONG_TEXT_MAX_LENGTH } from '#lib/shared/schemas/common.js';
 import type { BottleSortColumn, SortDirection } from '#lib/shared/schemas/bottle-list.js';
 import { sortBottles } from '#lib/utils/bottle-sort.js';
@@ -90,6 +98,26 @@ function checkBarcodeForOneBottle(barcode: string | null | undefined, count: num
     }
 }
 
+type DrinkingWindow = Pick<DrinkingDates, 'drinkFrom' | 'drinkBefore'>;
+
+/**
+ * Refuses (422) the bottles whose drinking window would end before it starts, naming each with
+ * its window: by its id, new bottles without one. A PATCH may change only one end, so the window
+ * checked is the one the bottle would have once written.
+ */
+function checkDrinkingWindows(bottles: (DrinkingWindow & { id?: string })[]): void {
+    const reversed = bottles
+        .filter(endsBeforeStart)
+        .map(({ id, drinkFrom, drinkBefore }) => ({ id, drinkFrom, drinkBefore }));
+    if (reversed.length > 0) {
+        throw new ValidationError(
+            'window_ends_before_start',
+            `The drinking window of ${reversed.length} bottle(s) ends before it starts`,
+            { bottles: reversed }
+        );
+    }
+}
+
 /**
  * Creates `quantity` bottles, all or none: a failed insert, a barcode out of range or a case
  * without room for them creates none. A barcode given goes on a single bottle, whatever the
@@ -99,6 +127,7 @@ function checkBarcodeForOneBottle(barcode: string | null | undefined, count: num
 export function createBottles(data: BottleInput, quantity: number): WineBottleWithFormat[] {
     const bottle = withConsumptionRule(data);
     checkBarcodeForOneBottle(bottle.barcode, quantity);
+    checkDrinkingWindows([bottle]);
     return keepingCasesWithinCapacity([bottle.storageCaseId], db, (tx) => {
         const takesNextBarcodes =
             !bottle.barcode && bottle.availability === BottleAvailability.AVAILABLE;
@@ -134,6 +163,8 @@ function existingBottles(ids: string[], tx: Tx): Map<string, WineBottle> {
  * order of `ids`. Throws, writing nothing:
  * - NotFoundError, naming them, when some of the bottles do not exist;
  * - ValidationError when it gives one manual barcode to several bottles, which cannot all have it;
+ * - ValidationError, naming them, when the drinking window of some bottles would end before it
+ *   starts;
  * - ValidationError, naming them, when `addedNote` would make the notes of some bottles longer than
  *   notes may be: cutting them would lose the end of the note without a word;
  * - CaseFullError when it would put one more available bottle in a case that has no room left.
@@ -151,6 +182,12 @@ export function updateBottles(
             id,
             fields: changesFor(found.get(id)!, changes, addedNote)
         }));
+        checkDrinkingWindows(
+            writes.map(({ id, fields }) => {
+                const { drinkFrom, drinkBefore } = { ...found.get(id)!, ...fields };
+                return { id, drinkFrom, drinkBefore };
+            })
+        );
         const tooLong = writes
             .filter(({ fields }) => (fields.notes?.length ?? 0) > LONG_TEXT_MAX_LENGTH)
             .map(({ id }) => id);
@@ -210,15 +247,16 @@ export function listCaseBottles(caseId: string) {
 }
 
 /**
- * The bottles in the cellar to drink soon in the month `now`, each with its rank: those whose date
- * has passed, then this month's, this year's, those whose optimum year has come; by date within a
- * rank, then by wine, vintage and id. A bottle drunk or taken out leaves the list, its date kept.
+ * The bottles in the cellar that the page « À boire » lists in the month `now`, each with its rank:
+ * those whose end has passed, then this month's, this year's, those whose optimum year has come,
+ * then those ready to drink; by deadline within a rank, then by wine, vintage and id. The banner
+ * keeps the ranks of SOON. A bottle drunk or taken out leaves the list, its dates kept.
  */
 export function listBottlesToDrink(now: Month = monthOf(new Date())) {
     return listBottlesByAvailability([BottleAvailability.AVAILABLE])
         .flatMap((bottle) => {
             const rank = drinkingRank(bottle, now);
-            return rank !== null && SOON.includes(rank) ? [{ ...bottle, rank }] : [];
+            return rank !== null && TO_DRINK.includes(rank) ? [{ ...bottle, rank }] : [];
         })
         .sort(
             (a, b) =>

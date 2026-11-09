@@ -10,6 +10,7 @@ const bottle: BottleFormSource = {
     formatId: 'bottle',
     vintage: 2015,
     optimum: null,
+    drinkFrom: null,
     drinkBefore: '2027-03',
     purchasePrice: 12.5,
     // Stored with a time, which the form cannot show

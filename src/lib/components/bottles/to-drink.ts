@@ -1,6 +1,6 @@
 import { z } from 'zod';
 import { m } from '#lib/paraglide/messages.js';
-import { SOON, type DrinkingRank } from '#lib/shared/drinking.js';
+import { TO_DRINK, type DrinkingRank } from '#lib/shared/drinking.js';
 import { parseBottlePageQuery, type QueryParams } from '#lib/shared/schemas/bottle-list.js';
 import { compareText } from '#lib/utils/compare.js';
 import { changedParams } from '#lib/utils/pagination.js';
@@ -46,7 +46,7 @@ const TO_DRINK_VIEWS = ['bottle', 'wine'] as const;
 const filtersSchema = z.object({
     view: z.enum(TO_DRINK_VIEWS).catch('bottle'),
     // Empty for every rank or colour
-    rank: z.enum(['', ...SOON] as ['', ...DrinkingRank[]]).catch(''),
+    rank: z.enum(['', ...TO_DRINK] as ['', ...DrinkingRank[]]).catch(''),
     color: z.string().catch(''),
     search: z.string().catch('')
 });
@@ -114,7 +114,7 @@ export function filterChoices<B extends ToDrinkBottle>(bottles: B[], filters: To
             count: shown.filter((other) => other === value).length
         }));
     const ranks = count(
-        SOON.filter(
+        TO_DRINK.filter(
             (rank) => rank === filters.rank || bottles.some((bottle) => bottle.rank === rank)
         ),
         filterToDrink(bottles, { ...filters, rank: '' }).map((bottle) => bottle.rank)
@@ -149,7 +149,7 @@ function caseNames(cases: string[]): string {
 
 /**
  * One row per wine and vintage, in the order of the first bottle of each: given the bottles the
- * most urgent first, as the server lists them, each row takes the rank and the « drink before » of
+ * most urgent first, as the server lists them, each row takes the rank and the drinking window of
  * its most urgent bottle, the oldest optimum of its bottles, and names the cases that hold them.
  */
 export function groupByWine<B extends ToDrinkBottle>(bottles: B[]): WineRow<B>[] {

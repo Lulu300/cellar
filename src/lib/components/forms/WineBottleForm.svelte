@@ -6,7 +6,7 @@
     import { m } from '#lib/paraglide/messages.js';
     import ExistingBottleLocations from '#lib/components/forms/ExistingBottleLocations.svelte';
     import { availabilityLabel } from '#lib/components/bottles/availability.js';
-    import DrinkBeforeFields from '#lib/components/bottles/DrinkBeforeFields.svelte';
+    import DrinkingWindowFields from '#lib/components/bottles/DrinkingWindowFields.svelte';
     import { Button } from '#lib/components/ui/button/index.js';
     import { DialogFooter } from '#lib/components/ui/dialog/index.js';
     import { Input } from '#lib/components/ui/input/index.js';
@@ -71,6 +71,7 @@
     // available again, it goes back to it, which the case field then shows chosen.
     const formerCase = untrack(() => (editedId ? bottle?.storageCase?.name : undefined));
     let availability = $state(initial.availability);
+    let drinkFrom = $state(initial.drinkFrom);
     let drinkBefore = $state(initial.drinkBefore);
     const consumed = $derived(availability === BottleAvailability.CONSUMED);
 
@@ -229,17 +230,16 @@
         )}
     </div>
 
-    <div>
-        <DrinkBeforeFields
-            bind:value={drinkBefore}
-            optional
-            legend={m['drinking.drink_before']()}
-        />
+    <fieldset class="space-y-3">
+        <legend class="mb-3 text-sm font-medium leading-none">{m['drinking.window']()}</legend>
+        <DrinkingWindowFields bind:drinkFrom bind:drinkBefore />
+        <input type="hidden" name="drinkFrom" value={drinkFrom} />
         <input type="hidden" name="drinkBefore" value={drinkBefore} />
-        {#if errors.drinkBefore}
-            <p class="mt-2 text-sm text-destructive">{errors.drinkBefore}</p>
+        <p class="text-sm text-muted-foreground">{m['drinking.window_hint']()}</p>
+        {#if errors.drinkFrom || errors.drinkBefore}
+            <p class="text-sm text-destructive">{errors.drinkFrom ?? errors.drinkBefore}</p>
         {/if}
-    </div>
+    </fieldset>
 
     {#if !editedId}
         <FormField

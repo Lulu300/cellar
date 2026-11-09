@@ -95,6 +95,7 @@ function bottleSummary(bottle: Bottle) {
         availability: bottle.availability,
         vintage: bottle.vintage,
         optimum: bottle.optimum,
+        drinkFrom: bottle.drinkFrom,
         drinkBefore: bottle.drinkBefore,
         format: bottle.format,
         ...(inCellar(bottle) ? { location } : { formerLocation: location }),
@@ -283,14 +284,14 @@ export function listBottles(search: BottleSearch) {
 export interface ToDrinkSearch extends Page {
     rank?: DrinkingRank;
     colorId?: string;
-    /** The order of the banner, or the oldest optimum first. */
+    /** The order of the page « À boire », or the oldest optimum first. */
     order?: 'urgency' | 'optimum';
 }
 
 /**
- * The bottles in the cellar to drink soon, of this rank and this colour of wine, each with its wine
- * and its rank: in the order of the banner of the wine list, or by optimum, the oldest first, as
- * the page of the bottles to drink sorts them (a tie keeps the banner's order, a bottle without an
+ * The bottles in the cellar that the page « À boire » lists, of this rank and this colour of wine,
+ * each with its wine and its rank: in the order of the page, or by optimum, the oldest first, as
+ * the page sorts them (a tie keeps the order of the page, a bottle without an
  * optimum goes last). The page asked for, with `total` counting them all. Throws a NotFoundError
  * for an unknown colour.
  */
@@ -404,6 +405,7 @@ function writtenBottle(bottle: WineBottleWithFormat) {
         availability: bottle.availability,
         vintage: bottle.vintage,
         optimum: bottle.optimum,
+        drinkFrom: bottle.drinkFrom,
         drinkBefore: bottle.drinkBefore,
         format: bottle.format,
         ...(inCellar(bottle)
@@ -441,6 +443,7 @@ export type NewBottles = Pick<
     | 'originId'
     | 'vintage'
     | 'optimum'
+    | 'drinkFrom'
     | 'drinkBefore'
     | 'purchasePrice'
     | 'purchaseDate'
@@ -517,6 +520,7 @@ export type BottleEdits = Pick<
     | 'currentValueDate'
     | 'vintage'
     | 'optimum'
+    | 'drinkFrom'
     | 'drinkBefore'
     | 'purchaseDate'
     | 'formatId'

@@ -219,7 +219,7 @@
                     onclick={() => whenLoggedIn(() => (dialogs.dating = chosen()))}
                 >
                     <CalendarClock class="h-4 w-4" aria-hidden="true" />
-                    {m['drinking.drink_before']()}
+                    {m['drinking.window']()}
                 </Button>
                 <Button
                     variant="outline"

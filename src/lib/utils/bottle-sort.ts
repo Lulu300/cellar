@@ -1,4 +1,10 @@
-import { drinkBeforeMonth, monthOf, urgency, type DrinkingDates } from '#lib/shared/drinking.js';
+import {
+    drinkBeforeMonth,
+    monthOf,
+    urgency,
+    type DrinkingDates,
+    type DrinkingRank
+} from '#lib/shared/drinking.js';
 import type { BottleSortColumn, SortDirection } from '#lib/shared/schemas/bottle-list.js';
 import { compareValues } from '#lib/utils/compare.js';
 
@@ -14,8 +20,11 @@ export interface TableBottle {
     barcode: string | null;
     notes: string | null;
     /** For the columns of when to drink it, which only the lists that show them need. */
+    drinkFrom?: string | null;
     drinkBefore?: string | null;
     optimum?: number | null;
+    /** The rank that the page « À boire » gives it, which its chip shows as it is. */
+    rank?: DrinkingRank;
     storageCase?: { name: string } | null;
     /** The bottles of a row that holds several, such as one per wine. */
     count?: number;
@@ -31,7 +40,8 @@ export interface TableBottle {
 
 /**
  * The columns that the bottle tables sort on: those of the server, the vintage, and those of the
- * bottles to drink: how urgent, the optimum year, the « drink before » and the colour of the wine.
+ * bottles to drink: how urgent, the optimum year, the drinking window, by its end, and the colour
+ * of the wine.
  */
 export type SortColumn =
     BottleSortColumn | 'vintage' | 'urgency' | 'optimum' | 'drinkBefore' | 'color';
@@ -43,6 +53,7 @@ export interface BottleSort {
 
 /** What the rule of when to drink reads of a bottle, null for a field the list does not give. */
 export const drinkingDates = (bottle: TableBottle): DrinkingDates => ({
+    drinkFrom: bottle.drinkFrom ?? null,
     drinkBefore: bottle.drinkBefore ?? null,
     optimum: bottle.optimum ?? null
 });

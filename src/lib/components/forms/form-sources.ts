@@ -34,6 +34,7 @@ export type BottleFormSource = {
     formatId: string;
     vintage: number | null;
     optimum: number | null;
+    drinkFrom: string | null;
     drinkBefore: string | null;
     purchasePrice: number | null;
     purchaseDate: Day;
@@ -66,6 +67,7 @@ export function bottleFormValues(
         formatId: text(bottle?.formatId),
         vintage: formatInputNumber(bottle?.vintage),
         optimum: formatInputNumber(bottle?.optimum),
+        drinkFrom: text(bottle?.drinkFrom),
         drinkBefore: text(bottle?.drinkBefore),
         purchasePrice: formatInputNumber(bottle?.purchasePrice),
         purchaseDate: day(bottle?.purchaseDate),

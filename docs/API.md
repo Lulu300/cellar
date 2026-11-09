@@ -719,9 +719,13 @@ The fields of a bottle in the body of `POST /api/bottles`, `PATCH /api/bottles` 
 - `originId`: id of an origin (`GET /api/origins`), optional.
 - `vintage`: integer 0-9999, optional; `0` means no vintage and is stored as `null`.
 - `optimum`: integer 0-9999, optional: the year the bottle is at its best.
-- `drinkBefore`: string, optional: « drink before », a year (`"2027"`) or a month of a year
-  (`"2027-03"`), by the end of which to drink the bottle; empty or `null` for none. A month without
-  a year, or any other text, answers `422 invalid_body`. Bottles from before 1.5.0 have none.
+- `drinkFrom`: string, optional: the start of the drinking window, « from », a year (`"2028"`) or a
+  month of a year (`"2026-09"`), from the start of which the bottle can be drunk; empty or `null`
+  for none. Same format as `drinkBefore`. Bottles from before 1.6.0 have none.
+- `drinkBefore`: string, optional: the end of the drinking window, « drink before », a year
+  (`"2027"`) or a month of a year (`"2027-03"`), by the end of which to drink the bottle; empty or
+  `null` for none. A month without a year, or any other text, answers `422 invalid_body`. Bottles
+  from before 1.5.0 have none.
 - `purchasePrice`: number, 0 or more, optional; a negative one answers `422 invalid_body`.
 - `purchaseDate`: date, optional.
 - `currentValue`: number, 0 or more, optional; a negative one answers `422 invalid_body`.
@@ -740,7 +744,13 @@ there: made `available` again without a new `storageCaseId`, it goes back to tha
 before 1.4.0 lost their case, and have none. A write that leaves a case with more `available`
 bottles over its capacity than before is refused with `409 case_full`, a bottle put back in the case
 it kept included; a case already over its capacity, after an import for example, still takes the
-writes that do not add to it.
+writes that do not add to it. A drinking window whose `drinkBefore` ends before its `drinkFrom`
+starts (`"2026"` before `"2027"`, `"2026-08"` before `"2026-09"`) is refused with
+`422 window_ends_before_start`, nothing written; a `PATCH` that gives one end only is checked
+against the other end the bottle has. `details` is `{ "bottles": [{ "id", "drinkFrom",
+"drinkBefore" }] }`, each refused bottle with the window it would have had (no `id` on `POST`). A
+window may be a single year or month (`"2026"` to `"2026"`), and a year alone holds its months
+(`"2026-09"` to `"2026"`).
 
 A bottle in an answer has every field above, all present (`null` when empty), plus `id`,
 `createdAt`, `updatedAt`, and `format`, the name of its format.
@@ -769,6 +779,7 @@ Lists every bottle, whatever its availability, with its wine, format, case and o
     "definitionId": "margaux",
     "vintage": 2015,
     "optimum": null,
+    "drinkFrom": null,
     "drinkBefore": "2027",
     "formatId": "bottle",
     "format": "Bottle",
@@ -821,6 +832,8 @@ Creates one or more identical bottles of a wine, all or none.
   - `409 barcode_prefix_too_long` when a bottle takes the next barcode and the configured prefix is
     longer than 6 characters (a prefix saved before prefixes were checked).
   - `422 barcode_for_one_bottle` when a barcode is given with a `quantity` over 1.
+  - `422 window_ends_before_start` when `drinkBefore` ends before `drinkFrom` starts; `details` as
+    in [bottle fields](#bottle-fields).
 
 ```json
 {
@@ -887,6 +900,9 @@ Applies the same changes to several bottles, all or none.
   - `422 notes_too_long` when `addedNote` would make the notes of some bottles longer than 5,000
     characters, rather than cut them. `details` has `ids` (these bottles), `bottles` (their number)
     and `maximum` (5000). No bottle is changed.
+  - `422 window_ends_before_start` when the drinking window of some bottles would end before it
+    starts, `changes` and what each bottle has together; `details` names them, as in
+    [bottle fields](#bottle-fields). No bottle is changed.
 
 ```json
 {
@@ -910,6 +926,8 @@ Changes some fields of one bottle.
   - `409 case_full` when its case would hold more available bottles than its capacity; `details` as
     for `POST /api/bottles`.
   - `409 duplicate_barcode` when another bottle already has the barcode.
+  - `422 window_ends_before_start` when its drinking window would end before it starts; `details`
+    as in [bottle fields](#bottle-fields).
 
 ```json
 { "notes": "Open with the cheese", "currentValue": 60, "currentValueDate": "2026-10-01" }
@@ -932,7 +950,8 @@ them.
 - **Session:** not needed.
 - **Body:** none.
 - **Response:** `200` with an array, in no particular order, of bottles with these fields only:
-  `id`, `vintage`, `optimum`, `drinkBefore`, `formatId`, `format` (name), `purchasePrice`, `purchaseDate`,
+  `id`, `vintage`, `optimum`, `drinkFrom`, `drinkBefore`, `formatId`, `format` (name), `purchasePrice`,
+  `purchaseDate`,
   `currentValue`, `currentValueDate`, `originId`, `origin` (`{ "id", "name" }` or `null`),
   `barcode`, `notes`, `availability`, `definition`, the wine
   (`{ "id", "name", "producer", "appellation", "color", "colorHex" }`, `appellation` and `color`
@@ -946,6 +965,7 @@ them.
     "id": "1b2a0a28-…",
     "vintage": 2015,
     "optimum": null,
+    "drinkFrom": null,
     "drinkBefore": null,
     "formatId": "bottle",
     "format": "Bottle",
@@ -973,10 +993,14 @@ them.
 
 ### `GET /api/bottles/to-drink`
 
-Lists the bottles in the cellar (`available`) to drink soon, the most urgent first, as the page
-« To drink » (`/to-drink`) lists them by default; the banner of the wine list counts them and shows
-the first eight. A bottle with a `drinkBefore` is ranked by it; one without is ranked by
-its `optimum`; one with neither is left out. Months and years are those of the server's clock.
+Lists the bottles in the cellar (`available`) to drink soon and those ready to drink, the most
+urgent first, as the page « To drink » (`/to-drink`) lists them by default; the banner of the wine
+list counts those of the first four ranks and shows the first eight of them. A bottle without a
+`drinkFrom` is ranked by its `drinkBefore`, else by its `optimum`, as before 1.6.0; one with
+neither is left out. A bottle with a `drinkFrom` is ranked by its `drinkBefore` as well once that
+falls this year or has passed; otherwise it is ready once its window is open, at its optimum once
+its `optimum` year has come too, and not listed before its window opens. Months and years are those
+of the server's clock.
 
 - **Session:** not needed.
 - **Body:** none.
@@ -986,11 +1010,17 @@ its `optimum`; one with neither is left out. Months and years are those of the s
   2. `this_month`: its `drinkBefore` ends this month (a year alone in its December);
   3. `this_year`: its `drinkBefore` is a later month of this year, or this year alone before
      December;
-  4. `optimum_reached`: no `drinkBefore`, and its `optimum` is this year or earlier.
+  4. `optimum_reached`: its `optimum` is this year or earlier, and it has neither `drinkBefore` nor
+     `drinkFrom`, or its window is open and ends after this year or never;
+  5. `ready`: its window is open (`drinkFrom` this month or earlier, a year alone from its January)
+     and ends after this year or never, and its `optimum` is after this year or it has none. The
+     banner does not count them.
 
-  Within a rank, the earliest date first (a year alone counting as its December), then by wine
-  name, vintage and id. A bottle whose date or optimum comes after this year is not listed, nor one
-  `out_of_cellar` or `consumed`, which keeps its `drinkBefore`.
+  Within a rank, the earliest deadline first: the `drinkBefore` (a year alone counting as its
+  December), else the December of the `optimum` year, always the `optimum` year for
+  `optimum_reached`; a ready bottle with neither comes last. Then by wine name, vintage and id. A bottle whose date or optimum comes
+  after this year is not listed, nor one whose window has not opened yet, nor one `out_of_cellar` or
+  `consumed`, which keeps its dates.
 
 - **Errors:** none besides the common ones.
 
@@ -1001,6 +1031,7 @@ its `optimum`; one with neither is left out. Months and years are those of the s
     "definitionId": "margaux",
     "vintage": 2015,
     "optimum": 2030,
+    "drinkFrom": null,
     "drinkBefore": "2026-09",
     "rank": "late",
     "format": "Bottle",
@@ -2317,8 +2348,11 @@ pre-import export.
   `invalid_row`): restore a backup zip instead, which keeps it whole. A negative purchase price or
   current value is removed and written into the bottle's notes, as the upgrade of an older database
   does. A wine color without `hex`, from an export of a version before 1.4.0, gets the colour of
-  its name, as the upgrade gives it (see [reference tables](#reference-tables)). While the import
-  runs, other writes get `503 writes_held`.
+  its name, as the upgrade gives it (see [reference tables](#reference-tables)). A bottle of an
+  export made before 1.6.0 has no `drinkFrom`, and gets none. A bottle whose drinking window ends
+  before it starts refuses the import (`422 invalid_export`, `invalid_row`, the problem being
+  `invalid` in the column `drinkFrom`), as the bottle routes refuse it. While the import runs, other
+  writes get `503 writes_held`.
 - **Errors:**
   - `422 invalid_export` when the file is not an export this version can import. `details` has
     `problem` (`unreadable`, `incomplete` with `tables`, the missing ones as one comma-separated
@@ -2503,8 +2537,9 @@ README-Docker says how to set up an assistant (see
 - **Answers:** a tool answers one text item that holds JSON. The fields that are empty are left out.
   Prices are in the currency of the cellar (the app shows euros), dates are `YYYY-MM-DD`. A
   bottle's `availability` is `available` (in the cellar), `out_of_cellar` or `consumed`, its
-  `optimum` is the year it is at its best, and its `drinkBefore` the year (`YYYY`) or the month
-  (`YYYY-MM`) by the end of which to drink it.
+  `optimum` is the year it is at its best, and its `drinkFrom` and `drinkBefore` its drinking
+  window, either one or both: the year (`YYYY`) or the month (`YYYY-MM`) from the start of which it
+  can be drunk, and the one by the end of which to drink it.
 - **Where a bottle is:** a bottle `available` gives its case as `location` (read tools) or `caseId`
   (write tools). A bottle `out_of_cellar` or `consumed` keeps the case it left, without taking a
   place there: it gives it as `formerLocation` or `formerCaseId` instead, so that an assistant does
@@ -2519,7 +2554,8 @@ README-Docker says how to set up an assistant (see
   Details: {"ids":["a","b","c","d","e","f","g","h","i","j","k","l"]}
   ```
 
-  `notes_too_long` gives `{ "ids", "bottles", "maximum" }`, `duplicate_wish` the `wishId` already
+  `notes_too_long` gives `{ "ids", "bottles", "maximum" }`, `window_ends_before_start`
+  `{ "bottles" }`, each bottle with the window refused, `duplicate_wish` the `wishId` already
   on the wishlist, `case_full` `{ "caseId", "caseName", "capacity", "bottles" }`, and
   `missing_reference` each unknown id as `{ "field", "id" }`, where `field` is the tool's parameter:
   `wineId` rather than the API's `definitionId`, `caseId` rather than `storageCaseId`. Arguments that
@@ -2547,7 +2583,8 @@ The tools that read:
   - **Parameters:** `wineId`: string, required, as `search_wines` gives it.
   - **Answer:** the fields of a wine of `search_wines` from `id` to `grapes`, with `description`,
     `website` and `targetQuantity`, its bottles still owned in `bottles` and those drunk in
-    `consumed`. Each bottle has `id`, `availability`, `vintage`, `optimum`, `drinkBefore`, `format`, `location`
+    `consumed`. Each bottle has `id`, `availability`, `vintage`, `optimum`, `drinkFrom`, `drinkBefore`,
+    `format`, `location`
     (`container`, `case`) when it is in the cellar or `formerLocation` (the same) when it is not,
     `barcode`, `origin`, `purchasePrice`, `purchaseDate`, `currentValue`, `consumedDate` and
     `notes`.
@@ -2574,16 +2611,17 @@ The tools that read:
   - **Answer:** `{ "total", "bottles" }`: the bottles found, as `find_bottle_by_barcode` gives them,
     each with its `wine`, the latest drunk first, then the latest bought, then by the name of their
     wine, then by id, from `offset`; `total` counts them all.
-- `list_bottles_to_drink`: the bottles in the cellar to drink soon, as the page « To drink » of the
-  app and [`GET /api/bottles/to-drink`](#get-apibottlesto-drink) list them.
-  - **Parameters:** all optional: `rank`: `late`, `this_month`, `this_year` or `optimum_reached`,
+- `list_bottles_to_drink`: the bottles in the cellar to drink soon and those ready to drink, as the
+  page « To drink » of the app and [`GET /api/bottles/to-drink`](#get-apibottlesto-drink) list them.
+  - **Parameters:** all optional: `rank`: `late`, `this_month`, `this_year`, `optimum_reached` or
+    `ready`,
     only the bottles of that rank; `colorId`: string (from `list_choices`), only the bottles of
     wines of that color; an unknown id is refused (not found); `order`: `urgency` (default), the
     order of `GET /api/bottles/to-drink`, or `optimum`, the oldest `optimum` first, as the page of
     the bottles to drink sorts them: a tie keeps the order of urgency, and a bottle without an
     optimum comes last; `limit` and `offset`, as for `list_bottles`.
   - **Answer:** `{ "total", "bottles" }`: the bottles found, as `list_bottles` gives them, each with
-    its `rank` (`late`, `this_month`, `this_year`, `optimum_reached`), in the order asked, from
+    its `rank` (`late`, `this_month`, `this_year`, `optimum_reached`, `ready`), in the order asked, from
     `offset`; `total` counts them all.
 - `get_wine_shortage`: no parameters; the wines below their target quantity, the largest shortage
   first, with `id`, `name`, `producer`, `color`, `type`, `appellation`, `region`, `country`,
@@ -2623,14 +2661,17 @@ one is not dropped; each one writes all or nothing.
   - **Parameters:** `wineId`: string, required; `formatId`: string, required (from
     `list_choices`); `quantity`: integer 1-100, default 1; `caseId`: string, optional (from
     `get_free_space`), the `storageCaseId` of the bottles; and, optional, the
-    [bottle fields](#bottle-fields) `vintage`, `optimum`, `drinkBefore`, `originId` (from `list_choices`),
+    [bottle fields](#bottle-fields) `vintage`, `optimum`, `drinkFrom`, `drinkBefore`, `originId` (from
+    `list_choices`),
     `purchasePrice`, `purchaseDate`, `barcode` (with `quantity` 1 only) and `notes`.
   - **Answer:** an array of the bottles created, each with `id`, `wineId`, `availability`,
-    `vintage`, `optimum`, `drinkBefore`, `format`, `caseId` (or `formerCaseId` for a bottle not in the cellar, as
+    `vintage`, `optimum`, `drinkFrom`, `drinkBefore`, `format`, `caseId` (or `formerCaseId` for a bottle
+    not in the cellar, as
     in the answers of the tools below), `barcode`, `originId`, `purchasePrice`, `purchaseDate`,
     `currentValue`, `currentValueDate`, `consumedDate` and `notes`. An origin that `list_choices`
     lacks is added in the app; the description says to leave `originId` out meanwhile.
-  - **Refusals:** those of `POST /api/bottles`, such as a case without room for them all.
+  - **Refusals:** those of `POST /api/bottles`, such as a case without room for them all, or a
+    drinking window that ends before it starts.
   - Its description asks the assistant, when the wine is on the wishlist, to ask the user whether
     to remove it with `remove_wish`, as the app asks after the last bottle saved.
 - `add_wish`: adds a wish to the [wishlist](#wishlist), as [`POST /api/wishes`](#post-apiwishes)
@@ -2686,12 +2727,15 @@ one is not dropped; each one writes all or nothing.
   [`PATCH /api/bottles`](#patch-apibottles) does; their other fields stay.
   - **Parameters:** `bottleIds` as for `mark_bottles_drunk`; and at least one of the
     [bottle fields](#bottle-fields) `purchasePrice`, `purchaseDate`, `currentValue`,
-    `currentValueDate`, `vintage`, `optimum`, `drinkBefore`, `formatId`, `originId` and `barcode` (one bottle
+    `currentValueDate`, `vintage`, `optimum`, `drinkFrom`, `drinkBefore`, `formatId`, `originId` and
+    `barcode` (one bottle
     only). `null` removes an optional field. The notes, the case and the availability have their
     own tools.
   - **Answer:** an array of the bottles changed, as `add_bottles` answers them.
   - **Refusals:** those of `PATCH /api/bottles`, such as an unknown bottle, a barcode that another
-    bottle has, or one barcode for several bottles.
+    bottle has, one barcode for several bottles, or a drinking window that would end before it
+    starts. The description of `drinkBefore` tells the assistant to send `drinkFrom` null with it
+    for « this month » or « this year », as the app does.
 - `take_bottles_out`: makes bottles `out_of_cellar`, as the status dialog of the app does. Each
   keeps its case as its `formerCaseId`, which keeps no room for it: `put_bottles_back` can return
   it there. A bottle `consumed` by mistake loses its `consumedDate`.
@@ -2880,7 +2924,8 @@ been deleted since, and the bottle is imported in no case rather than refused.
     `errors` and `skipped`. `errors` and `skipped` list the first 1,000 rows of their kind;
     `failedImports` and `skippedImports` count them all.
     - `errors[]`: `{ "row", "problems": [...] }`, the row numbered from 1 under the header. Each
-      problem has a `code`: `missing` or `invalid` with `column`; `unknown_reference` with `column`
+      problem has a `code`: `missing` or `invalid` with `column` (`invalid` in `drinkFrom` for a
+      bottle whose drinking window ends before it starts); `unknown_reference` with `column`
       and `name`; `unknown_wine` or `several_wines` with `name`; `case_full` with `name` and
       `capacity`; `uneven_row` with `values` and `columns`, for a row with more or fewer values
       than the header has columns. A file left out whole is reported as row 0, with `no_table`
@@ -2986,7 +3031,8 @@ Lists every bottle, consumed ones included, newest first, with the names of what
 - **Body:** none.
 - **Response:** `200` with an array of bottles. Each has `id`, `definitionId`, `wineName`,
   `producer`, `appellationName`, `regionName`, `countryName`, `typeName`, `colorName`, `vintage`,
-  `optimum`, `drinkBefore`, `originId`, `originName`, `formatId`, `formatName`, `barcode`, `purchasePrice`,
+  `optimum`, `drinkFrom`, `drinkBefore`, `originId`, `originName`, `formatId`, `formatName`, `barcode`,
+  `purchasePrice`,
   `purchaseDate`, `currentValue`, `currentValueDate`, `storageCaseId`, `storageCaseName`, `notes`,
   `availability` (`available`, `out_of_cellar` or `consumed`), `consumedDate`, `createdAt` and
   `updatedAt`.
@@ -3006,6 +3052,7 @@ Lists every bottle, consumed ones included, newest first, with the names of what
     "colorName": "Red",
     "vintage": 2015,
     "optimum": 2030,
+    "drinkFrom": null,
     "drinkBefore": null,
     "originId": null,
     "originName": null,

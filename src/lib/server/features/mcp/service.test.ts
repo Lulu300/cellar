@@ -353,6 +353,27 @@ describe('bottlesToDrink', () => {
         });
     });
 
+    // FEAT-19: the page lists the ready bottles too, after those at their optimum.
+    it('lists the ready bottles after those at their optimum, by rank ready too', async () => {
+        onTestFinished(() => {
+            db.delete(wineBottles).run();
+        });
+        await insertBottles(margaux, [
+            { id: 'ready', drinkFrom: '2024', drinkBefore: '2032', optimum: 2027 },
+            { id: 'peak', drinkFrom: '2020', optimum: 2022 },
+            { id: 'not-ready', drinkFrom: '2028', drinkBefore: '2045' }
+        ]);
+
+        const { bottles } = bottlesToDrink({ limit: 50 });
+
+        expect(bottles.map(({ id, rank }) => [id, rank])).toEqual([
+            ['peak', 'optimum_reached'],
+            ['ready', 'ready']
+        ]);
+        expect(bottles[1]).toMatchObject({ drinkFrom: '2024', drinkBefore: '2032' });
+        expect(bottlesToDrink({ limit: 50, rank: 'ready' }).bottles).toHaveLength(1);
+    });
+
     it('keeps one rank and one color, and orders by optimum, the oldest first', async () => {
         const timestamps = { createdAt: new Date(), updatedAt: new Date() };
         db.insert(wineColors)
@@ -528,6 +549,7 @@ const purchase = {
     originId: null,
     vintage: 2018,
     optimum: null,
+    drinkFrom: null,
     drinkBefore: null,
     purchasePrice: 40,
     purchaseDate: null,
@@ -760,6 +782,7 @@ describe('editBottles', () => {
             purchasePrice: 45.5,
             currentValue: 60,
             optimum: 2030,
+            drinkFrom: '2026-09',
             drinkBefore: '2027-03',
             purchaseDate: new Date('2026-10-01'),
             barcode: undefined
@@ -770,6 +793,7 @@ describe('editBottles', () => {
                 id: 'a',
                 vintage: 2015,
                 optimum: 2030,
+                drinkFrom: '2026-09',
                 drinkBefore: '2027-03',
                 purchasePrice: 45.5,
                 purchaseDate: '2026-10-01',

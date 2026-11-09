@@ -106,6 +106,7 @@ beforeEach(() => {
                 ...bottle,
                 definitionId: 'red-gc',
                 vintage: 2015,
+                drinkFrom: '2026-09',
                 drinkBefore: '2027-03',
                 storageCaseId: 'rack1',
                 barcode: 'RT0001',
@@ -188,6 +189,7 @@ describe('CSV export then import', () => {
         expect(db.select().from(wineBottles).all()).toContainEqual(
             expect.objectContaining({
                 barcode: 'RT0001',
+                drinkFrom: '2026-09',
                 drinkBefore: '2027-03',
                 notes: '=HYPERLINK("http://evil.example")'
             })

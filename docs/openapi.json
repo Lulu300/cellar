@@ -1082,6 +1082,17 @@
                       }
                     ]
                   },
+                  "drinkFrom": {
+                    "anyOf": [
+                      {
+                        "type": "string",
+                        "pattern": "^([1-9]\\d{3}(-(0[1-9]|1[0-2]))?)?$"
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
                   "drinkBefore": {
                     "anyOf": [
                       {
@@ -1315,6 +1326,17 @@
                             "type": "integer",
                             "minimum": 0,
                             "maximum": 9999
+                          },
+                          {
+                            "type": "null"
+                          }
+                        ]
+                      },
+                      "drinkFrom": {
+                        "anyOf": [
+                          {
+                            "type": "string",
+                            "pattern": "^([1-9]\\d{3}(-(0[1-9]|1[0-2]))?)?$"
                           },
                           {
                             "type": "null"
@@ -1561,6 +1583,17 @@
                         "type": "integer",
                         "minimum": 0,
                         "maximum": 9999
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "drinkFrom": {
+                    "anyOf": [
+                      {
+                        "type": "string",
+                        "pattern": "^([1-9]\\d{3}(-(0[1-9]|1[0-2]))?)?$"
                       },
                       {
                         "type": "null"
@@ -5705,6 +5738,7 @@
                         "duplicate_wish",
                         "barcode_for_one_bottle",
                         "notes_too_long",
+                        "window_ends_before_start",
                         "case_holds_bottles",
                         "case_full",
                         "duplicate_container",

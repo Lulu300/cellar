@@ -514,6 +514,26 @@ describe('POST /mcp', () => {
                 detailsOf(await modernCall('add_wish', { wineId: margaux, quantity: 2 }, WRITE))
             ).toEqual(['This wine is already on the wishlist', { wishId: wish.id }]);
             await modernCall('update_bottle_notes', { bottleIds: [bottle.id], notes: null }, WRITE);
+
+            // FEAT-19: a window that would end before it starts names each bottle with it.
+            await modernCall(
+                'update_bottles',
+                { bottleIds: [bottle.id], drinkFrom: '2028' },
+                WRITE
+            );
+            expect(
+                detailsOf(
+                    await modernCall(
+                        'update_bottles',
+                        { bottleIds: [bottle.id], drinkBefore: '2026-11' },
+                        WRITE
+                    )
+                )
+            ).toEqual([
+                'The drinking window of 1 bottle(s) ends before it starts',
+                { bottles: [{ id: bottle.id, drinkFrom: '2028', drinkBefore: '2026-11' }] }
+            ]);
+            await modernCall('update_bottles', { bottleIds: [bottle.id], drinkFrom: null }, WRITE);
         });
 
         // FEAT-13: which id is unknown, and the id of a full case, for the assistant to act on.
@@ -602,7 +622,9 @@ describe('POST /mcp', () => {
                 ['delete_bottles', { bottleIds: [] }],
                 ['list_bottles', { availability: 'drunk' }],
                 ['list_bottles', { consumedFrom: 'last month' }],
-                ['update_bottles', { bottleIds: ['a'], drinkBefore: '03' }]
+                ['update_bottles', { bottleIds: ['a'], drinkBefore: '03' }],
+                ['update_bottles', { bottleIds: ['a'], drinkFrom: '2028-13' }],
+                ['list_bottles_to_drink', { rank: 'not_ready' }]
             ] as const) {
                 const { result } = await modernCall(name, args, WRITE);
                 expect(result.isError, `${name} ${JSON.stringify(args)}`).toBe(true);

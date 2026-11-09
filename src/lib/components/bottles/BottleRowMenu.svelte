@@ -22,7 +22,7 @@
 
     /**
      * The « ⋯ » menu of a bottle in a list of several wines: mark it drunk, move it, give it a
-     * « drink before », or edit it. A visitor is asked to log in.
+     * drinking window, or edit it. A visitor is asked to log in.
      */
     let {
         bottle,
@@ -52,7 +52,7 @@
         </DropdownMenu.Item>
         <DropdownMenu.Item onSelect={() => whenLoggedIn(() => (dialogs.dating = [bottle]))}>
             <CalendarClock aria-hidden="true" />
-            {m['drinking.drink_before']()}
+            {m['drinking.window']()}
         </DropdownMenu.Item>
         <DropdownMenu.Item onSelect={() => whenLoggedIn(() => onEdit(bottle))}>
             <SquarePen aria-hidden="true" />

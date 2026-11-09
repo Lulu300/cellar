@@ -15,7 +15,8 @@ const FIELD_OF_CODE: Partial<Record<ApiErrorCode, string>> = {
     barcode_out_of_range: 'barcode',
     barcode_not_encodable: 'barcode',
     barcode_prefix_too_long: 'barcode',
-    case_full: 'storageCaseId'
+    case_full: 'storageCaseId',
+    window_ends_before_start: 'drinkFrom'
 };
 
 /** The field that a path names: `grapeVarieties.2` is about `grapeVarieties`. */

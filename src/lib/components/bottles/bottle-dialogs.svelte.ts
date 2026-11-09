@@ -10,7 +10,7 @@ export function whenLoggedIn(action: () => void): void {
 }
 
 /**
- * The bottles of a list whose status, place or « drink before » changes, while their dialog is
+ * The bottles of a list whose status, place or drinking window changes, while their dialog is
  * open (BottleChangeDialogs), and what the list does after a change: it forgets its selection and
  * reloads its bottles.
  */

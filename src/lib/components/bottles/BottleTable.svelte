@@ -17,9 +17,9 @@
     import WineColorBadge from '#lib/components/wines/WineColorBadge.svelte';
     import AvailabilityBadge from './AvailabilityBadge.svelte';
     import DrinkingChip from './DrinkingChip.svelte';
-    import { drinkBeforeText, drinkingText, markedRank } from './drinking.js';
+    import { drinkingText, markedRank, windowText } from './drinking.js';
     import { BottleAvailability } from '#lib/shared/bottle-availability.js';
-    import { DrinkingHorizon } from '#lib/shared/drinking.js';
+    import { DrinkingHorizon, monthOf, notReadyYet } from '#lib/shared/drinking.js';
     import { nextSort, type BottleColumn } from './bottle-table.js';
     import { drinkingDates, type BottleSort, type TableBottle } from '#lib/utils/bottle-sort.js';
     import { formatCurrency, formatDate } from '#lib/utils/format.js';
@@ -85,7 +85,7 @@
         drinking: m['drinking.column'](),
         urgency: m['drinking.urgency'](),
         optimum: m['drinking.optimum'](),
-        drinkBefore: m['drinking.drink_before'](),
+        drinkBefore: m['drinking.window_column'](),
         color: m['common.color'](),
         count: m['common.bottles']()
     });
@@ -101,11 +101,18 @@
     const colorInWineCell = $derived(!columns.includes('color'));
     // The chip of a bottle to drink, in the wine cell when no column shows it. Only a bottle in the
     // cellar is to drink, as on the banner and the map: one taken out or drunk keeps its date only.
+    // The page « À boire » gives each bottle its rank, « Prête » included, which no marker shows.
     const chipInWineCell = $derived(!!drinkingHorizon && !columns.includes('drinking'));
-    const rankOf = (bottle: B) =>
-        bottle.availability === BottleAvailability.AVAILABLE
-            ? markedRank(drinkingDates(bottle), drinkingHorizon ?? DrinkingHorizon.THIS_YEAR)
-            : null;
+    const rankOf = (bottle: B) => {
+        if (bottle.availability !== BottleAvailability.AVAILABLE) return null;
+        return (
+            bottle.rank ??
+            markedRank(drinkingDates(bottle), drinkingHorizon ?? DrinkingHorizon.THIS_YEAR)
+        );
+    };
+    const notReady = (bottle: B) =>
+        bottle.availability === BottleAvailability.AVAILABLE &&
+        notReadyYet(drinkingDates(bottle), monthOf(new Date()));
 </script>
 
 <div class="rounded-md border">
@@ -218,6 +225,11 @@
                                     <span class="text-sm text-muted-foreground">
                                         {drinkingText(drinkingDates(bottle)) || '-'}
                                     </span>
+                                    {#if notReady(bottle)}
+                                        <span class="text-sm text-muted-foreground">
+                                            {m['drinking.not_ready_yet']()}
+                                        </span>
+                                    {/if}
                                 </div>
                             </TableCell>
                         {:else if column === 'urgency'}
@@ -229,7 +241,7 @@
                             <TableCell>{bottle.optimum ?? '-'}</TableCell>
                         {:else if column === 'drinkBefore'}
                             <TableCell class="whitespace-nowrap">
-                                {bottle.drinkBefore ? drinkBeforeText(bottle.drinkBefore) : '-'}
+                                {windowText(drinkingDates(bottle)) || '-'}
                             </TableCell>
                         {:else if column === 'color'}
                             <TableCell>

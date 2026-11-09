@@ -166,14 +166,15 @@ export function listBottlesByAvailability(availabilities: BottleAvailability[]) 
 }
 
 /**
- * The case and the dates of each bottle in the cellar that a case holds and that has a « drink
- * before » or an optimum year: what the storage page marks.
+ * The case and the dates of each bottle in the cellar that a case holds and that has a window end
+ * or an optimum year: what the storage page marks, a window start alone never being marked.
  */
 export function listCaseDrinkingDates() {
     return db
         .select({
             // Never null: the where leaves those out.
             storageCaseId: sql<string>`${wineBottles.storageCaseId}`,
+            drinkFrom: wineBottles.drinkFrom,
             drinkBefore: wineBottles.drinkBefore,
             optimum: wineBottles.optimum
         })
@@ -229,6 +230,7 @@ export function listBottlesNotConsumed() {
             id: bottle.id,
             vintage: bottle.vintage,
             optimum: bottle.optimum,
+            drinkFrom: bottle.drinkFrom,
             drinkBefore: bottle.drinkBefore,
             formatId: bottle.formatId,
             format: wine_formats.name,
@@ -270,6 +272,7 @@ export function listBottlesForAdmin() {
             colorName: wineColors.color,
             vintage: wineBottles.vintage,
             optimum: wineBottles.optimum,
+            drinkFrom: wineBottles.drinkFrom,
             drinkBefore: wineBottles.drinkBefore,
             originId: wineBottles.originId,
             originName: origins.name,

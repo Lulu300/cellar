@@ -21,9 +21,13 @@
 
     /**
      * The banner of the wine list: how many bottles to drink soon, by rank, which unfolds the most
-     * urgent ones, each with its menu, and leads to the page of them all. Hidden when there is none.
+     * urgent ones, each with its menu, and leads to the page of the bottles to drink, those ready
+     * included. Hidden when none is to drink soon.
      */
     let { bottles }: { bottles: BottleToDrinkDTO[] } = $props();
+
+    // The ranks of FEAT-05 only: a ready bottle is listed on the page « À boire ».
+    const soon = $derived(bottles.filter((bottle) => SOON.includes(bottle.rank)));
 
     // Chosen on screenshots: about one screen of a phone. The page of /to-drink shows them all.
     const SHOWN = 8;
@@ -34,9 +38,9 @@
             rank,
             bottles: list.filter((bottle) => bottle.rank === rank)
         })).filter((group) => group.bottles.length > 0);
-    const counted = $derived(byRank(bottles));
+    const counted = $derived(byRank(soon));
     // The list is the most urgent first: its head, under the headings of its ranks.
-    const shown = $derived(byRank(bottles.slice(0, SHOWN)));
+    const shown = $derived(byRank(soon.slice(0, SHOWN)));
 
     // A change of status, place or date changes the list and the wine cards behind it.
     const dialogs = new BottleDialogs<BottleToDrinkDTO>(new SvelteSet(), () => invalidate(CELLAR));
@@ -46,7 +50,7 @@
     const id = $props.id();
 </script>
 
-{#if bottles.length > 0}
+{#if soon.length > 0}
     <Card class="mb-6 gap-0 py-4">
         <CardHeader class="flex flex-wrap items-center gap-x-4 gap-y-3 px-4">
             <CardTitle class="flex items-center gap-2 text-base">

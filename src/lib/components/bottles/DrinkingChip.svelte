@@ -16,6 +16,8 @@
         this_month: 'border-warning/50 bg-warning/10',
         this_year: 'border-primary/40 bg-primary/10',
         optimum_reached: 'border-success/50 bg-success/10',
+        // Outlined only, as its mark: ready, not yet at its optimum.
+        ready: 'border-success/50',
         later: ''
     };
 

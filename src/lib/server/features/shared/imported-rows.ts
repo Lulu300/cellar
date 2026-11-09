@@ -6,6 +6,7 @@ import {
     isImageFileName
 } from '#lib/server/paths.js';
 import { BottleAvailability } from '#lib/shared/bottle-availability.js';
+import { endsBeforeStart } from '#lib/shared/drinking.js';
 import { bottleSchema } from '#lib/shared/schemas/bottle.js';
 import {
     asLongText,
@@ -54,7 +55,11 @@ const ROW_SCHEMAS = {
         .object({ filename: z.string().refine(isImageFileName, INVALID_IMAGE_FILENAME_ERROR) })
         .transform((image) => ({ ...image, path: IMAGES_URL_PATH })),
     wineDefinitions: wineDefinitionSchema,
-    wineBottles: bottleSchema,
+    // As the bottles service refuses it (window_ends_before_start).
+    wineBottles: bottleSchema.refine((bottle) => !endsBeforeStart(bottle), {
+        path: ['drinkFrom'],
+        message: 'The drinking window ends before it starts'
+    }),
     winePhotos: z.object({ definitionId: id, imageId: id }),
     wishes: wishSchema
 } satisfies Record<ExportTableName, z.ZodType>;

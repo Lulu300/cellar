@@ -1,7 +1,7 @@
 import { expect, test } from '@playwright/test';
 import { addWine, logIn, openFromMenu, pick } from './helpers.js';
 
-test('add a container on the storage page, put bottles in its cases, move three from the map, mark one to drink this month and see it on the map, in the banner and on its page, find the wine in the cellar, then colour it from the admin', async ({
+test('add a container on the storage page, put bottles in its cases, move three from the map, mark one to drink this month and see it on the map, in the banner and on its page, give it a drinking window and see it ready, find the wine in the cellar, then colour it from the admin', async ({
     page,
     browser
 }) => {
@@ -121,8 +121,8 @@ test('add a container on the storage page, put bottles in its cases, move three 
 
     // Another is to drink this month, in one click from its menu (FEAT-05).
     await rack2.getByRole('button', { name: 'Actions for Cuvée Stored 2018' }).first().click();
-    await page.getByRole('menuitem', { name: 'Drink before' }).click();
-    const dating = page.getByRole('dialog', { name: 'Drink before' });
+    await page.getByRole('menuitem', { name: 'Drinking window' }).click();
+    const dating = page.getByRole('dialog', { name: 'Drinking window' });
     await dating.getByRole('button', { name: /^This month/ }).click();
     await expect(dating).toBeHidden();
     await page.keyboard.press('Escape');
@@ -176,6 +176,31 @@ test('add a container on the storage page, put bottles in its cases, move three 
     const rows = page.getByRole('row').filter({ has: page.getByRole('link') });
     await expect(rows).toHaveCount(1);
     await expect(rows.getByRole('link', { name: 'Cuvée Stored' })).toBeVisible();
+
+    // A window open since last year that ends next year makes it ready, a rank of this page only,
+    // with its filter (FEAT-19).
+    const year = new Date().getFullYear();
+    await rows.getByRole('button', { name: 'Actions for Cuvée Stored 2018' }).click();
+    await page.getByRole('menuitem', { name: 'Drinking window' }).click();
+    await dating.getByRole('button', { name: /^Choose/ }).click();
+    for (const [end, chosen] of [
+        ['From', year - 1],
+        ['Before the end of', year + 1]
+    ] as const) {
+        await dating
+            .getByRole('group', { name: end })
+            .getByRole('combobox', { name: 'Year' })
+            .click();
+        await page.getByRole('option', { name: String(chosen), exact: true }).click();
+    }
+    await dating.getByRole('button', { name: 'Confirm' }).click();
+    await expect(dating).toBeHidden();
+    const ready = page.getByRole('button', { name: '1 ready' });
+    await ready.click();
+    await expect(page).toHaveURL(/rank=ready/);
+    await expect(rows).toHaveCount(1);
+    await expect(rows.getByText('Ready', { exact: true })).toBeVisible();
+    await expect(rows.getByText(`${year - 1}\u00a0– ${year + 1}`)).toBeVisible();
 
     // A visitor sees what a case holds; ticking a bottle asks to log in, and ticks nothing.
     const visitorContext = await browser.newContext();

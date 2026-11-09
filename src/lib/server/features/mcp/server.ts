@@ -14,7 +14,7 @@ import type { ApiError } from '#lib/server/http/errors.js';
 import { apiErrorOf } from '#lib/server/http/handler.js';
 import { runAsWrite } from '#lib/server/write-gate.js';
 import { BottleAvailability } from '#lib/shared/bottle-availability.js';
-import { SOON, type DrinkingRank } from '#lib/shared/drinking.js';
+import { TO_DRINK, type DrinkingRank } from '#lib/shared/drinking.js';
 import {
     BARCODE_MAX_LENGTH,
     bottleChangesSchema,
@@ -63,11 +63,11 @@ import { assertMcpWrite, ReadOnlyTokenError, type McpAccess } from './token';
 /** The most results that one search or list returns. */
 const MAX_SEARCH_LIMIT = 200;
 
-const INSTRUCTIONS = `Cellar manages a home wine cellar. A wine (name, producer, appellation, color…) has bottles. A bottle is "available" (in the cellar, most often in a case of a storage container), "out_of_cellar" (taken out, not drunk yet: set aside for a meal, brought to friends) or "consumed" (drunk). A bottle in the cellar gives its "location"; one out of the cellar or drunk gives its "formerLocation" instead, the case it left, where put_bottles_back returns it: the bottle is not in that case now. "optimum" is the year a bottle is at its best. "drinkBefore" is the year (YYYY) or the month (YYYY-MM) by the end of which the owner wants a bottle drunk; without one, the optimum takes over: list_bottles_to_drink gives the bottles to drink soon, as the app's page « To drink » lists them. Prices are numbers in the cellar's currency, which the app shows as euros; dates are YYYY-MM-DD. A field left out of an answer is empty.
+const INSTRUCTIONS = `Cellar manages a home wine cellar. A wine (name, producer, appellation, color…) has bottles. A bottle is "available" (in the cellar, most often in a case of a storage container), "out_of_cellar" (taken out, not drunk yet: set aside for a meal, brought to friends) or "consumed" (drunk). A bottle in the cellar gives its "location"; one out of the cellar or drunk gives its "formerLocation" instead, the case it left, where put_bottles_back returns it: the bottle is not in that case now. "optimum" is the year a bottle is at its best. "drinkFrom" and "drinkBefore" are the drinking window the owner gave a bottle, either one or both: the year (YYYY) or the month (YYYY-MM) from the start of which it can be drunk, and the one by the end of which they want it drunk. Without a drinkBefore, the optimum takes over: list_bottles_to_drink gives the bottles to drink soon and those ready to drink, as the app's page « To drink » lists them. Prices are numbers in the cellar's currency, which the app shows as euros; dates are YYYY-MM-DD. A field left out of an answer is empty.
 
 The tools that change the cellar run only when its owner allowed changes for this token, and each one writes all or nothing. They take the ids that the other tools give: a wine from search_wines, a bottle from get_wine, list_bottles or find_bottle_by_barcode, a case from get_free_space, a format, color, type, classification or origin from list_choices, an appellation from search_appellations, a wish from get_wishlist. A bottle drunk is marked with mark_bottles_drunk, one taken away without being drunk with take_bottles_out; delete_bottles is only for bottles added by mistake.
 
-A call that Cellar refuses answers why, then, when there is more to know, a line "Details: " followed by JSON: every unknown id (for an id that refers to nothing, the parameter that gave it, such as formatId or caseId), the bottles whose notes would be too long, the wish already there, or the id, name, capacity and bottles of a case without room.`;
+A call that Cellar refuses answers why, then, when there is more to know, a line "Details: " followed by JSON: every unknown id (for an id that refers to nothing, the parameter that gave it, such as formatId or caseId), the bottles whose notes would be too long, the bottles whose drinking window would end before it starts, the wish already there, or the id, name, capacity and bottles of a case without room.`;
 
 /** A tool that only reads: the client may call it without asking. */
 const READ_ONLY: ToolAnnotations = { readOnlyHint: true, openWorldHint: false };
@@ -202,9 +202,14 @@ const dateParam = (what: string) => optionalDate.describe(`YYYY-MM-DD: ${what}.`
 /** A year that bounds a search. */
 const yearParam = (what: string) => z.int().min(0).max(9999).optional().describe(what);
 
-/** « À boire avant », as add_bottles and update_bottles take it. */
+/** The start of the drinking window, « à partir de », as add_bottles and update_bottles take it. */
+const drinkFromParam = bottleSchema.shape.drinkFrom.describe(
+    'The start of their drinking window: the year, YYYY, or the month of a year, YYYY-MM, from the start of which they can be drunk, 2028 for "not before 2028". A window that would end before it starts is refused. null removes it.'
+);
+
+/** The end of the drinking window, « avant fin », as add_bottles and update_bottles take it. */
 const drinkBeforeParam = bottleSchema.shape.drinkBefore.describe(
-    'The year, YYYY, or the month of a year, YYYY-MM, by the end of which to drink them: the current month or year for "this month" or "this year". null removes it.'
+    'The end of their drinking window: the year, YYYY, or the month of a year, YYYY-MM, by the end of which to drink them. For "this month" or "this year", the current month or year with drinkFrom null, as the app does: a window that would end before it starts is refused. null removes it.'
 );
 
 /**
@@ -334,10 +339,10 @@ function createServer({ authInfo }: McpRequestContext): McpServer {
         {
             title: 'Bottles to drink soon',
             description:
-                "The bottles in the cellar to drink soon, the most urgent first, as the app's page « To drink » lists them, each with its rank, its wine and its location: which bottles to open first, which reds are at their best. late: its drinkBefore has passed, and it stays late until the owner changes or removes the date; this_month: its drinkBefore ends this month (a year alone in its December); this_year: it ends later this year; optimum_reached: no drinkBefore, and its optimum is this year or earlier. Within a rank, the earliest date first. Months and years are those of the server's clock. rank and colorId keep one rank, one color of wine; order optimum lists the oldest optimum first, as the app's page of the bottles to drink sorts them. A bottle dated after this year is not listed: list_bottles with optimumFrom and optimumTo finds bottles by optimum. update_bottles sets or removes drinkBefore. total counts every bottle found; offset reads past limit.",
+                "The bottles in the cellar to drink soon and those ready to drink, the most urgent first, as the app's page « To drink » lists them, each with its rank, its wine and its location: which bottles to open first, which reds are at their best. late: its drinkBefore has passed, and it stays late until the owner changes or removes the date; this_month: its drinkBefore ends this month (a year alone in its December); this_year: it ends later this year; optimum_reached: its optimum is this year or earlier, and it has neither drinkBefore nor drinkFrom, or its window is open and ends after this year or never; ready: its window is open (drinkFrom this month or earlier) and ends after this year or never, and its optimum is after this year or it has none. The app's banner counts only late, this_month, this_year and optimum_reached. Within a rank, the earliest end first (the optimum for optimum_reached; a ready bottle with neither drinkBefore nor optimum last). Months and years are those of the server's clock. rank and colorId keep one rank, one color of wine; order optimum lists the oldest optimum first, as the app's page of the bottles to drink sorts them. A bottle dated after this year, or whose window has not opened yet, is not listed: list_bottles with optimumFrom and optimumTo finds bottles by optimum. update_bottles sets or removes drinkFrom and drinkBefore. total counts every bottle found; offset reads past limit.",
             inputSchema: z.strictObject({
                 rank: z
-                    .enum(SOON as [DrinkingRank, ...DrinkingRank[]])
+                    .enum(TO_DRINK as [DrinkingRank, ...DrinkingRank[]])
                     .optional()
                     .describe('Only the bottles of this rank. Left out, every rank.'),
                 colorId: id
@@ -349,7 +354,7 @@ function createServer({ authInfo }: McpRequestContext): McpServer {
                     .enum(['urgency', 'optimum'])
                     .default('urgency')
                     .describe(
-                        'urgency: the most urgent first, as the banner. optimum: the oldest optimum first, a tie in the order of urgency, a bottle without an optimum last.'
+                        'urgency: the most urgent first, as the page « To drink ». optimum: the oldest optimum first, a tie in the order of urgency, a bottle without an optimum last.'
                     ),
                 ...pageParams('bottles')
             }),
@@ -464,6 +469,7 @@ function createServer({ authInfo }: McpRequestContext): McpServer {
                     optimum: bottleSchema.shape.optimum.describe(
                         'The year they are at their best.'
                     ),
+                    drinkFrom: drinkFromParam,
                     drinkBefore: drinkBeforeParam,
                     originId: originParam,
                     purchasePrice: bottleSchema.shape.purchasePrice.describe(
@@ -634,7 +640,7 @@ function createServer({ authInfo }: McpRequestContext): McpServer {
         {
             title: 'Change bottles',
             description:
-                'Gives each bottle the fields given, the same for all: a price, a value, a vintage, the date to drink them before, a barcode…; the others stay, and null removes an optional one. All or none. Other changes have their own tools: notes with update_bottle_notes, the case with move_bottles, drunk with mark_bottles_drunk, out of or back in the cellar with take_bottles_out and put_bottles_back.',
+                'Gives each bottle the fields given, the same for all: a price, a value, a vintage, their drinking window, a barcode…; the others stay, and null removes an optional one. All or none. Other changes have their own tools: notes with update_bottle_notes, the case with move_bottles, drunk with mark_bottles_drunk, out of or back in the cellar with take_bottles_out and put_bottles_back.',
             inputSchema: z
                 .strictObject({
                     bottleIds,
@@ -650,6 +656,7 @@ function createServer({ authInfo }: McpRequestContext): McpServer {
                         'Their vintage, a year: 0 or null for a wine without one.'
                     ),
                     optimum: bottle.optimum.describe('The year they are at their best.'),
+                    drinkFrom: drinkFromParam,
                     drinkBefore: drinkBeforeParam,
                     formatId: id.describe('The id of their format, from list_choices.'),
                     originId: originParam,

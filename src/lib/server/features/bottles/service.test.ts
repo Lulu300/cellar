@@ -498,3 +498,66 @@ describe('createBottles', () => {
         ).toBeNull();
     });
 });
+
+// FEAT-19: a drinking window that ends before it starts is refused, in one place.
+describe('the drinking window', () => {
+    const windowRefused = (bottles: object[]) =>
+        expect.objectContaining({
+            status: 422,
+            code: 'window_ends_before_start',
+            details: { bottles }
+        });
+    const dated = (drinkFrom: string | null, drinkBefore: string | null, quantity = 1) =>
+        createBottles(bottleData(definitionId, { drinkFrom, drinkBefore }), quantity);
+    const windows = () =>
+        db
+            .select({ drinkFrom: wineBottles.drinkFrom, drinkBefore: wineBottles.drinkBefore })
+            .from(wineBottles)
+            .all();
+
+    it('creates bottles with a start, an end, or both, an end the start month included', () => {
+        dated('2028', null);
+        dated(null, '2030');
+        dated('2026-09', '2026');
+        dated('2026', '2026-01');
+        expect(windows()).toHaveLength(4);
+    });
+
+    it('refuses new bottles whose window ends before it starts, creating none', () => {
+        expect(() => dated('2027', '2026-12', 2)).toThrow(
+            windowRefused([{ drinkFrom: '2027', drinkBefore: '2026-12' }])
+        );
+        expect(windows()).toEqual([]);
+    });
+
+    it('checks a change of one end against the other end the bottle has', () => {
+        const [bottle] = dated('2028', '2032');
+        expect(() => updateWineBottle(bottle.id, { drinkBefore: '2027' })).toThrow(
+            windowRefused([{ id: bottle.id, drinkFrom: '2028', drinkBefore: '2027' }])
+        );
+        expect(() => updateWineBottle(bottle.id, { drinkFrom: '2033' })).toThrow(
+            windowRefused([{ id: bottle.id, drinkFrom: '2033', drinkBefore: '2032' }])
+        );
+        expect(windows()).toEqual([{ drinkFrom: '2028', drinkBefore: '2032' }]);
+    });
+
+    it('refuses a change of several bottles naming those it would reverse, and changes none', () => {
+        const [late] = dated('2030', null);
+        const [early] = dated('2024', null);
+        const [open] = dated(null, null);
+        expect(() => updateBottles([late.id, early.id, open.id], { drinkBefore: '2027' })).toThrow(
+            windowRefused([{ id: late.id, drinkFrom: '2030', drinkBefore: '2027' }])
+        );
+        expect(windows()).not.toContainEqual(expect.objectContaining({ drinkBefore: '2027' }));
+    });
+
+    // The tiles « Ce mois-ci » and « Cette année » remove the start with the end they set.
+    it('sets an end this month on a bottle not ready yet once its start is removed with it', () => {
+        const [bottle] = dated('2028', '2032');
+        expect(() => updateWineBottle(bottle.id, { drinkBefore: '2026-11' })).toThrow(
+            windowRefused([{ id: bottle.id, drinkFrom: '2028', drinkBefore: '2026-11' }])
+        );
+        updateWineBottle(bottle.id, { drinkFrom: null, drinkBefore: '2026-11' });
+        expect(windows()).toEqual([{ drinkFrom: null, drinkBefore: '2026-11' }]);
+    });
+});

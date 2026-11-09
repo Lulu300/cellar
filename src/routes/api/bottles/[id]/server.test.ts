@@ -36,6 +36,24 @@ describe('PATCH /api/bottles/[id]', () => {
     const rowOf = (id: string) =>
         db.select().from(wineBottles).where(eq(wineBottles.id, id)).get()!;
 
+    // FEAT-19: one end changed, checked against the other end the bottle has.
+    it('sets the start of the window, and answers 422 to an end before it', async () => {
+        expect((await patch('second', { drinkFrom: '2028' })).status).toBe(200);
+        expect(rowOf('second').drinkFrom).toBe('2028');
+
+        const response = await patch('second', { drinkBefore: '2027-12' });
+
+        expect(response.status).toBe(422);
+        expect(await response.json()).toMatchObject({
+            error: {
+                code: 'window_ends_before_start',
+                details: { bottles: [{ id: 'second', drinkFrom: '2028', drinkBefore: '2027-12' }] }
+            }
+        });
+        expect(rowOf('second').drinkBefore).toBeNull();
+        await patch('second', { drinkFrom: null });
+    });
+
     it('changes the fields given and keeps the others, the status included', async () => {
         await db
             .update(wineBottles)

@@ -35,7 +35,12 @@ beforeAll(async () => {
             drinkBefore: '2026-11'
         },
         { storageCaseId: rack[2], availability: BottleAvailability.AVAILABLE, optimum: 2024 },
-        { storageCaseId: rack[2], availability: BottleAvailability.AVAILABLE, drinkBefore: '2027' },
+        {
+            storageCaseId: rack[2],
+            availability: BottleAvailability.AVAILABLE,
+            drinkFrom: '2025',
+            drinkBefore: '2027'
+        },
         { availability: BottleAvailability.AVAILABLE, drinkBefore: '2026' }
     ]);
 });
@@ -61,8 +66,8 @@ describe('the load of /storage', () => {
     it('gives the dates of the bottles in the cellar that a case holds, and only those', () => {
         expect(loadStorage().drinking).toEqual(
             expect.arrayContaining([
-                { storageCaseId: rack[2], drinkBefore: null, optimum: 2024 },
-                { storageCaseId: rack[2], drinkBefore: '2027', optimum: null }
+                { storageCaseId: rack[2], drinkFrom: null, drinkBefore: null, optimum: 2024 },
+                { storageCaseId: rack[2], drinkFrom: '2025', drinkBefore: '2027', optimum: null }
             ])
         );
         expect(loadStorage().drinking).toHaveLength(2);

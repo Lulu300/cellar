@@ -1,0 +1,1 @@
+ALTER TABLE `wine_bottles` ADD `drink_from` text;

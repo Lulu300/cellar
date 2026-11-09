@@ -1102,3 +1102,40 @@ describe('migration giving the wine colours their colour value', () => {
         expect(new Set(rows.map((row) => row.hex)).size).toBe(5);
     });
 });
+
+describe('migration adding the start of the drinking window', () => {
+    const TAG = '0021_drink_from';
+    let migrationsFolder = '';
+    beforeAll(() => {
+        migrationsFolder = migrationsBefore(TAG);
+    });
+    afterAll(() => rmSync(migrationsFolder, { recursive: true, force: true }));
+
+    it('keeps every « drink before » and optimum, and gives no bottle a start', () => {
+        const database = openOldDatabase(':memory:', migrationsFolder);
+        // MARGAUX_SQL, with the colour value that wine colours have since 0018.
+        database.$client.exec(`
+            ${MARGAUX_SQL.replace("VALUES ('red', 'Red', 0, 0)", "VALUES ('red', 'Red', 0, 0, '#7b1e2b')")}
+            INSERT INTO wine_bottles (id, definition_id, format_id, optimum, drink_before, availability, created_at, updated_at)
+                VALUES ('both', 'margaux', 'bottle', 2030, '2032', 'available', 0, 0),
+                    ('month', 'margaux', 'bottle', NULL, '2026-11', 'consumed', 0, 0),
+                    ('optimum', 'margaux', 'bottle', 2024, NULL, 'available', 0, 0),
+                    ('none', 'margaux', 'bottle', NULL, NULL, 'out_of_cellar', 0, 0);
+        `);
+
+        migrateSchema(database);
+
+        expect(
+            database.$client
+                .prepare(
+                    'SELECT id, optimum, drink_before, drink_from FROM wine_bottles ORDER BY id'
+                )
+                .all()
+        ).toEqual([
+            { id: 'both', optimum: 2030, drink_before: '2032', drink_from: null },
+            { id: 'month', optimum: null, drink_before: '2026-11', drink_from: null },
+            { id: 'none', optimum: null, drink_before: null, drink_from: null },
+            { id: 'optimum', optimum: 2024, drink_before: null, drink_from: null }
+        ]);
+    });
+});

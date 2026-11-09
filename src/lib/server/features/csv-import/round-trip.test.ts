@@ -214,6 +214,30 @@ describe('CSV export then import', () => {
         expect(await contents(await exportAll())).toEqual(await contents(files));
     });
 
+    // FEAT-19: the rule of the bottles service, as the JSON import applies it.
+    it('refuses a bottle whose drinking window ends before it starts, and imports the others', async () => {
+        const files = await exportAll();
+        const bottleFile = files.find((file) => file.name.includes('wineBottles'))!;
+        // Only the bottle RT0001 starts in 2026-09; it ends in 2027-03.
+        const reversed = (await bottleFile.text()).replace(',2026-09,', ',2027-04,');
+        expect(reversed).toContain(',2027-04,');
+        emptyCellar();
+
+        const { results, summary } = await importAll([
+            ...files.filter((file) => file !== bottleFile),
+            new File([reversed], bottleFile.name)
+        ]);
+
+        expect(summary.totalFailed).toBe(1);
+        const bottles = results.find((result: { table: string }) => result.table === 'wineBottles');
+        expect(bottles.errors).toEqual([
+            expect.objectContaining({ problems: [{ code: 'invalid', column: 'drinkFrom' }] })
+        ]);
+        const imported = db.select().from(wineBottles).all();
+        expect(imported.length).toBeGreaterThan(0);
+        expect(imported.map((bottle) => bottle.barcode)).not.toContain('RT0001');
+    });
+
     it('gives the colours of a file exported before 1.4.0, without hex, the colour of their name', async () => {
         const files = await exportAll();
         const colorFile = files.find((file) => file.name.includes('wineColors'))!;

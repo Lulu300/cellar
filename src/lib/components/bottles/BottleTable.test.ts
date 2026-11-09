@@ -39,3 +39,45 @@ describe('the « to drink » column of BottleTable', () => {
         expect(body.match(/avant fin sept\. 2026/g)).toHaveLength(2);
     });
 });
+
+// FEAT-19: the page « À boire » gives its rank, « Prête » included, which no marker shows.
+describe('the drinking window in BottleTable', () => {
+    const table = (bottles: object[], columns: string[]) =>
+        render(BottleTable, {
+            props: {
+                bottles: bottles as ReturnType<typeof bottle>[],
+                columns: columns as ['drinking'],
+                sort: { column: 'vintage', direction: 'asc' },
+                onSort: () => {},
+                emptyMessage: ''
+            }
+        }).body;
+
+    it('writes « pas encore prête » after a window not open yet, in the cellar only', () => {
+        vi.useFakeTimers({ toFake: ['Date'], now: new Date(2026, 10, 15) });
+        useLocale('fr');
+        const notOpen = { drinkFrom: '2028', drinkBefore: null };
+        const body = table(
+            [
+                { ...bottle('in', 'available'), ...notOpen },
+                { ...bottle('out', 'out_of_cellar'), ...notOpen },
+                { ...bottle('open', 'available'), drinkFrom: '2025', drinkBefore: '2030' }
+            ],
+            ['drinking']
+        );
+
+        expect(body.match(/dès 2028/g)).toHaveLength(2);
+        expect(body.match(/pas encore prête/g)).toHaveLength(1);
+        // Ready, it gets no chip outside the page « À boire ».
+        expect(body).toContain('2025\u00a0– 2030');
+        expect(body).not.toContain('Prête');
+    });
+
+    it('shows the rank that the page gives, « Prête » included', () => {
+        vi.useFakeTimers({ toFake: ['Date'], now: new Date(2026, 10, 15) });
+        useLocale('fr');
+        const ready = { ...bottle('open', 'available'), drinkFrom: '2025', drinkBefore: '2030' };
+
+        expect(table([{ ...ready, rank: 'ready' }], ['urgency'])).toContain('Prête');
+    });
+});

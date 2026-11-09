@@ -267,6 +267,23 @@ describe('drinkingRank with a window start', () => {
     });
 });
 
+describe('a window start around the turn of the year', () => {
+    const december = { year: 2026, month: 12 };
+    const january = { year: 2027, month: 1 };
+
+    it('opens a window of next January in January, not in December', () => {
+        expect(drinkingRank(withStart('2027-01'), december)).toBe(DrinkingRank.LATER);
+        expect(notReadyYet(withStart('2027-01'), december)).toBe(true);
+        expect(drinkingRank(withStart('2027'), january)).toBe(DrinkingRank.READY);
+    });
+
+    it('keeps an end of next January ready in December, then this month in January', () => {
+        const bottle = withStart('2026-06', '2027-01');
+        expect(drinkingRank(bottle, december)).toBe(DrinkingRank.READY);
+        expect(drinkingRank(bottle, january)).toBe(DrinkingRank.THIS_MONTH);
+    });
+});
+
 describe('the rank sets', () => {
     it('lists every rank but later on the page, and counts those of FEAT-05 on the banner', () => {
         expect(TO_DRINK).toEqual([

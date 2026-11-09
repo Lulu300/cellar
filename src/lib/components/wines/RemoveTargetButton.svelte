@@ -1,7 +1,7 @@
 <script lang="ts">
-    import { tick } from 'svelte';
     import { BellOff } from '@lucide/svelte';
     import { Button } from '#lib/components/ui/button/index.js';
+    import { refocus } from '#lib/components/layout/button-states.js';
     import { m } from '#lib/paraglide/messages.js';
     import { removeTargetQuantity } from './target-quantity.js';
 
@@ -30,13 +30,9 @@
         busy = true;
         const done = await removeTargetQuantity(wine);
         busy = false;
-        if (done) {
-            removed();
-        } else {
-            // The browser took the focus away from the button while it was disabled.
-            await tick();
-            button?.focus();
-        }
+        // The browser took the focus away from the button while it was disabled.
+        if (done) removed();
+        else await refocus(() => button);
     }
 </script>
 

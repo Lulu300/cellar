@@ -1,5 +1,5 @@
 <script lang="ts">
-    import { onDestroy, tick } from 'svelte';
+    import { onDestroy } from 'svelte';
     import { Plus, X } from '@lucide/svelte';
     import { page } from '$app/state';
     import { m } from '#lib/paraglide/messages.js';
@@ -10,7 +10,7 @@
     import { ImageUploads } from '#lib/components/forms/image-uploads.js';
     import LongTextarea from '#lib/components/forms/LongTextarea.svelte';
     import PhotoField from '#lib/components/forms/PhotoField.svelte';
-    import { iconButton } from '#lib/components/layout/button-states.js';
+    import { iconButton, refocus } from '#lib/components/layout/button-states.js';
     import { NAME_MAX_LENGTH } from '#lib/shared/schemas/common.js';
     import { addWholeWish } from './wishes.js';
 
@@ -39,6 +39,7 @@
     let saving = $state(false);
     let nameField = $state<HTMLInputElement | null>(null);
     let changeButton = $state<HTMLButtonElement | null>(null);
+    let submitButton = $state<HTMLButtonElement | null>(null);
 
     const uploads = new ImageUploads();
     onDestroy(() => uploads.close());
@@ -62,8 +63,7 @@
     // to the page.
     async function choose(wine: Wine | null) {
         chosen = wine;
-        await tick();
-        (wine ? changeButton : nameField)?.focus();
+        await refocus(() => (wine ? changeButton : nameField));
     }
 
     // A photo chosen for a name stays when a wine of the cellar is added: it is for the next name.
@@ -74,16 +74,16 @@
         saving = true;
         const saved = await addWholeWish(uploads, { wine, text, file, imageId, note, quantity });
         saving = false;
-        if (!saved) return;
+        // The button, disabled while saving, lost the focus: back to it after a refusal, or to the
+        // name of the next wish, since the emptied form keeps the button disabled.
+        if (!saved) return refocus(() => submitButton);
         text = note = '';
         quantity = chosen = null;
         if (!wine) {
             imageId = previewUrl = '';
             file = null;
         }
-        // The empty form disables its button, which loses the focus: the next wish starts here.
-        await tick();
-        nameField?.focus();
+        await refocus(() => nameField);
     }
 </script>
 
@@ -218,7 +218,11 @@
                 </FormField>
 
                 <div class="flex justify-end">
-                    <Button type="submit" disabled={saving || (!chosen && !text.trim())}>
+                    <Button
+                        type="submit"
+                        bind:ref={submitButton}
+                        disabled={saving || (!chosen && !text.trim())}
+                    >
                         <Plus class="mr-2 h-4 w-4" aria-hidden="true" />
                         {m['wishlist.add_wish']()}
                     </Button>

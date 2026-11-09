@@ -1,3 +1,4 @@
+import { tick } from 'svelte';
 import { buttonVariants } from '#lib/components/ui/button/index.js';
 
 // The states of a button made by hand, as the Button component draws them (UI-33).
@@ -26,3 +27,15 @@ export const iconButton = buttonVariants({
     size: 'icon',
     class: 'text-muted-foreground'
 });
+
+/**
+ * Gives the keyboard focus to the element that `target` reads once the page has updated (it may
+ * appear with the update), when a button disabled or removed meanwhile dropped it on the page; a
+ * focus the user moved elsewhere in the meantime stays.
+ */
+export async function refocus(target: () => HTMLElement | null | undefined): Promise<void> {
+    await tick();
+    // A removed element may stay the active one until the browser next renders.
+    const active = document.activeElement;
+    if (!active || active === document.body || !active.isConnected) target()?.focus();
+}

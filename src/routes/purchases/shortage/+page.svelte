@@ -6,6 +6,7 @@
     import { Badge } from '#lib/components/ui/badge/index.js';
     import { Button } from '#lib/components/ui/button/index.js';
     import WineBottleDialog from '#lib/components/bottles/WineBottleDialog.svelte';
+    import RemoveTargetButton from '#lib/components/wines/RemoveTargetButton.svelte';
     import { BottleWine, Plus } from '@lucide/svelte';
     import { auth } from '#lib/stores/auth.svelte.js';
     import { toasts } from '#lib/stores/toast.svelte.js';
@@ -232,8 +233,10 @@
                                             </div>
                                         </div>
 
-                                        <!-- Action Button -->
-                                        <div class="flex items-end justify-end">
+                                        <!-- Actions -->
+                                        <div
+                                            class="flex flex-col items-stretch justify-end gap-2 md:items-end"
+                                        >
                                             {#if auth.isAuthenticated}
                                                 <Button
                                                     onclick={() => handleAddBottle(wine)}
@@ -256,6 +259,7 @@
                                                     {m['common.add_bottle']()}
                                                 </Button>
                                             {/if}
+                                            <RemoveTargetButton {wine} class="w-full md:w-auto" />
                                         </div>
                                     </div>
                                 </div>

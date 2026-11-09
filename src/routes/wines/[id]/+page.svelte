@@ -14,6 +14,7 @@
     import WineBottleDialog from '#lib/components/bottles/WineBottleDialog.svelte';
     import WineDefinitionDialog from '#lib/components/wines/WineDefinitionDialog.svelte';
     import WinePhotos from '#lib/components/wines/WinePhotos.svelte';
+    import RemoveTargetButton from '#lib/components/wines/RemoveTargetButton.svelte';
     import WishButton from '#lib/components/wishlist/WishButton.svelte';
     import BarcodeDialog from '#lib/components/barcode/BarcodeDialog.svelte';
     import BottleCard from '#lib/components/bottles/BottleCard.svelte';
@@ -33,7 +34,7 @@
 
     let { data }: { data: PageData } = $props();
 
-    const { wineDefinition, bottles, photos } = $derived(data);
+    const { wineDefinition, bottles, photos, inShortage } = $derived(data);
 
     // The bottles below are replaced, never mutated: raw state does not proxy the objects of `data`.
 
@@ -217,6 +218,23 @@
                                         })}</strong
                                     >
                                     {wineDefinition.classification}
+                                </div>
+                            {/if}
+                            {#if inShortage && wineDefinition.targetQuantity !== null}
+                                <div class="flex flex-wrap items-center gap-x-3 gap-y-1">
+                                    <span>
+                                        <strong
+                                            >{m['common.label']({
+                                                label: m['forms.target_quantity']()
+                                            })}</strong
+                                        >
+                                        {m['common.n_bottles']({
+                                            count: wineDefinition.targetQuantity
+                                        })}
+                                    </span>
+                                    {#if auth.isAuthenticated}
+                                        <RemoveTargetButton wine={wineDefinition} size="sm" />
+                                    {/if}
                                 </div>
                             {/if}
                             {#if wineDefinition.website}

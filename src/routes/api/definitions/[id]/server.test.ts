@@ -3,6 +3,7 @@ import { eq } from 'drizzle-orm';
 import { db } from '#lib/server/db/index.js';
 import { wineBottles, wineDefinitions } from '#lib/server/db/schema.js';
 import { fakeEvent } from '../../../../test/event';
+import { getWineShortages } from '#lib/server/features/bottles/service.js';
 import { insertWineDefinition } from '../../../../test/wine';
 import { PATCH as patchBottle } from '../../bottles/[id]/+server';
 import { DELETE, GET, PUT } from './+server';
@@ -73,6 +74,40 @@ describe('PUT /api/definitions/[id]', () => {
         const [wine] = await db.select().from(wineDefinitions);
 
         expect((await put('none', wine)).status).toBe(404);
+    });
+
+    // The button of the shortage tab and of a wine's page sends back what GET answers, without
+    // the target (UI-36): the wine leaves the shortage list and keeps everything else.
+    it('removes only the target quantity when given back what GET answers, without it', async () => {
+        const [wine] = await db.select().from(wineDefinitions);
+        await db
+            .update(wineDefinitions)
+            .set({ targetQuantity: 6, rating: 4 })
+            .where(eq(wineDefinitions.id, wine.id));
+        const [before] = await db
+            .select()
+            .from(wineDefinitions)
+            .where(eq(wineDefinitions.id, wine.id));
+        expect((await getWineShortages()).map((short) => short.id)).toContain(wine.id);
+        const current = await (
+            await GET(
+                fakeEvent<Parameters<typeof GET>[0]>({
+                    path: `/api/definitions/${wine.id}`,
+                    routeId: '/api/definitions/[id]',
+                    params: { id: wine.id }
+                })
+            )
+        ).json();
+
+        const response = await put(wine.id, { ...current, targetQuantity: null });
+
+        expect(response.status).toBe(200);
+        const [after] = await db
+            .select()
+            .from(wineDefinitions)
+            .where(eq(wineDefinitions.id, wine.id));
+        expect(after).toEqual({ ...before, targetQuantity: null, updatedAt: after.updatedAt });
+        expect((await getWineShortages()).map((short) => short.id)).not.toContain(wine.id);
     });
 
     it.each([

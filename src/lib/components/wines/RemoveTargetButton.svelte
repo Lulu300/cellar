@@ -1,4 +1,5 @@
 <script lang="ts">
+    import { tick } from 'svelte';
     import { BellOff } from '@lucide/svelte';
     import { Button } from '#lib/components/ui/button/index.js';
     import { m } from '#lib/paraglide/messages.js';
@@ -21,17 +22,26 @@
     } = $props();
 
     let busy = $state(false);
+    let button = $state<HTMLElement | null>(null);
 
     async function remove() {
         // Read now: the page drops this button once the target is gone.
         const removed = onRemoved;
         busy = true;
-        if (await removeTargetQuantity(wine)) removed();
+        const done = await removeTargetQuantity(wine);
         busy = false;
+        if (done) {
+            removed();
+        } else {
+            // The browser took the focus away from the button while it was disabled.
+            await tick();
+            button?.focus();
+        }
     }
 </script>
 
 <Button
+    bind:ref={button}
     variant="outline"
     {size}
     class={className}

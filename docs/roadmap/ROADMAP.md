@@ -145,6 +145,7 @@ Revue du code du 2026-10-08, commit `556c7bb`. Ce fichier est la version pour le
 - **Page À boire (1.5.1)** : Retour d’un utilisateur sur la 1.5.0 (2026-11-08) : avec une année optimale saisie pour tous ses vins, le bandeau « À boire » compte plus de 180 bouteilles, presque toutes « à l’apogée », et on ne peut ni les trier par apogée ni les filtrer. Le mainteneur veut une 1.5.1 : le bandeau reste court (ses compteurs, puis les 5 à 10 plus urgentes une fois déplié) et mène par « Voir les N bouteilles » à une page « À boire » dédiée, sans entrée de menu ; la page reprend le tableau des bouteilles, triable par colonne (urgence par défaut, apogée, millésime, couleur, « à boire avant », case), filtrée par groupe, par couleur de vin et par nom, avec la sélection multiple et les actions des autres listes ; un interrupteur « Par vin / Par bouteille » regroupe les bouteilles d’un même vin sur une ligne, la vue par bouteille restant celle par défaut. Séparer « apogée dépassée depuis longtemps » de « à l’apogée » attend : le tri par apogée suffit d’abord. DEP-10 part dans cette version, juste avant sa release. Comme pour la 1.4.1, develop repasse de 1.6.0-rc.0 à 1.5.1-rc.0, aucune image ni base ne tournant sous ce numéro hors de la CI, et l’entrée 1.6.0 de `releases.json` revient au démarrage de la version suivante. Précisé sur captures le 2026-11-08 : 8 bouteilles dans le bandeau ; une ligne « Par vin » coche toutes ses bouteilles et n’a pas de menu ⋯ ; ses cases s’écrivent « Cave3, Cave6 +2 » ; sur téléphone, le tableau défile de côté dans son cadre ; un seul choix par rangée de filtres ; le lien du bandeau est toujours affiché ; le MCP filtre par groupe et par couleur et trie par apogée.
 - **Largeur des pages (1.5.2)** : Demande du mainteneur (2026-11-08) : les marges des côtés, réduites au début du projet, laissent encore près de 200 px vides de chaque côté sur un écran de 1920 px (le cadre unique de `+layout.svelte` prend 90 %, 85 % puis 80 % de la largeur), et le plan de la cave défile de côté alors qu’il tiendrait à l’écran. Pour une 1.5.2, juste après la 1.5.1 : dans les préférences, « Largeur des pages » à quatre choix (Étroite, Normale par défaut, qui est la largeur d’aujourd’hui, Large, Pleine largeur avec la seule marge de 16 px), appliquée à l’en-tête comme aux pages ; et un interrupteur « Plan de la cave en pleine largeur », activé par défaut, pour que le plan prenne tout l’écran même quand le reste garde ses marges. Les valeurs sont proposées sur captures (1280, 1920 et 2560 px) avant d’être construites ; la liste des vins (cartes et liste, et ses filtres à paliers fixes), le plan, un formulaire et les statistiques ne doivent rien étirer mal. develop passe à 1.5.2-rc.0 après la 1.5.1.
 - **Achats plus clairs (1.5.3)** : Retours du mainteneur (2026-11-09) pour une 1.5.3. Pénurie : retirer la quantité cible d’un vin demande aujourd’hui de modifier le vin ; un bouton la retire d’un coup (sans la diminuer), sur chaque vin de l’onglet Pénurie et sur la fiche d’un vin quand il en a une, jamais depuis la liste Mes vins. Liste d’envies : des utilisateurs prennent « Ajouter une bouteille » d’une envie pour un ajout à la liste ; le bouton devient « J’en ai acheté » (« I bought some »), puisqu’il range en cave une bouteille achetée. Le formulaire d’ajout se lit dans l’ordre : photo de l’étiquette, nom, note et quantité, puis un seul bouton qui ajoute l’envie entière, au lieu d’un « Ajouter » collé au nom et d’une note qu’on ne saisit qu’après coup. La quantité d’une envie reste, renommée avec une aide qui dit qu’elle n’est qu’un pense-bête et ne déclenche aucune alerte, contrairement à la quantité cible de la pénurie (choix du mainteneur). Les libellés, les emplacements des boutons et le formulaire sont proposés sur captures avant d’être construits. Plage de dégustation : « À boire avant » (une année ou un mois) et l’année optimale ne disent pas « à boire entre 2027 et 2032 » ; un sous-agent propose d’abord deux ou trois modèles, avec maquettes et leur effet sur l’ordre de « À boire », sans code (FEAT-19) ; le mainteneur choisit ensuite le modèle et la version. Comme pour la 1.5.1, develop repasse de 1.6.0-rc.0 à 1.5.3-rc.0, et l’entrée 1.6.0 de `releases.json` revient au démarrage de la version suivante.
+- **Période de dégustation (FEAT-19)** : Choisi sur la proposition du 2026-11-09 (modèle A) : une bouteille peut porter « à partir de » à côté d’« À boire avant », chacun en année ou en mois, jamais au jour ; l’année optimale reste une année. Une nouvelle colonne, aucune valeur convertie : une bouteille sans début se range exactement comme avant. Un rang « Prête » (losange vide, après « À l’apogée ») vaut pour une bouteille dans sa période, dont la fin tombe après cette année ou n’existe pas, et dont l’apogée n’est pas venue ou n’existe pas ; une fin dépassée, ce mois-ci ou cette année range la bouteille comme aujourd’hui ; une période pas encore ouverte reste « Plus tard », écrite « pas encore prête », sans rang à elle. « Prête » ne se voit que sur la page « À boire », avec un filtre : le bandeau, le repère du stockage et le récapitulatif des notifications (FEAT-09) gardent les quatre rangs de FEAT-05. Noms : « Période de dégustation » (fenêtre, formulaire, menu ⋯, bouton de la sélection) et « Période » (colonne) ; « 2024 – 2032 », « sept. 2026 – mars 2027 », « dès 2028 » ; une bouteille en retard garde « avant fin … ». Les tuiles « Ce mois-ci » et « Cette année » retirent le début ; l’API et le MCP refusent une fin avant le début (422 qui nomme les bouteilles). « Après l’apogée » reste pour plus tard. Un petit bloc à lui seul, juste après la 1.5.3 : version mineure, puisqu’une version corrective ne porte pas de migration (choix du mainteneur, 2026-11-09).
 - **Survol des boutons (UI-33)** : Choisi sur captures le 2026-11-02, une règle par sorte de bouton : un bouton plein (principal, secondaire, suppression, interrupteur) mêle au survol 15 % de la couleur du texte de la page à son fond, donc s’assombrit en clair et s’éclaircit en sombre (jetons `--primary-hover`, `--secondary-hover`, `--destructive-hover`) ; un bouton discret (transparent, icône, ligne de menu, section du menu, tri, case du stockage, croix d’un dialogue) prend au survol le fond `accent` entier et son texte, en clair comme en sombre, et les boutons à icône faits main aussi ; un bouton à contour et une liste déroulante gardent le survol de shadcn, la liste déroulante gagnant celui qui lui manquait en clair ; un choix non retenu suit la règle des boutons discrets, un choix retenu celle des boutons pleins, sans zoom ; liens et onglets inchangés ; un focus clavier net (anneau de 3 px en `--ring` entier) sur chaque bouton, lien et onglet ; un bouton désactivé à 50 %, sans survol, avec le curseur normal, faits main compris ; pas d’état appuyé à part, et seules les couleurs changent. L’`accent` n’est pas renforcé. Exception à la règle de `ui/` : `ui/button/button.svelte`, `ui/select/select-trigger.svelte` et `ui/dialog/dialog-content.svelte` portent des classes modifiées à la main, signalées par un commentaire, parce que le défaut est dans leurs variantes. Tous les conteneurs du stockage ont la même pastille neutre.
 - **Vue liste (FEAT-10)** : Choisie sur maquette (planche « D3 ») : une vue liste à côté des cartes, sans défilement (le mainteneur n’en veut pas dans la liste) ; un texte long passe à la ligne. Un sélecteur « Cartes / Liste » sur la page et la vue par défaut dans les préférences. Demandée avec UI-32, placée en tête de la 1.4.0 parce que c’est une nouvelle fonction et non un correctif.
 - **Couleurs des vins (FEAT-03)** : Chaque couleur de vin a une vraie couleur, enregistrée en base ; les couleurs de départ reçoivent celles des étiquettes d’aujourd’hui. Créée depuis un formulaire, une couleur reçoit une teinte par défaut ou neutre ; dans Admin › Data, le sélecteur s’affiche dès la création ou la modification. Choisi sur maquette : sur la page Stockage, chaque place occupée prend la couleur de son vin ; les camemberts des statistiques prennent les vraies couleurs ; la liste des vins garde l’étiquette, colorée, et ajoute une bande à gauche de la carte ; les listes de bouteilles montrent l’étiquette colorée à côté du nom du vin. Pas de carte teintée (décision du 2026-10-31). Précisé le 2026-11-01 : les couleurs de départ sont les teintes de vin de la maquette (Rouge #7b1e2b, Blanc #ead98b, Rosé #f2a08c, Jaune #d4952a, N/A #9ca3af) ; une couleur créée depuis un formulaire reçoit le gris de N/A, sauf un nom reconnu, qui reprend sa teinte de départ. Changé le 2026-11-02, sur captures : le contour « seulement quand le contraste manque » donnait des bouteilles avec contour, d’autres sans, et un orange entre les deux, ce que le mainteneur refuse ; toute couleur reçoit désormais le même contour, dans sa propre teinte mêlée de 40 % de noir en clair et de 40 % de blanc en sombre, sur le stockage (une silhouette de bouteille sans étiquette ; une place vide est la même silhouette en contour), les étiquettes, la bande des cartes et la légende des statistiques. Une couleur choisie par l’utilisateur peut avoir un contour sous 3:1 (le blanc pur en clair : 2,85:1) : accepté.
@@ -185,8 +186,9 @@ Revue du code du 2026-10-08, commit `556c7bb`. Ce fichier est la version pour le
 | 1.5.1 | P17b · La page « À boire » | Pour la 1.5.1, avant le bloc suivant (décision « Page À boire (1.5.1) ») : FEAT-18 ; DEP-10 ; puis REL-19. Publiée en 1.5.1 le 2026-11-08. | DEP-10, FEAT-18, REL-19 | 3 / 3 |
 | 1.5.2 | P17c · Largeur des pages | Pour la 1.5.2, avant le bloc suivant (décision « Largeur des pages (1.5.2) ») : UI-35 ; puis REL-20. Publiée en 1.5.2 le 2026-11-08. | UI-35, REL-20 | 2 / 2 |
 | 1.5.3 | P17d · Achats plus clairs | Pour la 1.5.3, avant le bloc suivant (décision « Achats plus clairs (1.5.3) ») : UI-36 ; puis REL-21. DEP-11 passe juste avant REL-21 si la sortie tombe le 2026-11-12 ou après. FEAT-19, une proposition sans code, se mène à côté et ne retient pas la 1.5.3. | UI-36, REL-21 | 0 / 2 |
+| Période de dégustation | P22 · Période de dégustation | Juste après la 1.5.3, avant les autres blocs (décision « Période de dégustation (FEAT-19) ») : FEAT-19 ; puis REL-22. Une version mineure à elle seule, à cause de sa migration. | FEAT-19, REL-22 | 0 / 2 |
 | Dégustation | P20 · Fiches de dégustation | Décision « Fiches de dégustation (FEAT-06, FEAT-14 à FEAT-16) ». Sur la branche d’intégration `feat/tasting`, envoyée sur GitHub (décision « Blocs sans numéro ») : chaque tâche part de cette branche et y revient ; la branche rejoint develop quand le mainteneur valide le bloc entier. Ordre : FEAT-06 ; FEAT-14 ; FEAT-15 ; FEAT-16 ; puis REL-17. | FEAT-06, FEAT-14, FEAT-15, FEAT-16, REL-17 | 0 / 5 |
-| Producteurs | P18 · Producteurs et revue de l’import | Les producteurs d’abord, parce que la revue de l’import doit savoir relier ou créer un producteur. Ordre : FEAT-07 ; FEAT-08 ; puis REL-12. UI-34 est rangée ici par défaut : elle se place où le mainteneur veut, une fois le comportement du visiteur choisi ; de même FEAT-19, une fois le modèle de plage choisi. DEP-11 aussi : elle se fait sur develop juste avant la sortie suivante, quel que soit le bloc. | DEP-11, UI-34, FEAT-19, FEAT-07, FEAT-08, REL-12 | 0 / 6 |
+| Producteurs | P18 · Producteurs et revue de l’import | Les producteurs d’abord, parce que la revue de l’import doit savoir relier ou créer un producteur. Ordre : FEAT-07 ; FEAT-08 ; puis REL-12. UI-34 est rangée ici par défaut : elle se place où le mainteneur veut, une fois le comportement du visiteur choisi . DEP-11 aussi : elle se fait sur develop juste avant la sortie suivante, quel que soit le bloc. | DEP-11, UI-34, FEAT-07, FEAT-08, REL-12 | 0 / 5 |
 | Notifications | P19 · Notifications | Les notifications, qui utilisent « À boire » (FEAT-05), le statut hors cave et la vérification des mises à jour. Ordre : FEAT-09 ; puis REL-13. | FEAT-09, REL-13 | 0 / 2 |
 | Statistiques de dégustation | P21 · Statistiques de dégustation | Après le bloc « Dégustation », dont elles lisent les fiches. Ordre : FEAT-17 ; puis REL-18. | FEAT-17, REL-18 | 0 / 2 |
 
@@ -3765,6 +3767,45 @@ Sévérité **évolution** · effort **S** · dépend de UI-36 · statut **À fa
 
 **Sources** : Décision « Achats plus clairs (1.5.3) »
 
+## P22 · Période de dégustation (Période de dégustation)
+
+Juste après la 1.5.3, avant les autres blocs (décision « Période de dégustation (FEAT-19) ») : FEAT-19 ; puis REL-22. Une version mineure à elle seule, à cause de sa migration.
+
+### FEAT-19 · Une plage de dégustation plus souple
+
+Sévérité **évolution** · effort **M** · dépend de REL-21 · statut **À faire**
+
+**Problème** : Une bouteille porte « À boire avant » (une année, ou un mois d’une année) et une année optimale, mais rien ne dit « à boire entre 2027 et 2032 », ni « pas avant 2028 ».
+
+**Fichiers** : `src/lib/shared/drinking.ts`, `src/lib/server/db/schema.ts`, `src/lib/components/bottles/`, `src/routes/to-drink/`, `src/lib/server/features/mcp/`
+
+**À faire**
+
+- D’abord une proposition, sans code : deux ou trois modèles (par exemple un début à côté d’« À boire avant », ou une apogée qui devient une plage), avec maquettes de la saisie et de la liste, leur effet sur l’ordre de « À boire » et sur le bandeau, et ce que chacun change à la base, à l’API, au MCP, à l’export et au banc de test.
+- Puis le modèle choisi par le mainteneur, dans la version qu’il choisit.
+- Proposition faite le 2026-11-09, sans code (p15-notes/feat-19-evidence) : trois modèles comparés à aujourd’hui ; le mainteneur choisit le modèle A (décision « Période de dégustation (FEAT-19) »).
+- Construire le modèle A : colonne `drink_from` (migration par `pnpm db:generate`, aucune valeur convertie) ; saisie dans le formulaire, la fenêtre « Période de dégustation » et la sélection de plusieurs bouteilles ; rang « Prête » sur la page « À boire » seulement, avec son filtre ; API, OpenAPI, MCP (champs, rang, descriptions), export et import JSON, export CSV des bouteilles ; `drinkFrom` ajouté aux champs ignorés du banc ; captures montrées au mainteneur avant le merge.
+
+**Critère d’acceptation** : Une bouteille peut porter « à partir de » et « avant fin », chacun en année ou en mois ; « À boire » range ses bouteilles selon la règle de la décision, une bouteille sans début exactement comme avant ; une fin avant le début est refusée partout ; testé, migration et banc compris.
+
+**Sources** : Décision « Achats plus clairs (1.5.3) », Décision « Période de dégustation (FEAT-19) »
+
+### REL-22 · Publication du bloc « Période de dégustation »
+
+Sévérité **évolution** · effort **S** · dépend de FEAT-19 · statut **À faire**
+
+**Problème** : Le bloc apporte la période de dégustation sans attendre les autres.
+
+**Fichiers** : `releases.json`, `CHANGELOG.md`, `UPGRADING.md`, `package.json`
+
+**À faire**
+
+- Résumé complété par FEAT-19 ; bancs depuis la version précédente et la 1.0.0, avec `drinkFrom` dans les champs ignorés ; release selon RELEASING.md, avec le mainteneur, sous le numéro de version suivant (décision « Blocs sans numéro »).
+
+**Critère d’acceptation** : La version est publiée sur `main` et son image se télécharge sans connexion ; develop passe à la rc suivante.
+
+**Sources** : Décision « Période de dégustation (FEAT-19) »
+
 ## P20 · Fiches de dégustation (Dégustation)
 
 Décision « Fiches de dégustation (FEAT-06, FEAT-14 à FEAT-16) ». Sur la branche d’intégration `feat/tasting`, envoyée sur GitHub (décision « Blocs sans numéro ») : chaque tâche part de cette branche et y revient ; la branche rejoint develop quand le mainteneur valide le bloc entier. Ordre : FEAT-06 ; FEAT-14 ; FEAT-15 ; FEAT-16 ; puis REL-17.
@@ -3863,7 +3904,7 @@ Sévérité **évolution** · effort **S** · dépend de FEAT-06, FEAT-14, FEAT-
 
 ## P18 · Producteurs et revue de l’import (Producteurs)
 
-Les producteurs d’abord, parce que la revue de l’import doit savoir relier ou créer un producteur. Ordre : FEAT-07 ; FEAT-08 ; puis REL-12. UI-34 est rangée ici par défaut : elle se place où le mainteneur veut, une fois le comportement du visiteur choisi ; de même FEAT-19, une fois le modèle de plage choisi. DEP-11 aussi : elle se fait sur develop juste avant la sortie suivante, quel que soit le bloc.
+Les producteurs d’abord, parce que la revue de l’import doit savoir relier ou créer un producteur. Ordre : FEAT-07 ; FEAT-08 ; puis REL-12. UI-34 est rangée ici par défaut : elle se place où le mainteneur veut, une fois le comportement du visiteur choisi . DEP-11 aussi : elle se fait sur develop juste avant la sortie suivante, quel que soit le bloc.
 
 ### DEP-11 · Revue des dépendances d’après la 1.5.1
 
@@ -3898,23 +3939,6 @@ Sévérité **mineur** · effort **S** · dépend de FEAT-18 · statut **À fair
 **Critère d’acceptation** : Les trois listes utilisent la même barre de sélection, et un visiteur y voit partout le comportement choisi par le mainteneur.
 
 **Sources** : Trouvé pendant FEAT-18, Demande du mainteneur (2026-11-08) : regrouper une fois le comportement du visiteur validé
-
-### FEAT-19 · Une plage de dégustation plus souple
-
-Sévérité **évolution** · effort **M** · dépend de REL-20 · statut **À faire**
-
-**Problème** : Une bouteille porte « À boire avant » (une année, ou un mois d’une année) et une année optimale, mais rien ne dit « à boire entre 2027 et 2032 », ni « pas avant 2028 ».
-
-**Fichiers** : `src/lib/shared/drinking.ts`, `src/lib/server/db/schema.ts`, `src/lib/components/bottles/`, `src/routes/to-drink/`, `src/lib/server/features/mcp/`
-
-**À faire**
-
-- D’abord une proposition, sans code : deux ou trois modèles (par exemple un début à côté d’« À boire avant », ou une apogée qui devient une plage), avec maquettes de la saisie et de la liste, leur effet sur l’ordre de « À boire » et sur le bandeau, et ce que chacun change à la base, à l’API, au MCP, à l’export et au banc de test.
-- Puis le modèle choisi par le mainteneur, dans la version qu’il choisit.
-
-**Critère d’acceptation** : Le mainteneur a choisi un modèle sur la proposition ; une fois construit, une bouteille peut porter la plage choisie, et « À boire » la range selon la règle validée.
-
-**Sources** : Décision « Achats plus clairs (1.5.3) »
 
 ### FEAT-07 · Producteurs : une liste et une fiche
 

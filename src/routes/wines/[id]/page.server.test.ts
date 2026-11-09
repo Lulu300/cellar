@@ -1,6 +1,6 @@
 import { isHttpError } from '@sveltejs/kit';
 import { eq } from 'drizzle-orm';
-import { beforeAll, describe, expect, it } from 'vitest';
+import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { db } from '#lib/server/db/index.js';
 import { wineDefinitions, wineImages } from '#lib/server/db/schema.js';
 import { createBottles } from '#lib/server/features/bottles/service.js';
@@ -66,6 +66,13 @@ describe('the load of /wines/[id]', () => {
         const failure = await loadWine('unknown').catch((error: unknown) => error);
 
         expect(isHttpError(failure, 404)).toBe(true);
+    });
+
+    afterAll(async () => {
+        await db
+            .update(wineDefinitions)
+            .set({ targetQuantity: null })
+            .where(eq(wineDefinitions.id, margaux));
     });
 
     // The page offers to remove the target only while the wine is short of it (UI-36).

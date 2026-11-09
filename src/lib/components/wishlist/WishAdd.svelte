@@ -1,5 +1,5 @@
 <script lang="ts">
-    import { onDestroy } from 'svelte';
+    import { onDestroy, tick } from 'svelte';
     import { Plus, X } from '@lucide/svelte';
     import { page } from '$app/state';
     import { m } from '#lib/paraglide/messages.js';
@@ -37,6 +37,8 @@
     let file = $state<File | null>(null);
     let previewUrl = $state('');
     let saving = $state(false);
+    let nameField = $state<HTMLInputElement | null>(null);
+    let changeButton = $state<HTMLButtonElement | null>(null);
 
     const uploads = new ImageUploads();
     onDestroy(() => uploads.close());
@@ -55,6 +57,14 @@
             })
             .slice(0, MAX_SUGGESTIONS);
     });
+
+    // The field that takes the place of the other gets the focus, which would otherwise fall back
+    // to the page.
+    async function choose(wine: Wine | null) {
+        chosen = wine;
+        await tick();
+        (wine ? changeButton : nameField)?.focus();
+    }
 
     // A photo chosen for a name stays when a wine of the cellar is added: it is for the next name.
     async function add(event: SubmitEvent) {
@@ -76,25 +86,40 @@
 
 <Card class="mb-6 py-0">
     <CardContent class="p-4">
-        <h2 class="mb-4 text-lg font-semibold">{m['wishlist.add_label']()}</h2>
-        <form class="grid gap-6 md:grid-cols-[minmax(0,18rem)_minmax(0,1fr)]" onsubmit={add}>
-            {#if chosen}
-                <FormField label={m['wishlist.photo']()}>
-                    <p class="text-sm text-muted-foreground">{m['wishlist.wine_photos']()}</p>
-                </FormField>
-            {:else}
-                <PhotoField
-                    label={m['wishlist.photo']()}
-                    hint={m['wishlist.photo_hint']()}
-                    bind:imageId
-                    bind:file
-                    bind:previewUrl
-                />
-            {/if}
+        <h2 id="{formId}-title" class="mb-4 text-lg font-semibold">
+            {m['wishlist.add_label']()}
+        </h2>
+        <form
+            aria-labelledby="{formId}-title"
+            class="grid gap-6 md:grid-cols-[minmax(0,18rem)_minmax(0,1fr)]"
+            onsubmit={add}
+        >
+            <!-- Hidden, not removed, while a wine is chosen: the photo kept for the next name
+                 keeps its preview, which PhotoField frees when it goes. -->
+            <div>
+                <div class={chosen ? 'hidden' : ''}>
+                    <PhotoField
+                        label={m['wishlist.photo']()}
+                        hint={m['wishlist.photo_hint']()}
+                        bind:imageId
+                        bind:file
+                        bind:previewUrl
+                    />
+                </div>
+                {#if chosen}
+                    <div class="space-y-2">
+                        <p class="text-sm font-medium">{m['wishlist.photo']()}</p>
+                        <p class="text-sm text-muted-foreground">{m['wishlist.wine_photos']()}</p>
+                    </div>
+                {/if}
+            </div>
 
             <div class="space-y-4">
                 {#if chosen}
-                    <FormField label={m['forms.wine_name']()}>
+                    <div role="group" aria-labelledby="{formId}-chosen" class="space-y-2">
+                        <p id="{formId}-chosen" class="text-sm font-medium">
+                            {m['forms.wine_name']()}
+                        </p>
                         <div
                             class="flex items-center justify-between gap-2 rounded-md border bg-muted/40 py-1 pr-1 pl-3"
                         >
@@ -109,12 +134,13 @@
                                 class={iconButton}
                                 title={m['wishlist.change_wine']()}
                                 aria-label={m['wishlist.change_wine']()}
-                                onclick={() => (chosen = null)}
+                                bind:this={changeButton}
+                                onclick={() => choose(null)}
                             >
                                 <X class="h-4 w-4" aria-hidden="true" />
                             </button>
                         </div>
-                    </FormField>
+                    </div>
                 {:else}
                     <FormField
                         label="{m['forms.wine_name']()} *"
@@ -123,6 +149,7 @@
                     >
                         <Input
                             id="{formId}-text"
+                            bind:ref={nameField}
                             bind:value={text}
                             maxlength={NAME_MAX_LENGTH}
                             autocomplete="off"
@@ -143,7 +170,7 @@
                                             variant="outline"
                                             class="h-auto w-full justify-between gap-2 py-2 text-left whitespace-normal"
                                             disabled={saving || wished}
-                                            onclick={() => (chosen = wine)}
+                                            onclick={() => choose(wine)}
                                         >
                                             <span>
                                                 {wine.name}

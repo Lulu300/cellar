@@ -61,7 +61,6 @@ test('log in, add a wine and two bottles from the wine list, and buy a wine of t
     // go (UI-36), becomes a wine, then a bottle; the wine leaves the wishlist only when the user
     // says so (FEAT-02).
     await openFromMenu(page, 'Purchases', 'Wishlist');
-    await page.getByLabel('Wine Name').fill('Clos Wished');
     const wishPhoto = page.waitForEvent('filechooser');
     await page.getByRole('button', { name: 'Choose a file' }).click();
     await (
@@ -71,6 +70,18 @@ test('log in, add a wine and two bottles from the wine list, and buy a wine of t
         .getByRole('dialog', { name: 'Rotate and crop the photo' })
         .getByRole('button', { name: 'Use this photo' })
         .click();
+    // A wine of the cellar chosen, then given up: the focus follows each field, and the photo
+    // kept for the name is still shown.
+    await page.getByLabel('Wine Name').fill('Journey');
+    await page.getByRole('button', { name: /^Château Journey/ }).click();
+    await expect(page.getByRole('button', { name: 'Choose another wine' })).toBeFocused();
+    await page.getByRole('button', { name: 'Choose another wine' }).click();
+    await expect(page.getByLabel('Wine Name')).toBeFocused();
+    const keptPhoto = page.getByRole('img', { name: 'Wine preview' });
+    await expect
+        .poll(() => keptPhoto.evaluate((img: HTMLImageElement) => img.naturalWidth))
+        .toBeGreaterThan(0);
+    await page.getByLabel('Wine Name').fill('Clos Wished');
     await page.getByLabel('Notes').fill('Seen at the wine fair');
     await page.getByLabel('Planned quantity').fill('2');
     await page.getByRole('button', { name: 'Add the wish' }).click();

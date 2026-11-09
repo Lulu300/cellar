@@ -185,7 +185,7 @@ Revue du code du 2026-10-08, commit `556c7bb`. Ce fichier est la version pour le
 | 1.5.0 | P17 · À boire | La vie d’une bouteille jusqu’à ce qu’on la boive ; la tâche ajoute son repère à la liste d’une case du plan (FEAT-04). Ordre : FEAT-05 ; puis REL-11. Sort le 2026-11-04 sans DEP-10, qui passe au bloc suivant (décision « Dépendances après la 1.4.0 »). Publiée en 1.5.0 le 2026-11-04. | FEAT-05, REL-11 | 2 / 2 |
 | 1.5.1 | P17b · La page « À boire » | Pour la 1.5.1, avant le bloc suivant (décision « Page À boire (1.5.1) ») : FEAT-18 ; DEP-10 ; puis REL-19. Publiée en 1.5.1 le 2026-11-08. | DEP-10, FEAT-18, REL-19 | 3 / 3 |
 | 1.5.2 | P17c · Largeur des pages | Pour la 1.5.2, avant le bloc suivant (décision « Largeur des pages (1.5.2) ») : UI-35 ; puis REL-20. Publiée en 1.5.2 le 2026-11-08. | UI-35, REL-20 | 2 / 2 |
-| 1.5.3 | P17d · Achats plus clairs | Pour la 1.5.3, avant le bloc suivant (décision « Achats plus clairs (1.5.3) ») : UI-36 ; puis REL-21. DEP-11 passe juste avant REL-21 si la sortie tombe le 2026-11-12 ou après. FEAT-19, une proposition sans code, se mène à côté et ne retient pas la 1.5.3. | UI-36, REL-21 | 1 / 2 |
+| 1.5.3 | P17d · Achats plus clairs | Pour la 1.5.3, avant le bloc suivant (décision « Achats plus clairs (1.5.3) ») : UI-36 ; puis REL-21. DEP-11 passe juste avant REL-21 si la sortie tombe le 2026-11-12 ou après. FEAT-19, une proposition sans code, se mène à côté et ne retient pas la 1.5.3. Publiée en 1.5.3 le 2026-11-09. | UI-36, REL-21 | 2 / 2 |
 | Période de dégustation | P22 · Période de dégustation | Juste après la 1.5.3, avant les autres blocs (décision « Période de dégustation (FEAT-19) ») : FEAT-19 ; puis REL-22. Une version mineure à elle seule, à cause de sa migration. | FEAT-19, REL-22 | 0 / 2 |
 | Dégustation | P20 · Fiches de dégustation | Décision « Fiches de dégustation (FEAT-06, FEAT-14 à FEAT-16) ». Sur la branche d’intégration `feat/tasting`, envoyée sur GitHub (décision « Blocs sans numéro ») : chaque tâche part de cette branche et y revient ; la branche rejoint develop quand le mainteneur valide le bloc entier. Ordre : FEAT-06 ; FEAT-14 ; FEAT-15 ; FEAT-16 ; puis REL-17. | FEAT-06, FEAT-14, FEAT-15, FEAT-16, REL-17 | 0 / 5 |
 | Producteurs | P18 · Producteurs et revue de l’import | Les producteurs d’abord, parce que la revue de l’import doit savoir relier ou créer un producteur. Ordre : FEAT-07 ; FEAT-08 ; puis REL-12. UI-34 est rangée ici par défaut : elle se place où le mainteneur veut, une fois le comportement du visiteur choisi . DEP-11 aussi : elle se fait sur develop juste avant la sortie suivante, quel que soit le bloc. | DEP-11, UI-34, FEAT-07, FEAT-08, REL-12 | 0 / 5 |
@@ -3730,7 +3730,7 @@ Sévérité **évolution** · effort **S** · dépend de UI-35 · statut **Fait*
 
 ## P17d · Achats plus clairs (1.5.3)
 
-Pour la 1.5.3, avant le bloc suivant (décision « Achats plus clairs (1.5.3) ») : UI-36 ; puis REL-21. DEP-11 passe juste avant REL-21 si la sortie tombe le 2026-11-12 ou après. FEAT-19, une proposition sans code, se mène à côté et ne retient pas la 1.5.3.
+Pour la 1.5.3, avant le bloc suivant (décision « Achats plus clairs (1.5.3) ») : UI-36 ; puis REL-21. DEP-11 passe juste avant REL-21 si la sortie tombe le 2026-11-12 ou après. FEAT-19, une proposition sans code, se mène à côté et ne retient pas la 1.5.3. Publiée en 1.5.3 le 2026-11-09.
 
 ### UI-36 · Retirer une quantité cible en un clic, et une liste d’envies plus claire
 
@@ -3757,7 +3757,9 @@ Sévérité **évolution** · effort **M** · dépend de REL-20 · statut **Fait
 
 ### REL-21 · Publication de la 1.5.3
 
-Sévérité **évolution** · effort **S** · dépend de UI-36 · statut **À faire**
+Sévérité **évolution** · effort **S** · dépend de UI-36 · statut **Fait**
+
+**Suivi** (2026-11-09) : babd09a8, v1.5.3
 
 **Problème** : La 1.5.3 apporte ces retours sans attendre le bloc suivant.
 
@@ -3766,6 +3768,7 @@ Sévérité **évolution** · effort **S** · dépend de UI-36 · statut **À fa
 **À faire**
 
 - develop repasse de 1.6.0-rc.0 à 1.5.3-rc.0 au démarrage ; résumé 1.5.3 complété par UI-36 (et DEP-11 si elle passe) ; bancs depuis la 1.5.2 et la 1.0.0 ; release selon RELEASING.md ; puis develop passe à 1.6.0-rc.0 avec une nouvelle entrée 1.6.0.
+- Fait le 2026-11-09 : sortie avant le 2026-11-12, donc sans DEP-11 ; bancs de la 1.5.2 et de la 1.0.0 vers la 1.5.3, 176 sur 176 chacun, sans changer le banc ; CI 42683139216 verte sur babd09a8 ; `main` avancée, tag v1.5.3, release 42686100184 verte ; image publique sans connexion (`1.5.3`, `1.5`, `latest`, amd64 et arm64). develop passe à 1.6.0-rc.0, avec une entrée 1.6.0 au résumé provisoire.
 
 **Critère d’acceptation** : v1.5.3 est publiée sur `main` et son image se télécharge sans connexion ; develop passe à 1.6.0-rc.0.
 

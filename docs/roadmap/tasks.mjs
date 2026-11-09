@@ -89,6 +89,7 @@ export const versions = [
 	{
 		id: '1.5.3',
 		title: 'Achats plus clairs',
+		released: '2026-11-09',
 		goal: 'Retirer la quantité cible d’un vin en un clic, et une liste d’envies qu’on ne confond plus avec la cave.'
 	},
 	{
@@ -261,7 +262,7 @@ export const phases = [
 		id: 'P17d',
 		version: '1.5.3',
 		title: 'Achats plus clairs',
-		goal: 'Pour la 1.5.3, avant le bloc suivant (décision « Achats plus clairs (1.5.3) ») : UI-36 ; puis REL-21. DEP-11 passe juste avant REL-21 si la sortie tombe le 2026-11-12 ou après. FEAT-19, une proposition sans code, se mène à côté et ne retient pas la 1.5.3.'
+		goal: 'Pour la 1.5.3, avant le bloc suivant (décision « Achats plus clairs (1.5.3) ») : UI-36 ; puis REL-21. DEP-11 passe juste avant REL-21 si la sortie tombe le 2026-11-12 ou après. FEAT-19, une proposition sans code, se mène à côté et ne retient pas la 1.5.3. Publiée en 1.5.3 le 2026-11-09.'
 	},
 	{
 		id: 'P22',
@@ -2903,7 +2904,8 @@ export const tasks = [
 		why: 'La 1.5.3 apporte ces retours sans attendre le bloc suivant.',
 		where: ['releases.json', 'CHANGELOG.md', 'UPGRADING.md', 'package.json'],
 		todo: [
-			'develop repasse de 1.6.0-rc.0 à 1.5.3-rc.0 au démarrage ; résumé 1.5.3 complété par UI-36 (et DEP-11 si elle passe) ; bancs depuis la 1.5.2 et la 1.0.0 ; release selon RELEASING.md ; puis develop passe à 1.6.0-rc.0 avec une nouvelle entrée 1.6.0.'
+			'develop repasse de 1.6.0-rc.0 à 1.5.3-rc.0 au démarrage ; résumé 1.5.3 complété par UI-36 (et DEP-11 si elle passe) ; bancs depuis la 1.5.2 et la 1.0.0 ; release selon RELEASING.md ; puis develop passe à 1.6.0-rc.0 avec une nouvelle entrée 1.6.0.',
+			'Fait le 2026-11-09 : sortie avant le 2026-11-12, donc sans DEP-11 ; bancs de la 1.5.2 et de la 1.0.0 vers la 1.5.3, 176 sur 176 chacun, sans changer le banc ; CI 42683139216 verte sur babd09a8 ; `main` avancée, tag v1.5.3, release 42686100184 verte ; image publique sans connexion (`1.5.3`, `1.5`, `latest`, amd64 et arm64). develop passe à 1.6.0-rc.0, avec une entrée 1.6.0 au résumé provisoire.'
 		],
 		done: 'v1.5.3 est publiée sur `main` et son image se télécharge sans connexion ; develop passe à 1.6.0-rc.0.',
 		deps: ['UI-36'], src: ['Décision « Achats plus clairs (1.5.3) »']

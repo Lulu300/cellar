@@ -128,6 +128,7 @@
   "common.remove_target": "Retirer la quantité cible",
   "common.remove_target_named": "Retirer la quantité cible de {name}",
   "common.target_removed": "{name} : quantité cible de {count, plural, one {# bouteille} other {# bouteilles}} retirée",
+  "common.target_not_removed": "Impossible de retirer la quantité cible de {name} : un de ses champs n’est plus valide. Corrigez-le dans le formulaire du vin.",
   "common.all_types": "Tous les types",
   "common.all_countries": "Tous les pays",
   "common.all_vintages": "Tous les millésimes",

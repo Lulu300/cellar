@@ -27,6 +27,8 @@
     let showBottleDialog = $state(false);
     let selectedDefinitionId = $state<string | undefined>();
 
+    let intro = $state<HTMLElement>();
+
     // Read once at mount: the server renders the images, and a preference changed later in
     // another tab does not apply to a page already open.
     let showImages = $state(true);
@@ -71,7 +73,10 @@
 
 <div>
     <div class="flex flex-wrap justify-between items-center gap-4 mb-6">
-        <p class="text-muted-foreground">{m['wine_shortage.subtitle']()}</p>
+        <!-- Where the keyboard focus lands once a wine leaves the list -->
+        <p bind:this={intro} tabindex="-1" class="text-muted-foreground outline-none">
+            {m['wine_shortage.subtitle']()}
+        </p>
 
         {#if shortageData.length > 0}
             <Badge variant="outline" class="text-destructive border-destructive/30">
@@ -259,7 +264,11 @@
                                                     {m['common.add_bottle']()}
                                                 </Button>
                                             {/if}
-                                            <RemoveTargetButton {wine} class="w-full md:w-auto" />
+                                            <RemoveTargetButton
+                                                {wine}
+                                                class="w-full md:w-auto"
+                                                onRemoved={() => intro?.focus()}
+                                            />
                                         </div>
                                     </div>
                                 </div>

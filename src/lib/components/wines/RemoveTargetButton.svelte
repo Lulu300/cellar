@@ -4,18 +4,29 @@
     import { m } from '#lib/paraglide/messages.js';
     import { removeTargetQuantity } from './target-quantity.js';
 
-    /** The button that removes the target quantity of a wine, on the shortage tab and its page. */
+    /**
+     * The button that removes the target quantity of a wine, on the shortage tab and its page.
+     * The button goes with the target: `onRemoved` gives the keyboard focus a place to land.
+     */
     let {
         wine,
         size = 'default',
-        class: className = ''
-    }: { wine: { id: string; name: string }; size?: 'default' | 'sm'; class?: string } = $props();
+        class: className = '',
+        onRemoved
+    }: {
+        wine: { id: string; name: string };
+        size?: 'default' | 'sm';
+        class?: string;
+        onRemoved: () => void;
+    } = $props();
 
     let busy = $state(false);
 
     async function remove() {
+        // Read now: the page drops this button once the target is gone.
+        const removed = onRemoved;
         busy = true;
-        await removeTargetQuantity(wine);
+        if (await removeTargetQuantity(wine)) removed();
         busy = false;
     }
 </script>

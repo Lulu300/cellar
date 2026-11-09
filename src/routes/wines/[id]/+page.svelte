@@ -47,6 +47,8 @@
 
     // Edit definition state
     let showEditDefinitionDialog = $state(false);
+    // Where the keyboard focus lands once the target quantity and its button are gone
+    let editButton = $state<HTMLButtonElement>();
 
     // Barcode dialog state
     let showBarcodeDialog = $state(false);
@@ -139,6 +141,7 @@
                             iconClass="size-6"
                         />
                         <button
+                            bind:this={editButton}
                             class={headerButton}
                             onclick={() => (showEditDefinitionDialog = true)}
                             title={m['forms.edit_wine']()}
@@ -233,7 +236,11 @@
                                         })}
                                     </span>
                                     {#if auth.isAuthenticated}
-                                        <RemoveTargetButton wine={wineDefinition} size="sm" />
+                                        <RemoveTargetButton
+                                            wine={wineDefinition}
+                                            size="sm"
+                                            onRemoved={() => editButton?.focus()}
+                                        />
                                     {/if}
                                 </div>
                             {/if}

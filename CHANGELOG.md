@@ -4,6 +4,33 @@
 
 Upgrade actions are also collected in [UPGRADING.md](UPGRADING.md).
 
+## 1.6.0
+
+1.6.0 gives a bottle a drinking window: « from » next to « drink before ».
+
+The « Drink before » dialog becomes « Drinking window », in the bottle form, the ⋯ menu of a bottle and the button of a selection. Besides the end, a bottle can now have a start, each a year or a month: « 2024 – 2032 », « Sep 2026 – Mar 2027 », or « from 2028 » for a bottle not to open before 2028. « This month » and « This year » set the end and remove the start, as before; « Choose… » sets both. An end before the start is refused, in the app as in the API and the MCP. The page « To drink » adds a rank, « Ready » (an outlined diamond, after « At its peak »), with its filter: a bottle whose window is open and ends after this year, or never, before its optimum year or without one. A window not open yet stays « Later », written « not ready yet », and is not listed. The banner, the storage marker and their counts keep their four ranks, so ready bottles do not fill them. Bottles without a start, which is every bottle until you give one, rank exactly as before. Scripts find drinkFrom and the rank ready in docs/API.md, and an AI assistant can read and set the window.
+
+### Upgrade actions
+
+None.
+
+### Changes
+
+#### Features
+
+- **db:** Add the start of the drinking window to bottles (9529f85)
+- **bottles:** Give a bottle a drinking window, with the rank ready, in the app, the API and the MCP (5bf41d7)
+
+#### Documentation
+
+- **releases:** Say what 1.6.0 brings: the drinking window (d895d54)
+- **bottles:** Say that the page « To drink » lists the ready bottles too (289948c)
+
+#### Other changes
+
+- **e2e:** Match the drinking window the page shows (77a859c)
+- **bottles:** Cover the drinking window in the CSV import, the turn of the year, the table and the banner (ac766f9)
+
 ## 1.5.3
 
 1.5.3 makes the Purchases pages clearer, and removes a target quantity in one click.

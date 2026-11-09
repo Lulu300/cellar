@@ -223,7 +223,7 @@
                                     {wineDefinition.classification}
                                 </div>
                             {/if}
-                            {#if inShortage && wineDefinition.targetQuantity !== null}
+                            {#if wineDefinition.targetQuantity !== null}
                                 <div class="flex flex-wrap items-center gap-x-3 gap-y-1">
                                     <span>
                                         <strong
@@ -235,7 +235,7 @@
                                             count: wineDefinition.targetQuantity
                                         })}
                                     </span>
-                                    {#if auth.isAuthenticated}
+                                    {#if auth.isAuthenticated && inShortage}
                                         <RemoveTargetButton
                                             wine={wineDefinition}
                                             size="sm"

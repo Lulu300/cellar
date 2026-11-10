@@ -37,12 +37,18 @@
     // The button is greyed without a code: the field says why before any click.
     const codeMissing = $derived(!loginCode.trim());
 
+    // Each opening mounts the content again, and with it its portal, which then comes after the
+    // dialogs already open: a 401 inside a dialog finds it above rather than hidden under them
+    // (same z-index, the later portal wins).
+    let opened = $state(0);
+
     /** Opens the dialog, with a notice such as why the session ended. */
     export function show(notice = '') {
         loginCode = '';
         confirmCode = '';
         setupToken = '';
         loginError = notice;
+        opened++;
         open = true;
     }
 
@@ -136,86 +142,90 @@
 
 <!-- A click outside does not close it: a lost click would also leave a page that needs a session. -->
 <Dialog bind:open onOpenChange={handleOpenChange}>
-    <DialogContent class="max-w-md" interactOutsideBehavior="ignore">
-        <DialogHeader>
-            <DialogTitle class="flex items-center gap-3">
-                <span
-                    class="flex-shrink-0 w-8 h-8 bg-primary/10 rounded-full flex items-center justify-center"
-                >
-                    <Lock class="h-5 w-5 text-primary" />
-                </span>
-                {isChoosingCode ? m['auth.choose_access_code']() : m['auth.access_code_required']()}
-            </DialogTitle>
-            <DialogDescription>
-                {isChoosingCode
-                    ? m['auth.choose_access_code_description']()
-                    : m['auth.enter_access_code']()}
-            </DialogDescription>
-        </DialogHeader>
+    {#key opened}
+        <DialogContent class="max-w-md" interactOutsideBehavior="ignore">
+            <DialogHeader>
+                <DialogTitle class="flex items-center gap-3">
+                    <span
+                        class="flex-shrink-0 w-8 h-8 bg-primary/10 rounded-full flex items-center justify-center"
+                    >
+                        <Lock class="h-5 w-5 text-primary" />
+                    </span>
+                    {isChoosingCode
+                        ? m['auth.choose_access_code']()
+                        : m['auth.access_code_required']()}
+                </DialogTitle>
+                <DialogDescription>
+                    {isChoosingCode
+                        ? m['auth.choose_access_code_description']()
+                        : m['auth.enter_access_code']()}
+                </DialogDescription>
+            </DialogHeader>
 
-        <form class="space-y-4" onsubmit={submit}>
-            <div class="space-y-2">
-                <Label for="login-code">
-                    {isChoosingCode ? m['auth.new_access_code']() : m['auth.access_code']()}
-                </Label>
-                <Input
-                    id="login-code"
-                    type="password"
-                    bind:value={loginCode}
-                    placeholder={isChoosingCode
-                        ? m['placeholders.enter_new_access_code']()
-                        : m['auth.enter_access_code_placeholder']()}
-                    aria-describedby={codeMissing ? 'login-code-missing' : undefined}
-                />
-                {#if codeMissing}
-                    <p id="login-code-missing" class="text-xs text-muted-foreground">
-                        {isChoosingCode
-                            ? m['auth.new_access_code_missing']()
-                            : m['auth.access_code_missing']()}
-                    </p>
-                {/if}
-                {#if isChoosingCode}
-                    <Label for="confirm-code">{m['auth.confirm_access_code']()}</Label>
+            <form class="space-y-4" onsubmit={submit}>
+                <div class="space-y-2">
+                    <Label for="login-code">
+                        {isChoosingCode ? m['auth.new_access_code']() : m['auth.access_code']()}
+                    </Label>
                     <Input
-                        id="confirm-code"
+                        id="login-code"
                         type="password"
-                        bind:value={confirmCode}
-                        placeholder={m['placeholders.confirm_new_access_code']()}
+                        bind:value={loginCode}
+                        placeholder={isChoosingCode
+                            ? m['placeholders.enter_new_access_code']()
+                            : m['auth.enter_access_code_placeholder']()}
+                        aria-describedby={codeMissing ? 'login-code-missing' : undefined}
                     />
-                    <Label for="setup-token">{m['auth.setup_token']()}</Label>
-                    <Input
-                        id="setup-token"
-                        type="text"
-                        placeholder={m['auth.setup_token_placeholder']()}
-                        autocomplete="off"
-                        autocapitalize="characters"
-                        spellcheck="false"
-                        aria-describedby="setup-token-hint"
-                        bind:value={setupToken}
-                    />
-                    <p id="setup-token-hint" class="text-xs text-muted-foreground">
-                        {m['auth.setup_token_hint']()}
-                    </p>
-                {/if}
-                {#if loginError}
-                    <p class="text-sm text-destructive" role="alert">{loginError}</p>
-                {/if}
-            </div>
-
-            <DialogFooter>
-                <DialogClose type="button" class={buttonVariants({ variant: 'outline' })}>
-                    {m['common.cancel']()}
-                </DialogClose>
-                <Button type="submit" disabled={codeMissing || isLoggingIn}>
-                    {#if isLoggingIn}
-                        <span
-                            class="animate-spin rounded-full h-4 w-4 border-b-2 border-current"
-                            aria-hidden="true"
-                        ></span>
+                    {#if codeMissing}
+                        <p id="login-code-missing" class="text-xs text-muted-foreground">
+                            {isChoosingCode
+                                ? m['auth.new_access_code_missing']()
+                                : m['auth.access_code_missing']()}
+                        </p>
                     {/if}
-                    {isChoosingCode ? m['common.save']() : m['common.login']()}
-                </Button>
-            </DialogFooter>
-        </form>
-    </DialogContent>
+                    {#if isChoosingCode}
+                        <Label for="confirm-code">{m['auth.confirm_access_code']()}</Label>
+                        <Input
+                            id="confirm-code"
+                            type="password"
+                            bind:value={confirmCode}
+                            placeholder={m['placeholders.confirm_new_access_code']()}
+                        />
+                        <Label for="setup-token">{m['auth.setup_token']()}</Label>
+                        <Input
+                            id="setup-token"
+                            type="text"
+                            placeholder={m['auth.setup_token_placeholder']()}
+                            autocomplete="off"
+                            autocapitalize="characters"
+                            spellcheck="false"
+                            aria-describedby="setup-token-hint"
+                            bind:value={setupToken}
+                        />
+                        <p id="setup-token-hint" class="text-xs text-muted-foreground">
+                            {m['auth.setup_token_hint']()}
+                        </p>
+                    {/if}
+                    {#if loginError}
+                        <p class="text-sm text-destructive" role="alert">{loginError}</p>
+                    {/if}
+                </div>
+
+                <DialogFooter>
+                    <DialogClose type="button" class={buttonVariants({ variant: 'outline' })}>
+                        {m['common.cancel']()}
+                    </DialogClose>
+                    <Button type="submit" disabled={codeMissing || isLoggingIn}>
+                        {#if isLoggingIn}
+                            <span
+                                class="animate-spin rounded-full h-4 w-4 border-b-2 border-current"
+                                aria-hidden="true"
+                            ></span>
+                        {/if}
+                        {isChoosingCode ? m['common.save']() : m['common.login']()}
+                    </Button>
+                </DialogFooter>
+            </form>
+        </DialogContent>
+    {/key}
 </Dialog>

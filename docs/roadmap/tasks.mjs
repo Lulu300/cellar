@@ -280,7 +280,7 @@ export const phases = [
 		id: 'P23',
 		version: 'Finitions',
 		title: 'Finitions et barre de sélection',
-		goal: 'Juste après la 1.6.0, avant les autres blocs (décision « Finitions (UI-37, UI-34) ») : UI-37 et UI-34, menées côte à côte et fusionnées l’une après l’autre ; DEP-11 juste avant REL-23 ; puis REL-23. Une version mineure.'
+		goal: 'Juste après la 1.6.0, avant les autres blocs (décision « Finitions (UI-37, UI-34) ») : UI-37 et UI-34, menées côte à côte et fusionnées l’une après l’autre ; puis REL-23. Une version mineure. Le 2026-11-10, le mainteneur la sort sans attendre DEP-11, éligible le 2026-11-12, qui passe à la sortie suivante.'
 	},
 	{
 		id: 'P20',
@@ -292,7 +292,7 @@ export const phases = [
 		id: 'P18',
 		version: 'Producteurs',
 		title: 'Producteurs et revue de l’import',
-		goal: 'Les producteurs d’abord, parce que la revue de l’import doit savoir relier ou créer un producteur. Ordre : FEAT-07 ; FEAT-08 ; puis REL-12.'
+		goal: 'Les producteurs d’abord, parce que la revue de l’import doit savoir relier ou créer un producteur. Ordre : FEAT-07 ; FEAT-08 ; puis REL-12. DEP-11 se fait sur develop juste avant la sortie suivante, quel que soit le bloc.'
 	},
 	{
 		id: 'P19',
@@ -2993,7 +2993,7 @@ export const tasks = [
 	},
 	// ───────── P18 Producteurs et revue de l’import
 	{
-		id: 'DEP-11', phase: 'P23', size: 'S', sev: 'mineur',
+		id: 'DEP-11', phase: 'P18', size: 'S', sev: 'mineur',
 		title: 'Revue des dépendances d’après la 1.5.1',
 		why: 'Ce que DEP-10 n’a pas pris : Node 24.22.2 et docker/login-action 4.8.0 (éligibles le 2026-11-12), les correctifs pas encore âgés de 7 jours le 2026-11-08 (tinybench, svelte-check, bits-ui, tailwindcss 4.3.4, vite 8.3.6, semver, cookie…), et les mineures repoussées (@lucide/svelte 1.66, readable-stream, tar-stream, pako, core-js).',
 		where: ['package.json', 'pnpm-lock.yaml', '.github/workflows/', 'Dockerfile', '.nvmrc'],
@@ -3073,10 +3073,10 @@ export const tasks = [
 		why: 'Le bloc apporte ces finitions sans attendre les autres.',
 		where: ['releases.json', 'CHANGELOG.md', 'UPGRADING.md', 'package.json'],
 		todo: [
-			'Résumé complété par UI-37, UI-34 et DEP-11 ; bancs depuis la version précédente et la 1.0.0 ; release selon RELEASING.md, avec le mainteneur, sous le numéro de version suivant (décision « Blocs sans numéro »).'
+			'Résumé complété par UI-37 et UI-34 (DEP-11 passe à la sortie suivante, choix du mainteneur le 2026-11-10) ; bancs depuis la version précédente et la 1.0.0 ; release selon RELEASING.md, avec le mainteneur, sous le numéro de version suivant (décision « Blocs sans numéro »).'
 		],
 		done: 'La version est publiée sur `main` et son image se télécharge sans connexion ; develop passe à la rc suivante.',
-		deps: ['UI-37', 'UI-34', 'DEP-11'], src: ['Décision « Finitions (UI-37, UI-34) »']
+		deps: ['UI-37', 'UI-34'], src: ['Décision « Finitions (UI-37, UI-34) »']
 	},
 	{
 		id: 'FEAT-07', phase: 'P18', size: 'L', sev: 'evolution',

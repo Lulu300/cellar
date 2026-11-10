@@ -128,8 +128,12 @@
                             {m['wishlist.bought_some']()}
                         </Button>
                     {:else}
-                        <Button size="sm" onclick={() => onCreateWine(wish)}>
-                            <Plus class="mr-2 h-4 w-4" />
+                        <Button
+                            size="sm"
+                            aria-label={m['wishlist.create_wine_named']({ name })}
+                            onclick={() => onCreateWine(wish)}
+                        >
+                            <Plus class="mr-2 h-4 w-4" aria-hidden="true" />
                             {m['wishlist.create_wine']()}
                         </Button>
                     {/if}

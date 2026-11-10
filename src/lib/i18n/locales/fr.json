@@ -1211,6 +1211,7 @@
   "wishlist.create_wine": "Créer la fiche du vin",
   "wishlist.bought_some": "J’en ai acheté",
   "wishlist.bought_some_named": "J’en ai acheté : {name}",
+  "wishlist.create_wine_named": "Créer la fiche du vin : {name}",
   "wishlist.empty": "Votre liste d’envies est vide",
   "wishlist.empty_hint": "Ajoutez un vin avec le champ ci-dessus, ou avec le signet d’un vin dans Mes vins.",
   "drinking.late": "En retard",

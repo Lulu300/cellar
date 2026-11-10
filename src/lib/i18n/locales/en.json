@@ -1211,6 +1211,7 @@
   "wishlist.create_wine": "Create the wine",
   "wishlist.bought_some": "I bought some",
   "wishlist.bought_some_named": "I bought some: {name}",
+  "wishlist.create_wine_named": "Create the wine: {name}",
   "wishlist.empty": "Your wishlist is empty",
   "wishlist.empty_hint": "Add a wine with the field above, or with the bookmark of a wine in My Wines.",
   "drinking.late": "Late",

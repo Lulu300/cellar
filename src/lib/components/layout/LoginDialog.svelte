@@ -50,7 +50,7 @@
         confirmCode = '';
         setupToken = '';
         loginError = notice;
-        opened++;
+        if (!open) opened++;
         open = true;
     }
 

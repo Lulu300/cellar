@@ -104,7 +104,8 @@
 
         <!-- Outside the scrolling table, and wrapping: the actions stay in view on a narrow screen. -->
         {#snippet toolbar()}
-            <div class="space-y-2">
+            <!-- A gap rather than margins: the bar takes no room while nothing is ticked. -->
+            <div class="flex flex-col gap-2">
                 <p class="text-sm text-muted-foreground">
                     {m['admin.showing_bottles']({ count: sortedBottles.length })}
                 </p>

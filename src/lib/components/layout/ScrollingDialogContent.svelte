@@ -31,8 +31,11 @@
         error?: string;
         /** The dialog's width, such as `max-w-2xl`. */
         class?: string;
-        /** Under the title, out of the scrolling body: what must stay in view, such as the actions
-         * on a selection. */
+        /**
+         * Under the title, out of the scrolling body: what must stay in view, such as the actions
+         * on a selection. Rendered as it is, its one top element is an item of the dialog's column:
+         * without `overflow-*` or `min-h-0`, it keeps its height while the body scrolls.
+         */
         toolbar?: Snippet;
         children: Snippet;
         /** What stays in view under the body: the buttons, or a pagination. */

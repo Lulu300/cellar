@@ -1,11 +1,9 @@
 import type { ComponentProps } from 'svelte';
 import { render } from 'svelte/server';
 import { CalendarClock } from '@lucide/svelte';
-import { describe, expect, it, vi } from 'vitest';
+import { describe, expect, it } from 'vitest';
 import { useLocale } from '../../../test/locale';
 import BottleSelectionBar from './BottleSelectionBar.svelte';
-
-vi.mock('#lib/stores/auth.svelte.js', () => ({ auth: { isAuthenticated: true } }));
 
 const selection = (size: number) => ({ size, clear: () => {} });
 // The actions of the page « À boire » and of a wine's bottles
@@ -17,6 +15,11 @@ const actions: ComponentProps<typeof BottleSelectionBar>['actions'] = [
 
 const barOf = (size: number, list = actions) =>
     render(BottleSelectionBar, { props: { selection: selection(size), actions: list } }).body;
+/** The count, read out by its role: its text, and whether it is only for a screen reader */
+const status = (body: string) => {
+    const [, attributes, text] = body.match(/<span([^>]*role="status"[^>]*)>([\s\S]*?)<\/span>/)!;
+    return { text: text.trim(), unseen: /\bsr-only\b/.test(attributes) };
+};
 // The classes hold « > » (`[&>svg]`): an attribute is read whole.
 const buttons = (body: string) =>
     [...body.matchAll(/<button(?:"[^"]*"|[^">])*>([\s\S]*?)<\/button>/g)].map(
@@ -27,19 +30,22 @@ const buttons = (body: string) =>
     );
 
 describe('BottleSelectionBar', () => {
-    it('keeps only its count, unseen, while no bottle is ticked', () => {
+    // A live region already in the page is read out at its first change: the first tick too.
+    it('keeps only its count, unseen and taking no room, while no bottle is ticked', () => {
         useLocale('fr');
         const body = barOf(0);
 
         expect(body).not.toContain('<button');
-        expect(body).toMatch(/class="sr-only" role="status"[^>]*>\s*0 bouteille sélectionnée/);
+        // The hydration markers of Svelte aside, its root has no box
+        expect(body).toMatch(/^(<!--[^>]*-->)*<div class="contents">/);
+        expect(status(body)).toEqual({ text: '0 bouteille sélectionnée', unseen: true });
     });
 
-    it('counts one bottle or several, in a status read out at each change', () => {
+    it('shows how many bottles are ticked, one or several', () => {
         useLocale('fr');
 
-        expect(barOf(1)).toMatch(/role="status"[^>]*>\s*1 bouteille sélectionnée/);
-        expect(barOf(3)).toMatch(/role="status"[^>]*>\s*3 bouteilles sélectionnées/);
+        expect(status(barOf(1))).toEqual({ text: '1 bouteille sélectionnée', unseen: false });
+        expect(status(barOf(3))).toEqual({ text: '3 bouteilles sélectionnées', unseen: false });
     });
 
     it('offers to clear the selection, then the list’s actions in their order, its main one filled', () => {

@@ -9,7 +9,7 @@
     import RemoveTargetButton from '#lib/components/wines/RemoveTargetButton.svelte';
     import { BottleWine, Plus } from '@lucide/svelte';
     import { auth } from '#lib/stores/auth.svelte.js';
-    import { toasts } from '#lib/stores/toast.svelte.js';
+    import { requireLogin } from '#lib/components/layout/require-login.js';
     import { m } from '#lib/paraglide/messages.js';
     import { formatPercent, formatPriceRange } from '#lib/utils/format.js';
     import type { WineShortageDTO } from '#lib/shared/dto.js';
@@ -54,6 +54,7 @@
     }
 
     function handleAddBottle(wine: ShortageWine) {
+        if (!requireLogin(m['auth.please_login_to_add_bottles']())) return;
         selectedDefinitionId = wine.id;
         showBottleDialog = true;
     }
@@ -242,28 +243,16 @@
                                         <div
                                             class="flex flex-col items-stretch justify-end gap-2 md:items-end"
                                         >
-                                            {#if auth.isAuthenticated}
-                                                <Button
-                                                    onclick={() => handleAddBottle(wine)}
-                                                    class="w-full md:w-auto"
-                                                >
-                                                    <Plus class="h-4 w-4 mr-2" />
-                                                    {m['common.add_bottle']()}
-                                                </Button>
-                                            {:else}
-                                                <Button
-                                                    onclick={() =>
-                                                        toasts.add(
-                                                            m['auth.please_login_to_add_bottles'](),
-                                                            'warning'
-                                                        )}
-                                                    variant="outline"
-                                                    class="w-full md:w-auto"
-                                                >
-                                                    <Plus class="h-4 w-4 mr-2" />
-                                                    {m['common.add_bottle']()}
-                                                </Button>
-                                            {/if}
+                                            <Button
+                                                onclick={() => handleAddBottle(wine)}
+                                                variant={auth.isAuthenticated
+                                                    ? 'default'
+                                                    : 'outline'}
+                                                class="w-full md:w-auto"
+                                            >
+                                                <Plus class="h-4 w-4 mr-2" />
+                                                {m['common.add_bottle']()}
+                                            </Button>
                                             <RemoveTargetButton
                                                 {wine}
                                                 class="w-full md:w-auto"

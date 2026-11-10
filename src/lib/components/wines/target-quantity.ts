@@ -2,7 +2,7 @@ import { invalidate } from '$app/navigation';
 import { ApiError, errorMessage, request } from '#lib/api/client.js';
 import { m } from '#lib/paraglide/messages.js';
 import { CELLAR } from '#lib/shared/dependencies.js';
-import { auth } from '#lib/stores/auth.svelte.js';
+import { requireLogin } from '#lib/components/layout/require-login.js';
 import { toasts } from '#lib/stores/toast.svelte.js';
 
 /**
@@ -16,10 +16,7 @@ import { toasts } from '#lib/stores/toast.svelte.js';
  * accepts, such as a longer name: the toast then sends the user to the wine's form.
  */
 export async function removeTargetQuantity(wine: { id: string; name: string }): Promise<boolean> {
-    if (!auth.isAuthenticated) {
-        toasts.add(m['auth.please_login_to_remove_target'](), 'warning');
-        return false;
-    }
+    if (!requireLogin(m['auth.please_login_to_remove_target']())) return false;
     const path = `/api/definitions/${encodeURIComponent(wine.id)}`;
     let removed = false;
     try {

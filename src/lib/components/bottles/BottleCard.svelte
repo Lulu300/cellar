@@ -77,9 +77,10 @@
 {/snippet}
 
 <!-- Its five lines are rows of the page's grid, shared by the cards of a row: each line starts
-     level from card to card, whatever the lines above it hold in any of them -->
+     level from card to card, whatever the lines above it hold in any of them. Its one column keeps
+     to the card's width, which a long unbroken word would otherwise widen. -->
 <div
-    class="row-span-5 grid grid-rows-subgrid gap-3 border rounded-lg p-3 hover:shadow-md transition-shadow relative group"
+    class="row-span-5 grid grid-cols-1 grid-rows-subgrid gap-3 border rounded-lg p-3 hover:shadow-md transition-shadow relative group"
     class:opacity-75={consumed}
 >
     <!-- Wraps, so that the buttons stay inside a narrow card -->

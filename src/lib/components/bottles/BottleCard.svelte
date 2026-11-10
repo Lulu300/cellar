@@ -1,7 +1,9 @@
 <script lang="ts">
     import {
         Calendar,
+        CalendarRange,
         Check,
+        Mountain,
         Copy,
         DollarSign,
         MapPin,
@@ -17,8 +19,12 @@
     import { BottleAvailability } from '#lib/shared/bottle-availability.js';
     import type { BottleWithDefinitionDTO } from '#lib/shared/dto.js';
     import { auth } from '#lib/stores/auth.svelte.js';
+    import { preferences } from '#lib/stores/preferences.svelte.js';
+    import { drinkingDates } from '#lib/utils/bottle-sort.js';
     import { formatCurrency, formatDate } from '#lib/utils/format.js';
     import { availabilityLabel } from './availability.js';
+    import DrinkingChip from './DrinkingChip.svelte';
+    import { markedRank, windowText } from './drinking.js';
 
     type Bottle = BottleWithDefinitionDTO;
 
@@ -38,6 +44,14 @@
     } = $props();
 
     const consumed = $derived(bottle.availability === BottleAvailability.CONSUMED);
+    const dates = $derived(drinkingDates(bottle));
+    const drinkingWindow = $derived(windowText(dates));
+    // Only a bottle in the cellar is to drink, as in the bottle tables.
+    const rank = $derived(
+        bottle.availability === BottleAvailability.AVAILABLE
+            ? markedRank(dates, preferences.drinkingHorizon)
+            : null
+    );
 
     const headerBadge =
         'text-xs sm:text-sm px-2 py-1 sm:px-3 sm:py-1.5 min-h-[32px] sm:min-h-[36px] flex items-center';
@@ -145,6 +159,27 @@
                 <TrendingUp size={14} class="mr-1" />
                 {formatCurrency(bottle.currentValue)}
             </Badge>
+        </div>
+
+        <!-- When to drink it, as the bottle tables say it. Two rows are kept, so that the notes of
+             the cards of a row stay level. -->
+        <div class="min-h-12 flex flex-wrap content-start items-center gap-1">
+            {#if rank}<DrinkingChip {rank} />{/if}
+            {#if drinkingWindow}
+                <Badge variant="secondary" class="text-xs">
+                    <CalendarRange size={14} class="mr-1" aria-hidden="true" />
+                    <span class="sr-only"
+                        >{m['common.label']({ label: m['drinking.window_column']() })}</span
+                    >
+                    {drinkingWindow}
+                </Badge>
+            {/if}
+            {#if bottle.optimum !== null}
+                <Badge variant="secondary" class="text-xs">
+                    <Mountain size={14} class="mr-1" aria-hidden="true" />
+                    {m['drinking.optimum_year']({ year: bottle.optimum })}
+                </Badge>
+            {/if}
         </div>
 
         <div class="min-h-[1.5rem] flex items-center">

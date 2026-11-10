@@ -1,4 +1,5 @@
 <script lang="ts">
+    import { onMount } from 'svelte';
     import { goto } from '$app/navigation';
     import { page } from '$app/state';
     import { Lock } from '@lucide/svelte';
@@ -18,6 +19,7 @@
     import { auth } from '#lib/stores/auth.svelte.js';
     import { toasts } from '#lib/stores/toast.svelte.js';
     import { MIN_ACCESS_CODE_LENGTH } from '#lib/utils/access-code.js';
+    import { registerLoginDialog } from './login-prompt.js';
 
     let {
         oncancel
@@ -38,8 +40,8 @@
     const codeMissing = $derived(!loginCode.trim());
 
     // Each opening mounts the content again, and with it its portal, which then comes after the
-    // dialogs already open: a 401 inside a dialog finds it above rather than hidden under them
-    // (same z-index, the later portal wins).
+    // dialogs already open: a list's dialog that asks for the code, or a 401 inside a dialog, finds
+    // it above rather than hidden under them (same z-index, the later portal wins).
     let opened = $state(0);
 
     /** Opens the dialog, with a notice such as why the session ended. */
@@ -51,6 +53,8 @@
         opened++;
         open = true;
     }
+
+    onMount(() => registerLoginDialog(() => show()));
 
     // Escape, the close button and Cancel all close the dialog through here, not a login.
     function handleOpenChange(isOpen: boolean) {

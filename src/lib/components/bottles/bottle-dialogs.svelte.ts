@@ -1,12 +1,14 @@
 import type { SvelteSet } from 'svelte/reactivity';
-import { m } from '#lib/paraglide/messages.js';
+import { askToLogIn } from '#lib/components/layout/login-prompt.js';
 import { auth } from '#lib/stores/auth.svelte.js';
-import { toasts } from '#lib/stores/toast.svelte.js';
 
-/** Runs `action` for a session; a visitor is asked to log in, as on every list of bottles. */
+/**
+ * Runs `action` for a session. A visitor gets the login dialog instead, over the list, which keeps
+ * its selection: once logged in, the visitor asks again, as the action does not run by itself.
+ */
 export function whenLoggedIn(action: () => void): void {
     if (auth.isAuthenticated) action();
-    else toasts.add(m['toast.please_log_in_to_edit'](), 'warning');
+    else askToLogIn();
 }
 
 /**

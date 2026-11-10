@@ -6,12 +6,12 @@
     import { request } from '#lib/api/client.js';
     import { bottleName } from '#lib/components/bottles/bottle-table.js';
     import BottleChangeDialogs from '#lib/components/bottles/BottleChangeDialogs.svelte';
-    import { BottleDialogs, whenLoggedIn } from '#lib/components/bottles/bottle-dialogs.svelte.js';
+    import { BottleDialogs } from '#lib/components/bottles/bottle-dialogs.svelte.js';
     import BottleRowMenu from '#lib/components/bottles/BottleRowMenu.svelte';
+    import BottleSelectionBar from '#lib/components/bottles/BottleSelectionBar.svelte';
     import BottleTable from '#lib/components/bottles/BottleTable.svelte';
     import WineBottleDialog from '#lib/components/bottles/WineBottleDialog.svelte';
     import ScrollingDialogContent from '#lib/components/layout/ScrollingDialogContent.svelte';
-    import { Button } from '#lib/components/ui/button/index.js';
     import { Dialog } from '#lib/components/ui/dialog/index.js';
     import { m } from '#lib/paraglide/messages.js';
     import { CELLAR } from '#lib/shared/dependencies.js';
@@ -65,17 +65,15 @@
     onMount(load);
 
     function toggle(bottle: Bottle) {
-        whenLoggedIn(() => {
-            if (!selected.delete(bottle.id)) selected.add(bottle.id);
-        });
+        if (!selected.delete(bottle.id)) selected.add(bottle.id);
     }
 
     function toggleAll(select: boolean) {
-        whenLoggedIn(() => {
-            selected.clear();
-            if (select) for (const { id } of bottles) selected.add(id);
-        });
+        selected.clear();
+        if (select) for (const { id } of bottles) selected.add(id);
     }
+
+    const chosen = () => bottles.filter(({ id }) => selected.has(id));
 </script>
 
 {#snippet actions(bottle: Bottle)}
@@ -89,32 +87,24 @@
     />
 {/snippet}
 
-<!-- Outside the scrolling list, and wrapping: the move stays in view on a narrow screen. -->
+<!-- Outside the scrolling list: the actions stay in view on a narrow screen. -->
 {#snippet toolbar()}
-    <div class="flex flex-wrap items-center gap-2">
-        <span class="text-sm font-medium text-primary-text">
-            {m['admin.bottles_selected']({ count: selected.size })}
-        </span>
-        <Button variant="ghost" size="sm" onclick={() => selected.clear()}>
-            {m['common.clear_selection']()}
-        </Button>
-        <Button
-            variant="outline"
-            size="sm"
-            class="ml-auto"
-            onclick={() => (dialogs.dating = bottles.filter(({ id }) => selected.has(id)))}
-        >
-            <CalendarClock class="h-4 w-4" aria-hidden="true" />
-            {m['drinking.window']()}
-        </Button>
-        <Button
-            size="sm"
-            onclick={() => (dialogs.moving = bottles.filter(({ id }) => selected.has(id)))}
-        >
-            <ArrowRightLeft class="h-4 w-4" aria-hidden="true" />
-            {m['storage.move_to']()}
-        </Button>
-    </div>
+    <BottleSelectionBar
+        selection={selected}
+        actions={[
+            {
+                label: m['drinking.window'](),
+                icon: CalendarClock,
+                run: () => (dialogs.dating = chosen())
+            },
+            {
+                label: m['storage.move_to'](),
+                icon: ArrowRightLeft,
+                primary: true,
+                run: () => (dialogs.moving = chosen())
+            }
+        ]}
+    />
 {/snippet}
 
 <Dialog bind:open={() => true, (open) => !open && onClose()}>

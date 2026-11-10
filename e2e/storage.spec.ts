@@ -1,5 +1,5 @@
 import { expect, test } from '@playwright/test';
-import { addWine, logIn, openFromMenu, pick } from './helpers.js';
+import { addWine, logIn, logInAgain, openFromMenu, pick } from './helpers.js';
 
 test('add a container on the storage page, put bottles in its cases, move three from the map, mark one to drink this month and see it on the map, in the banner and on its page, give it a drinking window and see it ready, find the wine in the cellar, then colour it from the admin', async ({
     page,
@@ -67,7 +67,7 @@ test('add a container on the storage page, put bottles in its cases, move three 
     await page.getByRole('button', { name: '4 bottles' }).click();
     const wineBottles = page.getByRole('dialog', { name: /Cuvée Stored/ });
     await wineBottles.getByRole('checkbox', { name: 'Select all' }).check();
-    await wineBottles.getByRole('button', { name: 'Change location' }).click();
+    await wineBottles.getByRole('button', { name: 'Move to…' }).click();
     const wineMove = page.getByRole('dialog', { name: /Change location/ });
     await wineMove.getByLabel('Storage Case').click();
     await expect(page.getByRole('option', { name: 'Rack3 2 free' })).toHaveAttribute(
@@ -176,6 +176,12 @@ test('add a container on the storage page, put bottles in its cases, move three 
     const rows = page.getByRole('row').filter({ has: page.getByRole('link') });
     await expect(rows).toHaveCount(1);
     await expect(rows.getByRole('link', { name: 'Cuvée Stored' })).toBeVisible();
+    // Its selection bar, the one of every bottle list, with this list's actions (UI-34).
+    await rows.getByRole('checkbox').check();
+    for (const name of ['Drinking window', 'Move to…', 'Change bottle availability']) {
+        await expect(page.getByRole('button', { name, exact: true })).toBeVisible();
+    }
+    await page.getByRole('button', { name: 'Clear selection' }).click();
 
     // A window open since last year that ends next year makes it ready, a rank of this page only,
     // with its filter (FEAT-19).
@@ -203,7 +209,8 @@ test('add a container on the storage page, put bottles in its cases, move three 
     // The end keeps the month of the date it had, this month, with the year chosen.
     await expect(rows.getByText(new RegExp(`^${year - 1}\\s– \\S+ ${year + 1}$`))).toBeVisible();
 
-    // A visitor sees what a case holds; ticking a bottle asks to log in, and ticks nothing.
+    // A visitor sees what a case holds and ticks bottles; an action asks for the code over the case,
+    // which keeps the bottle ticked once logged in, the action not run (UI-34).
     const visitorContext = await browser.newContext();
     const visitor = await visitorContext.newPage();
     await visitor.goto(new URL('/storage', page.url()).href);
@@ -214,9 +221,16 @@ test('add a container on the storage page, put bottles in its cases, move three 
         await expect(visitorCase).toBeVisible({ timeout: 1000 });
     }).toPass();
     const box = visitorCase.getByRole('checkbox', { name: 'Select this bottle' });
-    await box.click();
-    await expect(visitor.getByText('Please log in to edit bottles')).toBeVisible();
-    await expect(box).not.toBeChecked();
+    await box.check();
+    await expect(visitorCase.getByRole('status')).toHaveText('1 bottle selected');
+    await visitorCase.getByRole('button', { name: 'Move to…' }).click();
+    // A click lands on its field: the login dialog is above the case's, not hidden under it.
+    const login = visitor.getByRole('dialog', { name: 'Access Code Required' });
+    await login.getByLabel('Access Code', { exact: true }).click();
+    await logInAgain(visitor);
+    await expect(login).toBeHidden();
+    await expect(box).toBeChecked();
+    await expect(visitor.getByRole('dialog', { name: /Change location/ })).toBeHidden();
     await visitorContext.close();
 
     // A colour picked in the admin fills the place of the wine's bottle (FEAT-03).

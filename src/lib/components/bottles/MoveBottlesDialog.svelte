@@ -66,7 +66,7 @@
                 {m['admin.change_storage_location']()}
                 {#if bottles.length > 1}
                     <span class="text-sm font-normal text-muted-foreground ml-2">
-                        ({m['admin.bottles_selected']({ count: bottles.length })})
+                        ({m['common.bottles_selected']({ count: bottles.length })})
                     </span>
                 {/if}
             </DialogTitle>

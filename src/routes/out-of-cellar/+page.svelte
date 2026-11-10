@@ -2,13 +2,11 @@
     import { pageTitle } from '#lib/components/layout/navigation.js';
     import { invalidate } from '$app/navigation';
     import { SvelteMap } from 'svelte/reactivity';
-    import { Button } from '#lib/components/ui/button/index.js';
-    import { auth } from '#lib/stores/auth.svelte.js';
-    import { toasts } from '#lib/stores/toast.svelte.js';
     import { m } from '#lib/paraglide/messages.js';
     import { CELLAR } from '#lib/shared/dependencies.js';
     import { showTablePage } from '#lib/utils/table-navigation.js';
     import { bottleName } from '#lib/components/bottles/bottle-table.js';
+    import BottleSelectionBar from '#lib/components/bottles/BottleSelectionBar.svelte';
     import BottleStatusDialog from '#lib/components/bottles/BottleStatusDialog.svelte';
     import BottleTable from '#lib/components/bottles/BottleTable.svelte';
     import BackButton from '#lib/components/layout/BackButton.svelte';
@@ -41,10 +39,6 @@
         }
     }
 
-    function clearSelection() {
-        selectedBottles.clear();
-    }
-
     async function afterStatusChange() {
         selectedBottles.clear();
         await invalidate(CELLAR);
@@ -73,39 +67,20 @@
 </div>
 
 <div class="space-y-4">
-    <div class="flex justify-between items-center">
-        <p class="text-sm text-muted-foreground">
-            {m['out_of_cellar.total_bottles_out']({ count: data.total })}
-        </p>
-        <div class="flex items-center gap-2">
-            {#if selectedBottles.size > 0}
-                <span class="text-sm text-muted-foreground">
-                    {m['common.selected_count']({ count: selectedBottles.size })}
-                </span>
-                <Button variant="ghost" size="sm" onclick={clearSelection}>
-                    {m['common.clear_selection']()}
-                </Button>
-                {#if auth.isAuthenticated}
-                    <Button
-                        variant="default"
-                        size="sm"
-                        onclick={() => (statusBottles = [...selectedBottles.values()])}
-                    >
-                        {m['out_of_cellar.change_availability_selected']()}
-                    </Button>
-                {:else}
-                    <Button
-                        variant="outline"
-                        size="sm"
-                        onclick={() =>
-                            toasts.add(m['bottles.log_in_to_change_availability'](), 'warning')}
-                    >
-                        {m['out_of_cellar.change_availability_selected']()}
-                    </Button>
-                {/if}
-            {/if}
-        </div>
-    </div>
+    <p class="text-sm text-muted-foreground">
+        {m['out_of_cellar.total_bottles_out']({ count: data.total })}
+    </p>
+
+    <BottleSelectionBar
+        selection={selectedBottles}
+        actions={[
+            {
+                label: m['out_of_cellar.change_availability_selected'](),
+                primary: true,
+                run: () => (statusBottles = [...selectedBottles.values()])
+            }
+        ]}
+    />
 
     <PageSizeSelect perPage={data.perPage} />
 

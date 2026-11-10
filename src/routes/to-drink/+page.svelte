@@ -3,11 +3,12 @@
     import { invalidate } from '$app/navigation';
     import { page } from '$app/state';
     import { SvelteSet } from 'svelte/reactivity';
-    import { CalendarClock } from '@lucide/svelte';
+    import { ArrowRightLeft, CalendarClock } from '@lucide/svelte';
     import { bottleName } from '#lib/components/bottles/bottle-table.js';
-    import { BottleDialogs, whenLoggedIn } from '#lib/components/bottles/bottle-dialogs.svelte.js';
+    import { BottleDialogs } from '#lib/components/bottles/bottle-dialogs.svelte.js';
     import BottleChangeDialogs from '#lib/components/bottles/BottleChangeDialogs.svelte';
     import BottleRowMenu from '#lib/components/bottles/BottleRowMenu.svelte';
+    import BottleSelectionBar from '#lib/components/bottles/BottleSelectionBar.svelte';
     import BottleTable from '#lib/components/bottles/BottleTable.svelte';
     import DrinkingMark from '#lib/components/bottles/DrinkingMark.svelte';
     import { countedLabel } from '#lib/components/bottles/drinking.js';
@@ -28,7 +29,6 @@
     import ChoiceButtons from '#lib/components/preferences/ChoiceButtons.svelte';
     import PageSizeSelect from '#lib/components/table/PageSizeSelect.svelte';
     import Pagination from '#lib/components/table/Pagination.svelte';
-    import { Button } from '#lib/components/ui/button/index.js';
     import { Card, CardContent } from '#lib/components/ui/card/index.js';
     import { Label } from '#lib/components/ui/label/index.js';
     import DebouncedInput from '#lib/components/wines/DebouncedInput.svelte';
@@ -74,14 +74,12 @@
 
     const chosen = () => data.bottles.filter(({ id }) => selected.has(id));
 
-    /** Ticks or unticks these bottles; a visitor is asked to log in, as in a case's dialog. */
+    /** Ticks or unticks these bottles. */
     function select(bottles: Bottle[], on: boolean) {
-        whenLoggedIn(() => {
-            for (const { id } of bottles) {
-                if (on) selected.add(id);
-                else selected.delete(id);
-            }
-        });
+        for (const { id } of bottles) {
+            if (on) selected.add(id);
+            else selected.delete(id);
+        }
     }
 
     /** A row's checkbox: it ticks its bottles, or unticks them once all are ticked. */
@@ -204,36 +202,26 @@
         <PageSizeSelect perPage={query.perPage} />
     </div>
 
-    {#if selected.size > 0}
-        <div class="flex flex-wrap items-center gap-2">
-            <span class="text-sm font-medium text-primary-text">
-                {m['admin.bottles_selected']({ count: selected.size })}
-            </span>
-            <Button variant="ghost" size="sm" onclick={() => selected.clear()}>
-                {m['common.clear_selection']()}
-            </Button>
-            <div class="flex flex-wrap gap-2 sm:ml-auto">
-                <Button
-                    variant="outline"
-                    size="sm"
-                    onclick={() => whenLoggedIn(() => (dialogs.dating = chosen()))}
-                >
-                    <CalendarClock class="h-4 w-4" aria-hidden="true" />
-                    {m['drinking.window']()}
-                </Button>
-                <Button
-                    variant="outline"
-                    size="sm"
-                    onclick={() => whenLoggedIn(() => (dialogs.moving = chosen()))}
-                >
-                    {m['admin.change_storage_location']()}
-                </Button>
-                <Button size="sm" onclick={() => whenLoggedIn(() => (dialogs.status = chosen()))}>
-                    {m['admin.change_bottle_availability']()}
-                </Button>
-            </div>
-        </div>
-    {/if}
+    <BottleSelectionBar
+        selection={selected}
+        actions={[
+            {
+                label: m['drinking.window'](),
+                icon: CalendarClock,
+                run: () => (dialogs.dating = chosen())
+            },
+            {
+                label: m['storage.move_to'](),
+                icon: ArrowRightLeft,
+                run: () => (dialogs.moving = chosen())
+            },
+            {
+                label: m['admin.change_bottle_availability'](),
+                primary: true,
+                run: () => (dialogs.status = chosen())
+            }
+        ]}
+    />
 
     {#if query.view === 'wine'}
         <BottleTable

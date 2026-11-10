@@ -1,7 +1,7 @@
 [
   {
     "version": "1.7.0",
-    "summary": "1.7.0 brings the next block of the roadmap.",
+    "summary": "1.7.0 brings finishing touches: one selection bar for every list of bottles, and small fixes.\n\nThe lists of bottles (a wine’s bottles, a case of the storage map, « To drink » and « Out of cellar ») share one selection bar: how many bottles are ticked, « Clear selection » and the list’s own actions, the move being called « Move to… » everywhere. A visitor can tick bottles in each of them and sees the same bar; any change, from the bar, a bottle’s ⋯ menu or its pencil, opens the login dialog over the list, and the bottles stay ticked once logged in. On a phone, the bar of « Out of cellar » no longer runs off the screen. The login dialog also shows above an open dialog when a session ends during a change, instead of hiding behind it.",
     "mandatoryStop": false,
     "actions": []
   },

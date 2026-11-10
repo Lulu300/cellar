@@ -1,7 +1,7 @@
 <script lang="ts">
     import type { ComponentProps } from 'svelte';
     import { goto } from '$app/navigation';
-    import { CalendarClock } from '@lucide/svelte';
+    import { ArrowRightLeft, CalendarClock } from '@lucide/svelte';
     import { SvelteSet } from 'svelte/reactivity';
     import { Dialog } from '#lib/components/ui/dialog/index.js';
     import ScrollingDialogContent from '#lib/components/layout/ScrollingDialogContent.svelte';
@@ -9,11 +9,9 @@
     import { ownedBottles } from '#lib/utils/wine-group-sort.js';
     import { sortBottles, type BottleSort } from '#lib/utils/bottle-sort.js';
     import BottleChangeDialogs from '#lib/components/bottles/BottleChangeDialogs.svelte';
+    import BottleSelectionBar from '#lib/components/bottles/BottleSelectionBar.svelte';
     import { BottleDialogs, whenLoggedIn } from '#lib/components/bottles/bottle-dialogs.svelte.js';
-    import { Button } from '#lib/components/ui/button/index.js';
     import WineBottleDialog from '#lib/components/bottles/WineBottleDialog.svelte';
-    import { auth } from '#lib/stores/auth.svelte.js';
-    import { toasts } from '#lib/stores/toast.svelte.js';
     import { m } from '#lib/paraglide/messages.js';
     import type { DefinitionDTO, ListedBottleDTO } from '#lib/shared/dto.js';
 
@@ -106,71 +104,30 @@
 
         <!-- Outside the scrolling table, and wrapping: the actions stay in view on a narrow screen. -->
         {#snippet toolbar()}
-            <div class="flex flex-wrap justify-between items-center gap-2">
-                <div class="flex flex-wrap items-center gap-x-4 gap-y-2">
-                    <p class="text-sm text-muted-foreground">
-                        {m['admin.showing_bottles']({ count: sortedBottles.length })}
-                    </p>
-                    {#if selectedBottles.size > 0}
-                        <span class="text-sm font-medium text-primary-text">
-                            {m['admin.bottles_selected']({ count: selectedBottles.size })}
-                        </span>
-                        <Button variant="ghost" size="sm" onclick={() => selectedBottles.clear()}>
-                            {m['common.clear_selection']()}
-                        </Button>
-                    {/if}
-                </div>
-                {#if selectedBottles.size > 0}
-                    <div class="flex flex-wrap gap-2">
-                        <Button
-                            variant="outline"
-                            size="sm"
-                            onclick={() => whenLoggedIn(() => (dialogs.dating = chosenBottles()))}
-                        >
-                            <CalendarClock class="h-4 w-4" aria-hidden="true" />
-                            {m['drinking.window']()}
-                        </Button>
-                        {#if auth.isAuthenticated}
-                            <Button
-                                variant="outline"
-                                size="sm"
-                                onclick={() => (dialogs.moving = chosenBottles())}
-                            >
-                                {m['admin.change_storage_location']()}
-                            </Button>
-                            <Button
-                                variant="default"
-                                size="sm"
-                                onclick={() => (dialogs.status = chosenBottles())}
-                            >
-                                {m['admin.change_bottle_availability']()}
-                            </Button>
-                        {:else}
-                            <Button
-                                variant="outline"
-                                size="sm"
-                                onclick={() =>
-                                    toasts.add(
-                                        m['bottles.log_in_to_change_availability'](),
-                                        'warning'
-                                    )}
-                            >
-                                {m['admin.change_storage_location']()}
-                            </Button>
-                            <Button
-                                variant="outline"
-                                size="sm"
-                                onclick={() =>
-                                    toasts.add(
-                                        m['bottles.log_in_to_change_availability'](),
-                                        'warning'
-                                    )}
-                            >
-                                {m['admin.change_bottle_availability']()}
-                            </Button>
-                        {/if}
-                    </div>
-                {/if}
+            <div class="space-y-2">
+                <p class="text-sm text-muted-foreground">
+                    {m['admin.showing_bottles']({ count: sortedBottles.length })}
+                </p>
+                <BottleSelectionBar
+                    selection={selectedBottles}
+                    actions={[
+                        {
+                            label: m['drinking.window'](),
+                            icon: CalendarClock,
+                            run: () => (dialogs.dating = chosenBottles())
+                        },
+                        {
+                            label: m['storage.move_to'](),
+                            icon: ArrowRightLeft,
+                            run: () => (dialogs.moving = chosenBottles())
+                        },
+                        {
+                            label: m['admin.change_bottle_availability'](),
+                            primary: true,
+                            run: () => (dialogs.status = chosenBottles())
+                        }
+                    ]}
+                />
             </div>
         {/snippet}
 

@@ -146,6 +146,7 @@ Revue du code du 2026-10-08, commit `556c7bb`. Ce fichier est la version pour le
 - **Largeur des pages (1.5.2)** : Demande du mainteneur (2026-11-08) : les marges des côtés, réduites au début du projet, laissent encore près de 200 px vides de chaque côté sur un écran de 1920 px (le cadre unique de `+layout.svelte` prend 90 %, 85 % puis 80 % de la largeur), et le plan de la cave défile de côté alors qu’il tiendrait à l’écran. Pour une 1.5.2, juste après la 1.5.1 : dans les préférences, « Largeur des pages » à quatre choix (Étroite, Normale par défaut, qui est la largeur d’aujourd’hui, Large, Pleine largeur avec la seule marge de 16 px), appliquée à l’en-tête comme aux pages ; et un interrupteur « Plan de la cave en pleine largeur », activé par défaut, pour que le plan prenne tout l’écran même quand le reste garde ses marges. Les valeurs sont proposées sur captures (1280, 1920 et 2560 px) avant d’être construites ; la liste des vins (cartes et liste, et ses filtres à paliers fixes), le plan, un formulaire et les statistiques ne doivent rien étirer mal. develop passe à 1.5.2-rc.0 après la 1.5.1.
 - **Achats plus clairs (1.5.3)** : Retours du mainteneur (2026-11-09) pour une 1.5.3. Pénurie : retirer la quantité cible d’un vin demande aujourd’hui de modifier le vin ; un bouton la retire d’un coup (sans la diminuer), sur chaque vin de l’onglet Pénurie et sur la fiche d’un vin quand il en a une, jamais depuis la liste Mes vins. Liste d’envies : des utilisateurs prennent « Ajouter une bouteille » d’une envie pour un ajout à la liste ; le bouton devient « J’en ai acheté » (« I bought some »), puisqu’il range en cave une bouteille achetée. Le formulaire d’ajout se lit dans l’ordre : photo de l’étiquette, nom, note et quantité, puis un seul bouton qui ajoute l’envie entière, au lieu d’un « Ajouter » collé au nom et d’une note qu’on ne saisit qu’après coup. La quantité d’une envie reste, renommée avec une aide qui dit qu’elle n’est qu’un pense-bête et ne déclenche aucune alerte, contrairement à la quantité cible de la pénurie (choix du mainteneur). Les libellés, les emplacements des boutons et le formulaire sont proposés sur captures avant d’être construits. Plage de dégustation : « À boire avant » (une année ou un mois) et l’année optimale ne disent pas « à boire entre 2027 et 2032 » ; un sous-agent propose d’abord deux ou trois modèles, avec maquettes et leur effet sur l’ordre de « À boire », sans code (FEAT-19) ; le mainteneur choisit ensuite le modèle et la version. Comme pour la 1.5.1, develop repasse de 1.6.0-rc.0 à 1.5.3-rc.0, et l’entrée 1.6.0 de `releases.json` revient au démarrage de la version suivante.
 - **Période de dégustation (FEAT-19)** : Choisi sur la proposition du 2026-11-09 (modèle A) : une bouteille peut porter « à partir de » à côté d’« À boire avant », chacun en année ou en mois, jamais au jour ; l’année optimale reste une année. Une nouvelle colonne, aucune valeur convertie : une bouteille sans début se range exactement comme avant. Un rang « Prête » (losange vide, après « À l’apogée ») vaut pour une bouteille dans sa période, dont la fin tombe après cette année ou n’existe pas, et dont l’apogée n’est pas venue ou n’existe pas ; une fin dépassée, ce mois-ci ou cette année range la bouteille comme aujourd’hui ; une période pas encore ouverte reste « Plus tard », écrite « pas encore prête », sans rang à elle. « Prête » ne se voit que sur la page « À boire », avec un filtre : le bandeau, le repère du stockage et le récapitulatif des notifications (FEAT-09) gardent les quatre rangs de FEAT-05. Noms : « Période de dégustation » (fenêtre, formulaire, menu ⋯, bouton de la sélection) et « Période » (colonne) ; « 2024 – 2032 », « sept. 2026 – mars 2027 », « dès 2028 » ; une bouteille en retard garde « avant fin … ». Les tuiles « Ce mois-ci » et « Cette année » retirent le début ; l’API et le MCP refusent une fin avant le début (422 qui nomme les bouteilles). « Après l’apogée » reste pour plus tard. Un petit bloc à lui seul, juste après la 1.5.3 : version mineure, puisqu’une version corrective ne porte pas de migration (choix du mainteneur, 2026-11-09).
+- **Finitions (UI-37, UI-34)** : Demande du mainteneur (2026-11-10) : une version mineure, juste après la 1.6.0, qui corrige les petits défauts relevés pendant UI-35, UI-36 et FEAT-19 (UI-37) et fait UI-34, la barre de sélection des bouteilles commune. UI-37 et UI-34 partent côte à côte, chacune sur sa branche, et fusionnent l’une après l’autre. Ce qui se voit (cartes de bouteilles, bouton « N bouteilles » sur téléphone, période d’un seul mois, majuscules des libellés anglais, pleine largeur à 2560 px, comportement du visiteur dans la barre de sélection) est proposé sur captures avant d’être construit. DEP-11 passe juste avant la sortie, Node 24.22.2 étant éligible le 2026-11-12.
 - **Survol des boutons (UI-33)** : Choisi sur captures le 2026-11-02, une règle par sorte de bouton : un bouton plein (principal, secondaire, suppression, interrupteur) mêle au survol 15 % de la couleur du texte de la page à son fond, donc s’assombrit en clair et s’éclaircit en sombre (jetons `--primary-hover`, `--secondary-hover`, `--destructive-hover`) ; un bouton discret (transparent, icône, ligne de menu, section du menu, tri, case du stockage, croix d’un dialogue) prend au survol le fond `accent` entier et son texte, en clair comme en sombre, et les boutons à icône faits main aussi ; un bouton à contour et une liste déroulante gardent le survol de shadcn, la liste déroulante gagnant celui qui lui manquait en clair ; un choix non retenu suit la règle des boutons discrets, un choix retenu celle des boutons pleins, sans zoom ; liens et onglets inchangés ; un focus clavier net (anneau de 3 px en `--ring` entier) sur chaque bouton, lien et onglet ; un bouton désactivé à 50 %, sans survol, avec le curseur normal, faits main compris ; pas d’état appuyé à part, et seules les couleurs changent. L’`accent` n’est pas renforcé. Exception à la règle de `ui/` : `ui/button/button.svelte`, `ui/select/select-trigger.svelte` et `ui/dialog/dialog-content.svelte` portent des classes modifiées à la main, signalées par un commentaire, parce que le défaut est dans leurs variantes. Tous les conteneurs du stockage ont la même pastille neutre.
 - **Vue liste (FEAT-10)** : Choisie sur maquette (planche « D3 ») : une vue liste à côté des cartes, sans défilement (le mainteneur n’en veut pas dans la liste) ; un texte long passe à la ligne. Un sélecteur « Cartes / Liste » sur la page et la vue par défaut dans les préférences. Demandée avec UI-32, placée en tête de la 1.4.0 parce que c’est une nouvelle fonction et non un correctif.
 - **Couleurs des vins (FEAT-03)** : Chaque couleur de vin a une vraie couleur, enregistrée en base ; les couleurs de départ reçoivent celles des étiquettes d’aujourd’hui. Créée depuis un formulaire, une couleur reçoit une teinte par défaut ou neutre ; dans Admin › Data, le sélecteur s’affiche dès la création ou la modification. Choisi sur maquette : sur la page Stockage, chaque place occupée prend la couleur de son vin ; les camemberts des statistiques prennent les vraies couleurs ; la liste des vins garde l’étiquette, colorée, et ajoute une bande à gauche de la carte ; les listes de bouteilles montrent l’étiquette colorée à côté du nom du vin. Pas de carte teintée (décision du 2026-10-31). Précisé le 2026-11-01 : les couleurs de départ sont les teintes de vin de la maquette (Rouge #7b1e2b, Blanc #ead98b, Rosé #f2a08c, Jaune #d4952a, N/A #9ca3af) ; une couleur créée depuis un formulaire reçoit le gris de N/A, sauf un nom reconnu, qui reprend sa teinte de départ. Changé le 2026-11-02, sur captures : le contour « seulement quand le contraste manque » donnait des bouteilles avec contour, d’autres sans, et un orange entre les deux, ce que le mainteneur refuse ; toute couleur reçoit désormais le même contour, dans sa propre teinte mêlée de 40 % de noir en clair et de 40 % de blanc en sombre, sur le stockage (une silhouette de bouteille sans étiquette ; une place vide est la même silhouette en contour), les étiquettes, la bande des cartes et la légende des statistiques. Une couleur choisie par l’utilisateur peut avoir un contour sous 3:1 (le blanc pur en clair : 2,85:1) : accepté.
@@ -187,8 +188,9 @@ Revue du code du 2026-10-08, commit `556c7bb`. Ce fichier est la version pour le
 | 1.5.2 | P17c · Largeur des pages | Pour la 1.5.2, avant le bloc suivant (décision « Largeur des pages (1.5.2) ») : UI-35 ; puis REL-20. Publiée en 1.5.2 le 2026-11-08. | UI-35, REL-20 | 2 / 2 |
 | 1.5.3 | P17d · Achats plus clairs | Pour la 1.5.3, avant le bloc suivant (décision « Achats plus clairs (1.5.3) ») : UI-36 ; puis REL-21. DEP-11 passe juste avant REL-21 si la sortie tombe le 2026-11-12 ou après. FEAT-19, une proposition sans code, se mène à côté et ne retient pas la 1.5.3. Publiée en 1.5.3 le 2026-11-09. | UI-36, REL-21 | 2 / 2 |
 | 1.6.0 | P22 · Période de dégustation | Juste après la 1.5.3, avant les autres blocs (décision « Période de dégustation (FEAT-19) ») : FEAT-19 ; puis REL-22. Une version mineure à elle seule, à cause de sa migration. Publiée en 1.6.0 le 2026-11-09. | FEAT-19, REL-22 | 2 / 2 |
+| Finitions | P23 · Finitions et barre de sélection | Juste après la 1.6.0, avant les autres blocs (décision « Finitions (UI-37, UI-34) ») : UI-37 et UI-34, menées côte à côte et fusionnées l’une après l’autre ; DEP-11 juste avant REL-23 ; puis REL-23. Une version mineure. | DEP-11, UI-34, UI-37, REL-23 | 0 / 4 |
 | Dégustation | P20 · Fiches de dégustation | Décision « Fiches de dégustation (FEAT-06, FEAT-14 à FEAT-16) ». Sur la branche d’intégration `feat/tasting`, envoyée sur GitHub (décision « Blocs sans numéro ») : chaque tâche part de cette branche et y revient ; la branche rejoint develop quand le mainteneur valide le bloc entier. Ordre : FEAT-06 ; FEAT-14 ; FEAT-15 ; FEAT-16 ; puis REL-17. | FEAT-06, FEAT-14, FEAT-15, FEAT-16, REL-17 | 0 / 5 |
-| Producteurs | P18 · Producteurs et revue de l’import | Les producteurs d’abord, parce que la revue de l’import doit savoir relier ou créer un producteur. Ordre : FEAT-07 ; FEAT-08 ; puis REL-12. UI-34 est rangée ici par défaut : elle se place où le mainteneur veut, une fois le comportement du visiteur choisi . DEP-11 aussi : elle se fait sur develop juste avant la sortie suivante, quel que soit le bloc. | DEP-11, UI-34, FEAT-07, FEAT-08, REL-12 | 0 / 5 |
+| Producteurs | P18 · Producteurs et revue de l’import | Les producteurs d’abord, parce que la revue de l’import doit savoir relier ou créer un producteur. Ordre : FEAT-07 ; FEAT-08 ; puis REL-12. | FEAT-07, FEAT-08, REL-12 | 0 / 3 |
 | Notifications | P19 · Notifications | Les notifications, qui utilisent « À boire » (FEAT-05), le statut hors cave et la vérification des mises à jour. Ordre : FEAT-09 ; puis REL-13. | FEAT-09, REL-13 | 0 / 2 |
 | Statistiques de dégustation | P21 · Statistiques de dégustation | Après le bloc « Dégustation », dont elles lisent les fiches. Ordre : FEAT-17 ; puis REL-18. | FEAT-17, REL-18 | 0 / 2 |
 
@@ -3820,6 +3822,83 @@ Sévérité **évolution** · effort **S** · dépend de FEAT-19 · statut **Fai
 
 **Sources** : Décision « Période de dégustation (FEAT-19) »
 
+## P23 · Finitions et barre de sélection (Finitions)
+
+Juste après la 1.6.0, avant les autres blocs (décision « Finitions (UI-37, UI-34) ») : UI-37 et UI-34, menées côte à côte et fusionnées l’une après l’autre ; DEP-11 juste avant REL-23 ; puis REL-23. Une version mineure.
+
+### DEP-11 · Revue des dépendances d’après la 1.5.1
+
+Sévérité **mineur** · effort **S** · dépend de DEP-10 · statut **À faire**
+
+**Problème** : Ce que DEP-10 n’a pas pris : Node 24.22.2 et docker/login-action 4.8.0 (éligibles le 2026-11-12), les correctifs pas encore âgés de 7 jours le 2026-11-08 (tinybench, svelte-check, bits-ui, tailwindcss 4.3.4, vite 8.3.6, semver, cookie…), et les mineures repoussées (@lucide/svelte 1.66, readable-stream, tar-stream, pako, core-js).
+
+**Fichiers** : `package.json`, `pnpm-lock.yaml`, `.github/workflows/`, `Dockerfile`, `.nvmrc`
+
+**À faire**
+
+- Comme DEP-10, avec ses outils (p15-notes/dep-10-evidence/tools) : correctifs publiés depuis au moins 7 jours, une mise à jour par commit, portes à chaque fois ; mineures proposées au mainteneur ; alerte minimatch revue ; juste avant la sortie suivante, quel que soit le bloc.
+- Trouvé pendant DEP-10 : `.nvmrc` dit « 24 » ; proposer de le fixer sur la version de l’image, pour que la CI teste le Node qu’on publie.
+
+**Critère d’acceptation** : Chaque dépendance, action et image de base est à son dernier correctif publié depuis au moins 7 jours, ou l’écart est justifié ; la CI tourne sur le Node de l’image.
+
+**Sources** : Trouvé pendant DEP-10
+
+### UI-34 · Une seule barre de sélection des bouteilles
+
+Sévérité **mineur** · effort **S** · dépend de FEAT-18 · statut **À faire**
+
+**Problème** : La fiche d’un vin, la liste d’une case du plan et la page « À boire » ont chacune leur barre de sélection, presque identiques, et le visiteur n’y est pas traité pareil : la fiche lui montre des boutons en contour et le message « connectez-vous pour changer la disponibilité » ; les deux autres demandent la connexion au clic, avec un autre message (la case dès qu’on coche une bouteille). Sur `/to-drink`, deux boutons s’appellent « À boire avant ».
+
+**Fichiers** : `src/lib/components/bottles/BottleDetailsDialog.svelte`, `src/lib/components/storage/CaseBottlesDialog.svelte`, `src/routes/to-drink/+page.svelte`, `src/lib/components/bottles/BottleTable.svelte`
+
+**À faire**
+
+- D’abord, faire choisir au mainteneur, sur captures, ce que voit un visiteur dans une barre de sélection (boutons visibles ou non, quand on lui demande de se connecter, quel message).
+- Puis un seul composant pour les trois barres, avec ce comportement ; et des noms distincts pour l’action « À boire avant » et l’en-tête de sa colonne.
+
+**Critère d’acceptation** : Les trois listes utilisent la même barre de sélection, et un visiteur y voit partout le comportement choisi par le mainteneur.
+
+**Sources** : Trouvé pendant FEAT-18, Demande du mainteneur (2026-11-08) : regrouper une fois le comportement du visiteur validé
+
+### UI-37 · Les petits défauts relevés depuis la 1.5.2
+
+Sévérité **mineur** · effort **M** · dépend de REL-22 · statut **À faire**
+
+**Problème** : UI-35, UI-36 et FEAT-19 ont relevé, sans les corriger, des défauts hors de leur périmètre : un bouton sans nom accessible complet, des libellés anglais en majuscules de titre, deux façons de demander la connexion sur la même page, des cartes de bouteilles muettes sur l’apogée et la période, un téléphone qui n’atteint pas le tableau des bouteilles depuis la vue liste, une période d’un seul mois écrite deux fois, et des mises en page qui s’étirent en pleine largeur.
+
+**Fichiers** : `src/lib/components/wishlist/WishCard.svelte`, `src/lib/i18n/locales/en.json`, `src/routes/purchases/shortage/+page.svelte`, `src/lib/components/wines/target-quantity.ts`, `src/lib/components/bottles/BottleCard.svelte`, `src/lib/components/wines/WineTable.svelte`, `src/lib/components/bottles/drinking.ts`, `src/app.css`, `src/routes/preferences/+page.svelte`, `src/lib/components/preferences/ChoiceGroup.svelte`, `src/routes/wines/[id]/+page.svelte`, `src/routes/storage/+page.svelte`
+
+**À faire**
+
+- « Créer la fiche du vin » d’une envie en texte : un nom accessible qui porte le nom de l’envie, comme les autres boutons des cartes.
+- En anglais, des majuscules de phrase partout où restent des majuscules de titre (« Target Quantity », « Wine Name »…), relevées dans tout `en.json`.
+- L’onglet Pénurie : une seule façon de demander la connexion, pour « Ajouter une bouteille » comme pour le retrait de la quantité cible.
+- Les cartes de bouteilles de la fiche d’un vin montrent l’apogée et la période, comme le tableau.
+- À 390 px, la vue liste de Mes vins donne accès au tableau des bouteilles d’un vin, comme le bouton « N bouteilles » des écrans larges.
+- Une période d’un seul mois ou d’une seule année s’écrit une fois (« déc. 2026 », « 2026 ») au lieu de « déc. 2026 – déc. 2026 ».
+- En pleine largeur à 2560 px : les préférences, la fiche d’un vin et les cartes de résumé du stockage ne s’étirent plus mal ; `--breakpoint-3xl`, `-4xl` et `-5xl` de `app.css`, inutilisés et sans effet, sont retirés.
+- Ce qui se voit est proposé d’abord sur captures, puis construit selon le choix du mainteneur.
+
+**Critère d’acceptation** : Chaque défaut relevé par UI-35, UI-36 et FEAT-19 est corrigé, ou écarté avec l’accord du mainteneur ; captures avant et après.
+
+**Sources** : Trouvé pendant UI-35, Trouvé pendant UI-36, Trouvé pendant FEAT-19, Décision « Finitions (UI-37, UI-34) »
+
+### REL-23 · Publication du bloc « Finitions »
+
+Sévérité **évolution** · effort **S** · dépend de UI-37, UI-34, DEP-11 · statut **À faire**
+
+**Problème** : Le bloc apporte ces finitions sans attendre les autres.
+
+**Fichiers** : `releases.json`, `CHANGELOG.md`, `UPGRADING.md`, `package.json`
+
+**À faire**
+
+- Résumé complété par UI-37, UI-34 et DEP-11 ; bancs depuis la version précédente et la 1.0.0 ; release selon RELEASING.md, avec le mainteneur, sous le numéro de version suivant (décision « Blocs sans numéro »).
+
+**Critère d’acceptation** : La version est publiée sur `main` et son image se télécharge sans connexion ; develop passe à la rc suivante.
+
+**Sources** : Décision « Finitions (UI-37, UI-34) »
+
 ## P20 · Fiches de dégustation (Dégustation)
 
 Décision « Fiches de dégustation (FEAT-06, FEAT-14 à FEAT-16) ». Sur la branche d’intégration `feat/tasting`, envoyée sur GitHub (décision « Blocs sans numéro ») : chaque tâche part de cette branche et y revient ; la branche rejoint develop quand le mainteneur valide le bloc entier. Ordre : FEAT-06 ; FEAT-14 ; FEAT-15 ; FEAT-16 ; puis REL-17.
@@ -3918,41 +3997,7 @@ Sévérité **évolution** · effort **S** · dépend de FEAT-06, FEAT-14, FEAT-
 
 ## P18 · Producteurs et revue de l’import (Producteurs)
 
-Les producteurs d’abord, parce que la revue de l’import doit savoir relier ou créer un producteur. Ordre : FEAT-07 ; FEAT-08 ; puis REL-12. UI-34 est rangée ici par défaut : elle se place où le mainteneur veut, une fois le comportement du visiteur choisi . DEP-11 aussi : elle se fait sur develop juste avant la sortie suivante, quel que soit le bloc.
-
-### DEP-11 · Revue des dépendances d’après la 1.5.1
-
-Sévérité **mineur** · effort **S** · dépend de DEP-10 · statut **À faire**
-
-**Problème** : Ce que DEP-10 n’a pas pris : Node 24.22.2 et docker/login-action 4.8.0 (éligibles le 2026-11-12), les correctifs pas encore âgés de 7 jours le 2026-11-08 (tinybench, svelte-check, bits-ui, tailwindcss 4.3.4, vite 8.3.6, semver, cookie…), et les mineures repoussées (@lucide/svelte 1.66, readable-stream, tar-stream, pako, core-js).
-
-**Fichiers** : `package.json`, `pnpm-lock.yaml`, `.github/workflows/`, `Dockerfile`, `.nvmrc`
-
-**À faire**
-
-- Comme DEP-10, avec ses outils (p15-notes/dep-10-evidence/tools) : correctifs publiés depuis au moins 7 jours, une mise à jour par commit, portes à chaque fois ; mineures proposées au mainteneur ; alerte minimatch revue ; juste avant la sortie suivante, quel que soit le bloc.
-- Trouvé pendant DEP-10 : `.nvmrc` dit « 24 » ; proposer de le fixer sur la version de l’image, pour que la CI teste le Node qu’on publie.
-
-**Critère d’acceptation** : Chaque dépendance, action et image de base est à son dernier correctif publié depuis au moins 7 jours, ou l’écart est justifié ; la CI tourne sur le Node de l’image.
-
-**Sources** : Trouvé pendant DEP-10
-
-### UI-34 · Une seule barre de sélection des bouteilles
-
-Sévérité **mineur** · effort **S** · dépend de FEAT-18 · statut **À faire**
-
-**Problème** : La fiche d’un vin, la liste d’une case du plan et la page « À boire » ont chacune leur barre de sélection, presque identiques, et le visiteur n’y est pas traité pareil : la fiche lui montre des boutons en contour et le message « connectez-vous pour changer la disponibilité » ; les deux autres demandent la connexion au clic, avec un autre message (la case dès qu’on coche une bouteille). Sur `/to-drink`, deux boutons s’appellent « À boire avant ».
-
-**Fichiers** : `src/lib/components/bottles/BottleDetailsDialog.svelte`, `src/lib/components/storage/CaseBottlesDialog.svelte`, `src/routes/to-drink/+page.svelte`, `src/lib/components/bottles/BottleTable.svelte`
-
-**À faire**
-
-- D’abord, faire choisir au mainteneur, sur captures, ce que voit un visiteur dans une barre de sélection (boutons visibles ou non, quand on lui demande de se connecter, quel message).
-- Puis un seul composant pour les trois barres, avec ce comportement ; et des noms distincts pour l’action « À boire avant » et l’en-tête de sa colonne.
-
-**Critère d’acceptation** : Les trois listes utilisent la même barre de sélection, et un visiteur y voit partout le comportement choisi par le mainteneur.
-
-**Sources** : Trouvé pendant FEAT-18, Demande du mainteneur (2026-11-08) : regrouper une fois le comportement du visiteur validé
+Les producteurs d’abord, parce que la revue de l’import doit savoir relier ou créer un producteur. Ordre : FEAT-07 ; FEAT-08 ; puis REL-12.
 
 ### FEAT-07 · Producteurs : une liste et une fiche
 

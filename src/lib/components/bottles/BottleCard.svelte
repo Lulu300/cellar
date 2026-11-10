@@ -76,143 +76,138 @@
     {/if}
 {/snippet}
 
+<!-- Its five lines are rows of the page's grid, shared by the cards of a row: each line starts
+     level from card to card, whatever the lines above it hold in any of them -->
 <div
-    class="border rounded-lg p-3 hover:shadow-md transition-shadow relative group"
+    class="row-span-5 grid grid-rows-subgrid gap-3 border rounded-lg p-3 hover:shadow-md transition-shadow relative group"
     class:opacity-75={consumed}
 >
-    <!-- The cards of a row share its height: the consumed date and the notes keep to the bottom,
-         level from card to card whatever the lines above them hold -->
-    <div class="flex h-full flex-col gap-3">
-        <!-- Wraps, so that the buttons stay inside a narrow card -->
-        <div class="flex flex-wrap items-center justify-between gap-2">
-            <div class="flex items-center gap-2 flex-wrap">
+    <!-- Wraps, so that the buttons stay inside a narrow card -->
+    <div class="flex flex-wrap items-center justify-between gap-2">
+        <div class="flex items-center gap-2 flex-wrap">
+            <Badge variant="outline" class={headerBadge}>
+                <Calendar size={16} class="mr-1" />
+                {bottle.vintage ?? m['common.not_available']()}
+            </Badge>
+            {#if !consumed}
                 <Badge variant="outline" class={headerBadge}>
-                    <Calendar size={16} class="mr-1" />
-                    {bottle.vintage ?? m['common.not_available']()}
-                </Badge>
-                {#if !consumed}
-                    <Badge variant="outline" class={headerBadge}>
-                        <MapPin size={16} class="mr-1" />
-                        {bottle.storageCase?.name || m['common.not_available']()}
-                    </Badge>
-                {/if}
-                <Badge variant="outline" class={headerBadge}>
-                    <Wine size={16} class="mr-1" />
-                    {bottle.format || m['wine_details.no_format']()}
-                </Badge>
-            </div>
-            <div class="flex items-center gap-2">
-                {#if consumed}
-                    <Badge variant="destructive" class={headerBadge}>
-                        {availabilityLabel(BottleAvailability.CONSUMED)}
-                    </Badge>
-                {:else if bottle.availability === BottleAvailability.OUT_OF_CELLAR}
-                    <!-- The pill has room for a short word only: "Out", not "Out of cellar" -->
-                    {@render statusPill('bg-gray-500 hover:bg-gray-600', m['wine_details.out']())}
-                {:else}
-                    {@render statusPill(
-                        'bg-green-700 hover:bg-green-800',
-                        availabilityLabel(BottleAvailability.AVAILABLE)
-                    )}
-                {/if}
-                {#if auth.isAuthenticated}
-                    <button
-                        class={iconButton}
-                        onclick={() => onDuplicate(bottle)}
-                        title={m['wine_details.duplicate_bottle']()}
-                        aria-label={m['wine_details.duplicate_bottle']()}
-                    >
-                        <Copy size={16} aria-hidden="true" />
-                    </button>
-                    <button
-                        class={iconButton}
-                        onclick={() => onEdit(bottle)}
-                        title={m['wine_details.edit_bottle']()}
-                        aria-label={m['wine_details.edit_bottle']()}
-                    >
-                        <SquarePen size={16} aria-hidden="true" />
-                    </button>
-                {/if}
-            </div>
-        </div>
-
-        <div class="flex flex-wrap gap-1 min-h-[3rem]">
-            <button
-                class="bg-secondary text-secondary-foreground hover:bg-secondary-hover {focusRing} rounded-lg transition-colors p-2 sm:p-3 min-h-[36px] sm:min-h-[42px] min-w-[36px] sm:min-w-[42px] flex items-center justify-center"
-                onclick={() => onBarcode(bottle)}
-                title={m['wine_details.view_barcode']()}
-                aria-label={m['wine_details.view_barcode']()}
-            >
-                <QrCode size={20} class="sm:w-6 sm:h-6" />
-            </button>
-            <Badge variant="secondary" class="text-xs">
-                <Calendar size={14} class="mr-1" />
-                {formatDate(bottle.purchaseDate)}
-            </Badge>
-            <Badge variant="secondary" class="text-xs">
-                <Tag size={14} class="mr-1" />
-                {bottle.origin ? bottle.origin.name : m['wine_details.no_origin']()}
-            </Badge>
-            <Badge variant="secondary" class="text-xs">
-                <DollarSign size={14} class="mr-1" />
-                {formatCurrency(bottle.purchasePrice)}
-            </Badge>
-            <Badge variant="secondary" class="text-xs">
-                <TrendingUp size={14} class="mr-1" />
-                {formatCurrency(bottle.currentValue)}
-            </Badge>
-        </div>
-
-        <!-- When to drink it, as the bottle tables say it -->
-        {#if rank || drinkingWindow || bottle.optimum !== null}
-            <div class="flex flex-wrap items-center gap-1">
-                {#if rank}<DrinkingChip {rank} />{/if}
-                {#if drinkingWindow}
-                    <Badge variant="secondary" class="text-xs">
-                        <CalendarRange size={14} class="mr-1" aria-hidden="true" />
-                        <span class="sr-only"
-                            >{m['common.label']({ label: m['drinking.window_column']() })}</span
-                        >
-                        {drinkingWindow}
-                    </Badge>
-                {/if}
-                {#if bottle.optimum !== null}
-                    <Badge variant="secondary" class="text-xs">
-                        <Mountain size={14} class="mr-1" aria-hidden="true" />
-                        {m['drinking.optimum_year']({ year: bottle.optimum })}
-                    </Badge>
-                {/if}
-            </div>
-        {/if}
-
-        <div class="mt-auto min-h-[1.5rem] flex items-center">
-            {#if consumed}
-                <Badge
-                    variant="destructive"
-                    class="text-xs w-full justify-center {bottle.consumedDate ? '' : 'opacity-50'}"
-                >
-                    <Check size={14} class="mr-1" />
-                    {#if bottle.consumedDate}
-                        {m['wine_details.consumed_on']()}
-                        {formatDate(bottle.consumedDate)}
-                    {:else}
-                        {m['wine_details.consumed_no_date']()}
-                    {/if}
-                </Badge>
-            {:else if bottle.consumedDate}
-                <Badge variant="outline" class="text-xs w-full justify-center">
-                    {m['wine_details.consumed_on']()}
-                    {formatDate(bottle.consumedDate)}
+                    <MapPin size={16} class="mr-1" />
+                    {bottle.storageCase?.name || m['common.not_available']()}
                 </Badge>
             {/if}
+            <Badge variant="outline" class={headerBadge}>
+                <Wine size={16} class="mr-1" />
+                {bottle.format || m['wine_details.no_format']()}
+            </Badge>
         </div>
+        <div class="flex items-center gap-2">
+            {#if consumed}
+                <Badge variant="destructive" class={headerBadge}>
+                    {availabilityLabel(BottleAvailability.CONSUMED)}
+                </Badge>
+            {:else if bottle.availability === BottleAvailability.OUT_OF_CELLAR}
+                <!-- The pill has room for a short word only: "Out", not "Out of cellar" -->
+                {@render statusPill('bg-gray-500 hover:bg-gray-600', m['wine_details.out']())}
+            {:else}
+                {@render statusPill(
+                    'bg-green-700 hover:bg-green-800',
+                    availabilityLabel(BottleAvailability.AVAILABLE)
+                )}
+            {/if}
+            {#if auth.isAuthenticated}
+                <button
+                    class={iconButton}
+                    onclick={() => onDuplicate(bottle)}
+                    title={m['wine_details.duplicate_bottle']()}
+                    aria-label={m['wine_details.duplicate_bottle']()}
+                >
+                    <Copy size={16} aria-hidden="true" />
+                </button>
+                <button
+                    class={iconButton}
+                    onclick={() => onEdit(bottle)}
+                    title={m['wine_details.edit_bottle']()}
+                    aria-label={m['wine_details.edit_bottle']()}
+                >
+                    <SquarePen size={16} aria-hidden="true" />
+                </button>
+            {/if}
+        </div>
+    </div>
 
-        <div class="text-xs bg-muted/50 p-2 rounded min-h-[2rem] flex items-center">
-            <strong class="text-foreground mr-1"
-                >{m['common.label']({ label: m['common.notes']() })}</strong
+    <div class="flex flex-wrap gap-1 min-h-[3rem]">
+        <button
+            class="bg-secondary text-secondary-foreground hover:bg-secondary-hover {focusRing} rounded-lg transition-colors p-2 sm:p-3 min-h-[36px] sm:min-h-[42px] min-w-[36px] sm:min-w-[42px] flex items-center justify-center"
+            onclick={() => onBarcode(bottle)}
+            title={m['wine_details.view_barcode']()}
+            aria-label={m['wine_details.view_barcode']()}
+        >
+            <QrCode size={20} class="sm:w-6 sm:h-6" />
+        </button>
+        <Badge variant="secondary" class="text-xs">
+            <Calendar size={14} class="mr-1" />
+            {formatDate(bottle.purchaseDate)}
+        </Badge>
+        <Badge variant="secondary" class="text-xs">
+            <Tag size={14} class="mr-1" />
+            {bottle.origin ? bottle.origin.name : m['wine_details.no_origin']()}
+        </Badge>
+        <Badge variant="secondary" class="text-xs">
+            <DollarSign size={14} class="mr-1" />
+            {formatCurrency(bottle.purchasePrice)}
+        </Badge>
+        <Badge variant="secondary" class="text-xs">
+            <TrendingUp size={14} class="mr-1" />
+            {formatCurrency(bottle.currentValue)}
+        </Badge>
+    </div>
+
+    <!-- When to drink it, as the bottle tables say it; empty, it still holds its row -->
+    <div class="flex flex-wrap content-start items-center gap-1">
+        {#if rank}<DrinkingChip {rank} />{/if}
+        {#if drinkingWindow}
+            <Badge variant="secondary" class="text-xs">
+                <CalendarRange size={14} class="mr-1" aria-hidden="true" />
+                <span class="sr-only"
+                    >{m['common.label']({ label: m['drinking.window_column']() })}</span
+                >
+                {drinkingWindow}
+            </Badge>
+        {/if}
+        {#if bottle.optimum !== null}
+            <Badge variant="secondary" class="text-xs">
+                <Mountain size={14} class="mr-1" aria-hidden="true" />
+                {m['drinking.optimum_year']({ year: bottle.optimum })}
+            </Badge>
+        {/if}
+    </div>
+
+    <div class="min-h-[1.5rem] flex items-center">
+        {#if consumed}
+            <Badge
+                variant="destructive"
+                class="text-xs w-full justify-center {bottle.consumedDate ? '' : 'opacity-50'}"
             >
-            <span class="text-muted-foreground">{bottle.notes || m['wine_details.no_notes']()}</span
-            >
-        </div>
+                <Check size={14} class="mr-1" />
+                {#if bottle.consumedDate}
+                    {m['wine_details.consumed_on']()}
+                    {formatDate(bottle.consumedDate)}
+                {:else}
+                    {m['wine_details.consumed_no_date']()}
+                {/if}
+            </Badge>
+        {:else if bottle.consumedDate}
+            <Badge variant="outline" class="text-xs w-full justify-center">
+                {m['wine_details.consumed_on']()}
+                {formatDate(bottle.consumedDate)}
+            </Badge>
+        {/if}
+    </div>
+
+    <div class="self-start text-xs bg-muted/50 p-2 rounded min-h-[2rem] flex items-center">
+        <strong class="text-foreground mr-1"
+            >{m['common.label']({ label: m['common.notes']() })}</strong
+        >
+        <span class="text-muted-foreground">{bottle.notes || m['wine_details.no_notes']()}</span>
     </div>
 </div>

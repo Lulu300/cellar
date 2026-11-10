@@ -40,7 +40,7 @@ test('log in, add a wine and two bottles from the wine list, and buy a wine of t
     // A cut text opens the wine like the rest of the card, while it scrolls on hover and, with
     // reduced motion, while its fade stays: on a narrow card, the producer and region are cut.
     await page.setViewportSize({ width: 390, height: 844 });
-    const producer = long.locator('.scrolling-text', { hasText: 'Unknown Producer · ' });
+    const producer = long.locator('.scrolling-text', { hasText: 'Unknown producer · ' });
     await expect(producer).toHaveClass(/\bcut\b/);
     for (const reducedMotion of ['no-preference', 'reduce'] as const) {
         await page.emulateMedia({ reducedMotion });
@@ -72,16 +72,16 @@ test('log in, add a wine and two bottles from the wine list, and buy a wine of t
         .click();
     // A wine of the cellar chosen, then given up: the focus follows each field, and the photo
     // kept for the name is still shown.
-    await page.getByLabel('Wine Name').fill('Journey');
+    await page.getByLabel('Wine name').fill('Journey');
     await page.getByRole('button', { name: /^Château Journey/ }).click();
     await expect(page.getByRole('button', { name: 'Choose another wine' })).toBeFocused();
     await page.getByRole('button', { name: 'Choose another wine' }).click();
-    await expect(page.getByLabel('Wine Name')).toBeFocused();
+    await expect(page.getByLabel('Wine name')).toBeFocused();
     const keptPhoto = page.getByRole('img', { name: 'Wine preview' });
     await expect
         .poll(() => keptPhoto.evaluate((img: HTMLImageElement) => img.naturalWidth))
         .toBeGreaterThan(0);
-    await page.getByLabel('Wine Name').fill('Clos Wished');
+    await page.getByLabel('Wine name').fill('Clos Wished');
     await page.getByLabel('Notes').fill('Seen at the wine fair');
     await page.getByLabel('Planned quantity').fill('2');
     await page.getByRole('button', { name: 'Add the wish' }).click();
@@ -91,7 +91,7 @@ test('log in, add a wine and two bottles from the wine list, and buy a wine of t
     await expect(wish).toBeVisible();
     await expect(wish).toContainText('Seen at the wine fair');
     await expect(wish).toContainText('2 bottles to buy');
-    await expect(page.getByLabel('Wine Name')).toBeFocused();
+    await expect(page.getByLabel('Wine name')).toBeFocused();
     // Without a wine in shortage, Purchases shows a dot, named by the number of wishes.
     await expect(
         page.getByRole('navigation', { name: 'Menu' }).getByRole('link', { name: /^Purchases/ })
@@ -99,18 +99,18 @@ test('log in, add a wine and two bottles from the wine list, and buy a wine of t
 
     await wish.getByRole('button', { name: 'Create the wine' }).click();
     const wishWine = page.getByRole('dialog', { name: 'Add wine' });
-    await expect(wishWine.getByLabel('Wine Name')).toHaveValue('Clos Wished');
+    await expect(wishWine.getByLabel('Wine name')).toHaveValue('Clos Wished');
     const wishLabel = wishWine.getByRole('img', { name: 'Wine preview' });
     await expect(wishLabel).toHaveAttribute('src', /^\/uploads\/wines\/wine-/);
     const labelUrl = await wishLabel.getAttribute('src');
     await pick(wishWine.getByPlaceholder('Search appellations'), 'Margaux');
     await pick(wishWine.getByPlaceholder('Search wine types'), 'Vin');
     await pick(wishWine.getByPlaceholder('Search wine colors'), 'Rouge');
-    await wishWine.getByRole('button', { name: 'Save & Add Bottle' }).click();
-    const wishBottle = page.getByRole('dialog', { name: 'Add Wine Bottle' });
+    await wishWine.getByRole('button', { name: 'Save & add bottle' }).click();
+    const wishBottle = page.getByRole('dialog', { name: 'Add wine bottle' });
     await expect(wishBottle.getByPlaceholder('Search wines')).toHaveValue('Clos Wished');
     await pick(wishBottle.getByPlaceholder('Search wine formats'), '75 cl');
-    await wishBottle.getByRole('button', { name: 'Save Bottle' }).click();
+    await wishBottle.getByRole('button', { name: 'Save bottle' }).click();
     // The wish, linked to its wine, waits for the user's answer.
     const offer = page.getByRole('dialog', { name: 'Confirm' });
     await expect(offer).toContainText('This wine is on your wishlist');
@@ -118,7 +118,7 @@ test('log in, add a wine and two bottles from the wine list, and buy a wine of t
     await expect(wish.getByRole('button', { name: 'I bought some: Clos Wished' })).toBeVisible();
     await offer.getByRole('button', { name: 'Remove from the list' }).click();
     await expect(page.getByText('Your wishlist is empty')).toBeVisible();
-    await openFromMenu(page, 'Cellar', 'My Wines');
+    await openFromMenu(page, 'Cellar', 'My wines');
 
     // The other journeys add wines too.
     await page.getByLabel('Search', { exact: true }).fill('Château Journey');
@@ -158,7 +158,7 @@ test('log in, add a wine and two bottles from the wine list, and buy a wine of t
     await row.scrollIntoViewIfNeeded();
     const region = (await row.getByRole('cell').nth(1).boundingBox())!;
     await page.mouse.click(region.x + region.width / 2, region.y + region.height / 2);
-    await expect(page.getByText('Available Bottles (2)')).toBeVisible();
+    await expect(page.getByText('Available bottles (2)')).toBeVisible();
 
     // A photo of the label as a phone writes it, through the preview that turns and crops it. It
     // is stored the right way up (portrait), shrunk, without its EXIF data and GPS position.
@@ -188,7 +188,7 @@ test('log in, add a wine and two bottles from the wine list, and buy a wine of t
     // Without a view in the URL, the preference chooses it; the switch does not change it.
     await page.goto('/preferences', { waitUntil: 'networkidle' });
     await page
-        .getByRole('radiogroup', { name: 'Default Wine List View' })
+        .getByRole('radiogroup', { name: 'Default wine list view' })
         .getByRole('radio', { name: 'List' })
         .click();
     // A wide page takes 95 % of the screen, header included (UI-35).
@@ -200,14 +200,14 @@ test('log in, add a wine and two bottles from the wine list, and buy a wine of t
     await expect
         .poll(async () => (await page.locator('header > div').boundingBox())?.width)
         .toBeCloseTo(screenWidth * 0.95, 0);
-    await openFromMenu(page, 'Cellar', 'My Wines');
+    await openFromMenu(page, 'Cellar', 'My wines');
     await expect(page.getByRole('table')).toBeVisible();
     await page.getByRole('radio', { name: 'Cards' }).click();
     await expect.poll(() => query().get('view')).toBe('cards');
     await expect(page.getByRole('table')).toBeHidden();
     await page.goto('/preferences', { waitUntil: 'networkidle' });
     await expect(
-        page.getByRole('radiogroup', { name: 'Default Wine List View' }).getByRole('radio', {
+        page.getByRole('radiogroup', { name: 'Default wine list view' }).getByRole('radio', {
             name: 'List'
         })
     ).toHaveAttribute('aria-checked', 'true');
@@ -223,7 +223,7 @@ test('log in, add a wine and two bottles from the wine list, and buy a wine of t
     // A refused save brings the first field in error into view and focuses it, with its message,
     // on a phone too, where the save button is a whole screen below the first field.
     await page.setViewportSize({ width: 390, height: 844 });
-    await bottleDialog.getByRole('button', { name: 'Save Bottle' }).click();
+    await bottleDialog.getByRole('button', { name: 'Save bottle' }).click();
     await expect(wine).toBeFocused();
     await expect(wine).toBeInViewport();
     await expect(wine).toHaveAttribute('aria-invalid', 'true');

@@ -5,7 +5,7 @@ import { BottleAvailability } from '#lib/shared/bottle-availability.js';
 export function availabilityLabel(availability: string): string {
     switch (availability) {
         case BottleAvailability.OUT_OF_CELLAR:
-            return m['availability.out_of_cellar']();
+            return m['common.out_of_cellar']();
         case BottleAvailability.CONSUMED:
             return m['availability.consumed']();
         default:

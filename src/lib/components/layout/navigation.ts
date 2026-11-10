@@ -58,7 +58,7 @@ export function navSections({
                 { href: '/storage', label: m['navigation.storage'](), icon: LayoutGrid },
                 {
                     href: '/out-of-cellar',
-                    label: m['navigation.out_of_cellar'](),
+                    label: m['common.out_of_cellar'](),
                     icon: PackageOpen,
                     count: {
                         value: outOfCellarCount,

@@ -10,7 +10,7 @@ Cellar is a self-hosted wine cellar manager. It runs as a Docker container, for 
 ## Features
 
 - **Wines and bottles:** wine definitions (producer, appellation, type, color, classification, grape varieties, rating, image) and their bottles (vintage, format, drinking year, origin, purchase date and price, current value, storage case, notes). Search and filter the list, or find a bottle by its barcode.
-- **Bottle status:** a bottle is available, out of the cellar or consumed. The "Out of Cellar" page lists the bottles taken out, and the history page lists every bottle purchased and consumed.
+- **Bottle status:** a bottle is available, out of the cellar or consumed. The "Out of cellar" page lists the bottles taken out, and the history page lists every bottle purchased and consumed.
 - **Storage:** containers divided into cases, each with a capacity, and their occupancy.
 - **Wine shortage:** wines with fewer available bottles than their target quantity.
 - **Statistics:** collection value, bottle status, and distribution by type, color, country, producer, region and vintage.

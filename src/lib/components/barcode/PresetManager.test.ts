@@ -6,7 +6,7 @@ import PresetManager from './PresetManager.svelte';
 
 /** The update button of the presets as the server renders it. */
 const updateButton = (body: string) =>
-    body.match(/<button[^>]*>(?:(?!<\/button>)[\s\S])*Update Preset/)?.[0];
+    body.match(/<button[^>]*>(?:(?!<\/button>)[\s\S])*Update preset/)?.[0];
 
 describe('PresetManager', () => {
     it('greys the update of a preset until one is applied, and says why', () => {

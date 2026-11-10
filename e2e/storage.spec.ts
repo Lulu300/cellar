@@ -9,22 +9,22 @@ test('add a container on the storage page, put bottles in its cases, move three 
     await addWine(page, 'Cuvée Stored', 4);
 
     await openFromMenu(page, 'Cellar', 'Storage');
-    await page.getByRole('button', { name: '+ Add Container' }).click();
-    const containerDialog = page.getByRole('dialog', { name: 'Add New Storage Container' });
+    await page.getByRole('button', { name: '+ Add container' }).click();
+    const containerDialog = page.getByRole('dialog', { name: 'Add new storage container' });
     // Save is greyed until the container has a name, and the field says so.
-    await expect(containerDialog.getByRole('button', { name: 'Create Container' })).toBeDisabled();
-    await expect(containerDialog.getByLabel('Container Name')).toHaveAccessibleDescription(
+    await expect(containerDialog.getByRole('button', { name: 'Create container' })).toBeDisabled();
+    await expect(containerDialog.getByLabel('Container name')).toHaveAccessibleDescription(
         'Enter a name to save the container.'
     );
-    await containerDialog.getByLabel('Container Name').fill('Rack');
-    await containerDialog.getByLabel('Number of Cases').fill('3');
+    await containerDialog.getByLabel('Container name').fill('Rack');
+    await containerDialog.getByLabel('Number of cases').fill('3');
     await containerDialog.getByLabel('Capacity:').nth(2).fill('2');
-    await containerDialog.getByRole('button', { name: 'Create Container' }).click();
+    await containerDialog.getByRole('button', { name: 'Create container' }).click();
     await expect(containerDialog).toBeHidden();
     // A case is a button named after what it holds.
     await expect(page.getByRole('button', { name: 'Rack1: 0 of 5 bottles' })).toBeVisible();
 
-    await page.getByRole('button', { name: 'View All Bottles' }).click();
+    await page.getByRole('button', { name: 'View all bottles' }).click();
     const bottles = page.getByRole('dialog', { name: 'All bottles' });
     await bottles
         .getByRole('row')
@@ -32,9 +32,9 @@ test('add a container on the storage page, put bottles in its cases, move three 
         .first()
         .getByRole('button', { name: 'Edit' })
         .click();
-    const bottleDialog = page.getByRole('dialog', { name: 'Edit Wine Bottle' });
+    const bottleDialog = page.getByRole('dialog', { name: 'Edit wine bottle' });
     await pick(bottleDialog.getByPlaceholder('Search storage cases'), 'Rack1');
-    await bottleDialog.getByRole('button', { name: 'Update Bottle' }).click();
+    await bottleDialog.getByRole('button', { name: 'Update bottle' }).click();
     await expect(bottleDialog).toBeHidden();
 
     await expect(bottles.getByRole('row').filter({ hasText: 'Rack1' })).toHaveCount(1);
@@ -44,8 +44,8 @@ test('add a container on the storage page, put bottles in its cases, move three 
     await page.keyboard.press('Escape');
     await expect(bottles).toBeHidden();
     await page.getByRole('button', { name: 'Edit the container Rack' }).click();
-    const editDialog = page.getByRole('dialog', { name: 'Edit Storage Container' });
-    await editDialog.getByRole('button', { name: 'Delete Container' }).click();
+    const editDialog = page.getByRole('dialog', { name: 'Edit storage container' });
+    await editDialog.getByRole('button', { name: 'Delete container' }).click();
     const confirmation = page.getByRole('dialog', { name: 'Confirm' });
     await expect(confirmation).toContainText('delete the container "Rack"');
     await confirmation.getByRole('button', { name: 'Cancel' }).click();
@@ -53,7 +53,7 @@ test('add a container on the storage page, put bottles in its cases, move three 
     await expect(editDialog).toBeVisible();
 
     // Leaving the page, by the browser's back button too, cancels the question.
-    await editDialog.getByRole('button', { name: 'Delete Container' }).click();
+    await editDialog.getByRole('button', { name: 'Delete container' }).click();
     await expect(confirmation).toBeVisible();
     await page.goBack();
     await expect(confirmation).toBeHidden();
@@ -63,13 +63,13 @@ test('add a container on the storage page, put bottles in its cases, move three 
 
     // The wine's bottle dialog puts the three others in Rack1: the case picker lists each case
     // under its container with its room, and greys Rack3, which has no room for them (FEAT-04).
-    await openFromMenu(page, 'Cellar', 'My Wines');
+    await openFromMenu(page, 'Cellar', 'My wines');
     await page.getByRole('button', { name: '4 bottles' }).click();
     const wineBottles = page.getByRole('dialog', { name: /Cuvée Stored/ });
     await wineBottles.getByRole('checkbox', { name: 'Select all' }).check();
     await wineBottles.getByRole('button', { name: 'Move to…' }).click();
     const wineMove = page.getByRole('dialog', { name: /Change location/ });
-    await wineMove.getByLabel('Storage Case').click();
+    await wineMove.getByLabel('Storage case').click();
     await expect(page.getByRole('option', { name: 'Rack3 2 free' })).toHaveAttribute(
         'aria-disabled',
         'true'
@@ -91,7 +91,7 @@ test('add a container on the storage page, put bottles in its cases, move three 
     }
     await caseDialog.getByRole('button', { name: 'Move to…' }).click();
     const caseMove = page.getByRole('dialog', { name: /Change location/ });
-    await caseMove.getByLabel('Storage Case').click();
+    await caseMove.getByLabel('Storage case').click();
     await expect(page.getByRole('option', { name: 'Rack1 Current case' })).toHaveAttribute(
         'aria-disabled',
         'true'
@@ -158,7 +158,7 @@ test('add a container on the storage page, put bottles in its cases, move three 
     expect((await page.locator('header > div').boundingBox())!.width).toBeLessThan(screenWidth);
 
     // The banner of the wine list counts it this month, and unfolds it under that rank.
-    await openFromMenu(page, 'Cellar', 'My Wines');
+    await openFromMenu(page, 'Cellar', 'My wines');
     await expect(page.getByText('1 this month')).toBeVisible();
     await page.getByRole('button', { name: 'Show the list' }).click();
     await expect(
@@ -236,11 +236,11 @@ test('add a container on the storage page, put bottles in its cases, move three 
     // A colour picked in the admin fills the place of the wine's bottle (FEAT-03).
     await openFromMenu(page, 'Settings', 'Admin');
     await page.getByRole('link', { name: 'Data', exact: true }).click();
-    await page.getByRole('link', { name: 'Wine Colors' }).click();
+    await page.getByRole('link', { name: 'Wine colors' }).click();
     // A new colour's picker starts on the colour of its name, as the API gives it.
-    await page.getByRole('button', { name: 'Add Wine Color' }).click();
-    const addDialog = page.getByRole('dialog', { name: 'Add Wine Color' });
-    await addDialog.getByLabel('Color Name').fill('Red');
+    await page.getByRole('button', { name: 'Add wine color' }).click();
+    const addDialog = page.getByRole('dialog', { name: 'Add wine color' });
+    await addDialog.getByLabel('Color name').fill('Red');
     await expect(addDialog.getByLabel('Shade')).toHaveValue('#7b1e2b');
     await addDialog.getByRole('button', { name: 'Cancel' }).click();
     await expect(addDialog).toBeHidden();
@@ -249,7 +249,7 @@ test('add a container on the storage page, put bottles in its cases, move three 
         .filter({ hasText: 'Rouge' })
         .getByRole('button', { name: 'Edit' })
         .click();
-    const colorDialog = page.getByRole('dialog', { name: 'Edit Wine Color' });
+    const colorDialog = page.getByRole('dialog', { name: 'Edit wine color' });
     await colorDialog.getByLabel('Shade').fill('#123456');
     await colorDialog.getByRole('button', { name: 'Save' }).click();
     await expect(colorDialog).toBeHidden();

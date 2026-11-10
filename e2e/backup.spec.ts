@@ -8,10 +8,10 @@ test('back up, wipe the cellar, then restore the backup from the list', async ({
 
     await openFromMenu(page, 'Settings', 'Admin');
     await page.getByRole('link', { name: 'Backups' }).click();
-    await page.getByRole('button', { name: 'Full Backup', exact: true }).click();
-    const backupDialog = page.getByRole('dialog', { name: 'Full Backup' });
+    await page.getByRole('button', { name: 'Full backup', exact: true }).click();
+    const backupDialog = page.getByRole('dialog', { name: 'Full backup' });
     await backupDialog.getByLabel('Custom filename (optional)').fill('e2e-journey');
-    await backupDialog.getByRole('button', { name: 'Create Backup' }).click();
+    await backupDialog.getByRole('button', { name: 'Create backup' }).click();
     const backup = page.getByRole('listitem').filter({ hasText: 'e2e-journey' });
     await expect(backup).toBeVisible();
 
@@ -25,7 +25,7 @@ test('back up, wipe the cellar, then restore the backup from the list', async ({
     await expect(page.getByRole('option', { name: 'All (1)' })).toHaveAttribute('data-highlighted');
     await page.keyboard.press('ArrowDown');
     await page.keyboard.press('ArrowDown');
-    await expect(page.getByRole('option', { name: 'Full Export (0)' })).toHaveAttribute(
+    await expect(page.getByRole('option', { name: 'Full export (0)' })).toHaveAttribute(
         'data-highlighted'
     );
     await page.keyboard.press('Enter');
@@ -37,8 +37,8 @@ test('back up, wipe the cellar, then restore the backup from the list', async ({
     await expect(backup).toBeVisible();
     // Tab passes over a list, closed or open, without choosing: here "Tab", one of the CSV
     // delimiters (BUG-23).
-    await page.getByRole('button', { name: 'CSV Export', exact: true }).click();
-    const csvExportDialog = page.getByRole('dialog', { name: 'CSV Export' });
+    await page.getByRole('button', { name: 'CSV export', exact: true }).click();
+    const csvExportDialog = page.getByRole('dialog', { name: 'CSV export' });
     const delimiter = csvExportDialog.getByRole('combobox', { name: 'Delimiter' });
     await delimiter.focus();
     await delimiter.press('Tab');
@@ -55,10 +55,10 @@ test('back up, wipe the cellar, then restore the backup from the list', async ({
     // (UI-21).
     const viewport = page.viewportSize();
     await page.setViewportSize({ width: 375, height: 667 });
-    await expect(csvExportDialog.getByRole('heading', { name: 'CSV Export' })).toBeInViewport({
+    await expect(csvExportDialog.getByRole('heading', { name: 'CSV export' })).toBeInViewport({
         ratio: 1
     });
-    await expect(csvExportDialog.getByRole('button', { name: 'Export CSV Files' })).toBeInViewport({
+    await expect(csvExportDialog.getByRole('button', { name: 'Export CSV files' })).toBeInViewport({
         ratio: 1
     });
     if (viewport) await page.setViewportSize(viewport);
@@ -76,20 +76,20 @@ test('back up, wipe the cellar, then restore the backup from the list', async ({
         },
         { times: 1 }
     );
-    await page.getByRole('button', { name: 'Wipe All Data' }).click();
-    const wipeDialog = page.getByRole('dialog', { name: 'Complete Database Wipe' });
-    await wipeDialog.getByRole('button', { name: 'Wipe All Data' }).click();
+    await page.getByRole('button', { name: 'Wipe all data' }).click();
+    const wipeDialog = page.getByRole('dialog', { name: 'Complete database wipe' });
+    await wipeDialog.getByRole('button', { name: 'Wipe all data' }).click();
     await expect(wipeDialog).toBeHidden();
     await expect(
         page.getByText(/could not download it because your session has expired/)
     ).toBeVisible();
     // Once the wipe has done all it does, which once included reloading the page: that left it for
     // /wines?login, and the dialog without its notice.
-    await expect(page.getByRole('button', { name: 'Full Backup', exact: true })).toBeEnabled();
+    await expect(page.getByRole('button', { name: 'Full backup', exact: true })).toBeEnabled();
     await expect(page).toHaveURL(/\/admin\/backups$/);
     await expect(
         page
-            .getByRole('dialog', { name: 'Access Code Required' })
+            .getByRole('dialog', { name: 'Access code required' })
             .getByText('Your session has expired. Please log in again.')
     ).toBeVisible();
     await logInAgain(page);
@@ -105,8 +105,8 @@ test('back up, wipe the cellar, then restore the backup from the list', async ({
     // Back rather than the menu, which the toasts of the wipe cover for a few seconds.
     await page.goBack();
     await backup.getByRole('button', { name: 'Restore database from this backup' }).click();
-    const restoreDialog = page.getByRole('dialog', { name: 'Database Restore' });
-    await restoreDialog.getByRole('button', { name: 'Restore Database' }).click();
+    const restoreDialog = page.getByRole('dialog', { name: 'Database restore' });
+    await restoreDialog.getByRole('button', { name: 'Restore database' }).click();
     await expect(restoreDialog).toBeHidden();
     await expect(page.getByText('Database restored.')).toBeVisible();
 

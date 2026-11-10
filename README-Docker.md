@@ -341,7 +341,7 @@ docker-data/
   colors, classifications, bottle formats, appellations (with their countries and regions) and
   label presets. Shortly after each start, Cellar copies there the default file of any that is
   missing, and replaces a copy that you never edited when a release corrects that file. It reads
-  them when it creates a new database and after **Wipe All Data** (in the **Backups** tab of the
+  them when it creates a new database and after **Wipe all data** (in the **Backups** tab of the
   admin page), so editing them changes what those fill in. Your own data is imported from the
   browser instead: see [Importing CSV data](#importing-csv-data-optional).
 
@@ -437,8 +437,8 @@ The import reads files sent from your browser, not files on the server:
 
 1. Open the admin page: the URL set in `ORIGIN` followed by `/admin` (e.g.
    `http://192.168.1.20:3005/admin`).
-2. In the **Backups** tab, under **Backup & Restore**, choose **CSV Import** and select the CSV
-   files on your computer. The dialog's **CSV File Format Guide** lists the file names and columns
+2. In the **Backups** tab, under **Backup & restore**, choose **CSV import** and select the CSV
+   files on your computer. The dialog's **CSV file format guide** lists the file names and columns
    it expects.
 
 ### Adding images (optional)
@@ -456,8 +456,8 @@ sudo chown -R 1000:1000 docker-data/uploads
 
 Cellar only shows the files whose name matches an imported wine image.
 
-**Import Images from ZIP** in the **Images** tab reads the whole ZIP into memory, and can take up
-to 5 times its size: over 2 GB for a ZIP of 450 MB. **Upload Images** does the same with the images
+**Import images from ZIP** in the **Images** tab reads the whole ZIP into memory, and can take up
+to 5 times its size: over 2 GB for a ZIP of 450 MB. **Upload images** does the same with the images
 sent at once. On a NAS with little memory, import the images in several smaller ZIPs, or upload
 fewer at once: a container that runs out of memory restarts, and nothing is imported.
 
@@ -512,8 +512,8 @@ This data persists when you stop, remove or rebuild the container.
 
 ## Backup
 
-The **Backups** tab of the admin page makes backups while Cellar runs: **Full Backup**, under
-**Backup & Restore**, creates one on demand, and the automatic backup settings make them on a
+The **Backups** tab of the admin page makes backups while Cellar runs: **Full backup**, under
+**Backup & restore**, creates one on demand, and the automatic backup settings make them on a
 schedule. Each backup is a zip holding a copy of the database and the images, kept in
 `docker-data/data/`.
 
@@ -540,8 +540,8 @@ In the automatic backup settings, choose how often to back up and how many autom
 keep; Cellar keeps that many backups and as many exports, and deletes older ones. Changes apply as
 soon as you save them. The backup mode decides what starts each backup:
 
-- **Internal Scheduler**: Cellar itself, at the chosen interval.
-- **External Cron Job**: a cron job on your server, for example to back up at a fixed time of day.
+- **Internal scheduler**: Cellar itself, at the chosen interval.
+- **External cron job**: a cron job on your server, for example to back up at a fixed time of day.
   Select this mode, click **Generate token**, and copy the command that Cellar shows: the token is
   shown only once. The command looks like this:
 
@@ -558,7 +558,7 @@ soon as you save them. The backup mode decides what starts each backup:
   ```
 
   The token only starts backups. Generating a new one replaces it: update the cron job then. A
-  missing or wrong token gets 401, and a request while the mode is not **External Cron Job**, or
+  missing or wrong token gets 401, and a request while the mode is not **External cron job**, or
   while automatic backups are disabled, gets 409.
 
 ### Back up the folders

@@ -53,13 +53,13 @@
 </script>
 
 <svelte:head>
-    <title>{pageTitle(m['navigation.out_of_cellar']())}</title>
+    <title>{pageTitle(m['common.out_of_cellar']())}</title>
     <meta name="description" content={m['out_of_cellar.subtitle']()} />
 </svelte:head>
 
 <div class="flex justify-between items-center mb-8">
     <div>
-        <h1 class="text-3xl font-bold">{m['navigation.out_of_cellar']()}</h1>
+        <h1 class="text-3xl font-bold">{m['common.out_of_cellar']()}</h1>
         <p class="text-muted-foreground">{m['out_of_cellar.subtitle']()}</p>
     </div>
 

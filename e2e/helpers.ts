@@ -19,9 +19,9 @@ export async function logIn(page: Page) {
     // Set by playwright.config.ts from the server logs.
     const setupToken = process.env.SETUP_TOKEN;
     if (!setupToken) throw new Error('No SETUP_TOKEN');
-    const dialog = page.getByRole('dialog', { name: 'Choose an Access Code' });
-    await dialog.getByLabel('New Access Code').fill(ACCESS_CODE);
-    await dialog.getByLabel('Confirm Access Code').fill(ACCESS_CODE);
+    const dialog = page.getByRole('dialog', { name: 'Choose an access code' });
+    await dialog.getByLabel('New access code').fill(ACCESS_CODE);
+    await dialog.getByLabel('Confirm access code').fill(ACCESS_CODE);
     await dialog.getByLabel('Setup token').fill(setupToken);
     await dialog.getByRole('button', { name: 'Save' }).click();
     await expectLoggedIn(page);
@@ -29,8 +29,8 @@ export async function logIn(page: Page) {
 
 /** Logs in with the login dialog already open, as after a session that ended. */
 export async function logInAgain(page: Page) {
-    const dialog = page.getByRole('dialog', { name: 'Access Code Required' });
-    await dialog.getByLabel('Access Code', { exact: true }).fill(ACCESS_CODE);
+    const dialog = page.getByRole('dialog', { name: 'Access code required' });
+    await dialog.getByLabel('Access code', { exact: true }).fill(ACCESS_CODE);
     await dialog.getByRole('button', { name: 'Login' }).click();
     await expectLoggedIn(page);
 }
@@ -66,20 +66,20 @@ export async function pick(input: Locator, option: string) {
 }
 
 /**
- * Adds a wine from the wine list with "Save & Add Bottle", as a user does, and returns the bottle
+ * Adds a wine from the wine list with "Save & add bottle", as a user does, and returns the bottle
  * dialog that opens for it.
  */
 export async function addWineThenBottle(page: Page, name: string): Promise<Locator> {
-    await openFromMenu(page, 'Cellar', 'My Wines');
+    await openFromMenu(page, 'Cellar', 'My wines');
     await page.getByRole('button', { name: 'Add wine' }).click();
     const wineDialog = page.getByRole('dialog', { name: 'Add wine' });
-    await wineDialog.getByLabel('Wine Name').fill(name);
+    await wineDialog.getByLabel('Wine name').fill(name);
     await pick(wineDialog.getByPlaceholder('Search appellations'), 'Margaux');
     await pick(wineDialog.getByPlaceholder('Search wine types'), 'Vin');
     await pick(wineDialog.getByPlaceholder('Search wine colors'), 'Rouge');
-    await wineDialog.getByRole('button', { name: 'Save & Add Bottle' }).click();
+    await wineDialog.getByRole('button', { name: 'Save & add bottle' }).click();
 
-    const bottleDialog = page.getByRole('dialog', { name: 'Add Wine Bottle' });
+    const bottleDialog = page.getByRole('dialog', { name: 'Add wine bottle' });
     await expect(bottleDialog.getByPlaceholder('Search wines')).toHaveValue(name);
     return bottleDialog;
 }
@@ -88,9 +88,9 @@ export async function addWineThenBottle(page: Page, name: string): Promise<Locat
 export async function addWine(page: Page, name: string, bottles: number) {
     const bottleDialog = await addWineThenBottle(page, name);
     await pick(bottleDialog.getByPlaceholder('Search wine formats'), '75 cl');
-    await bottleDialog.getByLabel('Vintage (Year)').fill('2018');
-    await bottleDialog.getByLabel('Number of Bottles').fill(String(bottles));
-    await bottleDialog.getByRole('button', { name: 'Save Bottle' }).click();
+    await bottleDialog.getByLabel('Vintage (year)').fill('2018');
+    await bottleDialog.getByLabel('Number of bottles').fill(String(bottles));
+    await bottleDialog.getByRole('button', { name: 'Save bottle' }).click();
     await expect(bottleDialog).toBeHidden();
 }
 

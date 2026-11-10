@@ -14,8 +14,8 @@ test('consume a bottle with a note from the wine page, then find it in the histo
     await dialog.getByLabel('Notes (optional)').fill('Shared with friends');
     await dialog.getByRole('button', { name: 'Confirm' }).click();
     await expect(dialog).toBeHidden();
-    await expect(page.getByText('Available Bottles (1)')).toBeVisible();
-    await expect(page.getByText('Consumed Bottles (1)')).toBeVisible();
+    await expect(page.getByText('Available bottles (1)')).toBeVisible();
+    await expect(page.getByText('Consumed bottles (1)')).toBeVisible();
 
     await openFromMenu(page, 'Cellar', 'History');
     // The history lists every bottle: the one still available has no note.

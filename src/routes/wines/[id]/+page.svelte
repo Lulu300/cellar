@@ -154,7 +154,8 @@
             </CardTitle>
         </CardHeader>
         <CardContent>
-            <div class="grid md:grid-cols-2 gap-6">
+            <!-- At most 45rem each, so that the photo stays next to the facts on a wide screen -->
+            <div class="grid md:grid-cols-[repeat(2,minmax(0,45rem))] gap-6">
                 <div class="space-y-4">
                     <div>
                         <h2 class="font-semibold mb-2">

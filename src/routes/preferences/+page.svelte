@@ -34,7 +34,9 @@
     </Button>
 </div>
 
-<div class="space-y-6">
+<!-- Stops where a preference's buttons would drift away from its name on a wide screen; the
+     normal width of a 1280 px screen is narrower. -->
+<div class="max-w-[66rem] space-y-6">
     <div>
         <h1 class="text-3xl font-bold tracking-tight">{m['navigation.preferences']()}</h1>
         <p class="text-muted-foreground">{m['preferences.description']()}</p>

@@ -211,7 +211,8 @@
         </Card>
     {/if}
 
-    <div class="mt-6 grid grid-cols-1 md:grid-cols-3 gap-4">
+    <!-- Each card stops at 26rem: the cellar map makes this page as wide as the screen -->
+    <div class="mt-6 grid grid-cols-1 md:grid-cols-[repeat(3,minmax(0,26rem))] gap-4">
         <Card>
             <CardContent class="p-6">
                 <div class="text-2xl font-bold">{containers.length}</div>

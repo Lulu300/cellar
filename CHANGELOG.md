@@ -4,6 +4,54 @@
 
 Upgrade actions are also collected in [UPGRADING.md](UPGRADING.md).
 
+## 1.7.0
+
+1.7.0 brings finishing touches: one selection bar for every list of bottles, and small fixes.
+
+The lists of bottles (a wine’s bottles, a case of the storage map, « To drink » and « Out of cellar ») share one selection bar: how many bottles are ticked, « Clear selection » and the list’s own actions, the move being called « Move to… » everywhere. A visitor can tick bottles in each of them and sees the same bar; any change, from the bar, a bottle’s ⋯ menu or its pencil, opens the login dialog over the list, and the bottles stay ticked once logged in. On a phone, the bar of « Out of cellar » no longer runs off the screen. The login dialog also shows above an open dialog when a session ends during a change, instead of hiding behind it.
+
+The bottle cards of a wine's page now say when to drink each bottle, as the bottle tables do: its rank, its drinking window and its optimum year. A window of a single month or year reads once (« Dec 2026 », « 2027 ») instead of « Dec 2026 – Dec 2026 ». On a phone, the list view of My wines has a « N bottles » button on each wine, which opens its bottle table. At full width on a very wide screen, the preferences, a wine's page and the storage summary cards no longer stretch; the preferences and the storage cards are also a little narrower at the normal width of screens wider than 1280 px. English labels now use sentence case (« Target quantity », « Wine name »). Screen readers hear the wish that a « Create the wine » button belongs to.
+
+### Upgrade actions
+
+None.
+
+### Changes
+
+#### Features
+
+- **ui:** One selection bar for the lists of bottles, the same for a visitor (63dd832)
+- **bottles:** Show the drinking window and optimum on a wine's bottle cards (936bc37)
+- **wines:** Show a wine's bottles from the list view on a phone (ce45599)
+
+#### Bug fixes
+
+- **ui:** Show the login dialog above a dialog already open (663738d)
+- **ui:** Remount the login dialog only when it opens (943dc62)
+- **ui:** Read out the selection count from the start, and call the move alike in the ⋯ menu (5ce486d)
+- **ui:** Keep a wine's bottle list where it was while nothing is ticked (6344a58)
+- **bottles:** Write a drinking window of one month or one year once (66192ad)
+- **wishlist:** Name the create-the-wine button after its wish (ecb8a6c)
+- **i18n:** Write the English labels in sentence case (8c11ee1)
+- **layout:** Keep the preferences, a wine's page and the storage summary readable at full width (61243ad)
+- **bottles:** Keep the notes of a row of bottle cards level (edb4199)
+- **bottles:** Line up every line of a row of bottle cards (9432fc4)
+- **bottles:** Keep a bottle card's lines to its width (b4975f3)
+
+#### Refactoring
+
+- **purchases:** Ask a visitor to log in one way on the shortage tab (f9d37a3)
+
+#### Documentation
+
+- **release:** Describe the small fixes of UI-37 in the 1.7.0 notes (bd0c780)
+- Follow the sentence-case label in a comment and simplify the 1.7.0 summary (9687e19)
+
+#### Other changes
+
+- **ui:** Check that an empty selection bar takes no room, and say what a dialog toolbar must be (d1fee3f)
+- **e2e:** Follow the sentence-case title of the login dialog (ee04f17)
+
 ## 1.6.0
 
 1.6.0 gives a bottle a drinking window: « from » next to « drink before ».

@@ -33,6 +33,14 @@ describe('BottleCard', () => {
         expect(card).toContain('peak 2031');
     });
 
+    // As in the bottle tables: a bottle taken out or drunk keeps its dates, not its rank.
+    it('gives only a bottle in the cellar its rank', () => {
+        const late = { drinkFrom: null, drinkBefore: '2020' };
+        expect(renderCard(late)).toContain('Late');
+        expect(renderCard({ ...late, availability: 'consumed' })).not.toContain('Late');
+        expect(renderCard({ ...late, availability: 'out_of_cellar' })).not.toContain('Late');
+    });
+
     it('says nothing of a bottle without dates', () => {
         const card = renderCard({});
         expect(card).not.toContain('>Window:</span>');

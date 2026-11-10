@@ -3,10 +3,10 @@
         Calendar,
         CalendarRange,
         Check,
-        Mountain,
         Copy,
         DollarSign,
         MapPin,
+        Mountain,
         QrCode,
         SquarePen,
         Tag,
@@ -80,7 +80,9 @@
     class="border rounded-lg p-3 hover:shadow-md transition-shadow relative group"
     class:opacity-75={consumed}
 >
-    <div class="space-y-3">
+    <!-- The cards of a row share its height: the consumed date and the notes keep to the bottom,
+         level from card to card whatever the lines above them hold -->
+    <div class="flex h-full flex-col gap-3">
         <!-- Wraps, so that the buttons stay inside a narrow card -->
         <div class="flex flex-wrap items-center justify-between gap-2">
             <div class="flex items-center gap-2 flex-wrap">
@@ -161,28 +163,29 @@
             </Badge>
         </div>
 
-        <!-- When to drink it, as the bottle tables say it. Two rows are kept, so that the notes of
-             the cards of a row stay level. -->
-        <div class="min-h-12 flex flex-wrap content-start items-center gap-1">
-            {#if rank}<DrinkingChip {rank} />{/if}
-            {#if drinkingWindow}
-                <Badge variant="secondary" class="text-xs">
-                    <CalendarRange size={14} class="mr-1" aria-hidden="true" />
-                    <span class="sr-only"
-                        >{m['common.label']({ label: m['drinking.window_column']() })}</span
-                    >
-                    {drinkingWindow}
-                </Badge>
-            {/if}
-            {#if bottle.optimum !== null}
-                <Badge variant="secondary" class="text-xs">
-                    <Mountain size={14} class="mr-1" aria-hidden="true" />
-                    {m['drinking.optimum_year']({ year: bottle.optimum })}
-                </Badge>
-            {/if}
-        </div>
+        <!-- When to drink it, as the bottle tables say it -->
+        {#if rank || drinkingWindow || bottle.optimum !== null}
+            <div class="flex flex-wrap items-center gap-1">
+                {#if rank}<DrinkingChip {rank} />{/if}
+                {#if drinkingWindow}
+                    <Badge variant="secondary" class="text-xs">
+                        <CalendarRange size={14} class="mr-1" aria-hidden="true" />
+                        <span class="sr-only"
+                            >{m['common.label']({ label: m['drinking.window_column']() })}</span
+                        >
+                        {drinkingWindow}
+                    </Badge>
+                {/if}
+                {#if bottle.optimum !== null}
+                    <Badge variant="secondary" class="text-xs">
+                        <Mountain size={14} class="mr-1" aria-hidden="true" />
+                        {m['drinking.optimum_year']({ year: bottle.optimum })}
+                    </Badge>
+                {/if}
+            </div>
+        {/if}
 
-        <div class="min-h-[1.5rem] flex items-center">
+        <div class="mt-auto min-h-[1.5rem] flex items-center">
             {#if consumed}
                 <Badge
                     variant="destructive"

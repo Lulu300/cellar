@@ -48,7 +48,7 @@
         </DropdownMenu.Item>
         <DropdownMenu.Item onSelect={() => whenLoggedIn(() => (dialogs.moving = [bottle]))}>
             <ArrowRightLeft aria-hidden="true" />
-            {m['bottles.move']()}
+            {m['storage.move_to']()}
         </DropdownMenu.Item>
         <DropdownMenu.Item onSelect={() => whenLoggedIn(() => (dialogs.dating = [bottle]))}>
             <CalendarClock aria-hidden="true" />

@@ -24,13 +24,17 @@
     } = $props();
 </script>
 
-{#if selection.size > 0}
-    <!-- Wrapping: the actions stay in view on a narrow screen. -->
-    <div class="flex flex-wrap items-center gap-2">
-        <!-- Read out at each change of the count -->
-        <span class="text-sm font-medium text-primary-text" role="status">
-            {m['common.bottles_selected']({ count: selection.size })}
-        </span>
+<!-- Wrapping: the actions stay in view on a narrow screen. While nothing is ticked, only the count
+     stays, unseen and taking no room: a live region in the page from the start is read out at each
+     change, the first tick and the clearing included. -->
+<div class={selection.size > 0 ? 'flex flex-wrap items-center gap-2' : 'contents'}>
+    <span
+        class={selection.size > 0 ? 'text-sm font-medium text-primary-text' : 'sr-only'}
+        role="status"
+    >
+        {m['common.bottles_selected']({ count: selection.size })}
+    </span>
+    {#if selection.size > 0}
         <Button variant="ghost" size="sm" onclick={() => selection.clear()}>
             {m['common.clear_selection']()}
         </Button>
@@ -48,5 +52,5 @@
                 </Button>
             {/each}
         </div>
-    </div>
-{/if}
+    {/if}
+</div>

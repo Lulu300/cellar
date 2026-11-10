@@ -115,7 +115,7 @@
             capacity: storageCase.capacity
         })}
         class="max-w-2xl sm:max-w-2xl"
-        toolbar={selected.size > 0 ? toolbar : undefined}
+        {toolbar}
     >
         {#if loading}
             <p class="text-center py-8 text-muted-foreground">{m['storage.loading_bottles']()}</p>

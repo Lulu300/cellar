@@ -60,11 +60,9 @@
             <DialogDescription>{description}</DialogDescription>
         {/if}
     </DialogHeader>
-    {#if toolbar}
-        <div class="flex-shrink-0">
-            {@render toolbar()}
-        </div>
-    {/if}
+    <!-- Without a box of its own: a toolbar with nothing to show, such as a selection bar while
+         nothing is ticked, takes no room. -->
+    {@render toolbar?.()}
     <!-- Pulled out by its padding, so that its content lines up with the title and the buttons. -->
     <ScrollRegion class="flex-1 min-h-0 -mx-1">
         {@render children()}

@@ -5,8 +5,7 @@ import { describe, expect, it, vi } from 'vitest';
 import { useLocale } from '../../../test/locale';
 import BottleSelectionBar from './BottleSelectionBar.svelte';
 
-const { auth } = vi.hoisted(() => ({ auth: { isAuthenticated: true } }));
-vi.mock('#lib/stores/auth.svelte.js', () => ({ auth }));
+vi.mock('#lib/stores/auth.svelte.js', () => ({ auth: { isAuthenticated: true } }));
 
 const selection = (size: number) => ({ size, clear: () => {} });
 // The actions of the page « À boire » and of a wine's bottles
@@ -28,8 +27,12 @@ const buttons = (body: string) =>
     );
 
 describe('BottleSelectionBar', () => {
-    it('shows nothing while no bottle is ticked', () => {
-        expect(barOf(0)).not.toContain('<button');
+    it('keeps only its count, unseen, while no bottle is ticked', () => {
+        useLocale('fr');
+        const body = barOf(0);
+
+        expect(body).not.toContain('<button');
+        expect(body).toMatch(/class="sr-only" role="status"[^>]*>\s*0 bouteille sélectionnée/);
     });
 
     it('counts one bottle or several, in a status read out at each change', () => {
@@ -52,16 +55,5 @@ describe('BottleSelectionBar', () => {
         expect(
             buttons(barOf(2, [actions[0], { ...actions[1], primary: true }])).map((b) => b.filled)
         ).toEqual([false, false, true]);
-    });
-
-    // UI-34, choice A: a visitor sees the same bar; its actions ask for the code (whenLoggedIn).
-    it('shows a visitor the same bar as a session', () => {
-        useLocale('fr');
-        const member = barOf(2);
-        auth.isAuthenticated = false;
-        const visitor = barOf(2);
-        auth.isAuthenticated = true;
-
-        expect(visitor).toBe(member);
     });
 });

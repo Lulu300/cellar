@@ -225,8 +225,8 @@ test('add a container on the storage page, put bottles in its cases, move three 
     await expect(visitorCase.getByRole('status')).toHaveText('1 bottle selected');
     await visitorCase.getByRole('button', { name: 'Move to…' }).click();
     // A click lands on its field: the login dialog is above the case's, not hidden under it.
-    const login = visitor.getByRole('dialog', { name: 'Access Code Required' });
-    await login.getByLabel('Access Code', { exact: true }).click();
+    const login = visitor.getByRole('dialog', { name: 'Access code required' });
+    await login.getByLabel('Access code', { exact: true }).click();
     await logInAgain(visitor);
     await expect(login).toBeHidden();
     await expect(box).toBeChecked();

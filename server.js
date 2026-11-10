@@ -51,7 +51,7 @@ const { server } = await import('./build/index.js');
 server.requestTimeout = 30 * 60 * 1000;
 
 // No other site may show Cellar in a frame: a page of another app on the same NAS would get the
-// admin with its session, and could hide it under a decoy to make the user click "Wipe All Data".
+// admin with its session, and could hide it under a decoy to make the user click "Wipe all data".
 // Cellar never frames itself. X-Frame-Options is for older browsers. Set here rather than in
 // hooks.server.ts, so that every answer carries both headers: the static files that adapter-node
 // serves before SvelteKit, SvelteKit's own 403 and its error pages, and adapter-node's 400 too.

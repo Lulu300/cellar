@@ -107,8 +107,8 @@ export function drinkBeforeText(drinkBefore: string): string {
 
 /**
  * A drinking window as the lists say it in the month `now`: « 2024 – 2032 », « sept. 2026 – mars
- * 2027 », « dès 2028 », « avant fin nov. 2026 »; a late bottle keeps « avant fin … ». Empty
- * without a start or an end.
+ * 2027 », « dès 2028 », « avant fin nov. 2026 »; a window of one month or one year once, « déc.
+ * 2026 » or « 2026 »; a late bottle keeps « avant fin … ». Empty without a start or an end.
  */
 export function windowText(dates: DrinkingDates, now: Month = monthOf(new Date())): string {
     const { drinkFrom, drinkBefore } = dates;
@@ -119,9 +119,9 @@ export function windowText(dates: DrinkingDates, now: Month = monthOf(new Date()
         return drinkBeforeText(drinkBefore);
     }
     if (drinkFrom === null) return '';
-    return drinkBefore === null
-        ? m['drinking.from_date']({ date: dateText(drinkFrom) })
-        : m['drinking.window_range']({ from: dateText(drinkFrom), to: dateText(drinkBefore) });
+    if (drinkBefore === null) return m['drinking.from_date']({ date: dateText(drinkFrom) });
+    if (drinkFrom === drinkBefore) return dateText(drinkFrom);
+    return m['drinking.window_range']({ from: dateText(drinkFrom), to: dateText(drinkBefore) });
 }
 
 /** What a list says of when to drink a bottle: its window, else its optimum year; empty without. */

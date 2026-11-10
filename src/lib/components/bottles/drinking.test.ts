@@ -82,6 +82,25 @@ describe('the words of the marks and dates', () => {
         expect(at('2028', null)).toBe('from 2028');
     });
 
+    it('says a window of one month or one year once, in both languages', () => {
+        const at = (drinkFrom: string | null, drinkBefore: string | null) =>
+            windowText({ drinkFrom, drinkBefore, optimum: null }, november);
+        useLocale('fr');
+        expect(at('2026-12', '2026-12')).toBe('déc. 2026');
+        expect(at('2027', '2027')).toBe('2027');
+        expect(at('2026-12', '2027-01')).toBe('déc. 2026\u00a0– janv. 2027');
+        // A year and a month of that year stay a range: they do not say the same span.
+        expect(at('2027', '2027-06')).toBe('2027\u00a0– juin 2027');
+        expect(at('2027-01', null)).toBe('dès janv. 2027');
+        expect(at(null, '2027-01')).toBe('avant fin janv. 2027');
+        useLocale('en');
+        expect(at('2026-12', '2026-12')).toBe('Dec 2026');
+        expect(at('2027', '2027')).toBe('2027');
+        expect(at('2026-12', '2027-01')).toBe('Dec 2026\u00a0– Jan 2027');
+        expect(at('2027-01', null)).toBe('from Jan 2027');
+        expect(at(null, '2027-01')).toBe('before the end of Jan 2027');
+    });
+
     it('says the optimum only without a window', () => {
         useLocale('fr');
         expect(drinkingText({ drinkFrom: '2028', drinkBefore: null, optimum: 2030 })).toBe(

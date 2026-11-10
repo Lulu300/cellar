@@ -40,19 +40,27 @@ function renderTable(authenticated: boolean, showImages = true) {
 }
 
 describe('WineTable', () => {
-    // The items of a closed menu are not rendered: the phone menu of a visitor, which only shows
-    // the bottles, is checked in the browser (FEAT-10 evidence).
+    // The items of a closed menu are not rendered: the menu itself goes for a visitor, who has no
+    // action left in it on a phone.
     it('offers the actions that change the cellar only to a logged-in user', () => {
         const visitor = renderTable(false);
         expect(visitor).toContain('href="/wines/w1"');
         expect(visitor).not.toContain('aria-label="Add bottle of this wine"');
         expect(visitor).not.toContain('aria-label="Wishlist"');
         expect(visitor).not.toContain('>Actions<');
+        expect(visitor).not.toContain('aria-label="More actions"');
 
         const user = renderTable(true);
         expect(user).toContain('aria-label="Add bottle of this wine"');
         expect(user).toContain('aria-label="Wishlist"');
         expect(user).toContain('>Actions<');
+    });
+
+    // On a phone as on a computer, a button opens the table of the wine's bottles.
+    it('shows the bottles of a wine on a phone and on a computer, to a visitor too', () => {
+        expect(
+            renderTable(false).match(/<button [^\n]*?title="View bottle details"/g)
+        ).toHaveLength(2);
     });
 
     it('shows a dash for a wine without a rating, which a screen reader reads as text', () => {

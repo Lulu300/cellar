@@ -5,8 +5,7 @@
         EllipsisVertical,
         ImageIcon,
         SquarePen,
-        SquarePlus,
-        Wine as WineIcon
+        SquarePlus
     } from '@lucide/svelte';
     import { page } from '$app/state';
     import { Button } from '#lib/components/ui/button/index.js';
@@ -88,8 +87,22 @@
     </WineColorBadge>
 {/snippet}
 
-<!-- On a phone, the menu holds every action of the row; on a computer, the row shows the bottles,
-     the bookmark and add a bottle, and the menu holds the rest. -->
+<!-- Opens the table of the wine's bottles; it sits above the link that covers the row -->
+{#snippet bottlesButton(wine: Wine, count: number, className = '')}
+    <Button
+        variant="secondary"
+        size="sm"
+        class={['relative z-10', className]}
+        onclick={() => onShowBottles(wine)}
+        title={m['wines.view_bottle_details']()}
+    >
+        {m['common.n_bottles']({ count })}
+    </Button>
+{/snippet}
+
+<!-- The row shows its bottles. On a phone, the menu holds every other action of the row; on a
+     computer, the row shows the bookmark and add a bottle too, and the menu holds the rest. Only a
+     logged-in user has actions. -->
 {#snippet actions(wine: Wine, everything: boolean)}
     <DropdownMenu.Root>
         <DropdownMenu.Trigger
@@ -102,37 +115,29 @@
         <!-- The item it focuses shows where the keyboard is: the menu itself needs no outline -->
         <DropdownMenu.Content align="end" class="w-auto outline-none">
             {#if everything}
-                <DropdownMenu.Item onSelect={() => onShowBottles(wine)}>
-                    <WineIcon aria-hidden="true" />
-                    {m['wines.view_bottle_details']()}
+                {@const wishId = wishedWines[wine.id]}
+                <DropdownMenu.Item onSelect={() => onAddBottle(wine)}>
+                    <SquarePlus aria-hidden="true" />
+                    {m['wines.add_bottle_of_wine']()}
+                </DropdownMenu.Item>
+                <DropdownMenu.Item onSelect={() => toggleWish(wine.id, wishId)}>
+                    <Bookmark
+                        class={wishId ? 'fill-current text-primary-text' : ''}
+                        aria-hidden="true"
+                    />
+                    {wishId
+                        ? m['wishlist.remove_from_wishlist']()
+                        : m['wishlist.add_to_wishlist']()}
                 </DropdownMenu.Item>
             {/if}
-            {#if auth.isAuthenticated}
-                {#if everything}
-                    {@const wishId = wishedWines[wine.id]}
-                    <DropdownMenu.Item onSelect={() => onAddBottle(wine)}>
-                        <SquarePlus aria-hidden="true" />
-                        {m['wines.add_bottle_of_wine']()}
-                    </DropdownMenu.Item>
-                    <DropdownMenu.Item onSelect={() => toggleWish(wine.id, wishId)}>
-                        <Bookmark
-                            class={wishId ? 'fill-current text-primary-text' : ''}
-                            aria-hidden="true"
-                        />
-                        {wishId
-                            ? m['wishlist.remove_from_wishlist']()
-                            : m['wishlist.add_to_wishlist']()}
-                    </DropdownMenu.Item>
-                {/if}
-                <DropdownMenu.Item onSelect={() => onEdit(wine)}>
-                    <SquarePen aria-hidden="true" />
-                    {m['forms.edit_wine']()}
-                </DropdownMenu.Item>
-                <DropdownMenu.Item onSelect={() => onDuplicate(wine)}>
-                    <Copy aria-hidden="true" />
-                    {m['forms.duplicate_wine']()}
-                </DropdownMenu.Item>
-            {/if}
+            <DropdownMenu.Item onSelect={() => onEdit(wine)}>
+                <SquarePen aria-hidden="true" />
+                {m['forms.edit_wine']()}
+            </DropdownMenu.Item>
+            <DropdownMenu.Item onSelect={() => onDuplicate(wine)}>
+                <Copy aria-hidden="true" />
+                {m['forms.duplicate_wine']()}
+            </DropdownMenu.Item>
         </DropdownMenu.Content>
     </DropdownMenu.Root>
 {/snippet}
@@ -181,17 +186,7 @@
                     </Table.Cell>
                     <Table.Cell>{facts.vintage}</Table.Cell>
                     <Table.Cell class="whitespace-normal">{facts.price}</Table.Cell>
-                    <Table.Cell>
-                        <Button
-                            variant="secondary"
-                            size="sm"
-                            class="relative z-10"
-                            onclick={() => onShowBottles(wine)}
-                            title={m['wines.view_bottle_details']()}
-                        >
-                            {m['common.n_bottles']({ count: facts.bottleCount })}
-                        </Button>
-                    </Table.Cell>
+                    <Table.Cell>{@render bottlesButton(wine, facts.bottleCount)}</Table.Cell>
                     {#if wine.rating}
                         <Table.Cell>{facts.rating}</Table.Cell>
                     {:else}
@@ -239,11 +234,13 @@
                     <!-- Inline, so that the facts wrap next to the badge rather than below it -->
                     <p class="mt-0.5 text-xs/6 text-muted-foreground">
                         {@render colorBadge(wine, 'me-1 [overflow-wrap:anywhere]')}
-                        {facts.vintage} · {m['common.n_bottles']({ count: facts.bottleCount })} ·
-                        {facts.price}
+                        {facts.vintage} · {facts.price}
                     </p>
+                    {@render bottlesButton(wine, facts.bottleCount, 'mt-1 self-start')}
                 </div>
-                {@render actions(wine, true)}
+                {#if auth.isAuthenticated}
+                    {@render actions(wine, true)}
+                {/if}
             </li>
         {/each}
     </ul>

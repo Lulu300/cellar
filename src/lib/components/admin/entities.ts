@@ -1,4 +1,5 @@
 import { m } from '#lib/paraglide/messages.js';
+import { folded } from '#lib/shared/names.js';
 import type { ReferenceRow, ReferenceSlug } from '#lib/shared/reference-tables.js';
 
 interface EntityLabels {
@@ -202,6 +203,11 @@ export const REFERENCE_ENTITIES: Record<ReferenceSlug, ReferenceEntity> = {
 export const referenceDetail = (row: ReferenceRow) =>
     [row.regionName, row.countryName].filter(Boolean).join(', ');
 
-/** Whether the entry's name, or the name of its region or country, holds `query` (lower case). */
+/**
+ * Whether the entry's name, or the name of its region or country, holds `query`, capitals and
+ * accents aside, as the searchable lists of the forms compare them.
+ */
 export const matchesReference = (row: ReferenceRow, query: string) =>
-    [row.name, row.regionName, row.countryName].some((text) => text?.toLowerCase().includes(query));
+    [row.name, row.regionName, row.countryName].some(
+        (text) => text && folded(text).includes(folded(query))
+    );

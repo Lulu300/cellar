@@ -293,13 +293,13 @@ export const phases = [
 		id: 'P18',
 		version: 'Producteurs',
 		title: 'Producteurs et revue de l’import',
-		goal: 'Les producteurs d’abord, parce que la revue de l’import doit savoir relier ou créer un producteur. Ordre : FEAT-07 ; FEAT-08 ; puis REL-12. DEP-11 se fait sur develop juste avant la sortie suivante, quel que soit le bloc.'
+		goal: 'Les producteurs d’abord, parce que la revue de l’import doit savoir relier ou créer un producteur. Ordre : FEAT-07 ; FEAT-08 ; puis REL-12. Le 2026-11-11, le mainteneur sort le bloc sans attendre DEP-11, éligible le 2026-11-12, qui passe à la sortie suivante.'
 	},
 	{
 		id: 'P19',
 		version: 'Notifications',
 		title: 'Notifications',
-		goal: 'Les notifications, qui utilisent « À boire » (FEAT-05), le statut hors cave et la vérification des mises à jour. Ordre : FEAT-09 ; puis REL-13.'
+		goal: 'Les notifications, qui utilisent « À boire » (FEAT-05), le statut hors cave et la vérification des mises à jour. Ordre : FEAT-09 ; puis REL-13. DEP-11 se fait sur develop juste avant la sortie suivante, quel que soit le bloc.'
 	},
 	{
 		id: 'P21',
@@ -2994,7 +2994,7 @@ export const tasks = [
 	},
 	// ───────── P18 Producteurs et revue de l’import
 	{
-		id: 'DEP-11', phase: 'P18', size: 'S', sev: 'mineur',
+		id: 'DEP-11', phase: 'P19', size: 'S', sev: 'mineur',
 		title: 'Revue des dépendances d’après la 1.5.1',
 		why: 'Ce que DEP-10 n’a pas pris : Node 24.22.2 et docker/login-action 4.8.0 (éligibles le 2026-11-12), les correctifs pas encore âgés de 7 jours le 2026-11-08 (tinybench, svelte-check, bits-ui, tailwindcss 4.3.4, vite 8.3.6, semver, cookie…), et les mineures repoussées (@lucide/svelte 1.66, readable-stream, tar-stream, pako, core-js).',
 		where: ['package.json', 'pnpm-lock.yaml', '.github/workflows/', 'Dockerfile', '.nvmrc'],

@@ -190,8 +190,8 @@ Revue du code du 2026-10-08, commit `556c7bb`. Ce fichier est la version pour le
 | 1.6.0 | P22 · Période de dégustation | Juste après la 1.5.3, avant les autres blocs (décision « Période de dégustation (FEAT-19) ») : FEAT-19 ; puis REL-22. Une version mineure à elle seule, à cause de sa migration. Publiée en 1.6.0 le 2026-11-09. | FEAT-19, REL-22 | 2 / 2 |
 | 1.7.0 | P23 · Finitions et barre de sélection | Juste après la 1.6.0, avant les autres blocs (décision « Finitions (UI-37, UI-34) ») : UI-37 et UI-34, menées côte à côte et fusionnées l’une après l’autre ; puis REL-23. Une version mineure. Le 2026-11-10, le mainteneur la sort sans attendre DEP-11, éligible le 2026-11-12, qui passe à la sortie suivante. Publiée en 1.7.0 le 2026-11-11. | UI-34, UI-37, REL-23 | 3 / 3 |
 | Dégustation | P20 · Fiches de dégustation | Décision « Fiches de dégustation (FEAT-06, FEAT-14 à FEAT-16) ». Sur la branche d’intégration `feat/tasting`, envoyée sur GitHub (décision « Blocs sans numéro ») : chaque tâche part de cette branche et y revient ; la branche rejoint develop quand le mainteneur valide le bloc entier. Ordre : FEAT-06 ; FEAT-14 ; FEAT-15 ; FEAT-16 ; puis REL-17. | FEAT-06, FEAT-14, FEAT-15, FEAT-16, REL-17 | 0 / 5 |
-| Producteurs | P18 · Producteurs et revue de l’import | Les producteurs d’abord, parce que la revue de l’import doit savoir relier ou créer un producteur. Ordre : FEAT-07 ; FEAT-08 ; puis REL-12. DEP-11 se fait sur develop juste avant la sortie suivante, quel que soit le bloc. | DEP-11, FEAT-07, FEAT-08, REL-12 | 2 / 4 |
-| Notifications | P19 · Notifications | Les notifications, qui utilisent « À boire » (FEAT-05), le statut hors cave et la vérification des mises à jour. Ordre : FEAT-09 ; puis REL-13. | FEAT-09, REL-13 | 0 / 2 |
+| Producteurs | P18 · Producteurs et revue de l’import | Les producteurs d’abord, parce que la revue de l’import doit savoir relier ou créer un producteur. Ordre : FEAT-07 ; FEAT-08 ; puis REL-12. Le 2026-11-11, le mainteneur sort le bloc sans attendre DEP-11, éligible le 2026-11-12, qui passe à la sortie suivante. | FEAT-07, FEAT-08, REL-12 | 2 / 3 |
+| Notifications | P19 · Notifications | Les notifications, qui utilisent « À boire » (FEAT-05), le statut hors cave et la vérification des mises à jour. Ordre : FEAT-09 ; puis REL-13. DEP-11 se fait sur develop juste avant la sortie suivante, quel que soit le bloc. | DEP-11, FEAT-09, REL-13 | 0 / 3 |
 | Statistiques de dégustation | P21 · Statistiques de dégustation | Après le bloc « Dégustation », dont elles lisent les fiches. Ordre : FEAT-17 ; puis REL-18. | FEAT-17, REL-18 | 0 / 2 |
 
 ## P0 · Sécurité urgente (1.0.0)
@@ -3991,24 +3991,7 @@ Sévérité **évolution** · effort **S** · dépend de FEAT-06, FEAT-14, FEAT-
 
 ## P18 · Producteurs et revue de l’import (Producteurs)
 
-Les producteurs d’abord, parce que la revue de l’import doit savoir relier ou créer un producteur. Ordre : FEAT-07 ; FEAT-08 ; puis REL-12. DEP-11 se fait sur develop juste avant la sortie suivante, quel que soit le bloc.
-
-### DEP-11 · Revue des dépendances d’après la 1.5.1
-
-Sévérité **mineur** · effort **S** · dépend de DEP-10 · statut **À faire**
-
-**Problème** : Ce que DEP-10 n’a pas pris : Node 24.22.2 et docker/login-action 4.8.0 (éligibles le 2026-11-12), les correctifs pas encore âgés de 7 jours le 2026-11-08 (tinybench, svelte-check, bits-ui, tailwindcss 4.3.4, vite 8.3.6, semver, cookie…), et les mineures repoussées (@lucide/svelte 1.66, readable-stream, tar-stream, pako, core-js).
-
-**Fichiers** : `package.json`, `pnpm-lock.yaml`, `.github/workflows/`, `Dockerfile`, `.nvmrc`
-
-**À faire**
-
-- Comme DEP-10, avec ses outils (p15-notes/dep-10-evidence/tools) : correctifs publiés depuis au moins 7 jours, une mise à jour par commit, portes à chaque fois ; mineures proposées au mainteneur ; alerte minimatch revue ; juste avant la sortie suivante, quel que soit le bloc.
-- Trouvé pendant DEP-10 : `.nvmrc` dit « 24 » ; proposer de le fixer sur la version de l’image, pour que la CI teste le Node qu’on publie.
-
-**Critère d’acceptation** : Chaque dépendance, action et image de base est à son dernier correctif publié depuis au moins 7 jours, ou l’écart est justifié ; la CI tourne sur le Node de l’image.
-
-**Sources** : Trouvé pendant DEP-10
+Les producteurs d’abord, parce que la revue de l’import doit savoir relier ou créer un producteur. Ordre : FEAT-07 ; FEAT-08 ; puis REL-12. Le 2026-11-11, le mainteneur sort le bloc sans attendre DEP-11, éligible le 2026-11-12, qui passe à la sortie suivante.
 
 ### FEAT-07 · Producteurs : une liste et une fiche
 
@@ -4072,7 +4055,24 @@ Sévérité **évolution** · effort **S** · dépend de FEAT-07, FEAT-08 · sta
 
 ## P19 · Notifications (Notifications)
 
-Les notifications, qui utilisent « À boire » (FEAT-05), le statut hors cave et la vérification des mises à jour. Ordre : FEAT-09 ; puis REL-13.
+Les notifications, qui utilisent « À boire » (FEAT-05), le statut hors cave et la vérification des mises à jour. Ordre : FEAT-09 ; puis REL-13. DEP-11 se fait sur develop juste avant la sortie suivante, quel que soit le bloc.
+
+### DEP-11 · Revue des dépendances d’après la 1.5.1
+
+Sévérité **mineur** · effort **S** · dépend de DEP-10 · statut **À faire**
+
+**Problème** : Ce que DEP-10 n’a pas pris : Node 24.22.2 et docker/login-action 4.8.0 (éligibles le 2026-11-12), les correctifs pas encore âgés de 7 jours le 2026-11-08 (tinybench, svelte-check, bits-ui, tailwindcss 4.3.4, vite 8.3.6, semver, cookie…), et les mineures repoussées (@lucide/svelte 1.66, readable-stream, tar-stream, pako, core-js).
+
+**Fichiers** : `package.json`, `pnpm-lock.yaml`, `.github/workflows/`, `Dockerfile`, `.nvmrc`
+
+**À faire**
+
+- Comme DEP-10, avec ses outils (p15-notes/dep-10-evidence/tools) : correctifs publiés depuis au moins 7 jours, une mise à jour par commit, portes à chaque fois ; mineures proposées au mainteneur ; alerte minimatch revue ; juste avant la sortie suivante, quel que soit le bloc.
+- Trouvé pendant DEP-10 : `.nvmrc` dit « 24 » ; proposer de le fixer sur la version de l’image, pour que la CI teste le Node qu’on publie.
+
+**Critère d’acceptation** : Chaque dépendance, action et image de base est à son dernier correctif publié depuis au moins 7 jours, ou l’écart est justifié ; la CI tourne sur le Node de l’image.
+
+**Sources** : Trouvé pendant DEP-10
 
 ### FEAT-09 · Notifications par ntfy ou webhook
 

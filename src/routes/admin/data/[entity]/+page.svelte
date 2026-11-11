@@ -4,6 +4,9 @@
     import { Badge } from '#lib/components/ui/badge/index.js';
     import EntityListPanel from '#lib/components/admin/EntityListPanel.svelte';
     import EntityFormDialog from '#lib/components/admin/EntityFormDialog.svelte';
+    import MergeProducersDialog from '#lib/components/admin/dialogs/MergeProducersDialog.svelte';
+    import { Button } from '#lib/components/ui/button/index.js';
+    import type { ProducerDTO } from '#lib/shared/dto.js';
     import WineColorBadge from '#lib/components/wines/WineColorBadge.svelte';
     import { confirm } from '#lib/components/layout/confirm.svelte.js';
     import { EntityCollection } from '#lib/components/admin/entity-collection.svelte.js';
@@ -38,6 +41,7 @@
     );
 
     let formOpen = $state(false);
+    let mergeOpen = $state(false);
     let editing = $state<ReferenceRow | null>(null);
 
     function openForm(row: ReferenceRow | null) {
@@ -60,6 +64,14 @@
     <title>{pageTitle(labels.title, m['admin.title']())}</title>
 </svelte:head>
 
+{#if entity.mergeable}
+    <div class="mb-4 flex justify-end">
+        <Button variant="outline" onclick={() => (mergeOpen = true)}>
+            {m['admin.merge_producers']()}
+        </Button>
+    </div>
+{/if}
+
 <EntityListPanel
     {collection}
     title={labels.title}
@@ -78,7 +90,20 @@
         {#if referenceDetail(row)}
             <p class="mt-1 text-xs text-muted-foreground">{referenceDetail(row)}</p>
         {/if}
+        {#if row.wineCount !== undefined}
+            <p class="mt-1 text-xs text-muted-foreground">
+                {m['producers.n_wines']({ count: row.wineCount })}
+            </p>
+        {/if}
     {/snippet}
 </EntityListPanel>
 
 <EntityFormDialog bind:open={formOpen} {entity} {editing} items={data.items} {parents} />
+
+{#if entity.mergeable}
+    <MergeProducersDialog
+        bind:open={mergeOpen}
+        producers={data.items as ProducerDTO[]}
+        imageUrls={data.imageUrls}
+    />
+{/if}

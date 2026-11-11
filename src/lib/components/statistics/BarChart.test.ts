@@ -16,7 +16,7 @@ describe('BarChart', () => {
         const { body } = render(BarChart, { props: { bars } });
 
         expect(body).toMatch(
-            /<p[^>]*>\s*Domaine des Coteaux Imaginaires :\s*<span[^>]*>10 bouteilles<\/span>/
+            /<p[^>]*>(?:\s|<!--[^>]*-->)*Domaine des Coteaux Imaginaires :(?:\s|<!--[^>]*-->)*<span[^>]*>10 bouteilles<\/span>/
         );
     });
 
@@ -48,6 +48,19 @@ describe('BarChart', () => {
 
         expect(body).toMatch(/class="[^"]*\btruncate\b[^"]*"[^>]*>’17</);
         expect(body).toContain('aria-label="2017: 4 bottles"');
-        expect(body).toMatch(/<p[^>]*>\s*2017:\s*<span[^>]*>4 bottles<\/span>/);
+        expect(body).toMatch(
+            /<p[^>]*>(?:\s|<!--[^>]*-->)*2017:(?:\s|<!--[^>]*-->)*<span[^>]*>4 bottles<\/span>/
+        );
+    });
+
+    // A producer's bar (FEAT-07): its name under the chart opens its page.
+    it('links the name under the chart to the page of what the bar counts', () => {
+        useLocale('en');
+
+        const { body } = render(BarChart, {
+            props: { bars: [{ key: 'p1', name: 'Huet', count: 4, href: '/producers/p1' }] }
+        });
+
+        expect(body).toMatch(/<a href="\/producers\/p1"[^>]*>Huet<\/a>:/);
     });
 });

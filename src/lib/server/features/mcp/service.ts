@@ -19,7 +19,17 @@ import {
     wineFormatHandlers,
     wineTypeHandlers
 } from '#lib/server/features/catalog/service.js';
-import { appellationHandlers } from '#lib/server/features/geography/service.js';
+import {
+    appellationHandlers,
+    countryHandlers,
+    regionHandlers
+} from '#lib/server/features/geography/service.js';
+import {
+    findOrCreateProducer,
+    getProducerDetails,
+    listProducers,
+    updateProducer
+} from '#lib/server/features/producers/service.js';
 import { NotFoundError } from '#lib/server/http/errors.js';
 import { storageOverview } from '#lib/server/features/storage/service.js';
 import {
@@ -34,6 +44,7 @@ import { BottleAvailability } from '#lib/shared/bottle-availability.js';
 import type { DrinkingRank } from '#lib/shared/drinking.js';
 import type { BottleWithDefinitionDTO, WineGroupDTO } from '#lib/shared/dto.js';
 import type { BottleChanges, BottleInput } from '#lib/shared/schemas/bottle.js';
+import type { ProducerInput } from '#lib/shared/schemas/producer.js';
 import type { WineDefinitionInput } from '#lib/shared/schemas/wine.js';
 import type { WishInput } from '#lib/shared/schemas/wish.js';
 import { containerLabel } from '#lib/shared/storage.js';
@@ -49,7 +60,7 @@ import { today } from '#lib/utils/format.js';
 /** A wine as the wine list and the wine page give it. */
 type Wine = Pick<
     WineGroupDTO['definition'],
-    'id' | 'name' | 'producer' | 'color' | 'type' | 'appellation' | 'rating'
+    'id' | 'name' | 'producerId' | 'producer' | 'color' | 'type' | 'appellation' | 'rating'
 > & { classification?: string | null; grapeVarieties: string[] | null };
 type Bottle = Omit<BottleWithDefinitionDTO, 'definition'>;
 
@@ -62,6 +73,7 @@ function wineSummary(wine: Wine) {
         id: wine.id,
         name: wine.name,
         producer: wine.producer,
+        producerId: wine.producerId,
         color: wine.color,
         type: wine.type,
         classification: wine.classification,
@@ -371,7 +383,14 @@ export function choices() {
         colors: named(wineColorHandlers.list()),
         types: named(wineTypeHandlers.list()),
         classifications: named(wineClassificationHandlers.list()),
-        origins: named(originHandlers.list())
+        origins: named(originHandlers.list()),
+        countries: named(countryHandlers.list()),
+        regions: regionHandlers.list().map(({ id, name, countryName }) => ({
+            id,
+            name,
+            // The lookup rows are typed for every table; a region's come with its country's name.
+            country: countryName as string
+        }))
     };
 }
 
@@ -589,4 +608,84 @@ export const editWish = (id: string, changes: WishChanges) => wishSummary(change
 export async function removeWishById(id: string) {
     await removeWish(id);
     return { removed: id };
+}
+
+/** A producer as list_producers gives it: where it is, and what it counts. */
+const producerSummary = (producer: ReturnType<typeof listProducers>[number]) => ({
+    id: producer.id,
+    name: producer.name,
+    region: producer.regionName,
+    country: producer.countryName,
+    wineCount: producer.wineCount,
+    inCellar: producer.bottleCount,
+    consumed: producer.consumedCount
+});
+
+export interface ProducerSearch extends Page {
+    query?: string;
+}
+
+/**
+ * The producers whose name, region and country hold every word of `query`, by name, each with its
+ * wines and its bottles in the cellar and drunk counted: the page asked for, with `total` counting
+ * them all.
+ */
+export function searchProducers({ query = '', ...page }: ProducerSearch) {
+    const matches = matching(query);
+    const found = listProducers()
+        .map(producerSummary)
+        .filter(({ name, region, country }) => matches([name, region, country]))
+        // Two producers never share a name: the order puts each on one page.
+        .sort((a, b) => compareText(a.name, b.name));
+    return { total: found.length, producers: pageOf(found, page) };
+}
+
+/**
+ * The producer with every field but its photo, and its wines, each with its bottles in the cellar
+ * and drunk counted. Throws a NotFoundError for an unknown producer.
+ */
+export function producerWithWines(id: string) {
+    const { wines, ...producer } = getProducerDetails(id);
+    return {
+        ...producerSummary(producer),
+        countryId: producer.countryId,
+        regionId: producer.regionId,
+        website: producer.website,
+        contact: producer.contact,
+        description: producer.description,
+        wines: wines.map((wine) => ({
+            id: wine.id,
+            name: wine.name,
+            color: wine.color,
+            type: wine.type,
+            classification: wine.classification,
+            appellation: wine.appellationName,
+            region: wine.regionName,
+            country: wine.countryName,
+            inCellar: wine.bottleCount,
+            consumed: wine.consumedCount
+        }))
+    };
+}
+
+/** The fields of a producer that create_producer and update_producer take: its photo is the app's. */
+export type ProducerFields = Omit<ProducerInput, 'imageId'>;
+
+/**
+ * Creates the producer, unless one has its name already, capitals, accents and blanks aside: that
+ * one is answered then, unchanged. Answers it as get_producer does, with whether it was created.
+ */
+export function addProducer(fields: ProducerFields) {
+    const { producer, created } = findOrCreateProducer(fields);
+    return { created, ...producerWithWines(producer.id) };
+}
+
+/**
+ * Changes the fields of `changes` on the producer, and answers it as get_producer does. Throws a
+ * NotFoundError for an unknown producer.
+ */
+export function editProducer(id: string, { name, ...changes }: Partial<ProducerFields>) {
+    // The update takes a name, as PUT does: a change that gives none keeps the producer's.
+    updateProducer(id, { ...changes, name: name ?? getProducerDetails(id).name });
+    return producerWithWines(id);
 }

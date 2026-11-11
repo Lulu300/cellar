@@ -3,6 +3,7 @@ import { db } from '#lib/server/db/index.js';
 import {
     appellations,
     countries,
+    producers,
     regions,
     wineBottles,
     wineColors,
@@ -12,6 +13,12 @@ import {
     type NewWineBottle
 } from '#lib/server/db/schema.js';
 import { bottleSchema, type BottleInput } from '#lib/shared/schemas/bottle.js';
+
+/** Inserts a producer of this name; returns its id. */
+export async function insertProducer(name: string): Promise<string> {
+    const [{ id }] = await db.insert(producers).values({ name }).returning({ id: producers.id });
+    return id;
+}
 
 /**
  * Inserts a wine and the rows it needs, with the format `bottle`, so that bottles can be created;

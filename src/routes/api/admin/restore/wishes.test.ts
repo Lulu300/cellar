@@ -8,7 +8,6 @@ import {
     countries,
     regions,
     wineColors,
-    wineDefinitions,
     wineImages,
     wineTypes,
     wishes
@@ -60,17 +59,11 @@ function fillCellar(backup: Db) {
         .insert(wineImages)
         .values({ id: 'label', filename: 'label.jpg', ...timestamps })
         .run();
-    backup
-        .insert(wineDefinitions)
-        .values({
-            id: 'margaux',
-            name: 'Château Margaux',
-            appellationId: 'mgx',
-            typeId: 'still',
-            colorId: 'red',
-            ...timestamps
-        })
-        .run();
+    // In SQL too: the wines of older versions have no producer_id.
+    backup.$client.exec(
+        `INSERT INTO wine_definitions (id, name, appellation_id, type_id, color_id, created_at, updated_at)
+            VALUES ('margaux', 'Château Margaux', 'mgx', 'still', 'red', 0, 0)`
+    );
 }
 
 const label = { name: 'images/label.jpg', data: jpegBytes('label') };

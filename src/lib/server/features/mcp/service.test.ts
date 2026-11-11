@@ -1,9 +1,10 @@
-import { beforeAll, beforeEach, describe, expect, it, onTestFinished, vi } from 'vitest';
-import { eq, like } from 'drizzle-orm';
+import { afterEach, beforeAll, beforeEach, describe, expect, it, onTestFinished, vi } from 'vitest';
+import { eq, like, ne } from 'drizzle-orm';
 import { db } from '#lib/server/db/index.js';
 import {
     appellations,
     countries,
+    producers,
     regions,
     storageCases,
     storageContainers,
@@ -15,11 +16,12 @@ import {
 import { listBottlesWithDefinitions } from '#lib/server/features/bottles/service.js';
 import { getDefinitionDetails } from '#lib/server/features/catalog/service.js';
 import { createContainer } from '#lib/server/features/storage/service.js';
-import { NotFoundError } from '#lib/server/http/errors.js';
+import { ConflictError, NotFoundError } from '#lib/server/http/errors.js';
 import { BottleAvailability } from '#lib/shared/bottle-availability.js';
 import { insertBottles, insertWineDefinition } from '../../../../test/wine';
 import {
     addBottles,
+    addProducer,
     addWine,
     bottlesByBarcode,
     bottlesToDrink,
@@ -27,6 +29,7 @@ import {
     choices,
     deleteBottles,
     editBottles,
+    editProducer,
     editWine,
     editWish,
     freeSpace,
@@ -34,10 +37,12 @@ import {
     markDrunk,
     moveBottles,
     addWish,
+    producerWithWines,
     putBack,
     rateWine,
     removeWishById,
     searchAppellations,
+    searchProducers,
     searchWines,
     takeOut,
     wineShortages,
@@ -47,6 +52,8 @@ import {
 
 let margaux: string;
 const barolo = 'barolo';
+/** The producer of `barolo`. */
+const cote = 'cote';
 
 beforeAll(async () => {
     margaux = await insertWineDefinition();
@@ -60,11 +67,14 @@ beforeAll(async () => {
     db.insert(appellations)
         .values({ id: 'bar', name: 'Barolo', regionId: 'pie', ...timestamps })
         .run();
+    db.insert(producers)
+        .values({ id: cote, name: 'Élevage Côté', countryId: 'it', regionId: 'pie', ...timestamps })
+        .run();
     db.insert(wineDefinitions)
         .values({
             id: barolo,
             name: 'Cannubi',
-            producer: 'Élevage Côté',
+            producerId: cote,
             appellationId: 'bar',
             typeId: 'still',
             colorId: 'red',
@@ -474,7 +484,15 @@ describe('choices', () => {
             colors: [{ id: 'red', name: 'Red' }],
             types: [{ id: 'still', name: 'Still' }],
             classifications: [],
-            origins: []
+            origins: [],
+            countries: [
+                { id: 'fr', name: 'France' },
+                { id: 'it', name: 'Italie' }
+            ],
+            regions: [
+                { id: 'bdx', name: 'Bordeaux', country: 'France' },
+                { id: 'pie', name: 'Piémont', country: 'Italie' }
+            ]
         });
     });
 });
@@ -512,10 +530,12 @@ describe('searchAppellations', () => {
 });
 
 describe('addWine', () => {
-    it('creates the wine and answers it with its appellation, region and country', () => {
+    it('creates the wine and answers it with its producer, appellation, region and country', () => {
         const wine = addWine({
             name: 'Barbaresco',
-            producer: null,
+            // The producer of this name, capitals and accents aside.
+            producer: 'elevage COTE',
+            producerId: null,
             appellationId: 'bar',
             typeId: 'still',
             colorId: 'red',
@@ -530,6 +550,8 @@ describe('addWine', () => {
 
         expect(wine).toMatchObject({
             name: 'Barbaresco',
+            producer: 'Élevage Côté',
+            producerId: cote,
             appellation: 'Barolo',
             region: 'Piémont',
             country: 'Italie',
@@ -871,6 +893,7 @@ describe('editWine', () => {
             targetQuantity: 12,
             description: 'From the Cannubi hill',
             producer: null,
+            producerId: null,
             grapeVarieties: ['Nebbiolo', 'Barbera'],
             updatedAt: expect.any(Date)
         });
@@ -958,5 +981,127 @@ describe('the wishlist', () => {
         expect(await removeWishById(wish.id)).toEqual({ removed: wish.id });
         expect(wishlist()).toEqual([]);
         await expect(removeWishById(wish.id)).rejects.toThrow('Wish not found');
+    });
+});
+
+describe('producers', () => {
+    afterEach(() => {
+        db.delete(producers).where(ne(producers.id, cote)).run();
+    });
+
+    const lafite = () =>
+        addProducer({ name: 'Château Lafite', regionId: 'bdx', website: 'https://lafite.com' });
+
+    const producerNames = (query?: string, page: { limit?: number; offset?: number } = {}) =>
+        searchProducers({ query, limit: 50, ...page }).producers.map(({ name }) => name);
+
+    it('finds the producers whose name, region and country hold every word, capitals and accents aside', () => {
+        lafite();
+        addProducer({ name: 'Clos Rougeard' });
+
+        expect(producerNames('piemont')).toEqual(['Élevage Côté']);
+        expect(producerNames('COTE italie')).toEqual(['Élevage Côté']);
+        expect(producerNames('france chateau')).toEqual(['Château Lafite']);
+        expect(producerNames('rougeard france')).toEqual([]);
+        // By name, an accented letter where its letter goes.
+        expect(producerNames()).toEqual(['Château Lafite', 'Clos Rougeard', 'Élevage Côté']);
+    });
+
+    it('returns at most `limit` producers from `offset`, and counts them all', () => {
+        lafite();
+        addProducer({ name: 'Clos Rougeard' });
+
+        expect(searchProducers({ limit: 1, offset: 1 })).toMatchObject({
+            total: 3,
+            producers: [{ name: 'Clos Rougeard' }]
+        });
+        expect(searchProducers({ limit: 50, offset: 3 })).toEqual({ total: 3, producers: [] });
+    });
+
+    it('counts the wines of a producer, and its bottles in the cellar and drunk', async () => {
+        await insertBottles(barolo, [
+            { availability: 'available' },
+            { availability: 'available' },
+            { availability: 'out_of_cellar' },
+            { availability: 'consumed' }
+        ]);
+        const counts = {
+            id: cote,
+            name: 'Élevage Côté',
+            region: 'Piémont',
+            country: 'Italie',
+            wineCount: 1,
+            inCellar: 2,
+            consumed: 1
+        };
+
+        expect(searchProducers({ query: 'cote', limit: 50 }).producers).toEqual([counts]);
+        expect(producerWithWines(cote)).toEqual({
+            ...counts,
+            countryId: 'it',
+            regionId: 'pie',
+            website: null,
+            contact: null,
+            description: null,
+            wines: [
+                {
+                    id: barolo,
+                    name: 'Cannubi',
+                    color: 'Red',
+                    type: 'Still',
+                    classification: null,
+                    appellation: 'Barolo',
+                    region: 'Piémont',
+                    country: 'Italie',
+                    inCellar: 2,
+                    consumed: 1
+                }
+            ]
+        });
+        // A wine gives its producer by name and by id, for get_producer.
+        expect(wineWithBottles(barolo)).toMatchObject({
+            producer: 'Élevage Côté',
+            producerId: cote
+        });
+        expect(() => producerWithWines('nothing')).toThrow(NotFoundError);
+    });
+
+    it('creates a producer, or answers the one that has its name already, unchanged', () => {
+        const created = lafite();
+
+        expect(created).toMatchObject({
+            created: true,
+            name: 'Château Lafite',
+            // The region gives its country.
+            regionId: 'bdx',
+            region: 'Bordeaux',
+            countryId: 'fr',
+            country: 'France',
+            website: 'https://lafite.com',
+            wineCount: 0,
+            wines: []
+        });
+        expect(addProducer({ name: ' chateau  LAFITE ', contact: 'Pauillac' })).toEqual({
+            ...created,
+            created: false
+        });
+    });
+
+    it('changes the fields given, clears those given null, and leaves the others', () => {
+        const { id } = lafite();
+        editProducer(id, { contact: 'Pauillac', description: 'First growth' });
+
+        expect(editProducer(id, { contact: null })).toMatchObject({
+            name: 'Château Lafite',
+            regionId: 'bdx',
+            website: 'https://lafite.com',
+            contact: null,
+            description: 'First growth'
+        });
+        expect(editProducer(id, { name: 'Château Lafite Rothschild' }).name).toBe(
+            'Château Lafite Rothschild'
+        );
+        expect(() => editProducer(id, { name: 'élevage cote' })).toThrow(ConflictError);
+        expect(() => editProducer('nothing', { contact: 'Nobody' })).toThrow(NotFoundError);
     });
 });

@@ -29,10 +29,12 @@ import {
     optionalDate,
     optionalId
 } from '#lib/shared/schemas/common.js';
+import { producerSchema } from '#lib/shared/schemas/producer.js';
 import { rating, wineDefinitionSchema } from '#lib/shared/schemas/wine.js';
 import { wishSchema } from '#lib/shared/schemas/wish.js';
 import {
     addBottles,
+    addProducer,
     addWine,
     bottlesByBarcode,
     bottlesToDrink,
@@ -40,6 +42,7 @@ import {
     choices,
     deleteBottles,
     editBottles,
+    editProducer,
     editWine,
     editWish,
     freeSpace,
@@ -48,10 +51,12 @@ import {
     MAX_APPELLATIONS,
     moveBottles,
     addWish,
+    producerWithWines,
     putBack,
     rateWine,
     removeWishById,
     searchAppellations,
+    searchProducers,
     searchWines,
     takeOut,
     wineShortages,
@@ -63,9 +68,9 @@ import { assertMcpWrite, ReadOnlyTokenError, type McpAccess } from './token';
 /** The most results that one search or list returns. */
 const MAX_SEARCH_LIMIT = 200;
 
-const INSTRUCTIONS = `Cellar manages a home wine cellar. A wine (name, producer, appellation, color…) has bottles. A bottle is "available" (in the cellar, most often in a case of a storage container), "out_of_cellar" (taken out, not drunk yet: set aside for a meal, brought to friends) or "consumed" (drunk). A bottle in the cellar gives its "location"; one out of the cellar or drunk gives its "formerLocation" instead, the case it left, where put_bottles_back returns it: the bottle is not in that case now. "optimum" is the year a bottle is at its best. "drinkFrom" and "drinkBefore" are the drinking window the owner gave a bottle, either one or both: the year (YYYY) or the month (YYYY-MM) from the start of which it can be drunk, and the one by the end of which they want it drunk. Without a drinkBefore, the optimum takes over: list_bottles_to_drink gives the bottles to drink soon and those ready to drink, as the app's page « To drink » lists them. Prices are numbers in the cellar's currency, which the app shows as euros; dates are YYYY-MM-DD. A field left out of an answer is empty.
+const INSTRUCTIONS = `Cellar manages a home wine cellar. A wine (name, producer, appellation, color…) has bottles. A producer, the estate or the house, is a list of its own, with its page in the app: its region, country, website, contact, description and wines. A wine gives its producer by name (producer) and by id (producerId); list_producers and get_producer read the producers. A bottle is "available" (in the cellar, most often in a case of a storage container), "out_of_cellar" (taken out, not drunk yet: set aside for a meal, brought to friends) or "consumed" (drunk). A bottle in the cellar gives its "location"; one out of the cellar or drunk gives its "formerLocation" instead, the case it left, where put_bottles_back returns it: the bottle is not in that case now. "optimum" is the year a bottle is at its best. "drinkFrom" and "drinkBefore" are the drinking window the owner gave a bottle, either one or both: the year (YYYY) or the month (YYYY-MM) from the start of which it can be drunk, and the one by the end of which they want it drunk. Without a drinkBefore, the optimum takes over: list_bottles_to_drink gives the bottles to drink soon and those ready to drink, as the app's page « To drink » lists them. Prices are numbers in the cellar's currency, which the app shows as euros; dates are YYYY-MM-DD. A field left out of an answer is empty.
 
-The tools that change the cellar run only when its owner allowed changes for this token, and each one writes all or nothing. They take the ids that the other tools give: a wine from search_wines, a bottle from get_wine, list_bottles or find_bottle_by_barcode, a case from get_free_space, a format, color, type, classification or origin from list_choices, an appellation from search_appellations, a wish from get_wishlist. A bottle drunk is marked with mark_bottles_drunk, one taken away without being drunk with take_bottles_out; delete_bottles is only for bottles added by mistake.
+The tools that change the cellar run only when its owner allowed changes for this token, and each one writes all or nothing. They take the ids that the other tools give: a wine from search_wines, a bottle from get_wine, list_bottles or find_bottle_by_barcode, a case from get_free_space, a format, color, type, classification, origin, country or region from list_choices, an appellation from search_appellations, a producer from list_producers, a wish from get_wishlist. A bottle drunk is marked with mark_bottles_drunk, one taken away without being drunk with take_bottles_out; delete_bottles is only for bottles added by mistake.
 
 A call that Cellar refuses answers why, then, when there is more to know, a line "Details: " followed by JSON: every unknown id (for an id that refers to nothing, the parameter that gave it, such as formatId or caseId), the bottles whose notes would be too long, the bottles whose drinking window would end before it starts, the wish already there, or the id, name, capacity and bottles of a case without room.`;
 
@@ -177,7 +182,12 @@ const wine = wineDefinitionSchema.shape;
 /** The fields of a wine that add_wine and update_wine take, but its rating and grapes. */
 const wineFields = {
     name: wine.name.describe('Its name, as on the label, without the vintage: Château Margaux.'),
-    producer: wine.producer.describe('Its producer: the estate or the house.'),
+    producer: wine.producer.describe(
+        'Its producer, the estate or the house, by name: the producer that has this name, capitals, accents and blanks aside, or a new one of that name when none has it. list_producers lists them.'
+    ),
+    producerId: wine.producerId.describe(
+        'The id of its producer, from list_producers or create_producer. Given with producer, both must name the same producer, or the call is refused.'
+    ),
     appellationId: id.describe('The id of its appellation, from search_appellations.'),
     typeId: id.describe('The id of its type, from list_choices.'),
     colorId: id.describe('The id of its color, from list_choices.'),
@@ -188,6 +198,24 @@ const wineFields = {
     ),
     targetQuantity: wine.targetQuantity.describe(
         'How many bottles to keep in the cellar: get_wine_shortage lists the wines below it.'
+    )
+};
+
+const producer = producerSchema.shape;
+
+/** The fields of a producer that create_producer and update_producer take, but its photo. */
+const producerFields = {
+    name: producer.name.describe('Its name, the estate or the house: Domaine Leflaive.'),
+    countryId: producer.countryId.describe(
+        'The id of its country, from list_choices; a regionId gives it already. Given without regionId, it removes the region; null removes the country and the region.'
+    ),
+    regionId: producer.regionId.describe(
+        "The id of its region, from list_choices: its country is the region's. null removes the region, and the country unless countryId is given."
+    ),
+    website: producer.website.describe('Its website, an http(s) address.'),
+    contact: producer.contact.describe('How to reach it, as free text: address, phone, e-mail.'),
+    description: producer.description.describe(
+        "Its description: its history, its style, the owner's words."
     )
 };
 
@@ -265,6 +293,43 @@ function createServer({ authInfo }: McpRequestContext): McpServer {
             annotations: READ_ONLY
         },
         ({ wineId }) => answer('get_wine', () => wineWithBottles(wineId))
+    );
+
+    server.registerTool(
+        'list_producers',
+        {
+            title: 'List producers',
+            description:
+                'The producers, the estates and houses of the wines, sorted by name, each with its region and country, how many wines it has (wineCount), its bottles in the cellar (inCellar) and drunk (consumed). Its id is what get_producer, update_producer, add_wine and update_wine take. total counts every producer found; offset reads past limit.',
+            inputSchema: z.strictObject({
+                query: z
+                    .string()
+                    .max(NAME_MAX_LENGTH)
+                    .optional()
+                    .describe(
+                        'Words that the producer must all hold, capitals and accents aside, in its name, region or country. Leave it out to list every producer.'
+                    ),
+                ...pageParams('producers')
+            }),
+            annotations: READ_ONLY
+        },
+        (search) => answer('list_producers', () => searchProducers(search))
+    );
+
+    server.registerTool(
+        'get_producer',
+        {
+            title: 'Get a producer',
+            description:
+                'A producer with every field (region, country and their ids, website, contact, description), what it counts as list_producers gives it, and its wines, each with its bottles in the cellar (inCellar) and drunk (consumed): get_wine gives the bottles of one of them.',
+            inputSchema: z.strictObject({
+                producerId: id.describe(
+                    'The id of the producer, from list_producers or the producerId of a wine.'
+                )
+            }),
+            annotations: READ_ONLY
+        },
+        ({ producerId }) => answer('get_producer', () => producerWithWines(producerId))
     );
 
     server.registerTool(
@@ -401,7 +466,7 @@ function createServer({ authInfo }: McpRequestContext): McpServer {
         {
             title: 'Lists to choose from',
             description:
-                'The id and name of each bottle format, wine color, wine type, classification and origin (where bottles were bought), for the ids that add_wine, update_wine, add_bottles and update_bottles take. search_appellations gives the appellations.',
+                'The id and name of each bottle format, wine color, wine type, classification and origin (where bottles were bought), for the ids that add_wine, update_wine, add_bottles and update_bottles take, and of each country and region (with its country), for those of create_producer and update_producer. search_appellations gives the appellations.',
             annotations: READ_ONLY
         },
         () => answer('list_choices', choices)
@@ -450,6 +515,18 @@ function createServer({ authInfo }: McpRequestContext): McpServer {
             annotations: ADDS
         },
         (wine) => answerWrite('add_wine', access, () => addWine({ ...wine, imageId: null }))
+    );
+
+    server.registerTool(
+        'create_producer',
+        {
+            title: 'Add a producer',
+            description:
+                'Adds a producer to the list, without wines: add_wine and update_wine give a wine its producer. Answers it as get_producer does, with created true. A producer that has this name already, capitals, accents and blanks aside, is answered instead, unchanged, with created false: update_producer changes its fields. add_wine also creates the producer of a name that none has; no tool deletes or merges producers, the owner does it in the app.',
+            inputSchema: z.strictObject(producerFields),
+            annotations: ADDS
+        },
+        (fields) => answerWrite('create_producer', access, () => addProducer(fields))
     );
 
     server.registerTool(
@@ -632,6 +709,26 @@ function createServer({ authInfo }: McpRequestContext): McpServer {
         },
         ({ wineId, ...changes }) =>
             answerWrite('update_wine', access, () => editWine(wineId, changes))
+    );
+
+    server.registerTool(
+        'update_producer',
+        {
+            title: 'Change a producer',
+            description:
+                'Changes the fields given of a producer, as its form in the app does; the others stay, and null removes an optional one. A new name is that of all its wines; a name that another producer has, capitals, accents and blanks aside, is refused: the owner merges two producers in the app. Its photo is changed in the app. Answers the producer as get_producer does.',
+            inputSchema: z
+                .strictObject({
+                    producerId: id.describe('The id of the producer, from list_producers.'),
+                    ...producerFields
+                })
+                .partial()
+                .required({ producerId: true })
+                .refine(changesSomething, 'Give at least one field to change'),
+            annotations: changes(true)
+        },
+        ({ producerId, ...changes }) =>
+            answerWrite('update_producer', access, () => editProducer(producerId, changes))
     );
 
     const bottle = bottleChangesSchema.shape;

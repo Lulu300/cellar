@@ -52,6 +52,7 @@ describe('POST /api/admin/auto-backup', () => {
             'storageContainers',
             'storageCases',
             'wineImages',
+            'producers',
             'wineDefinitions',
             'wineBottles',
             'winePhotos',

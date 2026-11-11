@@ -103,12 +103,17 @@ test('log in, add a wine and two bottles from the wine list, and buy a wine of t
     const wishLabel = wishWine.getByRole('img', { name: 'Wine preview' });
     await expect(wishLabel).toHaveAttribute('src', /^\/uploads\/wines\/wine-/);
     const labelUrl = await wishLabel.getAttribute('src');
+    // A producer that no wine has yet is created from the wine form, as typing it did (FEAT-07).
+    await pick(wishWine.getByPlaceholder('Search a producer'), 'Domaine du Voyage');
     await pick(wishWine.getByPlaceholder('Search appellations'), 'Margaux');
     await pick(wishWine.getByPlaceholder('Search wine types'), 'Vin');
     await pick(wishWine.getByPlaceholder('Search wine colors'), 'Rouge');
     await wishWine.getByRole('button', { name: 'Save & add bottle' }).click();
     const wishBottle = page.getByRole('dialog', { name: 'Add wine bottle' });
-    await expect(wishBottle.getByPlaceholder('Search wines')).toHaveValue('Clos Wished');
+    // The wine is named with its producer, as the bottle form names every wine that has one.
+    await expect(wishBottle.getByPlaceholder('Search wines')).toHaveValue(
+        'Clos Wished - Domaine du Voyage'
+    );
     await pick(wishBottle.getByPlaceholder('Search wine formats'), '75 cl');
     await wishBottle.getByRole('button', { name: 'Save bottle' }).click();
     // The wish, linked to its wine, waits for the user's answer.
@@ -119,6 +124,12 @@ test('log in, add a wine and two bottles from the wine list, and buy a wine of t
     await offer.getByRole('button', { name: 'Remove from the list' }).click();
     await expect(page.getByText('Your wishlist is empty')).toBeVisible();
     await openFromMenu(page, 'Cellar', 'My wines');
+
+    // The producer's name on the card leads to its page, which lists its wine.
+    await page.getByRole('link', { name: 'Domaine du Voyage' }).click();
+    await expect(page.getByRole('heading', { level: 1, name: 'Domaine du Voyage' })).toBeVisible();
+    await expect(page.getByRole('link', { name: 'Clos Wished' })).toBeVisible();
+    await page.goBack();
 
     // The other journeys add wines too.
     await page.getByLabel('Search', { exact: true }).fill('Château Journey');

@@ -44,6 +44,7 @@ import type {
     appellationsWithRegion,
     regionsWithCountry
 } from '#lib/server/features/geography/repository.js';
+import type { producerRows } from '#lib/server/features/producers/repository.js';
 import type { csvImportTables, importCsv } from '#lib/server/features/csv-import/service.js';
 import type {
     importImagesZip,
@@ -86,9 +87,18 @@ type ReferenceOption = { id: string; name: string };
 
 /** The reference lists that the root layout gives every page (`page.data.references`). */
 export type ReferencesDTO = Record<
-    'wineTypes' | 'wineColors' | 'wineClassifications' | 'wineFormats' | 'countries' | 'origins',
+    | 'wineTypes'
+    | 'wineColors'
+    | 'wineClassifications'
+    | 'wineFormats'
+    | 'countries'
+    | 'origins'
+    | 'producers',
     ReferenceOption[]
 > & { regions: (ReferenceOption & Pick<RegionDTO, 'countryId' | 'countryName'>)[] };
+
+/** GET /api/producers: a producer with the names of its place and what it counts. */
+export type ProducerDTO = RowOf<typeof producerRows>;
 
 // Wines and bottles
 

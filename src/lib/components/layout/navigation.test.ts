@@ -37,10 +37,11 @@ describe('isCurrentSection', () => {
 });
 
 describe('the menu', () => {
-    // Every page of the menu before the sections (UI-28) is still in it.
+    // Every page of the menu before the sections (UI-28) is still in it, and the producers.
     it('leads to every page, the tools, the admin and the logout only with a session', () => {
         expect(hrefs(menu(true))).toEqual([
             '/wines',
+            '/producers',
             '/storage',
             '/out-of-cellar',
             '/cellar-history',
@@ -54,6 +55,7 @@ describe('the menu', () => {
         ]);
         expect(hrefs(menu(false))).toEqual([
             '/wines',
+            '/producers',
             '/storage',
             '/out-of-cellar',
             '/cellar-history',
@@ -81,6 +83,7 @@ describe('the menu', () => {
         const others = withoutPages(menu(true), TAB_BAR_PATHS);
 
         expect(hrefs(others)).toEqual([
+            '/producers',
             '/cellar-history',
             '/statistics',
             '/barcode',

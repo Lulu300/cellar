@@ -9,6 +9,7 @@ export type FieldErrors = Record<string, string>;
 
 /** The field that the error body of each of these codes is about. */
 const FIELD_OF_CODE: Partial<Record<ApiErrorCode, string>> = {
+    duplicate_name: 'name',
     duplicate_barcode: 'barcode',
     barcode_for_one_bottle: 'barcode',
     barcode_range: 'barcode',

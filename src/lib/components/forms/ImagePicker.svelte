@@ -14,14 +14,15 @@
     type ExistingImage = Jsonified<AdminImagesDTO>['images'][number];
 
     /**
-     * The main photo of a wine: an image already stored, whose id the form sends, or a new photo,
-     * which the dialog uploads when it saves.
+     * The main photo of a wine, or the photo of a producer: an image already stored, whose id the
+     * form sends, or a new photo, which the dialog uploads when it saves.
      */
     let {
         imageId = $bindable(''),
         file = $bindable(null),
-        previewUrl = $bindable('')
-    }: { imageId?: string; file?: File | null; previewUrl?: string } = $props();
+        previewUrl = $bindable(''),
+        label = m['common.main_photo']()
+    }: { imageId?: string; file?: File | null; previewUrl?: string; label?: string } = $props();
 
     let browsing = $state(false);
     let images = $state<ExistingImage[] | null>(null);
@@ -52,7 +53,7 @@
 </script>
 
 <PhotoField
-    label={m['common.main_photo']()}
+    {label}
     hint={m['wine_form.image_hint']()}
     name="imageId"
     bind:imageId

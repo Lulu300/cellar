@@ -2,12 +2,21 @@ import { readdirSync, rmSync, writeFileSync } from 'node:fs';
 import path from 'node:path';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { db } from '#lib/server/db/index.js';
-import { wineImages } from '#lib/server/db/schema.js';
+import { producers, wineImages } from '#lib/server/db/schema.js';
 import { DATA_DIR, IMAGES_DIR } from '#lib/server/paths.js';
 import { fileOf, jpegBytes } from '../../../../test/image';
-import { listImageUrls, uploadImages, zipImages } from './service';
+import {
+    deleteImages,
+    dropUnusedImages,
+    listImagesWithStats,
+    listImageUrls,
+    uploadImage,
+    uploadImages,
+    zipImages
+} from './service';
 
 beforeEach(() => {
+    db.delete(producers).run();
     db.delete(wineImages).run();
     for (const name of readdirSync(IMAGES_DIR)) rmSync(path.join(IMAGES_DIR, name));
 });
@@ -72,5 +81,30 @@ describe('zipImages', () => {
         const cancelled = await zipImages([successful[0].imageId]);
         await cancelled.body.cancel();
         await vi.waitFor(() => expect(tempZips()).toEqual([]));
+    });
+});
+
+// A producer's photo is a use like a wine's (FEAT-07): the admin must not offer it as unused.
+describe('the photo of a producer', () => {
+    async function producerWithPhoto() {
+        const { imageId } = await uploadImage(fileOf('estate.jpg', jpegBytes('estate')));
+        db.insert(producers).values({ id: 'huet', name: 'Huet', imageId }).run();
+        return imageId;
+    }
+
+    it('lists the producer as a user of the image, and keeps it from a cleanup', async () => {
+        const imageId = await producerWithPhoto();
+
+        const [image] = await listImagesWithStats();
+        expect(image).toMatchObject({ id: imageId, producers: [{ id: 'huet', name: 'Huet' }] });
+        expect(db.transaction((tx) => dropUnusedImages([imageId], tx))).toEqual([]);
+    });
+
+    it('refuses its deletion without force, and takes it from the producer with force', async () => {
+        const imageId = await producerWithPhoto();
+
+        await expect(deleteImages([imageId], false)).rejects.toMatchObject({ code: 'in_use' });
+        await deleteImages([imageId], true);
+        expect(db.select().from(producers).get()?.imageId).toBeNull();
     });
 });

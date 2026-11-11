@@ -17,6 +17,7 @@
     import { m } from '#lib/paraglide/messages.js';
     import type { WineGroupDTO } from '#lib/shared/dto.js';
     import { auth } from '#lib/stores/auth.svelte.js';
+    import ProducerLink from '#lib/components/producers/ProducerLink.svelte';
     import WineColorBadge from './WineColorBadge.svelte';
     import { wineFacts } from './wine-facts.js';
     import { iconButton } from './wine-list.js';
@@ -173,9 +174,10 @@
                             <div>
                                 <a href="/wines/{wine.id}" class={nameLink}>{wine.name}</a>
                                 <p class="mt-0.5 text-xs text-muted-foreground">
-                                    {facts.producer}{wine.classification
-                                        ? ` · ${wine.classification}`
-                                        : ''}
+                                    <ProducerLink
+                                        producerId={wine.producerId}
+                                        name={facts.producer}
+                                    />{wine.classification ? ` · ${wine.classification}` : ''}
                                 </p>
                             </div>
                         </div>
@@ -230,7 +232,9 @@
                 {/if}
                 <div class="flex min-w-0 grow flex-col gap-0.5">
                     <a href="/wines/{wine.id}" class="text-base/snug {nameLink}">{wine.name}</a>
-                    <p class="text-xs text-muted-foreground">{facts.producer} · {facts.place}</p>
+                    <p class="text-xs text-muted-foreground">
+                        <ProducerLink producerId={wine.producerId} name={facts.producer} /> · {facts.place}
+                    </p>
                     <!-- Inline, so that the facts wrap next to the badge rather than below it -->
                     <p class="mt-0.5 text-xs/6 text-muted-foreground">
                         {@render colorBadge(wine, 'me-1 [overflow-wrap:anywhere]')}

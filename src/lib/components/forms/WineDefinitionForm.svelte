@@ -51,6 +51,7 @@
 
     const references: ReferencesDTO = $derived(page.data.references);
 
+    let producerId = $state(initial?.producerId ?? '');
     let appellationId = $state(initial?.appellationId ?? '');
     let typeId = $state(initial?.typeId ?? '');
     let colorId = $state(initial?.colorId ?? '');
@@ -92,6 +93,7 @@
         return true;
     }
 
+    const createProducer = (name: string) => createReference('/api/producers', { name });
     const createType = (name: string) => createReference('/api/wine-types', { name });
     const createColor = (name: string) => createReference('/api/wine-colors', { name });
     const createClassification = (name: string) =>
@@ -123,12 +125,15 @@
                 placeholder={m['placeholders.wine_name_example']()}
             />
         </FormField>
-        <FormField label={m['common.producer']()} id="{formId}-producer" error={errors.producer}>
-            <Input
-                id="{formId}-producer"
-                name="producer"
-                value={initial?.producer ?? ''}
-                placeholder={m['placeholders.producer_example']()}
+        <FormField label={m['common.producer']()} error={errors.producerId ?? errors.producer}>
+            <SearchableSelect
+                name="producerId"
+                bind:value={producerId}
+                options={references.producers}
+                placeholder={m['forms.search_producers_placeholder']()}
+                allowCreate
+                onCreate={createProducer}
+                valueField="id"
             />
         </FormField>
     </div>

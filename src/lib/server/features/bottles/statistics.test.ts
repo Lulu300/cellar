@@ -10,7 +10,7 @@ import {
     type NewWineBottle
 } from '#lib/server/db/schema.js';
 import { BottleAvailability } from '#lib/shared/bottle-availability.js';
-import { insertBottles, insertWineDefinition } from '../../../../test/wine';
+import { insertBottles, insertProducer, insertWineDefinition } from '../../../../test/wine';
 import { getStatistics, getWineShortages } from './service';
 
 const { AVAILABLE, OUT_OF_CELLAR, CONSUMED } = BottleAvailability;
@@ -172,7 +172,8 @@ describe('getStatistics', () => {
         // The wines without a producer have the most bottles.
         await addBottles(margaux, 20);
         for (let i = 1; i <= 11; i++) {
-            await addBottles(await addWine(`wine ${i}`, { producer: `Producer ${i}` }), i);
+            const producerId = await insertProducer(`Producer ${i}`);
+            await addBottles(await addWine(`wine ${i}`, { producerId }), i);
         }
 
         const { topProducers } = await getStatistics();

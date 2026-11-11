@@ -1,14 +1,7 @@
 import { readFileSync, rmSync } from 'node:fs';
 import path from 'node:path';
 import { afterAll, beforeEach, describe, expect, it, vi } from 'vitest';
-import {
-    appellations,
-    countries,
-    regions,
-    wineDefinitions,
-    wineImages,
-    wineTypes
-} from '#lib/server/db/schema.js';
+import { appellations, countries, regions, wineImages, wineTypes } from '#lib/server/db/schema.js';
 import { addWinePhoto, listWinePhotos } from '#lib/server/features/images/service.js';
 import { IMAGES_DIR } from '#lib/server/paths.js';
 import { migrationsBefore } from '../../../../test/database';
@@ -55,18 +48,11 @@ describe('POST /api/admin/restore of a backup made before wines had several phot
                     .insert(wineImages)
                     .values({ id: 'label', filename: 'label.jpg', ...timestamps })
                     .run();
-                backup
-                    .insert(wineDefinitions)
-                    .values({
-                        id: 'margaux',
-                        name: 'Château Margaux',
-                        appellationId: 'mgx',
-                        typeId: 'still',
-                        colorId: 'red',
-                        imageId: 'label',
-                        ...timestamps
-                    })
-                    .run();
+                // In SQL too: the wines of older versions have no producer_id.
+                backup.$client.exec(
+                    `INSERT INTO wine_definitions (id, name, appellation_id, type_id, color_id, image_id, created_at, updated_at)
+                        VALUES ('margaux', 'Château Margaux', 'mgx', 'still', 'red', 'label', 0, 0)`
+                );
             },
             {
                 migrationsFolder: migrations12,

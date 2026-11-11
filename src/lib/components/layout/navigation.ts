@@ -1,5 +1,6 @@
 import {
     Bookmark,
+    Castle,
     ChartColumn,
     History,
     LayoutGrid,
@@ -55,6 +56,7 @@ export function navSections({
             label: m['navigation.cellar'](),
             items: [
                 { href: '/wines', label: m['navigation.my_wines'](), icon: Wine },
+                { href: '/producers', label: m['navigation.producers'](), icon: Castle },
                 { href: '/storage', label: m['navigation.storage'](), icon: LayoutGrid },
                 {
                     href: '/out-of-cellar',

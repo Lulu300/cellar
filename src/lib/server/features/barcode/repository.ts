@@ -3,6 +3,7 @@ import type { Tx } from '#lib/server/db/connection.js';
 import { db } from '#lib/server/db/index.js';
 import {
     appellations,
+    producers,
     storageCases,
     wineBottles,
     wineColors,
@@ -154,7 +155,7 @@ function barcodeRows(condition: SQL | undefined): BarcodeRow[] {
                 barcode: wineBottles.barcode,
                 vintage: wineBottles.vintage,
                 wineName: wineDefinitions.name,
-                producer: wineDefinitions.producer,
+                producer: producers.name,
                 appellationName: appellations.name,
                 typeName: wineTypes.type,
                 colorName: wineColors.color,
@@ -165,6 +166,7 @@ function barcodeRows(condition: SQL | undefined): BarcodeRow[] {
             .innerJoin(appellations, eq(wineDefinitions.appellationId, appellations.id))
             .innerJoin(wineTypes, eq(wineDefinitions.typeId, wineTypes.id))
             .innerJoin(wineColors, eq(wineDefinitions.colorId, wineColors.id))
+            .leftJoin(producers, eq(wineDefinitions.producerId, producers.id))
             // A drunk bottle keeps the case it was in, but is not there: its line names no place.
             .leftJoin(
                 storageCases,

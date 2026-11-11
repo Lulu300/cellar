@@ -12,7 +12,7 @@ import {
 import { formList, formNumbers, formTexts } from './form.js';
 
 /** An http(s) URL, or null when left empty. */
-const website = z
+export const website = z
     .string()
     .trim()
     .max(2000)
@@ -26,9 +26,14 @@ export const rating = z.number().min(1).max(5);
 /** The most characters of a grape variety. */
 export const GRAPE_MAX_LENGTH = 100;
 
-/** A wine (its definition): every reference is an id. */
+/**
+ * A wine (its definition): every reference is an id, but for its producer, which may also be given
+ * by its name, as before producers were a list: the producer of that name, or a new one. Given both,
+ * they must name the same producer.
+ */
 export const wineDefinitionSchema = z.object({
     name,
+    producerId: optionalId,
     producer: optionalText(NAME_MAX_LENGTH),
     appellationId: id,
     typeId: id,
@@ -57,7 +62,7 @@ export function wineFromForm(form: FormData) {
     return {
         ...formTexts(form, [
             'name',
-            'producer',
+            'producerId',
             'appellationId',
             'typeId',
             'colorId',

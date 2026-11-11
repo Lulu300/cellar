@@ -14,6 +14,8 @@
         detail?: string;
         /** Available bottles. */
         count: number;
+        /** The page of what the bar counts, such as a producer's, which the line under the chart links to. */
+        href?: string;
     }
 
     /**
@@ -71,6 +73,14 @@
 {#if chosen}
     <!-- Not read out on a change: the button gives a screen reader the same words. -->
     <p class="mt-2 text-center text-sm">
-        {label(chosen)} <span class="whitespace-nowrap">{bottles(chosen)}</span>
+        {#if chosen.href}
+            <!-- The name alone is the link: « : » comes after it, with its space in French -->
+            <a href={chosen.href} class="text-primary-text underline">{wholeName(chosen)}</a>{m[
+                'common.label'
+            ]({ label: '' })}
+        {:else}
+            {label(chosen)}
+        {/if}
+        <span class="whitespace-nowrap">{bottles(chosen)}</span>
     </p>
 {/if}

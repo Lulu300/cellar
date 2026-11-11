@@ -10,6 +10,7 @@ import {
     wineTypeHandlers
 } from '#lib/server/features/catalog/service.js';
 import { countryHandlers, regionHandlers } from '#lib/server/features/geography/service.js';
+import { producerNames } from '#lib/server/features/producers/service.js';
 import { accessCodeExists } from '#lib/server/features/settings/service.js';
 import { wishlistSummary } from '#lib/server/features/wishlist/service.js';
 import { BottleAvailability } from '#lib/shared/bottle-availability.js';
@@ -38,7 +39,8 @@ export const load: LayoutServerLoad = async ({ depends, locals }) => {
             wineFormats: wineFormatHandlers.list(),
             countries: countryHandlers.list(),
             regions: regionHandlers.list(),
-            origins: originHandlers.list()
+            origins: originHandlers.list(),
+            producers: producerNames()
         }
     };
 };

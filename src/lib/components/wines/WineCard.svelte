@@ -18,6 +18,7 @@
     import { auth } from '#lib/stores/auth.svelte.js';
     import { typeBadgeClass } from '#lib/utils/wine-badges.js';
     import { wineColorStyle } from '#lib/utils/wine-color.js';
+    import ProducerLink from '#lib/components/producers/ProducerLink.svelte';
     import ScrollingText from './ScrollingText.svelte';
     import WineColorBadge from './WineColorBadge.svelte';
     import { wineFacts } from './wine-facts.js';
@@ -108,7 +109,7 @@
                     </a>
                 </h2>
                 <ScrollingText class="text-sm text-muted-foreground">
-                    {summary.producer} · {summary.place}
+                    <ProducerLink producerId={wine.producerId} name={summary.producer} /> · {summary.place}
                 </ScrollingText>
             </div>
             <!-- Without the text line's own height, which would push the badges down -->

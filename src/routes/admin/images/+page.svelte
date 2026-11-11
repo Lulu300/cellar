@@ -19,7 +19,7 @@
     import { Button } from '#lib/components/ui/button/index.js';
     import SearchField from '#lib/components/admin/SearchField.svelte';
     import ImageDeleteDialog from '#lib/components/admin/dialogs/ImageDeleteDialog.svelte';
-    import { wishLabel } from '#lib/components/admin/wine-labels.js';
+    import { producerLabel, wishLabel } from '#lib/components/admin/wine-labels.js';
     import ImageRenameDialog from '#lib/components/admin/dialogs/ImageRenameDialog.svelte';
     import ZipImportInfoDialog from '#lib/components/admin/dialogs/ZipImportInfoDialog.svelte';
     import ZipImportResultsDialog from '#lib/components/admin/dialogs/ZipImportResultsDialog.svelte';
@@ -283,6 +283,7 @@
             {#each selection.visible as image (image.id)}
                 {@const wineNames = [
                     ...image.wines.map((wine) => wine.name),
+                    ...image.producers.map(producerLabel),
                     ...image.wishes.map(wishLabel)
                 ].join(', ')}
                 <li

@@ -20,6 +20,7 @@
     import BottleCard from '#lib/components/bottles/BottleCard.svelte';
     import BottleStatusDialog from '#lib/components/bottles/BottleStatusDialog.svelte';
     import BackButton from '#lib/components/layout/BackButton.svelte';
+    import ProducerLink from '#lib/components/producers/ProducerLink.svelte';
     import { BottleAvailability } from '#lib/shared/bottle-availability.js';
     import type { BottleWithDefinitionDTO } from '#lib/shared/dto.js';
     import { typeBadgeClass } from '#lib/utils/wine-badges.js';
@@ -168,7 +169,11 @@
                                         label: m['common.producer']()
                                     })}</strong
                                 >
-                                {wineDefinition.producer}
+                                <ProducerLink
+                                    producerId={wineDefinition.producerId}
+                                    name={wineDefinition.producer ?? ''}
+                                    class="text-primary-text underline"
+                                />
                             </div>
                             {#if vintages}
                                 <div>

@@ -36,6 +36,10 @@ export const CSV_TABLE_TEXTS: Record<
         label: m['common.storage_cases'],
         description: m['admin.csv_table_storage_cases']
     },
+    producers: {
+        label: m['navigation.producers'],
+        description: m['admin.csv_table_producers']
+    },
     wineDefinitions: {
         label: m['common.wines'],
         description: m['admin.csv_table_wine_definitions'],

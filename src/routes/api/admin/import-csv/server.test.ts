@@ -5,6 +5,7 @@ import { db } from '#lib/server/db/index.js';
 import {
     appellations,
     countries,
+    producers,
     regions,
     storageCases,
     storageContainers,
@@ -44,6 +45,12 @@ function importCsvFiles(files: File[], fields: Record<string, string> = {}) {
             body
         })
     );
+}
+
+/** The wines of the producer named `name`. */
+async function winesOf(name: string) {
+    const [producer] = await db.select().from(producers).where(eq(producers.name, name));
+    return db.select().from(wineDefinitions).where(eq(wineDefinitions.producerId, producer.id));
 }
 
 async function countryNames() {
@@ -566,6 +573,48 @@ describe('POST /api/admin/import-csv', () => {
             expect(lbv).toHaveLength(1);
         });
 
+        // FEAT-07: a wine file names the producer, as before producers were a list.
+        it('creates the producers that a wine file names, and finds one by any spelling of its name', async () => {
+            const timestamps = { createdAt: new Date(), updatedAt: new Date() };
+            await db.insert(producers).values({ id: 'taylor', name: "Taylor's", ...timestamps });
+            await db.insert(wineFormats).values({ id: 'pipe', name: 'Pipe', ...timestamps });
+
+            const response = await importCsvFiles([
+                new File(
+                    [
+                        'name,producer,appellationName,typeName,colorName\n' +
+                            'Vargellas,TAYLOR’S,Porto,Fortified,Red\n' +
+                            'Crusted,Churchill  Graham,Porto,Fortified,Red\n' +
+                            'Reserve,churchill graham,Porto,Fortified,Red\n'
+                    ],
+                    'wineDefinitions.csv'
+                ),
+                // Its producer spelt another way, as a bottle file written by hand may.
+                new File(
+                    ['wineName,producer,formatName\nCrusted,CHURCHILL GRAHAM,Pipe\n'],
+                    'wineBottles.csv'
+                )
+            ]);
+
+            expect((await response.json()).summary).toMatchObject({
+                totalImported: 4,
+                totalFailed: 0
+            });
+            const churchill = await db
+                .select()
+                .from(producers)
+                .where(eq(producers.name, 'Churchill Graham'));
+            expect(churchill).toHaveLength(1);
+            expect((await winesOf("Taylor's")).map(({ name }) => name)).toEqual(['Vargellas']);
+            const crusted = await winesOf('Churchill Graham');
+            expect(crusted.map(({ name }) => name)).toEqual(['Crusted', 'Reserve']);
+            const bottles = await db
+                .select()
+                .from(wineBottles)
+                .where(eq(wineBottles.formatId, 'pipe'));
+            expect(bottles.map(({ definitionId }) => definitionId)).toEqual([crusted[0].id]);
+        });
+
         it('reads a rating with decimals, and keeps one outside 1 to 5 in the description', async () => {
             const response = await importCsv(
                 'wineDefinitions.csv',
@@ -576,10 +625,7 @@ describe('POST /api/admin/import-csv', () => {
             );
 
             expect((await response.json()).summary).toMatchObject({ totalImported: 3 });
-            const wines = await db
-                .select()
-                .from(wineDefinitions)
-                .where(eq(wineDefinitions.producer, 'Dow'));
+            const wines = await winesOf('Dow');
             expect(
                 wines.map(({ name, rating, description }) => [name, rating, description])
             ).toEqual([
@@ -609,10 +655,7 @@ describe('POST /api/admin/import-csv', () => {
             expect(results[0].errors).toEqual([
                 { row: 4, problems: [{ code: 'invalid', column: 'grapeVarieties' }] }
             ]);
-            const wines = await db
-                .select()
-                .from(wineDefinitions)
-                .where(eq(wineDefinitions.producer, 'Fonseca'));
+            const wines = await winesOf('Fonseca');
             expect(wines.map(({ grapeVarieties }) => grapeVarieties)).toEqual([
                 ['5'],
                 ['Touriga Nacional', 'Tinta Roriz'],
@@ -694,26 +737,30 @@ describe('POST /api/admin/import-csv', () => {
         it('gives each bottle the wine of its producer, and reports one the file cannot tell apart', async () => {
             const timestamps = { createdAt: new Date(), updatedAt: new Date() };
             await db.insert(wineColors).values({ id: 'csv-white', color: 'Blanco', ...timestamps });
+            await db.insert(producers).values([
+                { id: 'casa-uno', name: 'Casa Uno', ...timestamps },
+                { id: 'casa-dos', name: 'Casa Dos', ...timestamps }
+            ]);
             const twin = { name: 'Gemelo', appellationId: 'alto-maipo', typeId: 'csv-still' };
             await db.insert(wineDefinitions).values([
                 {
                     id: 'uno-ruby',
                     ...twin,
-                    producer: 'Casa Uno',
+                    producerId: 'casa-uno',
                     colorId: 'csv-red',
                     ...timestamps
                 },
                 {
                     id: 'dos-ruby',
                     ...twin,
-                    producer: 'Casa Dos',
+                    producerId: 'casa-dos',
                     colorId: 'csv-red',
                     ...timestamps
                 },
                 {
                     id: 'uno-white',
                     ...twin,
-                    producer: 'Casa Uno',
+                    producerId: 'casa-uno',
                     colorId: 'csv-white',
                     ...timestamps
                 }

@@ -1,0 +1,1 @@
+ALTER TABLE `wine_definitions` DROP COLUMN `producer`;

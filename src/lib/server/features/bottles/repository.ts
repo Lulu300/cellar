@@ -6,6 +6,7 @@ import {
     appellations,
     countries,
     origins,
+    producers,
     regions,
     storageCases,
     storageContainers,
@@ -81,16 +82,14 @@ function bottlesWithDetails() {
         .$dynamic();
 }
 
-/** The same, with their wine and the names of its type, color and classification. */
+/** The same, with their wine and the names of its producer, type, color and classification. */
 function bottlesWithDefinitions() {
     return bottlesWithDetails()
         .innerJoin(wineDefinitions, eq(wineBottles.definitionId, wineDefinitions.id))
         .innerJoin(wineTypes, eq(wineDefinitions.typeId, wineTypes.id))
         .innerJoin(wineColors, eq(wineDefinitions.colorId, wineColors.id))
-        .leftJoin(
-            wineClassifications,
-            eq(wineDefinitions.classificationId, wineClassifications.id)
-        );
+        .leftJoin(wineClassifications, eq(wineDefinitions.classificationId, wineClassifications.id))
+        .leftJoin(producers, eq(wineDefinitions.producerId, producers.id));
 }
 
 type BottleRow = ReturnType<ReturnType<typeof bottlesWithDetails>['all']>[number];
@@ -113,6 +112,7 @@ function toBottleWithDefinition(row: BottleWithDefinitionRow) {
         ...toBottle(row),
         definition: {
             ...row.wine_definitions,
+            producer: row.producers?.name ?? null,
             type: row.wine_types.type,
             color: row.wine_colors.color,
             colorHex: row.wine_colors.hex,
@@ -209,6 +209,7 @@ export function listBottlesNotConsumed() {
         .innerJoin(wineFormats, eq(wineBottles.formatId, wineFormats.id))
         .innerJoin(appellations, eq(wineDefinitions.appellationId, appellations.id))
         .leftJoin(origins, eq(wineBottles.originId, origins.id))
+        .leftJoin(producers, eq(wineDefinitions.producerId, producers.id))
         .where(
             or(
                 eq(wineBottles.availability, BottleAvailability.AVAILABLE),
@@ -225,7 +226,8 @@ export function listBottlesNotConsumed() {
             wine_definitions,
             wine_colors,
             appellations,
-            storage_cases
+            storage_cases,
+            producers
         }) => ({
             id: bottle.id,
             vintage: bottle.vintage,
@@ -247,7 +249,7 @@ export function listBottlesNotConsumed() {
             definition: {
                 id: wine_definitions.id,
                 name: wine_definitions.name,
-                producer: wine_definitions.producer,
+                producer: producers?.name ?? null,
                 appellation: appellations.name,
                 color: wine_colors.color,
                 colorHex: wine_colors.hex
@@ -264,7 +266,7 @@ export function listBottlesForAdmin() {
             id: wineBottles.id,
             definitionId: wineBottles.definitionId,
             wineName: wineDefinitions.name,
-            producer: wineDefinitions.producer,
+            producer: producers.name,
             appellationName: appellations.name,
             regionName: regions.name,
             countryName: countries.name,
@@ -301,6 +303,7 @@ export function listBottlesForAdmin() {
         .innerJoin(wineFormats, eq(wineBottles.formatId, wineFormats.id))
         .leftJoin(origins, eq(wineBottles.originId, origins.id))
         .leftJoin(storageCases, eq(wineBottles.storageCaseId, storageCases.id))
+        .leftJoin(producers, eq(wineDefinitions.producerId, producers.id))
         .orderBy(desc(wineBottles.createdAt))
         .all();
 }
@@ -417,17 +420,19 @@ export async function cellarStatistics() {
         .groupBy(sql`(${wineBottles.vintage} / 10) * 10`)
         .orderBy(sql`(${wineBottles.vintage} / 10) * 10`);
 
-    // Top producers by bottle count. The wines without a producer are left out before the top 10
-    // is taken, so that they do not hold one of its places; never null then.
+    // Top producers by bottle count. The wines without a producer are left out by the join before
+    // the top 10 is taken, so that they do not hold one of its places.
     const topProducers = await db
         .select({
-            producer: sql<string>`${wineDefinitions.producer}`,
+            producerId: producers.id,
+            producer: producers.name,
             count: sql<number>`COUNT(DISTINCT ${wineBottles.id})`
         })
         .from(wineBottles)
         .innerJoin(wineDefinitions, eq(wineBottles.definitionId, wineDefinitions.id))
-        .where(and(eq(wineBottles.availability, 'available'), isNotNull(wineDefinitions.producer)))
-        .groupBy(wineDefinitions.producer)
+        .innerJoin(producers, eq(wineDefinitions.producerId, producers.id))
+        .where(eq(wineBottles.availability, 'available'))
+        .groupBy(producers.id)
         .orderBy(sql`COUNT(DISTINCT ${wineBottles.id}) DESC`)
         .limit(10);
 
@@ -466,7 +471,7 @@ export async function winesBelowTarget() {
             // Wine definition fields
             id: wineDefinitions.id,
             name: wineDefinitions.name,
-            producer: wineDefinitions.producer,
+            producer: producers.name,
             // Never null: the where leaves those out
             targetQuantity: sql<number>`${wineDefinitions.targetQuantity}`,
             imageId: wineDefinitions.imageId,
@@ -506,11 +511,12 @@ export async function winesBelowTarget() {
         .innerJoin(wineColors, eq(wineDefinitions.colorId, wineColors.id))
         .leftJoin(wineClassifications, eq(wineDefinitions.classificationId, wineClassifications.id))
         .leftJoin(wineBottles, eq(wineDefinitions.id, wineBottles.definitionId))
+        .leftJoin(producers, eq(wineDefinitions.producerId, producers.id))
         .where(isNotNull(wineDefinitions.targetQuantity))
         .groupBy(
             wineDefinitions.id,
             wineDefinitions.name,
-            wineDefinitions.producer,
+            producers.name,
             wineDefinitions.targetQuantity,
             wineDefinitions.imageId,
             appellations.name,

@@ -5,6 +5,7 @@ import {
     listBottlesWithDefinitions
 } from '#lib/server/features/bottles/service.js';
 import type { McpAccess } from '#lib/server/features/mcp/token.js';
+import { findOrCreateProducer, listProducers } from '#lib/server/features/producers/service.js';
 import { createContainer, storageOverview } from '#lib/server/features/storage/service.js';
 import { createWish, removeWish } from '#lib/server/features/wishlist/service.js';
 import { holdWrites } from '#lib/server/write-gate.js';
@@ -109,6 +110,8 @@ describe('POST /mcp', () => {
         expect(result.tools.map(readOnly)).toEqual([
             ['search_wines', true],
             ['get_wine', true],
+            ['list_producers', true],
+            ['get_producer', true],
             ['find_bottle_by_barcode', true],
             ['get_statistics', true],
             ['list_bottles', true],
@@ -119,6 +122,7 @@ describe('POST /mcp', () => {
             ['list_choices', true],
             ['search_appellations', true],
             ['add_wine', false],
+            ['create_producer', false],
             ['add_bottles', false],
             ['add_wish', false],
             ['remove_wish', false],
@@ -127,6 +131,7 @@ describe('POST /mcp', () => {
             ['update_bottle_notes', false],
             ['rate_wine', false],
             ['update_wine', false],
+            ['update_producer', false],
             ['update_bottles', false],
             ['take_bottles_out', false],
             ['put_bottles_back', false],
@@ -286,19 +291,22 @@ describe('POST /mcp', () => {
 
     describe('write tools', () => {
         /**
-         * One call of each write tool, on the bottle `bottle`, the case `caseId` and the wish `wish`;
-         * delete_bottles deletes the bottle `spare`.
+         * One call of each write tool, on the bottle `bottle`, the case `caseId`, the wish `wish`
+         * and the producer `producer`; delete_bottles deletes the bottle `spare`.
          */
         const writes = (
             bottle: string,
             caseId: string,
             wish: string,
-            spare: string
+            spare: string,
+            producer: string
         ): [string, object][] => [
             [
                 'add_wine',
                 { name: 'Pavillon Rouge', appellationId: 'mgx', typeId: 'still', colorId: 'red' }
             ],
+            ['create_producer', { name: 'Domaine Leflaive', countryId: 'fr' }],
+            ['update_producer', { producerId: producer, contact: 'Puligny-Montrachet' }],
             ['add_bottles', { wineId: margaux, formatId: 'bottle', quantity: 2, vintage: 2020 }],
             ['add_wish', { text: 'Clos Rougeard', quantity: 2, note: 'For the wedding' }],
             ['update_wish', { wishId: wish, quantity: 3 }],
@@ -323,14 +331,16 @@ describe('POST /mcp', () => {
 
         it('refuses each one to a read-only token, saying where to allow it, and writes nothing', async () => {
             const before = listBottlesWithDefinitions();
+            const producersBefore = listProducers();
 
-            for (const [name, args] of writes('none', 'none', 'none', 'none')) {
+            for (const [name, args] of writes('none', 'none', 'none', 'none', 'none')) {
                 expect(textOf(await modernCall(name, args)), name).toEqual([
                     true,
                     'This MCP token is read-only: changes can be allowed in Cellar, under Admin › Settings › MCP access.'
                 ]);
             }
             expect(listBottlesWithDefinitions()).toEqual(before);
+            expect(listProducers()).toEqual(producersBefore);
             const { result } = await legacy('tools/call', { name: 'search_wines', arguments: {} });
             expect(JSON.parse(result.content[0].text).wines).toHaveLength(1);
         });
@@ -341,7 +351,14 @@ describe('POST /mcp', () => {
             await insertBottles(margaux, [{ id: 'spare' }]);
 
             const wish = createWish(wishSchema.parse({ text: 'Bought already' }));
-            for (const [name, args] of writes(bottle.id, cases[0].id, wish.id, 'spare')) {
+            const { producer } = findOrCreateProducer({ name: 'Château Margaux' });
+            for (const [name, args] of writes(
+                bottle.id,
+                cases[0].id,
+                wish.id,
+                'spare',
+                producer.id
+            )) {
                 const { result } = await modernCall(name, args, WRITE);
                 expect(result.isError, `${name}: ${result.content[0].text}`).toBeUndefined();
             }

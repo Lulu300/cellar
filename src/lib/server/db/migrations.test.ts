@@ -8,7 +8,6 @@ import {
     countries,
     labelPresets,
     regions,
-    wineDefinitions,
     wineTypes
 } from '#lib/server/db/schema.js';
 import { migrationsBefore, openOldDatabase } from '../../../test/database';
@@ -80,18 +79,13 @@ describe('migration removing the appellation seeded from the CSV header', () => 
     it('keeps them when a wine uses the appellation', async () => {
         const { database, migrateSchema } = await seededBeforeTheFix();
         await database.insert(wineTypes).values({ id: 'still', type: 'Still', ...timestamps });
-        // In SQL: the colours of older versions have no hex, which Drizzle's insert would give.
-        database.$client.exec(
-            "INSERT INTO wine_colors (id, color, created_at, updated_at) VALUES ('red', 'Red', 0, 0)"
-        );
-        await database.insert(wineDefinitions).values({
-            id: 'wine',
-            name: 'Cuvée',
-            appellationId: 'appellation',
-            typeId: 'still',
-            colorId: 'red',
-            ...timestamps
-        });
+        // In SQL: the colours of older versions have no hex, and their wines no producer_id, which
+        // Drizzle's inserts would give.
+        database.$client.exec(`
+            INSERT INTO wine_colors (id, color, created_at, updated_at) VALUES ('red', 'Red', 0, 0);
+            INSERT INTO wine_definitions (id, name, appellation_id, type_id, color_id, created_at, updated_at)
+                VALUES ('wine', 'Cuvée', 'appellation', 'still', 'red', 0, 0);
+        `);
 
         migrateSchema();
 
@@ -807,9 +801,16 @@ describe('migration cutting the notes and descriptions to 5,000 characters', () 
         const cut = `${'a'.repeat(4_999)}b`;
         const withCut = <Row extends { id: unknown }>(list: Row[], column: string) =>
             list.map((row) => (row.id === 'long' ? { ...row, [column]: cut } : row));
-        // Matched rather than equal: the columns of later migrations come in too.
+        // Matched rather than equal: the columns of later migrations come in too, and the
+        // producer's name moves to the producers (0024).
+        const wines = (before.wines as { id: unknown }[]).map(
+            (wine) =>
+                Object.fromEntries(
+                    Object.entries(wine).filter(([column]) => column !== 'producer')
+                ) as { id: unknown }
+        );
         expect(rows()).toMatchObject({
-            wines: withCut(before.wines as { id: unknown }[], 'description'),
+            wines: withCut(wines, 'description'),
             bottles: withCut(before.bottles as { id: unknown }[], 'notes')
         });
     });
@@ -1137,5 +1138,102 @@ describe('migration adding the start of the drinking window', () => {
             { id: 'none', optimum: null, drink_before: null, drink_from: null },
             { id: 'optimum', optimum: 2024, drink_before: null, drink_from: null }
         ]);
+    });
+});
+
+describe('migrations making the producers a list', () => {
+    let migrationsFolder = '';
+    beforeAll(() => {
+        migrationsFolder = migrationsBefore('0022_producers');
+    });
+    afterAll(() => rmSync(migrationsFolder, { recursive: true, force: true }));
+
+    const LONG_NAME = `Domaine ${'très '.repeat(120)}long`;
+    // [id, producer, updated_at]: the spellings of one producer, others, and none.
+    const WINES: [string, string | null, number][] = [
+        ['m1', 'Château Margaux', 10],
+        ['m2', 'Château Margaux', 11],
+        ['m3', 'chateau margaux', 50],
+        ['m4', 'Château  Margaux', 12],
+        ['m5', 'Château Margaux', 13],
+        ['m6', ' CHÂTEAU MARGAUX ', 14],
+        ['glued', 'ChâteauMargaux', 15],
+        ['tie-old', 'domaine de l’arlot', 20],
+        ['tie-new', "Domaine de l'Arlot", 30],
+        ['long', LONG_NAME, 40],
+        ['empty', '', 41],
+        ['blank', '   ', 42],
+        ['none', null, 43]
+    ];
+
+    function migratedCellar() {
+        const database = openOldDatabase(':memory:', migrationsFolder);
+        database.$client.exec(
+            MARGAUX_SQL.replace(
+                "VALUES ('red', 'Red', 0, 0)",
+                "VALUES ('red', 'Red', 0, 0, '#7b1e2b')"
+            ).replace(/INSERT INTO wine_definitions[\s\S]*$/, '')
+        );
+        const insert = database.$client.prepare(
+            `INSERT INTO wine_definitions (id, name, producer, appellation_id, type_id, color_id, created_at, updated_at)
+             VALUES (?, ?, ?, 'mgx', 'still', 'red', ?, ?)`
+        );
+        WINES.forEach(([id, producer, updated], index) =>
+            insert.run(id, `Wine ${id}`, producer, 100 + index, updated)
+        );
+        migrateSchema(database);
+        const producerOf = Object.fromEntries(
+            database.$client
+                .prepare(
+                    `SELECT w.id, p.name FROM wine_definitions w
+                     LEFT JOIN producers p ON p.id = w.producer_id`
+                )
+                .all()
+                .map((row) => [(row as { id: string }).id, (row as { name: string | null }).name])
+        );
+        const producers = database.$client
+            .prepare('SELECT id, name, created_at FROM producers ORDER BY name')
+            .all() as { id: string; name: string; created_at: number }[];
+        return { database, producerOf, producers };
+    }
+
+    it('makes one producer of the names equal but for case, accents and blanks', () => {
+        const { producerOf, producers } = migratedCellar();
+        // The spelling of the most wines, its blanks tidied: « Château Margaux » counts 4 of 6.
+        for (const id of ['m1', 'm2', 'm3', 'm4', 'm5', 'm6']) {
+            expect(producerOf[id]).toBe('Château Margaux');
+        }
+        expect(producerOf.glued).toBe('ChâteauMargaux');
+        // A tie: the spelling of the wine changed last.
+        expect(producerOf['tie-old']).toBe("Domaine de l'Arlot");
+        expect(producerOf['tie-new']).toBe("Domaine de l'Arlot");
+        expect(producerOf.long).toBe(LONG_NAME);
+        expect(producers.map((producer) => producer.name)).toEqual([
+            'Château Margaux',
+            'ChâteauMargaux',
+            "Domaine de l'Arlot",
+            LONG_NAME
+        ]);
+        // Dated by the first wine of its names.
+        expect(producers.find((p) => p.name === 'Château Margaux')?.created_at).toBe(100);
+    });
+
+    it('gives no producer to a wine without one, and keeps every wine', () => {
+        const { database, producerOf } = migratedCellar();
+        expect([producerOf.empty, producerOf.blank, producerOf.none]).toEqual([null, null, null]);
+        expect(Object.keys(producerOf)).toHaveLength(WINES.length);
+        const columns = database.$client
+            .prepare('SELECT name FROM pragma_table_info(?)')
+            .pluck()
+            .all('wine_definitions');
+        expect(columns).toContain('producer_id');
+        expect(columns).not.toContain('producer');
+    });
+
+    it('then refuses to delete a producer that a wine uses', () => {
+        const { database } = migratedCellar();
+        expect(() =>
+            database.$client.prepare("DELETE FROM producers WHERE name = 'ChâteauMargaux'").run()
+        ).toThrow(/FOREIGN KEY/);
     });
 });

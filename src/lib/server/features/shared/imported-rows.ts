@@ -17,6 +17,7 @@ import {
     optionalId
 } from '#lib/shared/schemas/common.js';
 import { appellationSchema, regionSchema } from '#lib/shared/schemas/geography.js';
+import { producerSchema } from '#lib/shared/schemas/producer.js';
 import { namedSchema, wineColorSchema, wineTypeSchema } from '#lib/shared/schemas/reference.js';
 import { caseCapacitySchema, caseName, casePosition } from '#lib/shared/schemas/storage.js';
 import { GRAPE_MAX_LENGTH, wineDefinitionSchema } from '#lib/shared/schemas/wine.js';
@@ -54,6 +55,7 @@ const ROW_SCHEMAS = {
     wineImages: z
         .object({ filename: z.string().refine(isImageFileName, INVALID_IMAGE_FILENAME_ERROR) })
         .transform((image) => ({ ...image, path: IMAGES_URL_PATH })),
+    producers: producerSchema,
     wineDefinitions: wineDefinitionSchema,
     // As the bottles service refuses it (window_ends_before_start).
     wineBottles: bottleSchema.refine((bottle) => !endsBeforeStart(bottle), {

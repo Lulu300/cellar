@@ -40,6 +40,7 @@ import {
     setMainPhoto,
     tidyWinePhotos,
     winesUsingImages,
+    producersUsingImages,
     wishesUsingImages
 } from './repository';
 
@@ -89,12 +90,14 @@ export async function readImageFile(name: string | null) {
     };
 }
 
-/** The wines and the wishes that use each of these images: what `users(imageId)` gives. */
+/** The wines, producers and wishes that use each of these images: what `users(imageId)` gives. */
 function usersOf(imageIds: string[], tx: Tx = db) {
     const wines = Map.groupBy(winesUsingImages(imageIds, tx), (wine) => wine.imageId);
+    const producers = Map.groupBy(producersUsingImages(imageIds, tx), (row) => row.imageId);
     const wishes = Map.groupBy(wishesUsingImages(imageIds, tx), (wish) => wish.imageId);
     return (imageId: string) => ({
         wines: (wines.get(imageId) ?? []).map(({ id, name, producer }) => ({ id, name, producer })),
+        producers: (producers.get(imageId) ?? []).map(({ id, name }) => ({ id, name })),
         // A wish with a photo always has a text (wishes_wine_or_text_check).
         wishes: (wishes.get(imageId) ?? []).map(({ id, name }) => ({ id, name: name ?? '' }))
     });
@@ -102,7 +105,8 @@ function usersOf(imageIds: string[], tx: Tx = db) {
 
 type ImageUsers = ReturnType<ReturnType<typeof usersOf>>;
 
-const isUsed = ({ wines, wishes }: ImageUsers) => wines.length + wishes.length > 0;
+const isUsed = ({ wines, producers, wishes }: ImageUsers) =>
+    wines.length + producers.length + wishes.length > 0;
 
 /** The image as GET /api/admin/images lists it, with the wines and the wishes that use it. */
 async function listedImage(image: WineImage, users: (imageId: string) => ImageUsers) {
@@ -110,8 +114,8 @@ async function listedImage(image: WineImage, users: (imageId: string) => ImageUs
 }
 
 /**
- * Every image with the size and date of its file, and the wines and wishes that use it, newest
- * first. The stored names are random, so the wines and wishes are what tells most images apart.
+ * Every image with the size and date of its file, and the wines, producers and wishes that use it,
+ * newest first. The stored names are random, so what uses them tells most images apart.
  */
 export async function listImagesWithStats() {
     const images = listImages();
@@ -168,9 +172,9 @@ export async function renameImage(imageId: string, newFilename: string) {
 }
 
 /**
- * Deletes images. Without `force`, images that wines or wishes use are refused with a
+ * Deletes images. Without `force`, images that wines, producers or wishes use are refused with a
  * ConflictError that lists them, so that the user can confirm; with it, they are removed from
- * those wines and wishes first, a wine that loses its main photo taking its next one. Ids that
+ * them first, a wine that loses its main photo taking its next one. Ids that
  * match no image are ignored: another tab may have deleted them already.
  */
 export async function deleteImages(imageIds: string[], force: boolean): Promise<void> {
@@ -185,10 +189,12 @@ export async function deleteImages(imageIds: string[], force: boolean): Promise<
         // Decided on images that exist: a reference to a missing image, left by data older than
         // the foreign key, would otherwise refuse the deletion with nothing to show.
         if (inUse.length > 0 && !force) {
-            throw new ConflictError('in_use', 'Images are used by wines or wishes', { inUse });
+            throw new ConflictError('in_use', 'Images are used by wines, producers or wishes', {
+                inUse
+            });
         }
 
-        // The foreign keys remove them from the wines and wishes that use them (ON DELETE SET
+        // The foreign keys remove them from the wines, producers and wishes that use them (ON DELETE SET
         // NULL for a main photo and a wish, CASCADE for the other photos of a wine).
         deleteImageRows(imageIds, tx);
         tidyWinePhotos(tx);

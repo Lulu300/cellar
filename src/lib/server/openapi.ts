@@ -30,6 +30,7 @@ import {
     labelRangeSchema,
     labelSheetSchema
 } from '#lib/shared/schemas/label.js';
+import { producerMergeSchema, producerSchema } from '#lib/shared/schemas/producer.js';
 import { namedSchema, wineColorBodySchema } from '#lib/shared/schemas/reference.js';
 import { containerSchema, newContainerSchema } from '#lib/shared/schemas/storage.js';
 import { wineDefinitionSchema } from '#lib/shared/schemas/wine.js';
@@ -52,6 +53,7 @@ const tags = {
     session: ['Session and access code', 'session-and-access-code'],
     settings: ['Settings', 'settings'],
     wines: ['Wines', 'wines'],
+    producers: ['Producers', 'producers'],
     bottles: ['Bottles', 'bottles'],
     references: ['Reference tables', 'reference-tables'],
     statistics: ['Statistics and shortage', 'statistics-and-shortage'],
@@ -238,6 +240,41 @@ const operations: Record<string, Operation> = {
     'GET /api/bottles/to-drink': {
         tag: 'bottles',
         summary: 'The bottles to drink soon, then those ready to drink, the most urgent first',
+        answers: ok
+    },
+
+    'GET /api/producers': {
+        tag: 'producers',
+        summary: 'The producers, by name, with their place and what they count',
+        answers: ok
+    },
+    'POST /api/producers': {
+        tag: 'producers',
+        summary:
+            'Adds a producer, or gives the one whose name is the same but for case, accents and blanks (200)',
+        body: json(producerSchema),
+        answers: { 200: 'application/json', 201: 'application/json' }
+    },
+    'GET /api/producers/[id]': {
+        tag: 'producers',
+        summary: 'A producer with its wines and their bottles in the cellar and drunk',
+        answers: ok
+    },
+    'PUT /api/producers/[id]': {
+        tag: 'producers',
+        summary: 'Changes the fields given of a producer; null clears one',
+        body: json(producerSchema),
+        answers: ok
+    },
+    'DELETE /api/producers/[id]': {
+        tag: 'producers',
+        summary: 'Deletes a producer that no wine uses',
+        answers: noContent
+    },
+    'POST /api/admin/merge-producers': {
+        tag: 'producers',
+        summary: 'Merges a producer into another: its wines move, then it is deleted',
+        body: json(producerMergeSchema),
         answers: ok
     },
 

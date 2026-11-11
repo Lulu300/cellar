@@ -12,13 +12,14 @@ import { apiHandler } from '#lib/server/http/handler.js';
 import { normalized } from '#lib/server/features/shared/names.js';
 
 /** A row of a reference table as the API answers it: its name is `name` in every table. */
-type LookupRow = { id: string; name: string } & Record<string, unknown>;
+export type LookupRow = { id: string; name: string } & Record<string, unknown>;
 
 /**
  * The fields of a POST or PUT body: the name, the id of the parent row when there is one, and the
- * table's other columns, such as the hex of a wine colour.
+ * table's other columns, such as the hex of a wine colour. A field left out keeps its value, and
+ * null clears it.
  */
-type Fields = { name: string } & Record<string, string | undefined>;
+export type Fields = { name: string } & Record<string, string | null | undefined>;
 
 type RowsQuery = SQLiteSelect<string, 'sync', Database.RunResult>;
 
@@ -42,6 +43,16 @@ export interface LookupConfig<Table extends SQLiteTable> {
     rows?: (tx: Tx) => RowsQuery;
     /** The values that a new row gets for the columns its body leaves out, from its fields. */
     defaults?: (fields: Fields) => Partial<Table['$inferInsert']>;
+    /**
+     * How names are compared, as a key that two names of one row share. By default, neither the
+     * case nor the blanks around the name count.
+     */
+    key?: (name: string) => string;
+    /**
+     * The fields as the table stores them, checked against the rows they refer to, before an
+     * insert or an update. Throws an ApiError to refuse them.
+     */
+    prepare?: (fields: Fields, tx: Tx) => Fields;
     /** The foreign key of the rows that use this table, which keeps a used row from deletion. */
     usage: {
         column: AnySQLiteColumn;
@@ -57,7 +68,8 @@ const notFound = () => new NotFoundError('No entry has this id');
  * asks a session for the writes.
  */
 export function createLookupCrud<Table extends SQLiteTable>(config: LookupConfig<Table>) {
-    const { table, usage } = config;
+    const { table, usage, key = normalized } = config;
+    const prepare = config.prepare ?? ((fields: Fields) => fields);
     const columns: Record<string, AnySQLiteColumn> = getTableColumns(table);
     const idColumn = columns.id;
     const nameColumn = columns[config.nameColumn];
@@ -74,7 +86,7 @@ export function createLookupCrud<Table extends SQLiteTable>(config: LookupConfig
     );
     const rows = config.rows ?? ((tx: Tx) => tx.select(rowColumns).from(table).$dynamic());
 
-    const getRow = (id: string, tx: Tx) =>
+    const getRow = (id: string, tx: Tx = db) =>
         rows(tx).where(eq(idColumn, id)).get() as LookupRow | undefined;
 
     /** The table's columns for the fields of a body. */
@@ -96,26 +108,29 @@ export function createLookupCrud<Table extends SQLiteTable>(config: LookupConfig
         const ofParent = parentColumn && eq(parentColumn, fields[config.parent!]);
         // SQLite's lower() leaves accented letters as they are: the names are compared here.
         return (rows(tx).where(ofParent).all() as LookupRow[]).filter(
-            (row) => normalized(row.name) === normalized(fields.name)
+            (row) => key(row.name) === key(fields.name)
         );
     }
 
-    /** The row with this name (under this parent), whatever its case; created when there is none. */
-    function findOrCreate(fields: Fields): { row: LookupRow; created: boolean } {
-        return db.transaction((tx) => {
-            const [existing] = namesakes(fields, tx);
-            if (existing) return { row: existing, created: false };
+    /**
+     * The row with this name (under this parent), whatever its case; created when there is none.
+     * Within `tx` when given, such as the save of a wine that names its producer.
+     */
+    function findOrCreate(fields: Fields, tx?: Tx): { row: LookupRow; created: boolean } {
+        if (!tx) return db.transaction((tx) => findOrCreate(fields, tx));
+        const [existing] = namesakes(fields, tx);
+        if (existing) return { row: existing, created: false };
 
-            const { id } = tx
-                .insert(table)
-                .values({
-                    ...config.defaults?.(fields),
-                    ...valuesOf(fields)
-                } as Table['$inferInsert'])
-                .returning({ id: idColumn })
-                .get() as { id: string };
-            return { row: getRow(id, tx)!, created: true };
-        });
+        const prepared = prepare(fields, tx);
+        const { id } = tx
+            .insert(table)
+            .values({
+                ...config.defaults?.(prepared),
+                ...valuesOf(prepared)
+            } as Table['$inferInsert'])
+            .returning({ id: idColumn })
+            .get() as { id: string };
+        return { row: getRow(id, tx)!, created: true };
     }
 
     /**
@@ -130,7 +145,7 @@ export function createLookupCrud<Table extends SQLiteTable>(config: LookupConfig
             }
             tx.update(table)
                 .set({
-                    ...valuesOf(fields),
+                    ...valuesOf(prepare(fields, tx)),
                     ...(hasUpdatedAt && { updatedAt: new Date() })
                 } as Partial<Table['$inferInsert']>)
                 .where(eq(idColumn, id))
@@ -167,6 +182,10 @@ export function createLookupCrud<Table extends SQLiteTable>(config: LookupConfig
     return {
         /** The rows, sorted by name; only those of `parentId` when given. */
         list,
+        get: getRow,
+        findOrCreate,
+        update,
+        remove,
         collection: {
             GET: apiHandler(({ url }) =>
                 Response.json(list(config.parent ? url.searchParams.get(config.parent) : null))

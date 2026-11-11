@@ -117,7 +117,7 @@ function priorityOf(table: TableName): number {
  */
 function columnsOf(table: TableName): { name: string; required: boolean }[] {
     const references = TABLES[table].references ?? {};
-    return Object.entries(rowColumns(table)).flatMap(([column, rule]) => {
+    const columns = Object.entries(rowColumns(table)).flatMap(([column, rule]) => {
         const reference = references[column];
         if (!reference) {
             // An id that is not a reference, such as the parent of a container, is never read.
@@ -133,6 +133,13 @@ function columnsOf(table: TableName): { name: string; required: boolean }[] {
             ...naming.map((name) => ({ name, required: false }))
         ];
     });
+    // A column may come twice, such as the producer of a wine, which names its producerId, and
+    // the country of a producer, which also names the country of its region.
+    const required = new Map<string, boolean>();
+    for (const column of columns) {
+        required.set(column.name, required.get(column.name) || column.required);
+    }
+    return [...required].map(([name, required]) => ({ name, required }));
 }
 
 /**

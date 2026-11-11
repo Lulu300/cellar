@@ -188,6 +188,7 @@ const LEFT_OUT_COLUMNS = new Set([
     'classificationId',
     'typeId',
     'colorId',
+    'producerId',
     'definitionId',
     'originId',
     'formatId',

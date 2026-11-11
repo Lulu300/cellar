@@ -6,11 +6,13 @@ import {
     wineColors,
     wineDefinitions,
     wineFormats,
-    wineTypes
+    wineTypes,
+    type WineDefinition
 } from '#lib/server/db/schema.js';
 import type { Tx } from '#lib/server/db/connection.js';
 import { listBottlesWithoutDefinitions } from '#lib/server/features/bottles/service.js';
 import { followMainPhotoChange } from '#lib/server/features/images/service.js';
+import { producerIdOf } from '#lib/server/features/producers/service.js';
 import { createLookupCrud } from '#lib/server/features/shared/lookup-crud.js';
 import { ConflictError, NotFoundError } from '#lib/server/http/errors.js';
 import { namedSchema, wineColorBodySchema } from '#lib/shared/schemas/reference.js';
@@ -24,7 +26,9 @@ import {
     getDefinitionWithLocation,
     insertDefinition,
     listDefinitionsWithLocation,
+    producerName,
     updateDefinition,
+    type StoredDefinition,
     type WineWithLocation
 } from './repository';
 
@@ -97,12 +101,27 @@ export function getDefinitionDetails(id: string) {
     };
 }
 
-// One statement each, which SQLite runs all or nothing.
-export const createDefinition = (data: WineDefinitionInput) => insertDefinition(data);
+/**
+ * The columns of the fields of a wine: its producer as an id, given by `producerId` or by its
+ * name, `producer`, which creates a producer of that name when there is none.
+ */
+function stored({ producer, ...wine }: Partial<WineDefinitionInput>, tx: Tx) {
+    const producerId = producerIdOf({ producerId: wine.producerId, producer }, tx);
+    return { ...wine, ...(producerId !== undefined && { producerId }) };
+}
+
+/** A wine as a save answers it: with the name of its producer, as before producers were a list. */
+const saved = (wine: WineDefinition, tx: Tx) => ({
+    ...wine,
+    producer: producerName(wine.producerId, tx)
+});
+
+export const createDefinition = (data: WineDefinitionInput) =>
+    db.transaction((tx) => saved(insertDefinition(stored(data, tx) as StoredDefinition, tx), tx));
 
 /** Changes the fields of `data` on the wine. Throws a NotFoundError for an unknown wine. */
-function changeDefinition(id: string, data: Partial<WineDefinitionInput>, tx: Tx = db) {
-    const wine = updateDefinition(id, data, tx);
+function changeDefinition(id: string, data: Partial<WineDefinitionInput>, tx: Tx) {
+    const wine = updateDefinition(id, stored(data, tx), tx);
     if (!wine) throw wineNotFound();
     return wine;
 }
@@ -113,7 +132,7 @@ export const replaceDefinition = (id: string, data: WineDefinitionInput) =>
         const formerMainId = getDefinition(id, tx)?.imageId ?? null;
         changeDefinition(id, data, tx);
         followMainPhotoChange(id, formerMainId, tx);
-        return getDefinition(id, tx)!;
+        return saved(getDefinition(id, tx)!, tx);
     });
 
 /**
@@ -123,7 +142,7 @@ export const replaceDefinition = (id: string, data: WineDefinitionInput) =>
 export const editDefinition = (
     id: string,
     changes: Partial<Omit<WineDefinitionInput, 'imageId'>>
-) => changeDefinition(id, changes);
+) => db.transaction((tx) => saved(changeDefinition(id, changes, tx), tx));
 
 /**
  * Deletes the wine, with its bottles when `withBottles` is set. Without it, throws a ConflictError

@@ -3,7 +3,7 @@ import { eq } from 'drizzle-orm';
 import { db } from '#lib/server/db/index.js';
 import { wineDefinitions } from '#lib/server/db/schema.js';
 import { fakeEvent } from '../../../../test/event';
-import { insertWineDefinition } from '../../../../test/wine';
+import { insertProducer, insertWineDefinition } from '../../../../test/wine';
 import { GET } from './+server';
 
 describe('GET /api/admin/wine-definitions', () => {
@@ -11,7 +11,11 @@ describe('GET /api/admin/wine-definitions', () => {
         const id = await insertWineDefinition();
         await db
             .update(wineDefinitions)
-            .set({ producer: 'Margaux SA', rating: 5, grapeVarieties: ['Merlot'] })
+            .set({
+                producerId: await insertProducer('Margaux SA'),
+                rating: 5,
+                grapeVarieties: ['Merlot']
+            })
             .where(eq(wineDefinitions.id, id));
 
         const response = await GET(

@@ -26,6 +26,8 @@ export interface ReferenceEntity {
     parent?: 'countryId' | 'regionId';
     /** Whether its rows have a colour value (`hex`), which the form picks: the wine colours. */
     hasColor?: boolean;
+    /** Whether two of its rows can be merged into one: the producers. */
+    mergeable?: boolean;
     /**
      * Its texts in the current language. Read once by a page: the language only changes on the
      * preferences page, which the admin is left for.
@@ -174,6 +176,24 @@ export const REFERENCE_ENTITIES: Record<ReferenceSlug, ReferenceEntity> = {
             deleted: m['toast.origin_deleted'](),
             duplicate: m['errors.duplicate_name'](),
             confirmDelete: (name) => m['admin.confirm_delete_origin']({ name })
+        })
+    },
+    // The admin edits a producer's name; its page edits the rest.
+    producers: {
+        slug: 'producers',
+        mergeable: true,
+        labels: () => ({
+            title: m['navigation.producers'](),
+            add: m['producers.add'](),
+            edit: m['admin.edit_producer'](),
+            name: m['producers.name'](),
+            namePlaceholder: m['placeholders.producer_example'](),
+            search: m['producers.search'](),
+            added: m['producers.added'](),
+            updated: m['producers.saved'](),
+            deleted: m['producers.deleted'](),
+            duplicate: m['errors.duplicate_name'](),
+            confirmDelete: (name) => m['producers.confirm_delete']({ name })
         })
     }
 };

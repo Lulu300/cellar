@@ -1,10 +1,17 @@
 import { describe, expect, it } from 'vitest';
 import { ImageSelection } from './image-selection.svelte';
 
-const image = (id: string, filename: string, wines: string[] = [], wishes: string[] = []) => ({
+const image = (
+    id: string,
+    filename: string,
+    wines: string[] = [],
+    wishes: string[] = [],
+    producers: string[] = []
+) => ({
     id,
     filename,
     wines: wines.map((name) => ({ name })),
+    producers: producers.map((name) => ({ name })),
     wishes: wishes.map((name) => ({ name }))
 });
 
@@ -13,7 +20,7 @@ function selection() {
         images: [
             image('margaux', 'Margaux.jpg'),
             image('latour', 'latour.jpg'),
-            image('petrus', 'petrus-2010.png'),
+            image('petrus', 'petrus-2010.png', [], [], ['Moueix Estates']),
             image('random', 'wine-0f3c.jpg', ['Château Cheval Blanc']),
             image('wished', 'wine-7a21.jpg', [], ['Clos Rougeard 2017'])
         ]
@@ -45,6 +52,14 @@ describe('ImageSelection', () => {
         images.search('rougeard');
 
         expect(images.visible.map((shown) => shown.id)).toEqual(['wished']);
+    });
+
+    it('finds an image by the name of a producer that uses it', () => {
+        const { images } = selection();
+
+        images.search('moueix');
+
+        expect(images.visible.map((shown) => shown.id)).toEqual(['petrus']);
     });
 
     it('drops a selected image that the search hides, so that it cannot be deleted unseen', () => {

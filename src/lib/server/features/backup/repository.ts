@@ -4,7 +4,9 @@ import { db } from '#lib/server/db/index.js';
 import { seed } from '#lib/server/db/seed.js';
 import {
     appellations,
+    countries,
     origins,
+    producers,
     regions,
     storageCases,
     storageContainers,
@@ -100,12 +102,35 @@ export function csvExportRows(name: ExportTableName): Record<string, unknown>[] 
                 .from(storageCases)
                 .leftJoin(storageContainers, eq(storageCases.containerId, storageContainers.id))
                 .all();
+        case 'producers':
+            return db
+                .select({
+                    id: producers.id,
+                    name: producers.name,
+                    countryId: producers.countryId,
+                    countryName: countries.name,
+                    regionId: producers.regionId,
+                    regionName: regions.name,
+                    website: producers.website,
+                    contact: producers.contact,
+                    description: producers.description,
+                    imageId: producers.imageId,
+                    imageName: wineImages.filename,
+                    createdAt: producers.createdAt,
+                    updatedAt: producers.updatedAt
+                })
+                .from(producers)
+                .leftJoin(countries, eq(producers.countryId, countries.id))
+                .leftJoin(regions, eq(producers.regionId, regions.id))
+                .leftJoin(wineImages, eq(producers.imageId, wineImages.id))
+                .all();
         case 'wineDefinitions':
             return db
                 .select({
                     id: wineDefinitions.id,
                     name: wineDefinitions.name,
-                    producer: wineDefinitions.producer,
+                    producerId: wineDefinitions.producerId,
+                    producer: producers.name,
                     appellationId: wineDefinitions.appellationId,
                     appellationName: appellations.name,
                     regionName: regions.name,
@@ -135,6 +160,7 @@ export function csvExportRows(name: ExportTableName): Record<string, unknown>[] 
                 .leftJoin(wineTypes, eq(wineDefinitions.typeId, wineTypes.id))
                 .leftJoin(wineColors, eq(wineDefinitions.colorId, wineColors.id))
                 .leftJoin(wineImages, eq(wineDefinitions.imageId, wineImages.id))
+                .leftJoin(producers, eq(wineDefinitions.producerId, producers.id))
                 .all();
         case 'wineBottles':
             return db
@@ -143,7 +169,7 @@ export function csvExportRows(name: ExportTableName): Record<string, unknown>[] 
                     definitionId: wineBottles.definitionId,
                     // The columns that tell a wine apart, as in the wine file.
                     wineName: wineDefinitions.name,
-                    producer: wineDefinitions.producer,
+                    producer: producers.name,
                     appellationName: appellations.name,
                     classificationName: wineClassifications.name,
                     typeName: wineTypes.type,
@@ -184,6 +210,7 @@ export function csvExportRows(name: ExportTableName): Record<string, unknown>[] 
                 .leftJoin(wineFormats, eq(wineBottles.formatId, wineFormats.id))
                 .leftJoin(storageCases, eq(wineBottles.storageCaseId, storageCases.id))
                 .leftJoin(storageContainers, eq(storageCases.containerId, storageContainers.id))
+                .leftJoin(producers, eq(wineDefinitions.producerId, producers.id))
                 .all();
         default:
             return db.select().from(EXPORT_TABLES[name]).all();

@@ -80,13 +80,41 @@ export const wineImages = sqliteTable('wine_images', {
     updatedAt: timestamp('updated_at')
 });
 
+/**
+ * The producers: the estates and houses that make the wines. Only the name is required; each name
+ * is unique as producerKey compares names, which ignores case, accents and blanks.
+ */
+export const producers = sqliteTable(
+    'producers',
+    {
+        id: id(),
+        name: text('name').notNull().unique(),
+        // A region gives its country: the service keeps both in step.
+        countryId: text('country_id').references(() => countries.id, { onDelete: 'set null' }),
+        regionId: text('region_id').references(() => regions.id, { onDelete: 'set null' }),
+        website: text('website'),
+        /** Its address, phone or e-mail, as free text. */
+        contact: text('contact'),
+        description: text('description'),
+        imageId: text('image_id').references(() => wineImages.id, { onDelete: 'set null' }),
+        createdAt: timestamp('created_at'),
+        updatedAt: timestamp('updated_at')
+    },
+    (table) => [
+        index('producers_country_id_idx').on(table.countryId),
+        index('producers_region_id_idx').on(table.regionId),
+        index('producers_image_id_idx').on(table.imageId)
+    ]
+);
+
 // Wine definitions table (wine templates/types)
 export const wineDefinitions = sqliteTable(
     'wine_definitions',
     {
         id: id(),
         name: text('name').notNull(),
-        producer: text('producer'),
+        // A producer in use cannot be deleted.
+        producerId: text('producer_id').references(() => producers.id),
         appellationId: text('appellation_id')
             .references(() => appellations.id)
             .notNull(),
@@ -107,6 +135,7 @@ export const wineDefinitions = sqliteTable(
         updatedAt: timestamp('updated_at')
     },
     (table) => [
+        index('wine_definitions_producer_id_idx').on(table.producerId),
         index('wine_definitions_appellation_id_idx').on(table.appellationId),
         index('wine_definitions_classification_id_idx').on(table.classificationId),
         index('wine_definitions_type_id_idx').on(table.typeId),
@@ -350,6 +379,7 @@ export type Region = typeof regions.$inferSelect;
 export type NewRegion = typeof regions.$inferInsert;
 export type Appellation = typeof appellations.$inferSelect;
 export type NewAppellation = typeof appellations.$inferInsert;
+export type Producer = typeof producers.$inferSelect;
 export type WineDefinition = typeof wineDefinitions.$inferSelect;
 export type NewWineDefinition = typeof wineDefinitions.$inferInsert;
 export type WineType = typeof wineTypes.$inferSelect;

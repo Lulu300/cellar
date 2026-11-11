@@ -7,7 +7,7 @@
     import { invalidateAll } from '$app/navigation';
     import { toasts } from '#lib/stores/toast.svelte.js';
     import { ApiError, errorMessage, request } from '#lib/api/client.js';
-    import { wineLabel, wishLabel } from '#lib/components/admin/wine-labels.js';
+    import { producerLabel, wineLabel, wishLabel } from '#lib/components/admin/wine-labels.js';
 
     interface Wine {
         id: string;
@@ -19,6 +19,7 @@
         id: string;
         filename: string;
         wines: Wine[];
+        producers: { id: string; name: string }[];
         wishes: { id: string; name: string }[];
     }
 
@@ -121,6 +122,7 @@
                                     <span class="font-mono">{image.filename}</span>:
                                     {[
                                         ...image.wines.map(wineLabel),
+                                        ...image.producers.map(producerLabel),
                                         ...image.wishes.map(wishLabel)
                                     ].join(', ')}
                                 </li>

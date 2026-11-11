@@ -668,8 +668,9 @@ which `Origin` header it sends, the error format and the size limits.
 An AI assistant can read your cellar through Cellar's MCP server: « what goes with a roast chicken
 tonight? », « how many Burgundies are left? », « what did we drink this month? ». It finds wines,
 shows a wine with its bottles and where they are, finds a bottle by its barcode, lists the bottles
-of the whole cellar by availability and by the day they were drunk or bought, and gives the
-statistics, the wines to buy again, the wishlist and the free space in storage.
+of the whole cellar by availability and by the day they were drunk or bought, lists the producers
+and shows one with its wines, and gives the statistics, the wines to buy again, the wishlist and
+the free space in storage.
 [docs/API.md](docs/API.md#mcp-access) lists the tools.
 
 When you allow changes, it can also write, as you would in the app: « I just bought six bottles of
@@ -678,10 +679,11 @@ wine and its bottles, marks bottles drunk with the day and a note, takes bottles
 and puts them back in a case (which also undoes a « drunk » made by mistake: a bottle drunk keeps
 the case it was in, and goes back there), moves bottles to
 another case, changes a wine (its target quantity, description, producer…), the fields of bottles
-(price, value, vintage, optimum, barcode…) and their notes, rates a wine, adds wishes to the
-wishlist, changes their quantity or note and removes them, and deletes bottles added by mistake, a
-change it announces as one that cannot be undone. It never reaches the admin: backups, restore,
-wipe, imports and the access code stay in the app. Most assistants ask you before each change;
+(price, value, vintage, optimum, barcode…) and their notes, rates a wine, adds a producer and
+changes its details (region, website, contact…), adds wishes to the wishlist, changes their
+quantity or note and removes them, and deletes bottles added by mistake, a change it announces
+as one that cannot be undone. It never reaches the admin: backups, restore, wipe, imports and the
+access code stay in the app. Most assistants ask you before each change;
 during a restore or an import, a change is refused until it ends. When Cellar refuses a change, it
 tells the assistant why and names everything in cause, such as each bottle it does not know, so
 that the assistant can correct its request.

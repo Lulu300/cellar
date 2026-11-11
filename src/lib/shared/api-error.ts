@@ -10,6 +10,7 @@ export const API_ERROR_CODES = [
     'method_not_allowed',
     'missing_reference',
     'in_use',
+    'merge_choice_needed',
     'duplicate_name',
     'duplicate_region',
     'duplicate_appellation',

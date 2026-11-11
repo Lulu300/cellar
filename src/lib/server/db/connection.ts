@@ -4,6 +4,7 @@ import Database from 'better-sqlite3';
 import { drizzle } from 'drizzle-orm/better-sqlite3';
 import type { BaseSQLiteDatabase } from 'drizzle-orm/sqlite-core';
 import { migrate } from 'drizzle-orm/better-sqlite3/migrator';
+import { producerKey, tidyName } from '#lib/shared/names.js';
 import * as schema from './schema';
 
 /**
@@ -57,6 +58,10 @@ export function migrateSchema(database: Db, migrationsFolder = './drizzle'): voi
     // would be cleared, or the drop refused. The pragma does nothing inside a transaction, such as
     // the one Drizzle runs the migrations in, so it is turned off before.
     sqlite.pragma('foreign_keys = OFF');
+    // Migration 0023 groups the producer names typed on wines as the app compares them, which
+    // SQLite cannot do: its lower() leaves accented letters as they are.
+    sqlite.function('cellar_producer_key', { deterministic: true }, producerKey);
+    sqlite.function('cellar_tidy_name', { deterministic: true }, tidyName);
     try {
         refuseBrokenForeignKeys(sqlite);
         migrate(database, { migrationsFolder });

@@ -1,3 +1,4 @@
+import { randomUUID } from 'node:crypto';
 import { mkdir, rm, readFile } from 'node:fs/promises';
 import path from 'node:path';
 import type { ZipSource } from '#lib/server/http/body.js';
@@ -11,6 +12,7 @@ import {
     type ImportedRow
 } from '#lib/server/features/shared/imported-rows.js';
 import { DATA_DIR } from '#lib/server/paths.js';
+import { producerKey, tidyName } from '#lib/shared/names.js';
 import { backupTimestamp } from './archive';
 import { createExportZip, EXPORT_TABLE_NAMES, EXPORT_TABLES, type ExportTableName } from './export';
 import { safetyFileName } from './files';
@@ -30,8 +32,12 @@ function invalidExport(problem: string, reason: string, values: Record<string, u
     });
 }
 
-/** The tables that exports made before 1.3.0 lack, which their import leaves empty. */
-const ADDED_IN_1_3: ExportTableName[] = ['winePhotos', 'wishes'];
+/**
+ * The tables that older exports lack: those made before 1.3.0 have no winePhotos and no wishes,
+ * which their import leaves empty, and those made before 1.8.0 no producers, which their import
+ * makes from the names of their wines (withProducers).
+ */
+const ADDED_LATER: ExportTableName[] = ['winePhotos', 'wishes', 'producers'];
 
 /** The rows of an export that the database refuses, by the rule they break. */
 const REFUSED_ROWS: Record<string, string> = {
@@ -121,9 +127,9 @@ function exportTables(data: Record<string, unknown>): TableRows[] {
     // The import empties every table: one that the file lacks would stay empty. The automatic
     // exports made by older versions lack five tables, and those of the cron route lacked
     // wineImages too. Exports older than 1.3.0 lack winePhotos, as their wines had one image only,
-    // and wishes, as they had no wishlist.
+    // and wishes, as they had no wishlist; exports older than 1.8.0 lack producers.
     const missing = EXPORT_TABLE_NAMES.filter(
-        (name) => !ADDED_IN_1_3.includes(name) && !Array.isArray(data[name])
+        (name) => !ADDED_LATER.includes(name) && !Array.isArray(data[name])
     );
     if (missing.length > 0) {
         throw invalidExport('incomplete', `It lacks ${missing.join(', ')}.`, {
@@ -133,17 +139,80 @@ function exportTables(data: Record<string, unknown>): TableRows[] {
     const rows = (name: ExportTableName) => (data[name] ?? []) as unknown[];
     // The app never used the parent of a container; the database refuses one that is missing.
     const containerIds = new Set(rows('storageContainers').map((row) => (row as ImportedRow)?.id));
+    const checked = Object.fromEntries(
+        EXPORT_TABLE_NAMES.map((name) => [
+            name,
+            rows(name).map((value, index) => {
+                const row = exportRow(name, value, index);
+                if (name === 'storageContainers' && !containerIds.has(row.parentContainerId)) {
+                    row.parentContainerId = null;
+                }
+                return row;
+            })
+        ])
+    ) as Record<ExportTableName, ImportedRow[]>;
+    const tables = { ...checked, ...withProducers(checked.producers, checked.wineDefinitions) };
     return EXPORT_TABLE_NAMES.map((name) => ({
         name,
         table: EXPORT_TABLES[name],
-        rows: rows(name).map((value, index) => {
-            const row = exportRow(name, value, index);
-            if (name === 'storageContainers' && !containerIds.has(row.parentContainerId)) {
-                row.parentContainerId = null;
-            }
-            return row;
-        })
+        rows: tables[name]
     }));
+}
+
+const time = (stamp: unknown) => (stamp instanceof Date ? stamp.getTime() : NaN);
+
+/**
+ * The producer that the wines of an older export name, made as migration 0023 makes those of a
+ * cellar it upgrades: its name is the spelling of the most wines, then of the wine changed last,
+ * then the first in order, with its blanks tidied; it dates from its first wine.
+ */
+function producerOfWines(wines: ImportedRow[]): ImportedRow {
+    const spellings = new Map<string, { wines: number; lastChanged: number }>();
+    for (const wine of wines) {
+        const spelling = tidyName(wine.producer);
+        const counted = spellings.get(spelling) ?? { wines: 0, lastChanged: -Infinity };
+        spellings.set(spelling, {
+            wines: counted.wines + 1,
+            lastChanged: Math.max(counted.lastChanged, time(wine.updatedAt))
+        });
+    }
+    const [[name]] = [...spellings].toSorted(
+        ([a, x], [b, y]) => y.wines - x.wines || y.lastChanged - x.lastChanged || (a < b ? -1 : 1)
+    );
+    const createdAt = new Date(
+        wines.reduce((first, wine) => Math.min(first, time(wine.createdAt)), Infinity)
+    );
+    return { id: randomUUID(), name, createdAt, updatedAt: createdAt };
+}
+
+/**
+ * The producers and the wines of an export, each wine with its producer as an id. A wine of an
+ * export made before 1.8.0 names it instead, as `producer`: the producer of the export with that
+ * name, as producerKey compares names, else one made from the names of the wines that name it.
+ */
+function withProducers(producers: ImportedRow[], wines: ImportedRow[]) {
+    const byKey = new Map<string, ImportedRow>();
+    for (const producer of producers) {
+        const key = producerKey(producer.name);
+        if (!byKey.has(key)) byKey.set(key, producer);
+    }
+    const namedOnly = Map.groupBy(
+        wines.filter((wine) => !wine.producerId && !byKey.has(producerKey(wine.producer))),
+        (wine) => producerKey(wine.producer)
+    );
+    namedOnly.delete('');
+    const added = [...namedOnly].map(([key, named]) => {
+        const producer = producerOfWines(named);
+        byKey.set(key, producer);
+        return producer;
+    });
+    return {
+        producers: [...producers, ...added],
+        wineDefinitions: wines.map(({ producer, ...wine }) => ({
+            ...wine,
+            producerId: wine.producerId ?? byKey.get(producerKey(producer))?.id ?? null
+        }))
+    };
 }
 
 /**

@@ -5,7 +5,7 @@ import { formatInputNumber, isoDate } from '#lib/utils/format.js';
 export type WineFormSource = {
     id: string;
     name: string;
-    producer: string | null;
+    producerId: string | null;
     appellationId: string;
     classificationId: string | null;
     typeId: string;

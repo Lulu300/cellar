@@ -15,6 +15,7 @@ import {
     appellations,
     countries,
     origins,
+    producers,
     regions,
     storageCases,
     storageContainers,
@@ -54,6 +55,7 @@ const TABLES = {
     storageContainers,
     storageCases,
     wineImages,
+    producers,
     wineDefinitions,
     wineBottles,
     winePhotos,
@@ -113,6 +115,29 @@ beforeEach(async () => {
         { id: 'again', definitionId, quantity: 6, note: 'For the cellar', ...timestamps },
         { id: 'idea', text: 'Clos Rougeard', imageId: 'wish-label', ...timestamps }
     ]);
+    // Its producer, with every field, and the photo of its estate
+    await db.insert(wineImages).values({
+        id: 'estate',
+        filename: 'estate.jpg',
+        path: IMAGES_URL_PATH,
+        ...timestamps
+    });
+    writeFileSync(path.join(IMAGES_DIR, 'estate.jpg'), jpegBytes('estate bytes'));
+    await db.insert(producers).values({
+        id: 'chateau',
+        name: 'Château Margaux',
+        countryId: 'fr',
+        regionId: 'bdx',
+        website: 'https://chateau-margaux.example',
+        contact: '33460 Margaux',
+        description: 'A first growth',
+        imageId: 'estate',
+        ...timestamps
+    });
+    await db
+        .update(wineDefinitions)
+        .set({ producerId: 'chateau' })
+        .where(eq(wineDefinitions.id, definitionId));
     await db.insert(storageContainers).values({ id: 'rack', name: 'Rack', ...timestamps });
     await db
         .insert(storageCases)
@@ -290,6 +315,9 @@ describe('POST /api/admin/import-json', () => {
         expect(readFileSync(path.join(IMAGES_DIR, 'wish-label.jpg'))).toEqual(
             jpegBytes('wish label bytes')
         );
+        expect(readFileSync(path.join(IMAGES_DIR, 'estate.jpg'))).toEqual(
+            jpegBytes('estate bytes')
+        );
         // To the millisecond, so that two imports in the same minute keep both backups.
         expect(dataFiles()).toEqual([
             expect.stringMatching(
@@ -333,6 +361,77 @@ describe('POST /api/admin/import-json', () => {
         expect(await db.select({ imageId: wineDefinitions.imageId }).from(wineDefinitions)).toEqual(
             [{ imageId: 'label' }]
         );
+    });
+
+    // FEAT-07: before 1.8.0, a wine named its producer; migration 0023 made the producers of a
+    // cellar from those names, and so does the import of an export of that time.
+    it('makes the producers of an export made before 1.8.0 from the names its wines give', async () => {
+        const data = JSON.parse(JSON.stringify(await snapshot()));
+        delete data.producers;
+        const [margaux] = data.wineDefinitions;
+        delete margaux.producerId;
+        const wine = (id: string, producer: unknown, created: string, updated: string) => ({
+            ...margaux,
+            id,
+            producer,
+            createdAt: `${created}T00:00:00.000Z`,
+            updatedAt: `${updated}T00:00:00.000Z`
+        });
+        data.wineDefinitions = [
+            // The spelling of the most wines, with its blanks tidied, dated from its first wine.
+            wine('margaux', 'Château  Margaux', '2020-03-01', '2021-01-01'),
+            wine('pavillon', ' Château Margaux ', '2020-02-01', '2021-01-01'),
+            wine('margaux-lower', 'chateau margaux', '2020-01-01', '2024-01-01'),
+            // One wine of each spelling: that of the wine changed last.
+            wine('lunes-old', 'Clos  des Lunes', '2021-01-01', '2021-06-01'),
+            wine('lunes-new', 'CLOS DES LUNES', '2022-01-01', '2022-06-01'),
+            // Changed at the same time too: the first spelling in order.
+            wine('pin-lower', 'domaine du pin', '2023-01-01', '2023-01-01'),
+            wine('pin', 'Domaine du Pin', '2023-01-01', '2023-01-01'),
+            // No producer.
+            wine('blank', '   ', '2023-01-01', '2023-01-01'),
+            wine('empty', '', '2023-01-01', '2023-01-01'),
+            wine('null', null, '2023-01-01', '2023-01-01'),
+            wine('missing', undefined, '2023-01-01', '2023-01-01')
+        ];
+
+        expect((await importZip(craftedZip(data))).status).toBe(200);
+
+        const made = await db.select().from(producers).orderBy(producers.name);
+        expect(made.map(({ name, createdAt, updatedAt }) => [name, createdAt, updatedAt])).toEqual([
+            ['CLOS DES LUNES', new Date('2021-01-01'), new Date('2021-01-01')],
+            ['Château Margaux', new Date('2020-01-01'), new Date('2020-01-01')],
+            ['Domaine du Pin', new Date('2023-01-01'), new Date('2023-01-01')]
+        ]);
+        expect(made[0].id).toMatch(/^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-/);
+        const names = new Map(made.map(({ id, name }) => [id, name]));
+        const wines = await db.select().from(wineDefinitions);
+        expect(
+            Object.fromEntries(wines.map(({ id, producerId }) => [id, names.get(producerId!)]))
+        ).toEqual({
+            margaux: 'Château Margaux',
+            pavillon: 'Château Margaux',
+            'margaux-lower': 'Château Margaux',
+            'lunes-old': 'CLOS DES LUNES',
+            'lunes-new': 'CLOS DES LUNES',
+            'pin-lower': 'Domaine du Pin',
+            pin: 'Domaine du Pin',
+            blank: undefined,
+            empty: undefined,
+            null: undefined,
+            missing: undefined
+        });
+    });
+
+    it('gives a wine that names a producer of the export that producer, whatever the spelling', async () => {
+        const before = await snapshot();
+        const data = JSON.parse(JSON.stringify(before));
+        delete data.wineDefinitions[0].producerId;
+        data.wineDefinitions[0].producer = 'CHATEAU  margaux';
+
+        expect((await importZip(craftedZip(data))).status).toBe(200);
+
+        expect(await snapshot()).toEqual(before);
     });
 
     // FEAT-19: the drinking window start came in 1.6.0.
@@ -619,6 +718,9 @@ describe('POST /api/admin/import-json', () => {
         data.wineTypes[0].type = `a${emoji(250)}`;
         // Measured once trimmed, as the API measures it.
         data.wineColors[0].color = ` ${emoji(250)} `;
+        // As an export of that time: its wines name their producer.
+        delete data.producers;
+        delete data.wineDefinitions[0].producerId;
         Object.assign(data.wineDefinitions[0], {
             name: emoji(250),
             producer: `${emoji(250)}b`,
@@ -632,14 +734,16 @@ describe('POST /api/admin/import-json', () => {
         const [type] = await db.select().from(wineTypes);
         const [color] = await db.select().from(wineColors);
         const [wine] = await db.select().from(wineDefinitions);
+        const [producer] = await db.select().from(producers);
         expect(country.name).toBe(emoji(250));
         expect(type.type).toBe(`a${emoji(249)}`);
         expect(color.color).toBe(emoji(250));
         expect(wine).toMatchObject({
             name: emoji(250),
-            producer: emoji(250),
+            producerId: producer.id,
             grapeVarieties: [emoji(50), 'Merlot']
         });
+        expect(producer.name).toBe(emoji(250));
     });
 
     // A case is named after its container followed by its suffix, of 500 and 50 characters at

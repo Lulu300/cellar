@@ -3,6 +3,7 @@
     import { Input } from '#lib/components/ui/input/index.js';
     import { Button } from '#lib/components/ui/button/index.js';
     import { m } from '#lib/paraglide/messages.js';
+    import { folded } from '#lib/shared/names.js';
 
     type Option = { id: string; name: string };
     /** A line of the list: an option, or one of the actions around them. */
@@ -59,8 +60,9 @@
 
     const searchPlaceholder = $derived(placeholder ?? m['placeholders.search_or_select']());
 
+    // Neither the case nor the accents count: « chateau » finds « Château ».
     const filteredOptions = $derived(
-        options.filter((option) => option?.name?.toLowerCase().includes(searchTerm.toLowerCase()))
+        options.filter((option) => option?.name && folded(option.name).includes(folded(searchTerm)))
     );
 
     const showDropdown = $derived(

@@ -8,7 +8,8 @@ const REFERENCE_SLUGS = [
     'wine-colors',
     'wine-classifications',
     'wine-formats',
-    'origins'
+    'origins',
+    'producers'
 ] as const;
 
 export type ReferenceSlug = (typeof REFERENCE_SLUGS)[number];
@@ -26,4 +27,6 @@ export interface ReferenceRow {
     regionName?: string | null;
     /** The colour value of a wine colour. */
     hex?: string;
+    /** The wines of a producer. */
+    wineCount?: number;
 }

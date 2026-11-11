@@ -11,7 +11,7 @@ describe('csvImportTables', () => {
         const priorities = tables.map(({ priority }) => priority);
 
         expect(priorities).toEqual(priorities.toSorted((a, b) => a - b));
-        expect(tables.map(({ table }) => table)).toHaveLength(13);
+        expect(tables.map(({ table }) => table)).toHaveLength(14);
         expect(table('appellations').priority).toBeGreaterThan(table('regions').priority);
         expect(table('wineBottles').priority).toBe(5);
     });
@@ -22,6 +22,19 @@ describe('csvImportTables', () => {
             required('name'),
             required('regionName'),
             optional('countryName')
+        ]);
+        // The country of a producer is also that of its region: it comes once.
+        expect(table('producers').columns).toEqual([
+            required('name'),
+            optional('countryName'),
+            optional('regionName'),
+            optional('website'),
+            optional('contact'),
+            optional('description'),
+            optional('imageName')
+        ]);
+        expect(table('wineDefinitions').columns.filter(({ name }) => name === 'producer')).toEqual([
+            optional('producer')
         ]);
         // The parent of a container is an id, which a file never gives.
         expect(table('storageContainers').columns).toEqual([required('name')]);

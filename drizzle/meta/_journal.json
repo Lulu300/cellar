@@ -155,6 +155,27 @@
       "when": 1794254666000,
       "tag": "0021_drink_from",
       "breakpoints": true
+    },
+    {
+      "idx": 22,
+      "version": "6",
+      "when": 1794398622515,
+      "tag": "0022_producers",
+      "breakpoints": true
+    },
+    {
+      "idx": 23,
+      "version": "6",
+      "when": 1794398667679,
+      "tag": "0023_producers_from_names",
+      "breakpoints": true
+    },
+    {
+      "idx": 24,
+      "version": "6",
+      "when": 1794398694755,
+      "tag": "0024_drop_producer_names",
+      "breakpoints": true
     }
   ]
 }

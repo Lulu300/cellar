@@ -2,6 +2,7 @@ import { and, asc, eq, exists, inArray, isNull, sql } from 'drizzle-orm';
 import type { Tx } from '#lib/server/db/connection.js';
 import { db } from '#lib/server/db/index.js';
 import {
+    producers,
     wineDefinitions,
     wineImages,
     winePhotos,
@@ -52,7 +53,7 @@ export function renameImageRow(id: string, filename: string, tx: Tx = db): WineI
 const wineColumns = {
     id: wineDefinitions.id,
     name: wineDefinitions.name,
-    producer: wineDefinitions.producer
+    producer: producers.name
 };
 
 /** The wines that use one of these images, as their main photo or another one. */
@@ -60,15 +61,26 @@ export function winesUsingImages(imageIds: string[], tx: Tx = db) {
     const asMain = tx
         .select({ ...wineColumns, imageId: wineDefinitions.imageId })
         .from(wineDefinitions)
+        .leftJoin(producers, eq(wineDefinitions.producerId, producers.id))
         .where(inArray(wineDefinitions.imageId, imageIds))
         .all();
     const asOther = tx
         .select({ ...wineColumns, imageId: winePhotos.imageId })
         .from(winePhotos)
         .innerJoin(wineDefinitions, eq(winePhotos.definitionId, wineDefinitions.id))
+        .leftJoin(producers, eq(wineDefinitions.producerId, producers.id))
         .where(inArray(winePhotos.imageId, imageIds))
         .all();
     return [...asMain, ...asOther];
+}
+
+/** The producers whose photo is one of these images. */
+export function producersUsingImages(imageIds: string[], tx: Tx = db) {
+    return tx
+        .select({ id: producers.id, name: producers.name, imageId: producers.imageId })
+        .from(producers)
+        .where(inArray(producers.imageId, imageIds))
+        .all();
 }
 
 /** The wishes whose photo is one of these images, each named by its text. */

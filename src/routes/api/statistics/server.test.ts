@@ -4,7 +4,7 @@ import { db } from '#lib/server/db/index.js';
 import { wineBottles, wineColors, wineDefinitions } from '#lib/server/db/schema.js';
 import { NEUTRAL_HEX } from '#lib/shared/wine-colors.js';
 import { fakeEvent } from '../../../test/event';
-import { insertBottles, insertWineDefinition } from '../../../test/wine';
+import { insertBottles, insertProducer, insertWineDefinition } from '../../../test/wine';
 import { GET } from './+server';
 
 describe('GET /api/statistics', () => {
@@ -17,7 +17,7 @@ describe('GET /api/statistics', () => {
     it('sums the available bottles, and counts the others apart', async () => {
         await db
             .update(wineDefinitions)
-            .set({ producer: 'Margaux SA' })
+            .set({ producerId: await insertProducer('Margaux SA') })
             .where(eq(wineDefinitions.id, definitionId));
         await insertBottles(definitionId, [
             { availability: 'available', vintage: 2015, purchasePrice: 30, currentValue: 50 },
@@ -50,7 +50,7 @@ describe('GET /api/statistics', () => {
                 { vintage: 2018, count: 1 }
             ],
             winesByDecade: [{ decade: 2010, count: 2 }],
-            topProducers: [{ producer: 'Margaux SA', count: 2 }],
+            topProducers: [{ producerId: expect.any(String), producer: 'Margaux SA', count: 2 }],
             totalStats: {
                 totalDefinitions: 1,
                 totalBottles: 2,

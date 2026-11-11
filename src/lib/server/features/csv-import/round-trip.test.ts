@@ -5,6 +5,7 @@ import {
     appellations,
     countries,
     origins,
+    producers,
     regions,
     storageCases,
     storageContainers,
@@ -81,7 +82,20 @@ beforeEach(() => {
     db.insert(wineImages)
         .values({ id: 'img', filename: 'twin.jpg', path: IMAGES_URL_PATH, ...timestamps })
         .run();
-    const twin = { name: 'Twin', producer: 'Maker', appellationId: 'a', typeId: 't' };
+    db.insert(producers)
+        .values({
+            id: 'maker',
+            name: 'Maker',
+            countryId: 'c',
+            regionId: 'r',
+            website: 'https://maker.example',
+            contact: '1 Hill road',
+            description: 'Makes wine',
+            imageId: 'img',
+            ...timestamps
+        })
+        .run();
+    const twin = { name: 'Twin', producerId: 'maker', appellationId: 'a', typeId: 't' };
     db.insert(wineDefinitions)
         .values([
             {
@@ -179,6 +193,11 @@ describe('CSV export then import', () => {
         const exported = await contents(files);
         expect(exported['cellar-export-wineBottles']).toContain(
             `"'=HYPERLINK(""http://evil.example"")"`
+        );
+        // A producer is given by the names of its country, region and image, as a wine is.
+        expect(exported['cellar-export-producers']).toBe(
+            'name,countryName,regionName,website,contact,description,imageName\n' +
+                'Maker,Testland,Hillside,https://maker.example,1 Hill road,Makes wine,twin.jpg'
         );
         emptyCellar();
 
@@ -409,7 +428,7 @@ function insertBubbles(apart: [object, object], bottles: [number, number]) {
             { id: 'sparkling', type: 'Sparkling', ...timestamps }
         ])
         .run();
-    const bubbles = { name: 'Bubbles', producer: 'Maker', appellationId: 'a', colorId: 'white' };
+    const bubbles = { name: 'Bubbles', producerId: 'maker', appellationId: 'a', colorId: 'white' };
     db.insert(wineDefinitions)
         .values([
             { id: 'bubbles-1', ...bubbles, typeId: 'champagne', ...apart[0], ...timestamps },
@@ -562,7 +581,10 @@ describe('CSV export then import of wines alike in every exported column of thei
     });
 
     it('matches a hand-made bottle file whose type and region are blank to the one wine it names', async () => {
-        insertBubbles([{}, { typeId: 'sparkling', producer: 'Other maker' }], [1, 1]);
+        db.insert(producers)
+            .values({ id: 'other', name: 'Other maker', ...timestamps })
+            .run();
+        insertBubbles([{}, { typeId: 'sparkling', producerId: 'other' }], [1, 1]);
 
         const { results } = await importAll([
             new File(

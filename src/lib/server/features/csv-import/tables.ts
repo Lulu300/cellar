@@ -1,4 +1,6 @@
 import type { ExportTableName } from '#lib/server/features/backup/export.js';
+import { normalized } from '#lib/server/features/shared/names.js';
+import { producerKey } from '#lib/shared/names.js';
 
 /**
  * The other photos of a wine travel only in backups and JSON exports: a CSV file names one image
@@ -20,6 +22,8 @@ interface Reference {
 interface TableConfig {
     /** The column that names a row, which tells whether the cellar has it already. */
     nameColumn?: string;
+    /** How two names of the table are compared, when not as `normalized` compares them. */
+    nameKey?: (name: unknown) => string;
     /**
      * The reference that a row is named within, such as the country of a region: two regions of
      * the same name in two countries are two regions.
@@ -59,9 +63,22 @@ export const TABLES: Record<TableName, TableConfig> = {
         references: { containerId: required('storageContainers', 'containerName') }
     },
     wineImages: { nameColumn: 'filename' },
+    producers: {
+        nameColumn: 'name',
+        // As the app finds a producer by its name: « Château  Margaux » is « chateau margaux ».
+        nameKey: producerKey,
+        references: {
+            countryId: optional('countries', 'countryName'),
+            regionId: optional('regions', 'regionName'),
+            imageId: { ...optional('wineImages', 'imageName'), created: true }
+        }
+    },
     // A wine is told apart by more than its name: see wineKey.
     wineDefinitions: {
         references: {
+            // A producer is named in the file, as before producers were a list: one that the
+            // cellar lacks is created.
+            producerId: { ...optional('producers', 'producer'), created: true },
             appellationId: required('appellations', 'appellationName'),
             typeId: required('wineTypes', 'typeName'),
             colorId: required('wineColors', 'colorName'),
@@ -79,6 +96,10 @@ export const TABLES: Record<TableName, TableConfig> = {
         }
     }
 };
+
+/** The key of a name of `table`, which the names of one row share. */
+export const keyOfName = (table: TableName, name: unknown): string =>
+    (TABLES[table].nameKey ?? normalized)(name);
 
 /** The tables in an order where each comes after those it refers to. */
 export const IMPORT_ORDER: TableName[] = [];

@@ -312,10 +312,11 @@
         <CardContent>
             {#if statsData.topProducers?.length > 0}
                 <BarChart
-                    bars={statsData.topProducers.map(({ producer, count }) => ({
-                        key: producer,
+                    bars={statsData.topProducers.map(({ producerId, producer, count }) => ({
+                        key: producerId,
                         name: producer,
-                        count
+                        count,
+                        href: `/producers/${producerId}`
                     }))}
                 />
             {:else}

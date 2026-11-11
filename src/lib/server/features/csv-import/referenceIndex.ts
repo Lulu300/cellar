@@ -2,7 +2,7 @@ import type { Tx } from '#lib/server/db/connection.js';
 import { EXPORT_TABLES } from '#lib/server/features/backup/export.js';
 import { normalized } from '#lib/server/features/shared/names.js';
 import type { CsvRecord } from './parse';
-import { IMPORT_ORDER, parentOf, TABLES, type TableName } from './tables';
+import { IMPORT_ORDER, keyOfName, parentOf, TABLES, type TableName } from './tables';
 
 export type Row = { id: string } & Record<string, unknown>;
 
@@ -25,19 +25,33 @@ const EXPORTED_WINE_COLUMNS = WINE_KEY.filter(
     (column) => column !== 'name' && column !== 'typeName'
 );
 
+/** The tables that the columns of a wine name, such as producers for `producer`. */
+const NAMED_TABLES = new Map(
+    Object.values(TABLES.wineDefinitions.references!).map(({ csvColumn, table }) => [
+        csvColumn,
+        table
+    ])
+);
+
+/** A value of a column of a wine as values are compared: a name as its table compares names. */
+function columnKey(column: string, value: unknown): string {
+    const table = NAMED_TABLES.get(column);
+    return table ? keyOfName(table, value) : normalized(value);
+}
+
 /**
  * The identity of a wine, the same for a wine of the cellar and for a row of a wine file. The region
  * is left out: the appellation gives it, and older exports have no regionName column.
  */
 function wineKey(wine: Record<string, unknown>): string {
-    return WINE_KEY.map((column) => normalized(wine[column])).join('|');
+    return WINE_KEY.map((column) => columnKey(column, wine[column])).join('|');
 }
 
 /** A row of a wine file as rows are compared: neither the order, the case nor blank columns count. */
 function rowIdentity(record: CsvRecord): string {
     const values = Object.entries(record)
         .filter(([, value]) => value !== '')
-        .map(([column, value]) => [column, normalized(value)]);
+        .map(([column, value]) => [column, columnKey(column, value)]);
     return JSON.stringify(values.toSorted(([a], [b]) => a.localeCompare(b)));
 }
 
@@ -75,7 +89,7 @@ export class ReferenceIndex {
     add(table: TableName, row: Row): void {
         this.byId.get(table)!.set(row.id, row);
         const { nameColumn } = TABLES[table];
-        const name = nameColumn ? normalized(row[nameColumn]) : '';
+        const name = nameColumn ? keyOfName(table, row[nameColumn]) : '';
         const byName = this.byName.get(table)!;
         if (name) byName.set(name, [...(byName.get(name) ?? []), row]);
         if (table === 'wineDefinitions') this.addWine(row);
@@ -87,7 +101,7 @@ export class ReferenceIndex {
      * first row of the name, as the earlier versions did.
      */
     find(table: TableName, name: string, parent?: { id: string } | { name: string }) {
-        const rows = this.byName.get(table)!.get(normalized(name)) ?? [];
+        const rows = this.byName.get(table)!.get(keyOfName(table, name)) ?? [];
         const of = parentOf(table);
         if (!parent || !of) return rows[0];
         return rows.find((row) =>
@@ -111,6 +125,7 @@ export class ReferenceIndex {
         const appellation = this.byId.get('appellations')!.get(row.appellationId as string);
         const wine: Row = {
             ...row,
+            producer: this.nameOf('producers', row.producerId),
             appellationName: appellation?.name,
             regionName: this.nameOf('regions', appellation?.regionId),
             classificationName: this.nameOf('wineClassifications', row.classificationId),
@@ -163,7 +178,7 @@ export class ReferenceIndex {
         return (this.winesByName.get(normalized(record.wineName)) ?? []).filter((wine) =>
             WINE_COLUMNS.every(
                 (column) =>
-                    normalized(record[column]) === normalized(wine[column]) ||
+                    columnKey(column, record[column]) === columnKey(column, wine[column]) ||
                     (!record[column] && !(exported && EXPORTED_WINE_COLUMNS.includes(column)))
             )
         );

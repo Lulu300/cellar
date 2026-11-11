@@ -107,7 +107,7 @@
                 {#if wish.wine}
                     <Badge variant="outline">
                         <BottleWine class="mr-1 h-3 w-3" aria-hidden="true" />
-                        {m['wishlist.in_cellar']({ count: wish.wine.inCellar })}
+                        {m['common.n_in_cellar']({ count: wish.wine.inCellar })}
                     </Badge>
                 {/if}
             </div>

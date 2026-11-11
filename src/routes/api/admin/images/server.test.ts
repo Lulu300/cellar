@@ -128,6 +128,7 @@ describe('PUT /api/admin/images', () => {
             createdAt: expect.any(String),
             updatedAt: expect.any(String),
             wines: [{ id: wineId, name: 'Château Margaux', producer: null }],
+            producers: [],
             wishes: []
         });
         expect(imageFileExists('first')).toBe(false);
@@ -252,6 +253,7 @@ describe('DELETE /api/admin/images', () => {
                 id: 'second',
                 filename: 'second.jpg',
                 wines: [{ id: wineId, name: 'Château Margaux', producer: null }],
+                producers: [],
                 wishes: []
             }
         ]);

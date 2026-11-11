@@ -28,6 +28,7 @@ const MESSAGES: Record<ApiErrorCode, ErrorMessage> = {
     method_not_allowed: m['errors.method_not_allowed'],
     missing_reference: m['errors.missing_reference'],
     in_use: m['errors.in_use'],
+    merge_choice_needed: m['errors.merge_choice_needed'],
     duplicate_name: m['errors.duplicate_name'],
     duplicate_region: m['errors.duplicate_region'],
     duplicate_appellation: m['errors.duplicate_appellation'],

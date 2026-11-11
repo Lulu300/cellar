@@ -199,6 +199,7 @@ request needs one.
 | GET    | `/api/admin/label-presets/{id}`          | yes                      |
 | PUT    | `/api/admin/label-presets/{id}`          | yes                      |
 | GET    | `/api/admin/list-backups`                | yes                      |
+| POST   | `/api/admin/merge-producers`             | yes                      |
 | DELETE | `/api/admin/mcp-token`                   | yes                      |
 | POST   | `/api/admin/mcp-token`                   | yes                      |
 | PUT    | `/api/admin/mcp-token`                   | yes                      |
@@ -247,6 +248,11 @@ request needs one.
 | POST   | `/api/origins`                           | yes                      |
 | DELETE | `/api/origins/{id}`                      | yes                      |
 | PUT    | `/api/origins/{id}`                      | yes                      |
+| GET    | `/api/producers`                         | no                       |
+| POST   | `/api/producers`                         | yes                      |
+| DELETE | `/api/producers/{id}`                    | yes                      |
+| GET    | `/api/producers/{id}`                    | no                       |
+| PUT    | `/api/producers/{id}`                    | yes                      |
 | GET    | `/api/regions`                           | no                       |
 | POST   | `/api/regions`                           | yes                      |
 | DELETE | `/api/regions/{id}`                      | yes                      |
@@ -420,7 +426,12 @@ The body of `POST /api/definitions` and `PUT /api/definitions/{id}`. Fields the 
 such as `id` or `createdAt`, are ignored.
 
 - `name`: string, required, 1-500 characters.
-- `producer`: string, optional, at most 500 characters.
+- `producerId`: id of a [producer](#producers), optional.
+- `producer`: string, optional, at most 500 characters: the producer by its name, as before 1.8.0,
+  when producers were a text on each wine. It is the producer whose name is the same but for case,
+  accents, blanks and the apostrophe (’ or '), or a new producer of that name. Given with
+  `producerId`, both must name the same producer, else `422 invalid_body`. Leave both out, or send
+  them `null`, for a wine without a producer.
 - `appellationId`: id of an appellation, required.
 - `typeId`: id of a wine type, required.
 - `colorId`: id of a wine color, required.
@@ -439,7 +450,8 @@ such as `id` or `createdAt`, are ignored.
   [`GET /api/wine-shortage`](#get-apiwine-shortage)).
 
 An id that points at no row answers `409 missing_reference`, whose `details` name its field and the
-id given.
+id given. Every answer that gives a wine gives its `producer` as the producer's name (`null` for
+none), and the wine's `producerId`.
 
 ### `GET /api/wines`
 
@@ -546,6 +558,7 @@ Lists every wine, without its bottles.
   {
     "id": "margaux",
     "name": "Château Margaux",
+    "producerId": null,
     "producer": null,
     "appellationId": "mgx",
     "typeId": "still",
@@ -706,6 +719,121 @@ uses it. When it was the main photo, the oldest of the others becomes the main o
 - **Response:** `204` with no body.
 - **Errors:** `404 not_found` when the wine does not exist, or when the image is not one of its
   photos.
+
+## Producers
+
+The estates and houses that make the wines, since 1.8.0: before, a producer was a text on each
+wine. The upgrade made one producer of each name typed on wines, the names that differ only in case,
+accents, blanks or the apostrophe (’ or ') becoming one; it kept the spelling of the most wines,
+then that of the wine changed last, with one space between words. A wine names its producer by
+`producerId` (see [wine fields](#wine-fields)).
+
+#### Producer fields
+
+The body of `POST /api/producers` and `PUT /api/producers/{id}`. Only `name` is required.
+
+- `name`: string, 1-500 characters, stored trimmed with one space between words. Two producers
+  cannot have names that differ only in case, accents, blanks or the apostrophe.
+- `countryId`, `regionId`: ids of a country and of a region, optional. A region gives its country:
+  a `countryId` given with it must be the region's, else `422 invalid_body`. A body that gives one
+  of them without the other gives the whole place: `countryId` alone clears the region. Deleting the
+  country or the region clears it on the producer.
+- `website`: an `http://` or `https://` URL, optional, at most 2000 characters.
+- `contact`: string, optional, at most 5,000 characters: its address, phone, e-mail…
+- `description`: string, optional, at most 5,000 characters.
+- `imageId`: id of an image (see [`POST /api/upload/image`](#post-apiuploadimage)), optional: its
+  photo.
+
+A field sent as `null` or `""` is cleared; `PUT` keeps a field left out.
+
+### `GET /api/producers`
+
+- **Session:** not needed.
+- **Response:** `200` with every producer, by name (compared byte by byte, as the other reference
+  lists): its [fields](#producer-fields), `id`, `createdAt`, `updatedAt`, the names `countryName`
+  and `regionName` (`null` without), and what it counts: `wineCount` (its wines), `bottleCount`
+  (their bottles in the cellar) and `consumedCount` (those drunk).
+
+```json
+[
+  {
+    "id": "2c99…",
+    "name": "Château Margaux",
+    "countryId": "fr",
+    "countryName": "France",
+    "regionId": "bdx",
+    "regionName": "Bordeaux",
+    "website": "https://www.chateau-margaux.example",
+    "contact": "33460 Margaux",
+    "description": null,
+    "imageId": null,
+    "wineCount": 4,
+    "bottleCount": 8,
+    "consumedCount": 3,
+    "createdAt": "2026-10-12T18:22:05.000Z",
+    "updatedAt": "2026-11-11T09:12:44.000Z"
+  }
+]
+```
+
+### `POST /api/producers`
+
+- **Session:** required.
+- **Body:** the [producer fields](#producer-fields).
+- **Response:** `201` with the producer as `GET /api/producers` lists it; `200` with the existing
+  producer, unchanged, when one has the same name but for case, accents, blanks and the
+  apostrophe, as the [reference tables](#reference-tables) do.
+- **Errors:** `422 invalid_body`; `409 missing_reference` for a country, region or image that does
+  not exist.
+
+### `GET /api/producers/{id}`
+
+- **Session:** not needed.
+- **Response:** `200` with the producer as `GET /api/producers` lists it, and `wines`: its wines by
+  name, each with `id`, `name`, `imageId`, `type`, `color`, `colorHex`, `classification`,
+  `appellationName`, `regionName`, `countryName`, `bottleCount` (in the cellar) and
+  `consumedCount` (drunk).
+- **Errors:** `404 not_found` for an unknown producer.
+
+### `PUT /api/producers/{id}`
+
+- **Session:** required.
+- **Body:** the [producer fields](#producer-fields), `name` included: a field left out keeps its
+  value.
+- **Response:** `200` with the producer as `GET /api/producers` lists it.
+- **Errors:** `404 not_found`; `409 duplicate_name` for the name of another producer, in any
+  spelling; `422 invalid_body`; `409 missing_reference`.
+
+### `DELETE /api/producers/{id}`
+
+- **Session:** required.
+- **Response:** `204` with no body.
+- **Errors:** `404 not_found`; `409 in_use` while wines use it, with
+  `details: { "count", "usedBy": "wine_definitions" }`: give them another producer, or none, first.
+
+### `POST /api/admin/merge-producers`
+
+Merges a producer into another, which the admin page offers for the duplicates that the upgrade did
+not join, such as « E. Guigal » and « Guigal ».
+
+- **Session:** required.
+- **Body:** JSON:
+  - `keptId`: id of the producer kept, required.
+  - `mergedId`: id of the producer merged into it, then deleted, required; not `keptId`.
+  - `choices`: object, optional: for each field that both producers fill differently, `"kept"` or
+    `"merged"`, the producer whose value to keep. The fields are `place` (the country and the
+    region together), `website`, `contact`, `description` and `imageId`.
+- **Response:** `200` with the kept producer as `GET /api/producers` lists it. Its name stays; the
+  wines of the merged producer move to it; it takes each field that only the merged one fills, and
+  those `choices` says to take. The merged producer is deleted; its photo, when not taken, stays
+  among the images (see [`GET /api/admin/images`](#get-apiadminimages)).
+- **Errors:** `404 not_found` for an unknown producer; `422 invalid_body` for a producer merged into
+  itself; `409 merge_choice_needed` when a field that both fill differently has no choice, with
+  `details: { "fields": [...] }`: nothing changes.
+
+```json
+{ "keptId": "2c99…", "mergedId": "ecd4…", "choices": { "website": "merged" } }
+```
 
 ## Bottles
 
@@ -1174,7 +1302,7 @@ Gives the figures of the statistics page.
   - `winesByType` (`type`), `winesByColor` (`color`, and its colour value `hex`):
     `[{ <name>, "count" }]`; `winesByColor` by name, upper case before lower case.
   - `winesByCountry` (`country`), `winesByRegion` (`id`, `region`, and the name of its `country`),
-    `topProducers` (`producer`): at most 10, largest first. Two regions of the same name in two
+    `topProducers` (`producerId`, `producer`): at most 10, largest first. Two regions of the same name in two
     countries are two rows, told apart by their `id` and `country`.
   - `winesByVintage` (`vintage`), `winesByDecade` (`decade`, such as `2010`): oldest first; bottles
     without a vintage are left out.
@@ -1208,7 +1336,7 @@ Gives the figures of the statistics page.
     { "vintage": 2018, "count": 1 }
   ],
   "winesByDecade": [{ "decade": 2010, "count": 2 }],
-  "topProducers": [{ "producer": "Margaux SA", "count": 2 }],
+  "topProducers": [{ "producerId": "2c99…", "producer": "Margaux SA", "count": 2 }],
   "totalStats": {
     "totalDefinitions": 1,
     "totalBottles": 2,
@@ -2325,8 +2453,11 @@ pre-import export.
   `data` object with the rows of all 13 tables of an export (`countries`, `regions`, `appellations`,
   `wineClassifications`, `wineTypes`, `wineColors`, `wineFormats`, `origins`, `storageContainers`,
   `storageCases`, `wineImages`, `wineDefinitions`, `wineBottles`), and of `winePhotos`, the other
-  photos of the wines, and `wishes`, the wishlist, which exports of versions before 1.3.0 lack; its
-  images in `images/` are copied too.
+  photos of the wines, and `wishes`, the wishlist, which exports of versions before 1.3.0 lack, and
+  `producers`, which exports of versions before 1.8.0 lack; its images in `images/` are copied too.
+  A wine of such an export names its producer by its `producer` text: the import makes the
+  producers of these names as the upgrade does (see [Producers](#producers)), and gives a wine the
+  producer of the export whose name is its own in any spelling.
 - **Response:** `200` with:
   - `success: true` and an English `message`.
   - `recordCount`: the number of rows imported.
@@ -2530,9 +2661,9 @@ README-Docker says how to set up an assistant (see
   sessions, so each request stands alone, and `GET` answers `405`. It serves the 2026-07-28
   revision of the protocol and the earlier ones (2024-10-07, 2024-11-05, 2025-03-26, 2025-06-18,
   2025-11-25): the client picks.
-- **Instructions:** the answer to `initialize` gives the assistant `instructions`: what a wine and
-  a bottle are, the units, which tool gives the ids that the others take, which tool to use for a
-  bottle drunk or taken away, and how errors read.
+- **Instructions:** the answer to `initialize` gives the assistant `instructions`: what a wine, a
+  producer and a bottle are, the units, which tool gives the ids that the others take, which tool
+  to use for a bottle drunk or taken away, and how errors read.
 - **Answers:** a tool answers one text item that holds JSON. The fields that are empty are left out.
   Prices are in the currency of the cellar (the app shows euros), dates are `YYYY-MM-DD`. A
   bottle's `availability` is `available` (in the cellar), `out_of_cellar` or `consumed`, its
@@ -2575,9 +2706,9 @@ The tools that read:
     integer from 1 to 200, default 50; `offset`: integer from 0, default 0, how many wines to skip,
     to read past `limit`.
   - **Answer:** `{ "total", "wines" }`: the wines found, by name then by id, from `offset`, `total` counting
-    them all. Each wine has `id`, `name`, `producer`, `color`, `type`, `classification`,
-    `appellation`, `region`, `country`, `rating`, `grapes`, its bottles in the cellar (`inCellar`)
-    and out of it (`outOfCellar`), and the `vintages` of those in the cellar.
+    them all. Each wine has `id`, `name`, `producer` (its name) and `producerId`, `color`, `type`,
+    `classification`, `appellation`, `region`, `country`, `rating`, `grapes`, its bottles in the
+    cellar (`inCellar`) and out of it (`outOfCellar`), and the `vintages` of those in the cellar.
 - `get_wine`: a wine with its bottles.
   - **Parameters:** `wineId`: string, required, as `search_wines` gives it.
   - **Answer:** the fields of a wine of `search_wines` from `id` to `grapes`, with `description`,
@@ -2586,6 +2717,21 @@ The tools that read:
     `drinkBefore`, `format`, `location` (`container`, `case`) when it is in the cellar or
     `formerLocation` (the same) when it is not, `barcode`, `origin`, `purchasePrice`,
     `purchaseDate`, `currentValue`, `consumedDate` and `notes`.
+- `list_producers`: finds producers, the estates and houses of the wines.
+  - **Parameters:** `query`: string, optional, at most 500 characters: words that the producer must
+    all hold, capitals and accents aside, in its name, region or country; `limit` and `offset`, as
+    for `search_wines`.
+  - **Answer:** `{ "total", "producers" }`: the producers found, by name, from `offset`, `total`
+    counting them all. Each producer has `id`, `name`, `region`, `country`, `wineCount`, its
+    bottles in the cellar (`inCellar`) and those drunk (`consumed`).
+- `get_producer`: a producer with its wines.
+  - **Parameters:** `producerId`: string, required, as `list_producers` or the `producerId` of a
+    wine gives it.
+  - **Answer:** the fields of a producer of `list_producers`, with `countryId`, `regionId`,
+    `website`, `contact` and `description` (its photo is left out), and its `wines`, by name, each
+    with `id`, `name`, `color`, `type`, `classification`, `appellation`, `region`, `country`,
+    `inCellar` and `consumed`.
+  - **Refusals:** an unknown producer.
 - `find_bottle_by_barcode`: the bottles of a barcode, whatever their availability.
   - **Parameters:** `barcode`: string, required, 1 to 1000 characters.
   - **Answer:** an array of bottles as in `get_wine`, each with its `wine` (`id`, `name`,
@@ -2633,9 +2779,11 @@ The tools that read:
   `bottles`, `free`). A case holds its capacity in bottles in the cellar; one that holds more has
   no room left. The bottles out of the cellar or drunk that kept the case take no room there. The `id` of a case is what `list_bottles`, `add_bottles`, `move_bottles` and
   `put_bottles_back` take.
-- `list_choices`: no parameters; `{ "formats", "colors", "types", "classifications", "origins" }`:
-  the `id` and `name` of each row of these lists, sorted by name, for the ids that `add_wine`,
-  `update_wine`, `add_bottles` and `update_bottles` take.
+- `list_choices`: no parameters;
+  `{ "formats", "colors", "types", "classifications", "origins", "countries", "regions" }`: the `id`
+  and `name` of each row of these lists, sorted by name, each region with its `country` (its name),
+  for the ids that `add_wine`, `update_wine`, `add_bottles` and `update_bottles` take, and the
+  `countryId` and `regionId` of `create_producer` and `update_producer`.
 - `search_appellations`: finds appellations, for the `appellationId` of `add_wine`.
   - **Parameters:** `query`: string, required, at most 500 characters: words that the appellation,
     its region and its country must all hold between them, capitals and accents aside.
@@ -2651,8 +2799,20 @@ one is not dropped; each one writes all or nothing.
 
 - `add_wine`: creates a wine, without bottles.
   - **Parameters:** the [wine fields](#wine-fields) but `imageId`: `name`, `appellationId` (from
-    `search_appellations`), `typeId` and `colorId` (from `list_choices`) required.
+    `search_appellations`), `typeId` and `colorId` (from `list_choices`) required. Its producer is
+    given by `producer`, a name: the producer of that name, capitals, accents and blanks aside, or a
+    new one when none has it; or by `producerId` (from `list_producers` or `create_producer`); given
+    both, they must name the same producer, or the call is refused.
   - **Answer:** the wine as `get_wine` gives it, with empty `bottles` and `consumed`.
+- `create_producer`: adds a producer, without wines.
+  - **Parameters:** `name`: string, required, 1-500 characters; and, optional, `countryId` and
+    `regionId` (from `list_choices`: a region gives its country), `website` (an `http://` or
+    `https://` URL), `contact` and `description` (strings of at most 5,000 characters).
+  - **Answer:** the producer as `get_producer` gives it, with `created: true`. A producer that has
+    the name already, capitals, accents and blanks aside, is answered instead, unchanged, with
+    `created: false`: the other fields given are not applied, and `update_producer` changes them.
+    No tool deletes or merges producers: they stay in the app.
+  - **Refusals:** an unknown country or region, or a region that is not in the country given.
 - `add_bottles`: adds identical bottles of a wine to the cellar, as
   [`POST /api/bottles`](#post-apibottles) does: `available`, each with the next barcode when
   automatic barcodes are on.
@@ -2713,14 +2873,24 @@ one is not dropped; each one writes all or nothing.
     `vintages`.
 - `update_wine`: changes the fields given of a wine, as its form in the app does; the others stay.
   - **Parameters:** `wineId`: string, required; and at least one of the
-    [wine fields](#wine-fields) `name`, `producer`, `appellationId`, `typeId`, `colorId`,
-    `classificationId`, `website`, `description`, `grapeVarieties` (in place of the old ones, `[]`
-    removes them) and `targetQuantity`. `null` removes an optional field; `name`, `appellationId`,
-    `typeId` and `colorId` cannot be removed. `rate_wine` changes the rating; the photos are
-    changed in the app.
+    [wine fields](#wine-fields) `name`, `producer`, `producerId`, `appellationId`, `typeId`,
+    `colorId`, `classificationId`, `website`, `description`, `grapeVarieties` (in place of the old
+    ones, `[]` removes them) and `targetQuantity`. `producer` and `producerId` give the producer as
+    for `add_wine`. `null` removes an optional field; `name`, `appellationId`, `typeId` and
+    `colorId` cannot be removed. `rate_wine` changes the rating; the photos are changed in the app.
   - **Answer:** the wine as `get_wine` gives it.
   - **Refusals:** those of [`PUT /api/definitions/{id}`](#put-apidefinitionsid), such as an unknown
     wine or an id that points at no row.
+- `update_producer`: changes the fields given of a producer, as its form in the app does; the
+  others stay.
+  - **Parameters:** `producerId`: string, required, from `list_producers`; and at least one of the
+    fields of `create_producer`. `null` removes an optional field. A `regionId` gives its country;
+    a `countryId` given without `regionId` removes the region, and `regionId: null` without
+    `countryId` removes the country too. The photo is changed in the app.
+  - **Answer:** the producer as `get_producer` gives it.
+  - **Refusals:** an unknown producer, country or region, a region that is not in the country
+    given, or a name that another producer has, capitals, accents and blanks aside (the app merges
+    two producers).
 - `update_bottles`: gives bottles the same values for the fields given, as
   [`PATCH /api/bottles`](#patch-apibottles) does; their other fields stay.
   - **Parameters:** `bottleIds` as for `mark_bottles_drunk`; and at least one of the
@@ -2814,7 +2984,10 @@ Revokes the MCP token: `/mcp` refuses every request until a new one is created.
 
 The CSV files have one file per table, named after it. The table names are `countries`, `regions`,
 `appellations`, `wineClassifications`, `wineTypes`, `wineColors`, `wineFormats`, `origins`,
-`storageContainers`, `storageCases`, `wineImages`, `wineDefinitions` and `wineBottles`. The first
+`storageContainers`, `storageCases`, `wineImages`, `producers`, `wineDefinitions` and
+`wineBottles`. A wine gives its producer by name in its `producer` column, as before 1.8.0: the
+import finds the producer of that name in any spelling (case, accents, blanks, apostrophe), or
+creates it; `producers.csv` gives the producers' other fields. The first
 line holds the column names. A wine names only its main photo, in `imageName`: its other photos go
 only in backups and exports, as does the wishlist. A file gives no ids: a row refers to another by
 its name (the `countryName` of a region, the `wineName` of a bottle…).
@@ -3084,8 +3257,8 @@ calls.
 
 ### `GET /api/admin/images`
 
-Lists every wine image with the size and date of its file, and the wines and wishes that use it,
-newest file first.
+Lists every wine image with the size and date of its file, and the wines, producers and wishes that
+use it, newest file first.
 
 - **Session:** required.
 - **Body:** none.
@@ -3093,8 +3266,9 @@ newest file first.
   folder, `/uploads/wines/`), `url` (where the image is served), `size` (bytes, `0` when the file is
   missing), `lastModified` (the date of the file, or of the row when the file is missing),
   `createdAt`, `updatedAt`, `wines`, the wines that use it, as their main photo or another, each
-  `{ "id", "name", "producer" }`, and `wishes`, the wishes whose photo it is, each `{ "id", "name" }`
-  with the text of the wish as its name. Both are empty when nothing uses the image.
+  `{ "id", "name", "producer" }`, `producers`, the producers whose photo it is, each
+  `{ "id", "name" }`, and `wishes`, the wishes whose photo it is, each `{ "id", "name" }` with the
+  text of the wish as its name. All are empty when nothing uses the image.
 - **Errors:** none besides the common ones.
 
 ```json
@@ -3110,6 +3284,7 @@ newest file first.
       "createdAt": "2026-10-12T18:22:05.000Z",
       "updatedAt": "2026-10-12T18:22:05.000Z",
       "wines": [{ "id": "c1f4…", "name": "Château Margaux", "producer": "Château Margaux" }],
+      "producers": [],
       "wishes": []
     }
   ],
@@ -3129,7 +3304,8 @@ Renames an image and its file, both or neither. The wines that use it keep it.
     `.webp` (any case). The extension sets the type the image is served with; the content is not
     converted.
 - **Response:** `200` with the image as [`GET /api/admin/images`](#get-apiadminimages) lists it,
-  under its new name, with the wines and wishes that use it in `wines` and `wishes`. They need no
+  under its new name, with the wines, producers and wishes that use it in `wines`, `producers` and
+  `wishes`. They need no
   change: they refer to the image by id.
 - **Errors:** `422 invalid_file_name`, with `details: { "kind": "image" }`, for a name that breaks
   these rules; `404 not_found` when the image does not exist, or its file is missing;
@@ -3151,6 +3327,7 @@ Renames an image and its file, both or neither. The wines that use it keep it.
   "createdAt": "2026-10-12T18:22:05.000Z",
   "updatedAt": "2026-10-17T15:06:10.000Z",
   "wines": [{ "id": "c1f4…", "name": "Château Margaux", "producer": "Château Margaux" }],
+  "producers": [],
   "wishes": []
 }
 ```
@@ -3163,13 +3340,13 @@ Deletes images, rows and files.
 - **Body:** JSON:
   - `imageIds`: array of non-empty strings, at least one, required. Ids that match no image are
     ignored.
-  - `force`: boolean, default `false`. With `true`, images that wines or wishes use are removed from
-    them, then deleted. A wine that loses its main photo takes the oldest of its others; a wish
-    stays, without a photo.
+  - `force`: boolean, default `false`. With `true`, images that wines, producers or wishes use are
+    removed from them, then deleted. A wine that loses its main photo takes the oldest of its
+    others; a producer or a wish stays, without a photo.
 - **Response:** `204`, without a body.
-- **Errors:** `409 in_use` without `force` when wines or wishes use some of the images: nothing is
-  deleted, and `details.inUse` lists each such image as
-  `{ "id", "filename", "wines": [{ "id", "name", "producer" }], "wishes": [{ "id", "name" }] }`.
+- **Errors:** `409 in_use` without `force` when wines, producers or wishes use some of the images:
+  nothing is deleted, and `details.inUse` lists each such image as
+  `{ "id", "filename", "wines": [{ "id", "name", "producer" }], "producers": [{ "id", "name" }], "wishes": [{ "id", "name" }] }`.
 
 ```json
 { "imageIds": ["9a0e…", "4d7f…"], "force": true }

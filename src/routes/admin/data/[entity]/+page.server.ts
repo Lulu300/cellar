@@ -16,6 +16,8 @@ import {
     type ReferenceRow,
     type ReferenceSlug
 } from '#lib/shared/reference-tables.js';
+import { imageUrlsById } from '#lib/server/features/images/service.js';
+import { producerHandlers } from '#lib/server/features/producers/service.js';
 import { redirectWithoutSession } from '#lib/server/session.js';
 import type { PageServerLoad } from './$types';
 
@@ -27,7 +29,8 @@ const HANDLERS: Record<ReferenceSlug, { list: () => unknown[] }> = {
     'wine-colors': wineColorHandlers,
     'wine-classifications': wineClassificationHandlers,
     'wine-formats': wineFormatHandlers,
-    origins: originHandlers
+    origins: originHandlers,
+    producers: producerHandlers
 };
 
 export const load: PageServerLoad = ({ params, locals }) => {
@@ -36,5 +39,10 @@ export const load: PageServerLoad = ({ params, locals }) => {
     const slug = params.entity;
     if (!isReferenceSlug(slug)) error(404, 'Not Found');
     // The countries and regions that the form offers as parents come from the root layout.
-    return { slug, items: HANDLERS[slug].list() as ReferenceRow[] };
+    return {
+        slug,
+        items: HANDLERS[slug].list() as ReferenceRow[],
+        // The photos of the producers, which a merge compares
+        imageUrls: slug === 'producers' ? imageUrlsById() : new Map<string, string>()
+    };
 };

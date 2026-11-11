@@ -5,6 +5,7 @@ import { namingMissingReferences } from '#lib/server/db-errors.js';
 import {
     appellations,
     countries,
+    producers,
     regions,
     wineBottles,
     wineClassifications,
@@ -15,11 +16,12 @@ import {
 } from '#lib/server/db/schema.js';
 import type { WineDefinitionInput } from '#lib/shared/schemas/wine.js';
 
-/** A wine with its location and the names of its type, color and classification. */
+/** A wine with its location and the names of its producer, type, color and classification. */
 const definitionsWithLocation = () =>
     db
         .select({
             wine_definitions: wineDefinitions,
+            producer: producers.name,
             appellations: appellations,
             regions: regions,
             countries: countries,
@@ -33,17 +35,16 @@ const definitionsWithLocation = () =>
         .innerJoin(countries, eq(regions.countryId, countries.id))
         .innerJoin(wineTypes, eq(wineDefinitions.typeId, wineTypes.id))
         .innerJoin(wineColors, eq(wineDefinitions.colorId, wineColors.id))
-        .leftJoin(
-            wineClassifications,
-            eq(wineDefinitions.classificationId, wineClassifications.id)
-        );
+        .leftJoin(wineClassifications, eq(wineDefinitions.classificationId, wineClassifications.id))
+        .leftJoin(producers, eq(wineDefinitions.producerId, producers.id));
 
 type DefinitionRow = ReturnType<ReturnType<typeof definitionsWithLocation>['all']>[number];
 
-/** The wine with the names of its type, color and classification, and its nested location. */
+/** The wine with the names of its producer, type, color and classification, and its location. */
 function withLocation(row: DefinitionRow) {
     return {
         ...row.wine_definitions,
+        producer: row.producer,
         type: row.wine_types.type,
         color: row.wine_colors.color,
         colorHex: row.wine_colors.hex,
@@ -64,14 +65,26 @@ export function getDefinitionWithLocation(id: string): WineWithLocation | undefi
     return row && withLocation(row);
 }
 
-export function insertDefinition(data: WineDefinitionInput): WineDefinition {
-    return namingMissingReferences(wineDefinitions, data, db, () =>
-        db.insert(wineDefinitions).values(data).returning().get()
+/** A wine's columns, with its producer as an id. */
+export type StoredDefinition = Omit<WineDefinitionInput, 'producer'>;
+
+export function insertDefinition(data: StoredDefinition, tx: Tx): WineDefinition {
+    return namingMissingReferences(wineDefinitions, data, tx, () =>
+        tx.insert(wineDefinitions).values(data).returning().get()
+    );
+}
+
+/** The name of a producer, null for none. */
+export function producerName(id: string | null, tx: Tx): string | null {
+    if (!id) return null;
+    return (
+        tx.select({ name: producers.name }).from(producers).where(eq(producers.id, id)).get()
+            ?.name ?? null
     );
 }
 
 /** Changes the fields of `data` on the wine; undefined when there is no such wine. */
-export function updateDefinition(id: string, data: Partial<WineDefinitionInput>, tx: Tx = db) {
+export function updateDefinition(id: string, data: Partial<StoredDefinition>, tx: Tx = db) {
     return namingMissingReferences(wineDefinitions, data, tx, () =>
         tx
             .update(wineDefinitions)
@@ -111,7 +124,8 @@ export function listDefinitionsForAdmin() {
         .select({
             id: wineDefinitions.id,
             name: wineDefinitions.name,
-            producer: wineDefinitions.producer,
+            producerId: wineDefinitions.producerId,
+            producer: producers.name,
             appellationId: wineDefinitions.appellationId,
             appellationName: appellations.name,
             regionId: appellations.regionId,
@@ -140,6 +154,7 @@ export function listDefinitionsForAdmin() {
         .innerJoin(wineTypes, eq(wineDefinitions.typeId, wineTypes.id))
         .innerJoin(wineColors, eq(wineDefinitions.colorId, wineColors.id))
         .leftJoin(wineClassifications, eq(wineDefinitions.classificationId, wineClassifications.id))
-        .orderBy(wineDefinitions.producer, wineDefinitions.name)
+        .leftJoin(producers, eq(wineDefinitions.producerId, producers.id))
+        .orderBy(producers.name, wineDefinitions.name)
         .all();
 }

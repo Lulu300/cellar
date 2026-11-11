@@ -9,5 +9,9 @@ export const wineLabel = (wine: { producer: string | null; name: string }) =>
 export const bottleLabel = (bottle: { wineName: string; vintage: number | null }) =>
     [bottle.wineName, bottle.vintage].filter((part) => part != null).join(' ');
 
+/** A producer that uses an image as its photo. */
+export const producerLabel = (producer: { name: string }) =>
+    m['admin.image_producer']({ name: producer.name });
+
 /** A wish that uses an image, named by its text. */
 export const wishLabel = (wish: { name: string }) => m['admin.image_wish']({ name: wish.name });

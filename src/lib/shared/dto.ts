@@ -46,6 +46,7 @@ import type {
 } from '#lib/server/features/geography/repository.js';
 import type { producerRows } from '#lib/server/features/producers/repository.js';
 import type { csvImportTables, importCsv } from '#lib/server/features/csv-import/service.js';
+import type { Answer } from '#lib/server/features/csv-import/review.js';
 import type {
     importImagesZip,
     listImagesWithStats,
@@ -217,6 +218,15 @@ export type BarcodeConflictDTO = BarcodeConflictInfo;
 
 /** POST /api/admin/import-csv */
 export type CsvImportDTO = Awaited<ReturnType<typeof importCsv>>;
+
+/** The review of a CSV import, when the request sends `choices`. */
+export type CsvReviewDTO = NonNullable<CsvImportDTO['review']>;
+
+/** A problem of a CSV import that rows share, settled or not. */
+export type CsvIssueDTO = CsvReviewDTO['issues'][number];
+
+/** How the user settles a problem of a CSV import. */
+export type CsvAnswer = Answer;
 
 /** A table of the CSV export and import. */
 export type CsvTable = NonNullable<CsvImportDTO['results'][number]['table']>;

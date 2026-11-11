@@ -81,7 +81,9 @@
             <Button variant="outline" onclick={() => (open = false)}>
                 {m['common.cancel']()}
             </Button>
-            <Button onclick={confirmBarcodeOverride}>{m['admin.proceed_with_import']()}</Button>
+            <Button onclick={confirmBarcodeOverride}
+                >{m['admin.barcode_question_continue']()}</Button
+            >
         </div>
     </DialogContent>
 </Dialog>

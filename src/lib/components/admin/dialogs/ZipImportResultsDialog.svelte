@@ -48,7 +48,7 @@
                         <div class="text-2xl font-bold text-success">
                             {zipImportResults.successful}
                         </div>
-                        <div class="text-sm text-success">{m['admin.zip_import_imported']()}</div>
+                        <div class="text-sm text-success">{m['common.imported']()}</div>
                     </div>
                     <div class="bg-warning/10 border border-warning/30 rounded-lg p-3 text-center">
                         <div class="text-2xl font-bold text-warning">

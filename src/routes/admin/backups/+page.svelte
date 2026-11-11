@@ -17,7 +17,8 @@
     import BarcodeOverrideDialog from '#lib/components/admin/dialogs/BarcodeOverrideDialog.svelte';
     import CsvExportDialog from '#lib/components/admin/dialogs/CsvExportDialog.svelte';
     import CsvImportDialog from '#lib/components/admin/dialogs/CsvImportDialog.svelte';
-    import CsvImportResultsDialog from '#lib/components/admin/dialogs/CsvImportResultsDialog.svelte';
+    import CsvReviewDialog from '#lib/components/admin/csv-review/CsvReviewDialog.svelte';
+    import type { CsvImportRequest } from '#lib/components/admin/csv-review/csv-review.svelte.js';
     import { confirm } from '#lib/components/layout/confirm.svelte.js';
     import { Jobs } from '#lib/components/admin/jobs.svelte.js';
     import {
@@ -30,7 +31,6 @@
     import type {
         BackupCreatedDTO,
         BackupFileDTO,
-        CsvImportDTO,
         ExportCreatedDTO,
         JsonImportDTO,
         RestoreDTO,
@@ -55,10 +55,10 @@
     let showSettings = $state(false);
     let showCsvExport = $state(false);
     let showCsvImport = $state(false);
-    let pendingCsv = $state<{ files: File[]; delimiter: string; dryRun: boolean } | null>(null);
+    let pendingCsv = $state<{ files: File[]; delimiter: string } | null>(null);
     let showBarcodeOverride = $state(false);
-    let csvResults = $state<CsvImportDTO | null>(null);
-    let showCsvResults = $state(false);
+    let csvReview = $state<CsvImportRequest | null>(null);
+    let showCsvReview = $state(false);
 
     function startNaming(kind: 'backup' | 'export') {
         naming = kind;
@@ -182,37 +182,23 @@
         return files.some((file) => tableOfFile(file.name, tables) === 'wineBottles');
     };
 
-    async function startCsvImport(files: File[], delimiter: string, dryRun: boolean) {
+    function startCsvImport(files: File[], delimiter: string) {
         // Automatic barcodes: the user chooses whether the bottles keep those of the file.
         if (data.barcodeAutoGeneration && holdsBottles(files)) {
-            pendingCsv = { files, delimiter, dryRun };
+            pendingCsv = { files, delimiter };
             showBarcodeOverride = true;
             return;
         }
-        await importCsv({ files, delimiter, dryRun }, false);
+        reviewCsv({ files, delimiter }, false);
     }
 
-    const importCsv = (
-        { files, delimiter, dryRun }: { files: File[]; delimiter: string; dryRun: boolean },
+    function reviewCsv(
+        { files, delimiter }: { files: File[]; delimiter: string },
         overrideAllBarcodes: boolean
-    ) =>
-        jobs.run('csv-import', async () => {
-            const form = new FormData();
-            for (const file of files) form.append('files', file);
-            form.append('delimiter', delimiter);
-            form.append('overrideAllBarcodes', String(overrideAllBarcodes));
-            form.append('dryRun', String(dryRun));
-            try {
-                csvResults = await request<CsvImportDTO>('/api/admin/import-csv', {
-                    method: 'POST',
-                    body: form
-                });
-                showCsvResults = true;
-                if (!dryRun) await invalidateAll();
-            } catch (error) {
-                toasts.add(m['toast.failed_to_import_csv']({ error: errorMessage(error) }));
-            }
-        });
+    ) {
+        csvReview = { files, delimiter, overrideAllBarcodes };
+        showCsvReview = true;
+    }
 </script>
 
 <svelte:head>
@@ -302,8 +288,8 @@
 <BarcodeOverrideDialog
     bind:open={showBarcodeOverride}
     onConfirm={async (override) => {
-        if (pendingCsv) await importCsv(pendingCsv, override);
+        if (pendingCsv) reviewCsv(pendingCsv, override);
         pendingCsv = null;
     }}
 />
-<CsvImportResultsDialog bind:open={showCsvResults} bind:csvImportResults={csvResults} />
+<CsvReviewDialog bind:open={showCsvReview} request={csvReview} onImported={() => invalidateAll()} />

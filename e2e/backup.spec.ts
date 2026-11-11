@@ -64,6 +64,48 @@ test('back up, wipe the cellar, then restore the backup from the list', async ({
     if (viewport) await page.setViewportSize(viewport);
     await csvExportDialog.getByRole('button', { name: 'Cancel' }).click();
 
+    // A CSV import is checked first (FEAT-08). Its region of a country typed « Frannce » takes the
+    // close name the review offers, the region of a country the cellar lacks is ignored, and the
+    // ignored row downloads once the import is done; the next import is offered the same answer.
+    const importRegions = async (csv: string) => {
+        await page.getByRole('button', { name: 'CSV import', exact: true }).click();
+        const dialog = page.getByRole('dialog', { name: 'CSV import' });
+        await dialog.locator('input[type=file]').setInputFiles({
+            name: 'regions.csv',
+            mimeType: 'text/csv',
+            buffer: Buffer.from(`name,countryName\n${csv}`)
+        });
+        await dialog.getByRole('button', { name: 'Check the file' }).click();
+        return page.getByRole('dialog', { name: 'Review the import' });
+    };
+    let review = await importRegions('E2E Valley,Frannce\nE2E Lake,Atlantis\n');
+    const typo = review.getByRole('article').filter({ hasText: 'Frannce' });
+    await expect(review.getByRole('button', { name: 'Import', exact: true })).toBeDisabled();
+    await typo.getByLabel('Take a value of the cellar').check();
+    await typo.getByRole('button', { name: 'France', exact: true }).click();
+    await expect(typo.getByText('Settled')).toBeVisible();
+    await review.getByRole('button', { name: 'Ignore the rows left' }).click();
+    await expect(review.getByText(/Every row is settled/)).toBeVisible();
+    await review.getByRole('button', { name: 'Import', exact: true }).click();
+    const imported = page.getByRole('dialog', { name: 'Import finished' });
+    await expect(imported.getByRole('tab', { name: /^1\s*Imported$/ })).toBeVisible();
+    const [download] = await Promise.all([
+        page.waitForEvent('download'),
+        imported.getByRole('button', { name: 'Download the ignored rows' }).click()
+    ]);
+    expect(download.suggestedFilename()).toBe('regions-ignored.csv');
+    const ignored = await download.createReadStream().then(async (stream) => {
+        let text = '';
+        for await (const chunk of stream) text += chunk;
+        return text;
+    });
+    expect(ignored).toMatch(/^name,countryName,reason\nE2E Lake,Atlantis,/);
+    await imported.getByRole('button', { name: 'Close' }).last().click();
+    await expect(imported).toBeHidden();
+    review = await importRegions('E2E Hills,Frannce\n');
+    await expect(review.getByText('Pre-filled from your previous imports')).toBeVisible();
+    await review.getByRole('button', { name: 'Cancel' }).click();
+
     // The session ends, as by a logout in another tab, while the browser downloads the backup that
     // the wipe made first: the login dialog opens over the page and keeps saying why (BUG-24).
     await page.route(

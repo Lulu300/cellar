@@ -20,14 +20,15 @@
         open: boolean;
         /** The tables of the import, in its order, as the server reads them. */
         tables: CsvImportTableDTO[];
-        onConfirm: (files: File[], delimiter: string, dryRun: boolean) => Promise<void>;
+        /** Checks the files, which the review then shows before anything is written. */
+        onConfirm: (files: File[], delimiter: string) => void;
     } = $props();
 
     let csvImportFiles = $state<File[]>([]);
     let csvImportDelimiter = $state(',');
     let csvFileInput = $state<HTMLInputElement>();
     let showCsvImportHelp = $state(false);
-    // Both buttons are greyed without a file: a line above them says why.
+    // The button is greyed without a file: a line above it says why.
     const filesMissingId = $props.id();
 
     function closeDialog() {
@@ -71,12 +72,12 @@
         }
     }
 
-    async function executeCsvImport(dryRun: boolean) {
+    function checkFiles() {
         if (csvImportFiles.length === 0) return;
 
         const files = csvImportFiles;
         closeDialog();
-        await onConfirm(files, csvImportDelimiter, dryRun);
+        onConfirm(files, csvImportDelimiter);
     }
 </script>
 
@@ -264,8 +265,7 @@
                     <li>• {m['admin.import_only_add_new_records']()}</li>
                     <li>• {m['admin.ids_auto_generated']()}</li>
                     <li>• {m['admin.file_names_should_contain_table']()}</li>
-                    <li>• {m['admin.failed_imports_shown_in_results']()}</li>
-                    <li>• {m['admin.csv_dry_run_note']()}</li>
+                    <li>• {m['admin.csv_review_note']()}</li>
                 </ul>
             </div>
         </div>
@@ -280,19 +280,11 @@
                 {m['common.cancel']()}
             </Button>
             <Button
-                variant="outline"
-                onclick={() => executeCsvImport(true)}
+                onclick={checkFiles}
                 disabled={csvImportFiles.length === 0}
                 aria-describedby={csvImportFiles.length === 0 ? filesMissingId : undefined}
             >
-                {m['admin.csv_dry_run']()}
-            </Button>
-            <Button
-                onclick={() => executeCsvImport(false)}
-                disabled={csvImportFiles.length === 0}
-                aria-describedby={csvImportFiles.length === 0 ? filesMissingId : undefined}
-            >
-                {m['admin.import_files']({ count: csvImportFiles.length })}
+                {m['admin.csv_check_files']({ count: csvImportFiles.length })}
             </Button>
         {/snippet}
     </ScrollingDialogContent>

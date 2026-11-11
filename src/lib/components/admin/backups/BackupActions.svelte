@@ -1,5 +1,5 @@
 <script lang="ts" module>
-    export type BackupJob = 'backup' | 'export' | 'csv-import' | 'restore' | 'import' | 'wipe';
+    export type BackupJob = 'backup' | 'export' | 'restore' | 'import' | 'wipe';
 </script>
 
 <script lang="ts">
@@ -91,8 +91,6 @@
             title: m['admin.csv_import'](),
             description: m['admin.csv_import_description'](),
             label: m['admin.csv_import'](),
-            job: 'csv-import',
-            busyLabel: m['admin.importing'](),
             icon: FileUp,
             onclick: onCsvImport,
             tone: csv,

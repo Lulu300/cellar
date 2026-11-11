@@ -39,3 +39,40 @@ export function matchesEveryWord(query: string) {
 export function producerKey(name: unknown): string {
     return folded(tidyName(name));
 }
+
+/**
+ * Two names are close when they have the same numbers and one has every word of the other, a word
+ * matching a word it starts or that starts it (« Dom. » and « Domaine »), or when they differ by a
+ * letter, or two in a name of ten letters or more: « Domaine Lefalive » and « Domaine Leflaive ».
+ */
+export function areClose(a: string, b: string): boolean {
+    const words = (text: string) => folded(text).match(/[\p{L}\p{N}]+/gu) ?? [];
+    const numbers = (text: string) => (text.match(/\d+/g) ?? []).join(' ');
+    if (numbers(a) !== numbers(b)) return false;
+    const [x, y] = [words(a), words(b)];
+    if (x.length === 0 || y.length === 0) return false;
+    const [short, long] = x.length <= y.length ? [x, y] : [y, x];
+    const matches = (word: string, other: string) =>
+        word === other ||
+        (Math.min(word.length, other.length) >= 3 &&
+            (word.startsWith(other) || other.startsWith(word)));
+    if (short.every((word) => long.some((other) => matches(word, other)))) return true;
+    const [first, second] = [x.join(' '), y.join(' ')];
+    const allowed = Math.min(2, Math.floor(Math.min(first.length, second.length) / 5));
+    return (
+        Math.abs(first.length - second.length) <= allowed && editDistance(first, second) <= allowed
+    );
+}
+
+function editDistance(a: string, b: string): number {
+    let previous = Array.from({ length: b.length + 1 }, (_, i) => i);
+    for (let i = 1; i <= a.length; i++) {
+        const current = [i];
+        for (let j = 1; j <= b.length; j++) {
+            const cost = a[i - 1] === b[j - 1] ? 0 : 1;
+            current[j] = Math.min(previous[j] + 1, current[j - 1] + 1, previous[j - 1] + cost);
+        }
+        previous = current;
+    }
+    return previous[b.length];
+}

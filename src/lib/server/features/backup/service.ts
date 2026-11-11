@@ -8,7 +8,7 @@ import { db, replaceDatabaseFile } from '#lib/server/db/index.js';
 import { SeedingError } from '#lib/server/db/seed.js';
 import type { Session } from '#lib/server/db/schema.js';
 import { getStoredAccessCode, putBackAccessCode } from '#lib/server/access-code.js';
-import { csvLine } from '#lib/server/csv.js';
+import { csvLine } from '#lib/shared/csv.js';
 import { getLastBarcodeNumbers } from '#lib/server/features/barcode/repository.js';
 import { putBackLastBarcodeNumbers } from '#lib/server/features/barcode/service.js';
 import { storedMcpSettings } from '#lib/server/features/mcp/token.js';

@@ -564,7 +564,7 @@ const operations: Record<string, Operation> = {
     },
     'POST /api/admin/import-csv': {
         tag: 'csv',
-        summary: 'Imports CSV files, each named after its table',
+        summary: 'Imports CSV files, each named after its table, or checks them for a review',
         body: { 'multipart/form-data': csvImportForm },
         answers: ok
     },

@@ -342,6 +342,15 @@ export const appSettings = sqliteTable('app_settings', {
     updatedAt: timestamp('updated_at')
 });
 
+// The choices made in the reviews of the CSV imports, offered again as suggestions when a later
+// import meets the same problem: one row per problem, its latest choice. `key` names the problem
+// (csv-import/review.ts), `answer` is the choice as JSON.
+export const csvImportChoices = sqliteTable('csv_import_choices', {
+    key: text('key').primaryKey(),
+    answer: text('answer').notNull(),
+    updatedAt: timestamp('updated_at')
+});
+
 // Login sessions. Only a SHA-256 hash of the cookie token is stored, so the database file and the
 // backups that copy it cannot be turned back into a valid cookie.
 export const sessions = sqliteTable('sessions', {

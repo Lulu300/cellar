@@ -1,12 +1,14 @@
 import { z } from 'zod';
 import { db } from '#lib/server/db/index.js';
 import { debugLogger } from '#lib/server/debug.js';
-import { tooLargeError } from '#lib/server/http/errors.js';
+import { ConflictError, tooLargeError } from '#lib/server/http/errors.js';
 import { rowColumns } from '#lib/server/features/shared/imported-rows.js';
 import { tableOfFile } from '#lib/shared/csv-import.js';
-import { isIdColumn, parseCsv, type CsvRecord, type UnevenLine } from './parse';
+import { keepChoices, keptChoices } from './choices';
+import { isIdColumn, parseCsv, type CsvLines } from './parse';
 import { ReferenceIndex, WINE_COLUMNS } from './referenceIndex';
 import { fileLeftOut, importFile, type FileReport } from './pipeline';
+import { choicesSchema, Review } from './review';
 import { IMPORT_ORDER, parentOf, TABLES, type TableName } from './tables';
 
 const debug = debugLogger('csv-import');
@@ -25,19 +27,34 @@ export const csvImportForm = z.object({
     /** With automatic barcodes, every bottle gets a new one, even those that the file gives. */
     overrideAllBarcodes: z.stringbool().default(false),
     /** Answers the report of the import without writing anything. */
-    dryRun: z.stringbool().default(false)
+    dryRun: z.stringbool().default(false),
+    /**
+     * The answers of a review, as JSON: with them, even none, the report lists the problems that
+     * rows share, and the import writes nothing while a row is left unsettled.
+     */
+    choices: z
+        .string()
+        .transform((text, context) => {
+            try {
+                return JSON.parse(text) as unknown;
+            } catch {
+                context.addIssue({ code: 'custom', message: 'Not JSON' });
+                return z.NEVER;
+            }
+        })
+        .pipe(choicesSchema)
+        .optional()
 });
 
 type CsvImport = z.output<typeof csvImportForm>;
-type ReadFile =
-    { file: string; table: TableName; lines: (CsvRecord | UnevenLine)[] } | { report: FileReport };
+type ReadFile = ({ file: string; table: TableName } & CsvLines) | { report: FileReport };
 
 async function readFile(file: File, delimiter: string): Promise<ReadFile> {
     const table = tableOfFile(file.name, IMPORT_ORDER);
     // The name has no table name, such as wineBottles.csv.
     if (!table) return { report: fileLeftOut(null, file.name, { code: 'no_table' }) };
     try {
-        return { file: file.name, table, lines: parseCsv(await file.text(), delimiter) };
+        return { file: file.name, table, ...parseCsv(await file.text(), delimiter) };
     } catch (error) {
         debug(`${file.name} is not CSV:`, error);
         // csv-parse tells the line where the file stops being CSV.
@@ -48,11 +65,33 @@ async function readFile(file: File, delimiter: string): Promise<ReadFile> {
 
 const orderOf = (read: ReadFile) => ('table' in read ? IMPORT_ORDER.indexOf(read.table) : -1);
 
-/** Rolls the import back once its report is made. */
-class DryRun extends Error {
+/** Rolls the import back once its report is made: a dry run, or a review with rows unsettled. */
+class RollBack extends Error {
     constructor(readonly reports: FileReport[]) {
-        super('Dry run');
+        super('Rolled back');
     }
+}
+
+/** What a review lists, with what the user may choose from. */
+function reviewOf(review: Review, index: ReferenceIndex) {
+    const { issues, unlisted } = review.list();
+    // The tables that the references name, and the parents of those that may be created.
+    const targets = new Set(
+        issues.flatMap(({ target, creatable }) => {
+            if (!target) return [];
+            const parent = creatable && parentOf(target)?.reference.table;
+            return parent ? [target, parent] : [target];
+        })
+    );
+    return {
+        open: review.open,
+        issues,
+        unlisted,
+        /** The names that each table referred to has, for a reference to take one. */
+        names: Object.fromEntries([...targets].map((table) => [table, index.namesOf(table)])),
+        /** Every wine, when bottles are to be put in one. */
+        wines: issues.some((issue) => issue.kind === 'wine') ? index.allWineOptions() : []
+    };
 }
 
 /**
@@ -60,7 +99,13 @@ class DryRun extends Error {
  * that lacks something, or names a row the cellar does not have, is left out and reported; a row
  * that the database refuses cancels the whole import.
  */
-export async function importCsv({ files, delimiter, overrideAllBarcodes, dryRun }: CsvImport) {
+export async function importCsv({
+    files,
+    delimiter,
+    overrideAllBarcodes,
+    dryRun,
+    choices
+}: CsvImport) {
     if (files.reduce((size, file) => size + file.size, 0) > MAX_CSV_UPLOAD_BYTES) {
         throw tooLargeError();
     }
@@ -68,18 +113,36 @@ export async function importCsv({ files, delimiter, overrideAllBarcodes, dryRun 
         (a, b) => orderOf(a) - orderOf(b)
     );
     const started = performance.now();
+    const review = choices && new Review(choices);
+    let reviewed: ReturnType<typeof reviewOf> | undefined;
     let results: FileReport[];
     try {
         results = db.transaction((tx) => {
             const index = new ReferenceIndex(tx);
-            const reports = read.map((file) =>
-                'report' in file ? file.report : importFile(tx, index, file, overrideAllBarcodes)
-            );
-            if (dryRun) throw new DryRun(reports);
+            const reports = read.map((file) => {
+                if (!('report' in file)) {
+                    return importFile(tx, index, file, overrideAllBarcodes, review);
+                }
+                const { table, file: name, errors } = file.report;
+                const ignored = review?.ignoresFile(table, name, errors[0].problems[0]);
+                return ignored ? { ...file.report, failedImports: 0, errors: [] } : file.report;
+            });
+            if (review) {
+                review.suggest(
+                    keptChoices(
+                        tx,
+                        review.list().issues.map(({ key }) => key)
+                    ),
+                    index
+                );
+                reviewed = reviewOf(review, index);
+                if (!dryRun && !review.open) keepChoices(tx, review.toKeep(index));
+            }
+            if (dryRun || review?.open) throw new RollBack(reports);
             return reports;
         });
     } catch (error) {
-        if (!(error instanceof DryRun)) throw error;
+        if (!(error instanceof RollBack)) throw error;
         results = error.reports;
     }
     for (const result of results) debug(result);
@@ -91,15 +154,29 @@ export async function importCsv({ files, delimiter, overrideAllBarcodes, dryRun 
         totalImported: total((result) => result.successfulImports),
         totalSkipped: total((result) => result.skippedImports),
         totalFailed: total((result) => result.failedImports),
+        totalIgnored: total((result) => result.ignoredImports),
         filesProcessed: files.length
     };
-    return {
+    const answer = {
         success: true,
         dryRun,
-        message: `CSV import ${dryRun ? 'checked, nothing written' : 'completed'}: ${summary.totalImported} records imported, ${summary.totalSkipped} already in the cellar, ${summary.totalFailed} failed.`,
+        message: `CSV import ${dryRun ? 'checked, nothing written' : 'completed'}: ${summary.totalImported} records imported, ${summary.totalSkipped} already in the cellar, ${summary.totalFailed} failed${reviewed ? `, ${summary.totalIgnored} ignored` : ''}.`,
         results,
-        summary
+        summary,
+        ...(reviewed && { review: reviewed })
     };
+    if (!dryRun && reviewed?.open) {
+        throw new ConflictError(
+            'rows_to_settle',
+            `Nothing was imported: ${summary.totalFailed} rows are still to settle.`,
+            {
+                ...answer,
+                success: false,
+                message: 'CSV import checked, nothing written: rows are still to settle.'
+            }
+        );
+    }
+    return answer;
 }
 
 /**

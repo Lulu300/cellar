@@ -3063,7 +3063,9 @@ appellation, classification, type and colour before the import, whatever its oth
 an earlier row of the import that was imported has the same values, whatever their case. Otherwise,
 rows that share these columns but differ in another one, such as the rating, each add a wine; a
 bottle row that names such a wine is reported with `several_wines`, in this import or a later one,
-since the bottle file cannot tell these wines apart.
+since the bottle file cannot tell these wines apart. Since 1.8.0, such a bottle row is skipped
+instead (`same_barcode` or `same_bottle`) when one of those wines already has that bottle, as when
+the CSV export of the cellar is imported again.
 
 A wine color row without `hex`, from a file of a version before 1.4.0, gets the colour of its name
 (see [reference tables](#reference-tables)). A color already in the cellar keeps its own colour,
@@ -3077,6 +3079,37 @@ A `consumed` bottle row keeps the case it names, without taking a place there, w
 that case, in the container the row names; when it does not, the case or its container may have
 been deleted since, and the bottle is imported in no case rather than refused.
 
+#### The review (`choices`)
+
+The admin page checks the files first, then lets the user settle each row that cannot be imported
+as it is, and imports everything at once. A request that sends `choices`, even `{}`, works this way:
+
+- The answer has `review` (see below), which groups the rows that share a problem into issues: an
+  unknown, blank or (for a producer) new value of a table, a cell that breaks a rule, the wine of
+  bottles that name none or several, or a row that only ignoring settles.
+- A producer that the cellar lacks and that is close to one it has (same numbers, and one name
+  holds every word of the other, a word matching one it starts, or one or two letters apart) is an
+  issue with the code `similar_name`; without `choices`, it is created as before.
+- `choices` answers issues by their `key`, each answer applying to every row of the issue:
+  - `{ "action": "set", "value": "…", "parent": "…" }`: another text for the cell; for a
+    reference, the name of a row that the cellar or the import has, and the name of its parent
+    (the region of an appellation, the country of a region, the container of a case);
+  - `{ "action": "create", "value": "…", "parent": "…" }`: creates the row named (any table whose
+    issue has `creatable: true`), then takes it;
+  - `{ "action": "wine", "wine": { "id": "…" } }`, or with `{ "file": "…", "row": 3 }` in place of
+    the id: puts the bottles in this wine of the cellar, or in the wine of that row of a wines file
+    of the import;
+  - `{ "action": "ignore" }`: leaves the rows out; they are listed in `ignored`;
+  - `{ "action": "import" }`, under the key `["row","<file>",<row>]` of a bottle row already in
+    the cellar: imports it anyway; a barcode that the cellar has is replaced by the next automatic
+    one, or none when automatic barcodes are off;
+  - the key `*` with `{ "action": "ignore" }`: ignores every issue left without an answer.
+- With `dryRun=false`, nothing is written while a row is left unsettled: the answer is
+  `409 rows_to_settle`, whose `details` hold the report of the check.
+- An import that writes keeps its answers, except `ignore` and `import`, for the next checks, which
+  return them as `suggestion` on the same issues; they are never applied without being sent back in
+  `choices`. A wipe forgets them.
+
 - **Session:** required.
 - **Body:** multipart form, at most 50 MB in all:
   - `files`: one or more files, each named `….csv`. The table of a file is the table name that ends
@@ -3089,25 +3122,49 @@ been deleted since, and the bottle is imported in no case rather than refused.
     those the file gives, and adds every bottle row without looking for bottles already in the
     cellar.
   - `dryRun`: same values, default `false`. `true` answers the report without writing anything.
+  - `choices`: JSON, optional: the answers of a review (see above).
 - **Response:** `200` with:
   - `success: true`, `dryRun`, and an English `message`.
   - `results`: one report per file, with `table` (the table that its name names, or `null`),
-    `file` (its name), `totalRows`, `successfulImports`, `skippedImports`, `failedImports`,
-    `errors` and `skipped`. `errors` and `skipped` list the first 1,000 rows of their kind;
-    `failedImports` and `skippedImports` count them all.
+    `file` (its name), `columns` (its header), `totalRows`, `successfulImports`, `skippedImports`,
+    `failedImports`, `ignoredImports`, `errors`, `skipped` and `ignored`. `errors` and `skipped`
+    list the first 1,000 rows of their kind; `failedImports` and `skippedImports` count them all.
     - `errors[]`: `{ "row", "problems": [...] }`, the row numbered from 1 under the header. Each
       problem has a `code`: `missing` or `invalid` with `column` (`invalid` in `drinkFrom` for a
       bottle whose drinking window ends before it starts); `unknown_reference` with `column`
-      and `name`; `unknown_wine` or `several_wines` with `name`; `case_full` with `name` and
+      and `name`; `similar_name` with `column`, `name` and `similar` (the close names), in a review
+      only; `unknown_wine` or `several_wines` with `name`; `case_full` with `name` and
       `capacity`; `uneven_row` with `values` and `columns`, for a row with more or fewer values
       than the header has columns. A file left out whole is reported as row 0, with `no_table`
       (its name names no table) or `not_csv` (with `line` when known).
     - `skipped[]`: `{ "row", "reason" }`, where `reason.code` is `same_name` (with `name`),
-      `same_barcode` (with `barcode`) or `same_bottle`.
-  - `summary`: `totalImported`, `totalSkipped`, `totalFailed`, `filesProcessed`.
-- **Errors:** `422 invalid_body` when there is no file or a file is not named `….csv`;
+      `same_barcode` (with `barcode`) or `same_bottle`. A bottle row that a review imported anyway
+      is listed with `"imported": true`, and counted in `successfulImports`.
+    - `ignored[]`: every row that a review ignored, `{ "row", "key", "values" }`: the key of the
+      issue whose answer ignored it, and its values in the order of `columns`.
+  - `summary`: `totalImported`, `totalSkipped`, `totalFailed`, `totalIgnored`, `filesProcessed`.
+  - `review`, when the request sends `choices`:
+    - `open`: whether a row is left to settle.
+    - `issues`: the first 1,000, the open ones first, each with `key`, `kind` (`reference`,
+      `wine`, `cell` or `row`), `table` (of its rows; `null` for a file whose name names no table),
+      `column` and `value` (the text of the file),
+      `parentColumn` and `parent`, `target` (the table a reference names), `parentTarget`,
+      `required`, `creatable`, `problem` (one of the codes above, as the first row that met it
+      unsettled had it; absent when answers settled every row), `open`, `answer` (the answer
+      applied), `suggestion` (kept from an earlier import), `close` (close names of `target`),
+      `wines` (for a `wine` issue: the wines meant, each with `wine`, the value of a
+      `wine` answer, and its names, rating, grape varieties and description), `pending` (the row of
+      a wines file of the import that the bottles name, itself to settle), `count`, `rows` (the
+      first 20 `{ "file", "row" }`) and `sample` (the values of the first row).
+    - `unlisted`: how many issues are not listed.
+    - `names`: for each table that the issues name, its rows as `{ "name", "parent" }`.
+    - `wines`: every wine, when an issue is about the wine of bottles.
+- **Errors:** `422 invalid_body` when there is no file, a file is not named `….csv`, or `choices`
+  is not JSON of answers (the key `*` takes only `ignore`);
   `409 import_row_refused` when the database refuses a row: nothing from any file is imported then,
-  and `details` has `file` and `row`; `409 barcode_range` when the automatic barcodes run out;
+  and `details` has `file` and `row`; `409 rows_to_settle` when a review leaves a row unsettled
+  (`details` hold the report, with `success: false`);
+  `409 barcode_range` when the automatic barcodes run out;
   `409 barcode_prefix_too_long` when a bottle takes the next barcode and the configured prefix is
   longer than 6 characters (a prefix saved before prefixes were checked).
 
@@ -3126,15 +3183,24 @@ curl -fsS -b cookies.txt -H "Origin: $CELLAR" \
     {
       "table": "countries",
       "file": "countries.csv",
+      "columns": ["name"],
       "totalRows": 4,
       "successfulImports": 2,
       "skippedImports": 1,
       "failedImports": 1,
+      "ignoredImports": 0,
       "errors": [{ "row": 4, "problems": [{ "code": "missing", "column": "name" }] }],
-      "skipped": [{ "row": 1, "reason": { "code": "same_name", "name": "France" } }]
+      "skipped": [{ "row": 1, "reason": { "code": "same_name", "name": "France" } }],
+      "ignored": []
     }
   ],
-  "summary": { "totalImported": 2, "totalSkipped": 1, "totalFailed": 1, "filesProcessed": 1 }
+  "summary": {
+    "totalImported": 2,
+    "totalSkipped": 1,
+    "totalFailed": 1,
+    "totalIgnored": 0,
+    "filesProcessed": 1
+  }
 }
 ```
 

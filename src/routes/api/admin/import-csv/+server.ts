@@ -14,7 +14,8 @@ export const POST: RequestHandler = apiHandler(async ({ request }) => {
         files: form.getAll('files'),
         delimiter: field('delimiter'),
         overrideAllBarcodes: field('overrideAllBarcodes'),
-        dryRun: field('dryRun')
+        dryRun: field('dryRun'),
+        choices: field('choices')
     });
     return Response.json(await importCsv(input));
 });

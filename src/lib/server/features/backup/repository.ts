@@ -5,6 +5,7 @@ import { seed } from '#lib/server/db/seed.js';
 import {
     appellations,
     countries,
+    csvImportChoices,
     origins,
     producers,
     regions,
@@ -28,7 +29,7 @@ import { EXPORT_TABLE_NAMES, EXPORT_TABLES, type ExportTableName } from './expor
 /**
  * Empties every table of the cellar, then puts the default reference data back, all or nothing:
  * should the default data fail to go back in, the cellar stays as it was. app_settings,
- * label_presets and sessions are kept.
+ * label_presets and sessions are kept; the choices of the CSV imports go with the rows they name.
  */
 export function wipeCellar(): void {
     db.transaction((tx) => {
@@ -36,6 +37,7 @@ export function wipeCellar(): void {
         for (const name of [...EXPORT_TABLE_NAMES].reverse()) {
             tx.delete(EXPORT_TABLES[name]).run();
         }
+        tx.delete(csvImportChoices).run();
         seed(tx, { force: true });
     });
 }

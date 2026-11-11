@@ -5,6 +5,7 @@ import { db } from '#lib/server/db/index.js';
 import {
     appSettings,
     countries,
+    csvImportChoices,
     wineBottles,
     wineDefinitions,
     wineFormats,
@@ -91,5 +92,15 @@ describe('POST /api/admin/wipe-database', () => {
         // Their labels may still be on bottles: the numbering goes on after the last one given.
         expect(getAppSetting('barcode_last_number:KEPT')?.value).toBe('3');
         expect(getNextBarcodeNumber({ prefix: 'KEPT', startNumber: 1 })).toBe(4);
+    });
+});
+
+describe('POST /api/admin/wipe-database and the CSV imports', () => {
+    it('forgets the choices of the reviews, which name rows of the cellar', async () => {
+        await db.insert(csvImportChoices).values({ key: 'k', answer: '{"id":"x"}' });
+
+        expect((await wipe()).status).toBe(200);
+
+        expect(await db.select().from(csvImportChoices)).toEqual([]);
     });
 });

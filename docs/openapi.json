@@ -5617,7 +5617,7 @@
         "tags": [
           "CSV import and export"
         ],
-        "summary": "Imports CSV files, each named after its table",
+        "summary": "Imports CSV files, each named after its table, or checks them for a review",
         "operationId": "postAdminImportCsv",
         "security": [
           {
@@ -5650,6 +5650,9 @@
                     "type": "string"
                   },
                   "dryRun": {
+                    "type": "string"
+                  },
+                  "choices": {
                     "type": "string"
                   }
                 },
@@ -6177,6 +6180,7 @@
                         "export_refused",
                         "pre_import_backup_failed",
                         "import_row_refused",
+                        "rows_to_settle",
                         "backup_refused",
                         "pre_restore_backup_failed",
                         "wipe_failed",

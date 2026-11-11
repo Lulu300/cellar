@@ -606,8 +606,9 @@ describe('CSV export then import of wines alike in every exported column of thei
         const { results } = await importAll([
             new File(
                 [
-                    'wineName,producer,appellationName,classificationName,colorName,formatName\n' +
-                        'Bubbles,Maker,Cru Alpha,,White,Bottle\n'
+                    // A bottle that neither wine has: one of them that has it would be found.
+                    'wineName,producer,appellationName,classificationName,colorName,formatName,vintage\n' +
+                        'Bubbles,Maker,Cru Alpha,,White,Bottle,2019\n'
                 ],
                 'cellar-export-wineBottles-2025-01-01.csv'
             )

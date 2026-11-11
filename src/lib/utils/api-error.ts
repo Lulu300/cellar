@@ -58,6 +58,7 @@ const MESSAGES: Record<ApiErrorCode, ErrorMessage> = {
     export_refused: m['errors.export_refused'],
     pre_import_backup_failed: m['errors.pre_import_backup_failed'],
     import_row_refused: m['errors.import_row_refused'],
+    rows_to_settle: m['errors.rows_to_settle'],
     backup_refused: m['errors.backup_refused'],
     pre_restore_backup_failed: m['errors.pre_restore_backup_failed'],
     wipe_failed: m['errors.wipe_failed'],

@@ -20,3 +20,12 @@ export function tableOfFile<Table extends string>(
     }
     return found;
 }
+
+/**
+ * The key of the answer to one row of a CSV import in its review, numbered from 1 under the header
+ * of `file`: to ignore it, or to import a bottle that the cellar has already.
+ */
+export const csvRowKey = (file: string, row: number) => JSON.stringify(['row', file, row]);
+
+/** The key of the answer that settles every problem of a review left without one: by ignoring. */
+export const CSV_OTHERS_KEY = '*';

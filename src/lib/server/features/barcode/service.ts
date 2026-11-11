@@ -1,6 +1,6 @@
 import type { Tx } from '#lib/server/db/connection.js';
 import { db } from '#lib/server/db/index.js';
-import { csvLine } from '#lib/server/csv.js';
+import { csvLine } from '#lib/shared/csv.js';
 import { ConflictError, ValidationError } from '#lib/server/http/errors.js';
 import {
     BarcodeRangeError,

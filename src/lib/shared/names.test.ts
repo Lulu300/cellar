@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { folded, producerKey, tidyName } from './names';
+import { areClose, folded, producerKey, tidyName } from './names';
 
 describe('the names of producers', () => {
     it('are stored with one space between words, and none around', () => {
@@ -34,5 +34,25 @@ describe('a search', () => {
         expect(folded('Château Côté')).toBe('chateau cote');
         expect(folded('Château Margaux').includes(folded('CHAT'))).toBe(true);
         expect(folded('Château d’Yquem').includes(folded("d'yquem"))).toBe(true);
+    });
+});
+
+describe('areClose', () => {
+    it.each([
+        ['Dom. Leflaive', 'Domaine Leflaive'],
+        ['Guigal', 'E. Guigal'],
+        ['Domaine Lefalive', 'Domaine Leflaive'],
+        ['chateau margaux', 'Château Margaux']
+    ])('finds « %s » close to « %s »', (a, b) => {
+        expect(areClose(a, b)).toBe(true);
+    });
+
+    it.each([
+        ['Producer 5', 'Producer 50'],
+        ['Cuvée 2019', 'Cuvée 2020'],
+        ['Domaine Roulot', 'Domaine Rapet'],
+        ['Clos', 'Gros']
+    ])('does not find « %s » close to « %s »', (a, b) => {
+        expect(areClose(a, b)).toBe(false);
     });
 });

@@ -77,7 +77,7 @@ export class BottleImport {
     duplicate(bottle: ImportedRow): SkipReason | undefined {
         if (this.newBarcodes) return undefined;
         if (typeof bottle.barcode === 'string') {
-            return this.barcodes.has(bottle.barcode)
+            return this.barcodeTaken(bottle)
                 ? { code: 'same_barcode', barcode: bottle.barcode }
                 : undefined;
         }
@@ -86,6 +86,18 @@ export class BottleImport {
         if (count === 0) return undefined;
         this.alike.set(key, count - 1);
         return { code: 'same_bottle' };
+    }
+
+    /** Whether `bottle` is already in the cellar, as duplicate() tells, without counting it. */
+    has(bottle: ImportedRow): boolean {
+        if (this.newBarcodes) return false;
+        if (typeof bottle.barcode === 'string') return this.barcodeTaken(bottle);
+        return (this.alike.get(sameBottleKey(bottle)) ?? 0) > 0;
+    }
+
+    /** Whether the cellar or an earlier row of the file has the barcode of `bottle`. */
+    barcodeTaken(bottle: ImportedRow): boolean {
+        return typeof bottle.barcode === 'string' && this.barcodes.has(bottle.barcode);
     }
 
     /** Why `bottle` does not fit in its case, if it does not: only available bottles count. */

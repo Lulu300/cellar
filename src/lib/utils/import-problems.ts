@@ -18,6 +18,12 @@ function problemText(problem: RowProblem): string {
                 column: problem.column,
                 name: problem.name
             });
+        case 'similar_name':
+            return m['admin.csv_problem_similar_name']({
+                column: problem.column,
+                name: problem.name,
+                similar: problem.similar.join(', ')
+            });
         case 'unknown_wine':
             return m['admin.csv_problem_unknown_wine']({ name: problem.name });
         case 'several_wines':

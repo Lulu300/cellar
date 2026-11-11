@@ -40,6 +40,7 @@ export const API_ERROR_CODES = [
     'export_refused',
     'pre_import_backup_failed',
     'import_row_refused',
+    'rows_to_settle',
     'backup_refused',
     'pre_restore_backup_failed',
     'wipe_failed',

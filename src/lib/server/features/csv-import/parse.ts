@@ -1,22 +1,27 @@
 import { parse } from 'csv-parse/sync';
-import { withoutFormulaGuard } from '#lib/server/csv.js';
+import { withoutFormulaGuard } from '#lib/shared/csv.js';
 
 /** A line of a CSV file, by the columns of its header, every value trimmed. */
 export type CsvRecord = Record<string, string>;
 
-/** A line with more or fewer values than the header has columns: it is reported, not read. */
+/**
+ * A line with more or fewer values than the header has columns: it is reported, not read. Its values
+ * are kept for the rows that the user leaves out to download.
+ */
 export class UnevenLine {
     constructor(
-        readonly values: number,
+        readonly values: string[],
         readonly columns: number
     ) {}
 }
 
+export type CsvLines = { header: string[]; lines: (CsvRecord | UnevenLine)[] };
+
 /**
- * The lines of a CSV file under its header, each value without the guard that an export puts
+ * The header of a CSV file and the lines under it, each value without the guard that an export puts
  * before a text that a spreadsheet would run as a formula. Throws when the file is not valid CSV.
  */
-export function parseCsv(text: string, delimiter: string): (CsvRecord | UnevenLine)[] {
+export function parseCsv(text: string, delimiter: string): CsvLines {
     const [header = [], ...lines]: string[][] = parse(text, {
         skip_empty_lines: true,
         trim: true,
@@ -26,11 +31,14 @@ export function parseCsv(text: string, delimiter: string): (CsvRecord | UnevenLi
         // A line of another length is reported alone, instead of the whole file.
         relax_column_count: true
     });
-    return lines.map((values) =>
-        values.length === header.length
-            ? Object.fromEntries(header.map((column, i) => [column, values[i]]))
-            : new UnevenLine(values.length, header.length)
-    );
+    return {
+        header,
+        lines: lines.map((values) =>
+            values.length === header.length
+                ? Object.fromEntries(header.map((column, i) => [column, values[i]]))
+                : new UnevenLine(values, header.length)
+        )
+    };
 }
 
 const NUMBER_COLUMNS = new Set([

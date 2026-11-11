@@ -190,7 +190,7 @@ Revue du code du 2026-10-08, commit `556c7bb`. Ce fichier est la version pour le
 | 1.6.0 | P22 · Période de dégustation | Juste après la 1.5.3, avant les autres blocs (décision « Période de dégustation (FEAT-19) ») : FEAT-19 ; puis REL-22. Une version mineure à elle seule, à cause de sa migration. Publiée en 1.6.0 le 2026-11-09. | FEAT-19, REL-22 | 2 / 2 |
 | 1.7.0 | P23 · Finitions et barre de sélection | Juste après la 1.6.0, avant les autres blocs (décision « Finitions (UI-37, UI-34) ») : UI-37 et UI-34, menées côte à côte et fusionnées l’une après l’autre ; puis REL-23. Une version mineure. Le 2026-11-10, le mainteneur la sort sans attendre DEP-11, éligible le 2026-11-12, qui passe à la sortie suivante. Publiée en 1.7.0 le 2026-11-11. | UI-34, UI-37, REL-23 | 3 / 3 |
 | Dégustation | P20 · Fiches de dégustation | Décision « Fiches de dégustation (FEAT-06, FEAT-14 à FEAT-16) ». Sur la branche d’intégration `feat/tasting`, envoyée sur GitHub (décision « Blocs sans numéro ») : chaque tâche part de cette branche et y revient ; la branche rejoint develop quand le mainteneur valide le bloc entier. Ordre : FEAT-06 ; FEAT-14 ; FEAT-15 ; FEAT-16 ; puis REL-17. | FEAT-06, FEAT-14, FEAT-15, FEAT-16, REL-17 | 0 / 5 |
-| Producteurs | P18 · Producteurs et revue de l’import | Les producteurs d’abord, parce que la revue de l’import doit savoir relier ou créer un producteur. Ordre : FEAT-07 ; FEAT-08 ; puis REL-12. Le 2026-11-11, le mainteneur sort le bloc sans attendre DEP-11, éligible le 2026-11-12, qui passe à la sortie suivante. | FEAT-07, FEAT-08, REL-12 | 2 / 3 |
+| 1.8.0 | P18 · Producteurs et revue de l’import | Les producteurs d’abord, parce que la revue de l’import doit savoir relier ou créer un producteur. Ordre : FEAT-07 ; FEAT-08 ; puis REL-12. Le 2026-11-11, le mainteneur sort le bloc sans attendre DEP-11, éligible le 2026-11-12, qui passe à la sortie suivante. Publiée en 1.8.0 le 2026-11-11. | FEAT-07, FEAT-08, REL-12 | 3 / 3 |
 | Notifications | P19 · Notifications | Les notifications, qui utilisent « À boire » (FEAT-05), le statut hors cave et la vérification des mises à jour. Ordre : FEAT-09 ; puis REL-13. DEP-11 se fait sur develop juste avant la sortie suivante, quel que soit le bloc. | DEP-11, FEAT-09, REL-13 | 0 / 3 |
 | Statistiques de dégustation | P21 · Statistiques de dégustation | Après le bloc « Dégustation », dont elles lisent les fiches. Ordre : FEAT-17 ; puis REL-18. | FEAT-17, REL-18 | 0 / 2 |
 
@@ -3989,9 +3989,9 @@ Sévérité **évolution** · effort **S** · dépend de FEAT-06, FEAT-14, FEAT-
 
 **Sources** : Décision « Blocs sans numéro »
 
-## P18 · Producteurs et revue de l’import (Producteurs)
+## P18 · Producteurs et revue de l’import (1.8.0)
 
-Les producteurs d’abord, parce que la revue de l’import doit savoir relier ou créer un producteur. Ordre : FEAT-07 ; FEAT-08 ; puis REL-12. Le 2026-11-11, le mainteneur sort le bloc sans attendre DEP-11, éligible le 2026-11-12, qui passe à la sortie suivante.
+Les producteurs d’abord, parce que la revue de l’import doit savoir relier ou créer un producteur. Ordre : FEAT-07 ; FEAT-08 ; puis REL-12. Le 2026-11-11, le mainteneur sort le bloc sans attendre DEP-11, éligible le 2026-11-12, qui passe à la sortie suivante. Publiée en 1.8.0 le 2026-11-11.
 
 ### FEAT-07 · Producteurs : une liste et une fiche
 
@@ -4039,7 +4039,9 @@ Sévérité **évolution** · effort **L** · dépend de FEAT-07 · statut **Fai
 
 ### REL-12 · Publication du bloc « Producteurs »
 
-Sévérité **évolution** · effort **S** · dépend de FEAT-07, FEAT-08 · statut **À faire**
+Sévérité **évolution** · effort **S** · dépend de FEAT-07, FEAT-08 · statut **Fait**
+
+**Suivi** (2026-11-11) : 68510e00, v1.8.0
 
 **Problème** : Le bloc apporte aux utilisateurs ce que sa phase a livré.
 
@@ -4048,6 +4050,7 @@ Sévérité **évolution** · effort **S** · dépend de FEAT-07, FEAT-08 · sta
 **À faire**
 
 - Résumé complété à chaque tâche ; bancs depuis la version précédente et la 1.0.0 ; release selon RELEASING.md, avec le mainteneur, sous le numéro de version suivant (décision « Blocs sans numéro »).
+- Fait le 2026-11-11 : publiée en 1.8.0, sans DEP-11 ; le banc apprend le regroupement des producteurs en passant la 1.8.0 (patch de FEAT-07, plus les ex-aequo de la 10e place du top des producteurs comparés par leur seul compte ; copie `upgrade-test.sh.bak-before-1.8`) ; bancs de la 1.7.0 et de la 1.0.0 vers la 1.8.0, 176 sur 176 chacun ; CI 43088293906 verte sur 68510e00 ; `main` avancée, tag v1.8.0, release 43089248132 verte ; image publique sans connexion (`1.8.0`, `1.8`, `latest`, amd64 et arm64). develop passe à 1.9.0-rc.0, avec une entrée 1.9.0 au résumé provisoire.
 
 **Critère d’acceptation** : La version est publiée sur `main` et son image se télécharge sans connexion ; develop passe à la rc suivante.
 

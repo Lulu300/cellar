@@ -110,8 +110,9 @@ export const versions = [
 		goal: 'Des fiches de dégustation structurées et personnalisables, imprimables en A4, à remplir quand on boit une bouteille, plusieurs fiches et leurs versions, et un MCP qui aide à les remplir et à les faire évoluer. Sur sa propre branche.'
 	},
 	{
-		id: 'Producteurs',
+		id: '1.8.0',
 		title: 'Producteurs et revue de l’import',
+		released: '2026-11-11',
 		goal: 'Une fiche pour chaque producteur, et un import CSV qui se règle à la main avant d’écrire.'
 	},
 	{
@@ -291,9 +292,9 @@ export const phases = [
 	},
 	{
 		id: 'P18',
-		version: 'Producteurs',
+		version: '1.8.0',
 		title: 'Producteurs et revue de l’import',
-		goal: 'Les producteurs d’abord, parce que la revue de l’import doit savoir relier ou créer un producteur. Ordre : FEAT-07 ; FEAT-08 ; puis REL-12. Le 2026-11-11, le mainteneur sort le bloc sans attendre DEP-11, éligible le 2026-11-12, qui passe à la sortie suivante.'
+		goal: 'Les producteurs d’abord, parce que la revue de l’import doit savoir relier ou créer un producteur. Ordre : FEAT-07 ; FEAT-08 ; puis REL-12. Le 2026-11-11, le mainteneur sort le bloc sans attendre DEP-11, éligible le 2026-11-12, qui passe à la sortie suivante. Publiée en 1.8.0 le 2026-11-11.'
 	},
 	{
 		id: 'P19',
@@ -3116,7 +3117,8 @@ export const tasks = [
 		why: 'Le bloc apporte aux utilisateurs ce que sa phase a livré.',
 		where: ['releases.json', 'CHANGELOG.md', 'UPGRADING.md'],
 		todo: [
-			'Résumé complété à chaque tâche ; bancs depuis la version précédente et la 1.0.0 ; release selon RELEASING.md, avec le mainteneur, sous le numéro de version suivant (décision « Blocs sans numéro »).'
+			'Résumé complété à chaque tâche ; bancs depuis la version précédente et la 1.0.0 ; release selon RELEASING.md, avec le mainteneur, sous le numéro de version suivant (décision « Blocs sans numéro »).',
+			'Fait le 2026-11-11 : publiée en 1.8.0, sans DEP-11 ; le banc apprend le regroupement des producteurs en passant la 1.8.0 (patch de FEAT-07, plus les ex-aequo de la 10e place du top des producteurs comparés par leur seul compte ; copie `upgrade-test.sh.bak-before-1.8`) ; bancs de la 1.7.0 et de la 1.0.0 vers la 1.8.0, 176 sur 176 chacun ; CI 43088293906 verte sur 68510e00 ; `main` avancée, tag v1.8.0, release 43089248132 verte ; image publique sans connexion (`1.8.0`, `1.8`, `latest`, amd64 et arm64). develop passe à 1.9.0-rc.0, avec une entrée 1.9.0 au résumé provisoire.'
 		],
 		done: 'La version est publiée sur `main` et son image se télécharge sans connexion ; develop passe à la rc suivante.',
 		deps: ['FEAT-07', 'FEAT-08'], src: ['Décision « Blocs sans numéro »']

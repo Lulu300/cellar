@@ -33,5 +33,6 @@ describe('a search', () => {
     it('ignores case and accents', () => {
         expect(folded('Château Côté')).toBe('chateau cote');
         expect(folded('Château Margaux').includes(folded('CHAT'))).toBe(true);
+        expect(folded('Château d’Yquem').includes(folded("d'yquem"))).toBe(true);
     });
 });

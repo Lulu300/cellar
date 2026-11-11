@@ -2703,7 +2703,7 @@ The tools that read:
 
 - `search_wines`: finds wines.
   - **Parameters:** `query`: string, optional, at most 500 characters: words that the wine must all
-    hold, capitals and accents aside, in its name, producer, color, type, classification,
+    hold, capitals, accents and the kind of apostrophe aside, in its name, producer, color, type, classification,
     appellation, region, country or grapes; `inCellarOnly`: boolean, default `false`; `limit`:
     integer from 1 to 200, default 50; `offset`: integer from 0, default 0, how many wines to skip,
     to read past `limit`.
@@ -2721,7 +2721,7 @@ The tools that read:
     `purchaseDate`, `currentValue`, `consumedDate` and `notes`.
 - `list_producers`: finds producers, the estates and houses of the wines.
   - **Parameters:** `query`: string, optional, at most 500 characters: words that the producer must
-    all hold, capitals and accents aside, in its name, region or country; `limit` and `offset`, as
+    all hold, capitals, accents and the kind of apostrophe aside, in its name, region or country; `limit` and `offset`, as
     for `search_wines`.
   - **Answer:** `{ "total", "producers" }`: the producers found, by name, from `offset`, `total`
     counting them all. Each producer has `id`, `name`, `region`, `country`, `wineCount`, its
@@ -2788,7 +2788,7 @@ The tools that read:
   `countryId` and `regionId` of `create_producer` and `update_producer`.
 - `search_appellations`: finds appellations, for the `appellationId` of `add_wine`.
   - **Parameters:** `query`: string, required, at most 500 characters: words that the appellation,
-    its region and its country must all hold between them, capitals and accents aside.
+    its region and its country must all hold between them, capitals, accents and the kind of apostrophe aside.
   - **Answer:** `{ "total", "appellations" }`: at most 50 appellations, by name, each with `id`,
     `name`, `region` and `country`; `total` counts them all. A missing appellation is added in the
     app (Admin › Data).

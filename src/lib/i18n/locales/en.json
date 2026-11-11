@@ -10,7 +10,7 @@
   "errors.in_use_bottles": "This item is still used by {count, plural, one {# bottle} other {# bottles}}, so it cannot be deleted.",
   "errors.in_use_regions": "This item still holds {count, plural, one {# region} other {# regions}}, so it cannot be deleted.",
   "errors.in_use_appellations": "This item still holds {count, plural, one {# appellation} other {# appellations}}, so it cannot be deleted.",
-  "errors.merge_choice_needed": "Both producers have a different value for a field: choose the one to keep.",
+  "errors.merge_choice_needed": "The two producers have different values for a field: choose the one to keep.",
   "errors.duplicate_name": "An item with this name already exists.",
   "errors.duplicate_region": "This country already has a region with this name.",
   "errors.duplicate_appellation": "This region already has an appellation with this name.",

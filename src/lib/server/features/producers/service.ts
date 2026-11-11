@@ -25,7 +25,8 @@ import {
 
 /**
  * The place of a producer, given by either field: a region gives its country, which a countryId
- * given too must be; a body that gives one of them without the region clears the region.
+ * given too must be; a body that gives one of them without the region clears the region. The CSV
+ * import also takes a producer's country from its region (csv-import/pipeline.ts).
  */
 function placed(fields: Fields, tx: Tx): Fields {
     if (fields.countryId === undefined && fields.regionId === undefined) return fields;

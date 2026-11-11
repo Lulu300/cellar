@@ -136,7 +136,12 @@
         </DialogHeader>
 
         <div class="grid gap-4 sm:grid-cols-2">
-            <FormField label={m['admin.merge_kept']()}>
+            <!-- The count sits under its picker: on a phone the pickers stack, and a row of counts
+                 apart would not say whose each is -->
+            <FormField
+                label={m['admin.merge_kept']()}
+                hint={kept && m['producers.n_wines']({ count: kept.wineCount })}
+            >
                 <SearchableSelect
                     bind:value={keptId}
                     options={producers.filter((producer) => producer.id !== mergedId)}
@@ -144,7 +149,10 @@
                     valueField="id"
                 />
             </FormField>
-            <FormField label={m['admin.merge_merged']()}>
+            <FormField
+                label={m['admin.merge_merged']()}
+                hint={merged && m['producers.n_wines']({ count: merged.wineCount })}
+            >
                 <SearchableSelect
                     bind:value={mergedId}
                     options={producers.filter((producer) => producer.id !== keptId)}
@@ -155,10 +163,6 @@
         </div>
 
         {#if kept && merged}
-            <div class="grid grid-cols-2 gap-4 text-sm text-muted-foreground">
-                <p>{m['producers.n_wines']({ count: kept.wineCount })}</p>
-                <p>{m['producers.n_wines']({ count: merged.wineCount })}</p>
-            </div>
             {#if toChoose.length > 0}
                 <fieldset class="space-y-3">
                     <legend class="mb-2 text-sm font-medium">{m['admin.merge_choices']()}</legend>

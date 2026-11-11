@@ -268,7 +268,7 @@ function createServer({ authInfo }: McpRequestContext): McpServer {
                     .max(NAME_MAX_LENGTH)
                     .optional()
                     .describe(
-                        'Words that the wine must all hold, capitals and accents aside, in its name, producer, color, type, classification, appellation, region, country or grapes. Leave it out to list every wine.'
+                        'Words that the wine must all hold, capitals, accents and the kind of apostrophe aside, in its name, producer, color, type, classification, appellation, region, country or grapes. Leave it out to list every wine.'
                     ),
                 inCellarOnly: z
                     .boolean()
@@ -307,7 +307,7 @@ function createServer({ authInfo }: McpRequestContext): McpServer {
                     .max(NAME_MAX_LENGTH)
                     .optional()
                     .describe(
-                        'Words that the producer must all hold, capitals and accents aside, in its name, region or country. Leave it out to list every producer.'
+                        'Words that the producer must all hold, capitals, accents and the kind of apostrophe aside, in its name, region or country. Leave it out to list every producer.'
                     ),
                 ...pageParams('producers')
             }),
@@ -482,7 +482,7 @@ function createServer({ authInfo }: McpRequestContext): McpServer {
                     .string()
                     .max(NAME_MAX_LENGTH)
                     .describe(
-                        'Words of the appellation, its region or its country, capitals and accents aside.'
+                        'Words of the appellation, its region or its country, capitals, accents and the kind of apostrophe aside.'
                     )
             }),
             annotations: READ_ONLY

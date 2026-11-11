@@ -30,8 +30,8 @@ export function readProducerListQuery(params: QueryParams) {
 }
 
 /**
- * The producers whose name, region or country hold every word of `search`, capitals and accents
- * aside, in the order asked; by name within equal counts.
+ * The producers whose name, region or country hold every word of `search`, capitals, accents and
+ * the kind of apostrophe aside, in the order asked; by name within equal counts.
  */
 export function shownProducers<Producer extends ListedProducer>(
     producers: Producer[],

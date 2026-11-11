@@ -6,13 +6,21 @@ export function tidyName(name: unknown): string {
     return name == null ? '' : String(name).replace(/\s+/g, ' ').trim();
 }
 
-/** `text` without its case or accents, as a search compares it: « chat » is in « Château ». */
+/**
+ * `text` without its case or accents, a typographic apostrophe read as a straight one, as a search
+ * compares it: « chat » is in « Château », « d'yquem » in « Château d’Yquem ».
+ */
 export function folded(text: string): string {
-    return text.normalize('NFD').replace(/\p{M}/gu, '').toLowerCase();
+    return text
+        .normalize('NFD')
+        .replace(/\p{M}/gu, '')
+        .replace(/[\u2018\u2019\u02bc]/g, "'")
+        .toLowerCase();
 }
 
 /**
- * Whether the texts given hold every word of `query` between them, capitals and accents aside:
+ * Whether the texts given hold every word of `query` between them, capitals, accents and the kind
+ * of apostrophe aside:
  * « cotes rhone » matches « Côtes du Rhône ».
  */
 export function matchesEveryWord(query: string) {
@@ -29,5 +37,5 @@ export function matchesEveryWord(query: string) {
  * the same key; « ChâteauMargaux » does not. '' for no name.
  */
 export function producerKey(name: unknown): string {
-    return folded(tidyName(name)).replace(/[\u2018\u2019\u02bc]/g, "'");
+    return folded(tidyName(name));
 }

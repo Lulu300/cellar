@@ -99,8 +99,9 @@ export const versions = [
 		goal: 'Dire qu’une bouteille se boit « de 2027 à 2032 » ou « dès 2028 », et voir sur la page « À boire » celles qui sont prêtes. Un petit bloc, juste après la 1.5.3.'
 	},
 	{
-		id: 'Finitions',
+		id: '1.7.0',
 		title: 'Finitions et barre de sélection',
+		released: '2026-11-11',
 		goal: 'Les petits défauts relevés depuis la 1.5.2 corrigés, et une seule barre de sélection des bouteilles, avec le même comportement pour un visiteur partout.'
 	},
 	{
@@ -278,9 +279,9 @@ export const phases = [
 	},
 	{
 		id: 'P23',
-		version: 'Finitions',
+		version: '1.7.0',
 		title: 'Finitions et barre de sélection',
-		goal: 'Juste après la 1.6.0, avant les autres blocs (décision « Finitions (UI-37, UI-34) ») : UI-37 et UI-34, menées côte à côte et fusionnées l’une après l’autre ; puis REL-23. Une version mineure. Le 2026-11-10, le mainteneur la sort sans attendre DEP-11, éligible le 2026-11-12, qui passe à la sortie suivante.'
+		goal: 'Juste après la 1.6.0, avant les autres blocs (décision « Finitions (UI-37, UI-34) ») : UI-37 et UI-34, menées côte à côte et fusionnées l’une après l’autre ; puis REL-23. Une version mineure. Le 2026-11-10, le mainteneur la sort sans attendre DEP-11, éligible le 2026-11-12, qui passe à la sortie suivante. Publiée en 1.7.0 le 2026-11-11.'
 	},
 	{
 		id: 'P20',
@@ -3073,7 +3074,8 @@ export const tasks = [
 		why: 'Le bloc apporte ces finitions sans attendre les autres.',
 		where: ['releases.json', 'CHANGELOG.md', 'UPGRADING.md', 'package.json'],
 		todo: [
-			'Résumé complété par UI-37 et UI-34 (DEP-11 passe à la sortie suivante, choix du mainteneur le 2026-11-10) ; bancs depuis la version précédente et la 1.0.0 ; release selon RELEASING.md, avec le mainteneur, sous le numéro de version suivant (décision « Blocs sans numéro »).'
+			'Résumé complété par UI-37 et UI-34 (DEP-11 passe à la sortie suivante, choix du mainteneur le 2026-11-10) ; bancs depuis la version précédente et la 1.0.0 ; release selon RELEASING.md, avec le mainteneur, sous le numéro de version suivant (décision « Blocs sans numéro »).',
+			'Fait le 2026-11-11 : publiée en 1.7.0, sans DEP-11 ; bancs de la 1.6.0 et de la 1.0.0 vers la 1.7.0, 176 sur 176 chacun, sans changer le banc ; CI 42921509510 verte sur 00e0c42b ; `main` avancée, tag v1.7.0, release 42992563147 verte ; image publique sans connexion (`1.7.0`, `1.7`, `latest`, amd64 et arm64). develop passe à 1.8.0-rc.0, avec une entrée 1.8.0 au résumé provisoire.'
 		],
 		done: 'La version est publiée sur `main` et son image se télécharge sans connexion ; develop passe à la rc suivante.',
 		deps: ['UI-37', 'UI-34'], src: ['Décision « Finitions (UI-37, UI-34) »']

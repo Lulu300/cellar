@@ -1,7 +1,7 @@
 import { z } from 'zod';
 import { m } from '#lib/paraglide/messages.js';
 import { TO_DRINK, type DrinkingRank } from '#lib/shared/drinking.js';
-import { parseBottlePageQuery, type QueryParams } from '#lib/shared/schemas/bottle-list.js';
+import { parsePageQuery, type QueryParams } from '#lib/shared/schemas/bottle-list.js';
 import { compareText } from '#lib/utils/compare.js';
 import { changedParams } from '#lib/utils/pagination.js';
 
@@ -68,7 +68,7 @@ export const toDrinkParams = (changes: Partial<ToDrinkChoices>) =>
 export function readToDrinkQuery(params: QueryParams) {
     return {
         ...filtersSchema.parse(Object.fromEntries(params)),
-        ...parseBottlePageQuery(params, TO_DRINK_COLUMNS, 'urgency')
+        ...parsePageQuery(params, TO_DRINK_COLUMNS, 'urgency')
     };
 }
 

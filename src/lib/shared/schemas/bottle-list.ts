@@ -26,13 +26,14 @@ export function defaultDirection(column: string): SortDirection {
 }
 
 /**
- * Reads the sort, page and page size of a table, such as a bottle table, from its URL: `?sort=&dir=&page=&perPage=`.
+ * Reads the sort, page and page size of a table, such as a bottle table, from its URL:
+ * `?sort=&dir=&page=&perPage=`.
  * A missing or invalid value gives its default, so that any URL shows a page rather than an
  * error. Only `columns`, those the table shows, are accepted for the sort; the direction asked
  * goes with the column asked, so the default sort takes its own direction, also when the URL gives
  * `dir` without `sort`.
  */
-export function parseBottlePageQuery<Column extends string>(
+export function parsePageQuery<Column extends string>(
     params: QueryParams,
     columns: readonly [Column, ...Column[]],
     defaultSort: Column

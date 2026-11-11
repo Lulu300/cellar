@@ -1,3 +1,4 @@
+import { matchesEveryWord } from '#lib/shared/names.js';
 import {
     createBottles,
     deleteBottlesById,
@@ -121,22 +122,6 @@ function bottleSummary(bottle: Bottle) {
     };
 }
 
-/** Lowercase and without accents: « cotes du rhone » finds « Côtes du Rhône ». */
-const searchable = (text: string) =>
-    text
-        .normalize('NFD')
-        .replace(/\p{Diacritic}/gu, '')
-        .toLowerCase();
-
-/** Whether the texts of `fields` hold every word of `query` between them, capitals and accents aside. */
-function matching(query: string) {
-    const words = searchable(query).split(/\s+/).filter(Boolean);
-    return (fields: (string | null | undefined)[]) => {
-        const text = searchable(fields.join(' '));
-        return words.every((word) => text.includes(word));
-    };
-}
-
 /** A page of a list: `limit` results, after the first `offset` ones. */
 interface Page {
     offset?: number;
@@ -158,7 +143,7 @@ export interface WineSearch extends Page {
  * counting them all.
  */
 export function searchWines({ query = '', inCellarOnly, ...page }: WineSearch) {
-    const matches = matching(query);
+    const matches = matchesEveryWord(query);
     const found = listWines({ ownedOnly: true })
         .map(({ definition, bottles }) => {
             const kept = bottles.filter(inCellar);
@@ -402,7 +387,7 @@ export const MAX_APPELLATIONS = 50;
  * region and country. `total` counts them all, beyond MAX_APPELLATIONS.
  */
 export function searchAppellations(query: string) {
-    const matches = matching(query);
+    const matches = matchesEveryWord(query);
     const found = appellationHandlers
         .list()
         .map((row) => ({
@@ -631,7 +616,7 @@ export interface ProducerSearch extends Page {
  * them all.
  */
 export function searchProducers({ query = '', ...page }: ProducerSearch) {
-    const matches = matching(query);
+    const matches = matchesEveryWord(query);
     const found = listProducers()
         .map(producerSummary)
         .filter(({ name, region, country }) => matches([name, region, country]))

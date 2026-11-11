@@ -12,6 +12,18 @@ export function folded(text: string): string {
 }
 
 /**
+ * Whether the texts given hold every word of `query` between them, capitals and accents aside:
+ * « cotes rhone » matches « Côtes du Rhône ».
+ */
+export function matchesEveryWord(query: string) {
+    const words = folded(query).split(/\s+/).filter(Boolean);
+    return (texts: (string | null | undefined)[]) => {
+        const text = folded(texts.join(' '));
+        return words.every((word) => text.includes(word));
+    };
+}
+
+/**
  * The key that two names of one producer share (FEAT-07): neither case, accents nor blanks count,
  * and a typographic apostrophe is a straight one. « Château  Margaux » and « chateau margaux » have
  * the same key; « ChâteauMargaux » does not. '' for no name.

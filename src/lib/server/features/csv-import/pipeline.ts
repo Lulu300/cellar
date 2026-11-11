@@ -202,6 +202,11 @@ function importRow(table: TableName, record: CsvRecord, context: Context): Outco
     const wine = isWine ? context.index.recordWineRow(record) : undefined;
     const references = referencedIds(table, record, context);
     if ('failed' in references) return references;
+    // A producer's region gives its country, as the API places it: a file may name the region only.
+    const { regionId } = references.ids;
+    if (table === 'producers' && regionId) {
+        references.ids.countryId = context.index.countryOfRegion(regionId) ?? null;
+    }
     const checked = importedRow(table, { ...csvValues(record), ...references.ids });
     if ('problems' in checked) return { failed: checked.problems };
 

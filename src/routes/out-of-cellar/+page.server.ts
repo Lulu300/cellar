@@ -1,6 +1,6 @@
 import { listBottlePage } from '#lib/server/features/bottles/service.js';
 import { CELLAR } from '#lib/shared/dependencies.js';
-import { parseBottlePageQuery } from '#lib/shared/schemas/bottle-list.js';
+import { parsePageQuery } from '#lib/shared/schemas/bottle-list.js';
 import { BottleAvailability } from '#lib/shared/bottle-availability.js';
 import type { PageServerLoad } from './$types';
 
@@ -18,7 +18,7 @@ const COLUMNS = [
 // Public data only, as GET /api/bottles gives it.
 export const load: PageServerLoad = ({ url, depends }) => {
     depends(CELLAR);
-    const query = parseBottlePageQuery(url.searchParams, COLUMNS, 'purchaseDate');
+    const query = parsePageQuery(url.searchParams, COLUMNS, 'purchaseDate');
     return {
         columns: COLUMNS,
         ...query,

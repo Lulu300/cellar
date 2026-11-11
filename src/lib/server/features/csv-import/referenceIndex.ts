@@ -112,6 +112,11 @@ export class ReferenceIndex {
         );
     }
 
+    /** The country of a region of the cellar or of the import. */
+    countryOfRegion(regionId: string): string | undefined {
+        return this.byId.get('regions')!.get(regionId)?.countryId as string | undefined;
+    }
+
     ids(table: TableName): string[] {
         return [...this.byId.get(table)!.keys()];
     }

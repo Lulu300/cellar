@@ -1,6 +1,6 @@
-import { producerKey } from '#lib/shared/names.js';
+import { matchesEveryWord } from '#lib/shared/names.js';
 import {
-    parseBottlePageQuery,
+    parsePageQuery,
     type QueryParams,
     type SortDirection
 } from '#lib/shared/schemas/bottle-list.js';
@@ -25,26 +25,21 @@ type ListedProducer = {
 export function readProducerListQuery(params: QueryParams) {
     return {
         search: params.get('search') ?? '',
-        ...parseBottlePageQuery(params, PRODUCER_COLUMNS, 'name')
+        ...parsePageQuery(params, PRODUCER_COLUMNS, 'name')
     };
 }
 
 /**
- * The producers whose name, region or country hold every word of `search`, compared as producer
- * names are (case, accents and blanks aside), in the order asked; by name within equal counts.
+ * The producers whose name, region or country hold every word of `search`, capitals and accents
+ * aside, in the order asked; by name within equal counts.
  */
 export function shownProducers<Producer extends ListedProducer>(
     producers: Producer[],
     { search, sort, direction }: { search: string; sort: ProducerColumn; direction: SortDirection }
 ): Producer[] {
-    const words = producerKey(search).split(' ').filter(Boolean);
+    const matches = matchesEveryWord(search);
     return producers
-        .filter((producer) => {
-            const text = producerKey(
-                [producer.name, producer.regionName, producer.countryName].join(' ')
-            );
-            return words.every((word) => text.includes(word));
-        })
+        .filter((producer) => matches([producer.name, producer.regionName, producer.countryName]))
         .toSorted(
             (a, b) => compareValues(a[sort], b[sort], direction) || compareText(a.name, b.name)
         );

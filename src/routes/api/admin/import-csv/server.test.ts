@@ -615,6 +615,27 @@ describe('POST /api/admin/import-csv', () => {
             expect(bottles.map(({ definitionId }) => definitionId)).toEqual([crusted[0].id]);
         });
 
+        // A producer's region gives its country, as the API places it.
+        it('gives a producer of a producers file the country of its region', async () => {
+            const timestamps = { createdAt: new Date(), updatedAt: new Date() };
+            await db.insert(countries).values({ id: 'eastia', name: 'Eastia', ...timestamps });
+            await db
+                .insert(regions)
+                .values({ id: 'dunes', name: 'Dunes', countryId: 'eastia', ...timestamps });
+
+            const response = await importCsv(
+                'producers.csv',
+                'name,regionName\nSand Estate,Dunes\n'
+            );
+
+            expect((await response.json()).summary).toMatchObject({ totalImported: 1 });
+            const [estate] = await db
+                .select()
+                .from(producers)
+                .where(eq(producers.name, 'Sand Estate'));
+            expect(estate).toMatchObject({ regionId: 'dunes', countryId: 'eastia' });
+        });
+
         it('reads a rating with decimals, and keeps one outside 1 to 5 in the description', async () => {
             const response = await importCsv(
                 'wineDefinitions.csv',

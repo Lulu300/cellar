@@ -166,7 +166,9 @@
                         <div class="rounded-md border p-3">
                             <p class="mb-2 text-sm font-medium">{LABELS[field]()}</p>
                             <div class="grid grid-cols-2 gap-4 text-sm">
-                                {#each [['kept', keptValue], ['merged', mergedValue]] as const as [side, value] (side)}
+                                <!-- Each value says whose it is: on a phone, the pickers above
+                                     stack while these columns stay side by side -->
+                                {#each [[kept, keptValue, 'kept'], [merged, mergedValue, 'merged']] as const as [producer, value, side] (side)}
                                     <label class="flex items-start gap-2">
                                         <input
                                             type="radio"
@@ -175,7 +177,13 @@
                                             bind:group={choices[field]}
                                             class="mt-1"
                                         />
-                                        {@render shown(field, value)}
+                                        <span class="min-w-0 space-y-1">
+                                            <span
+                                                class="block text-xs font-medium text-muted-foreground [overflow-wrap:anywhere]"
+                                                >{producer.name}</span
+                                            >
+                                            {@render shown(field, value)}
+                                        </span>
                                     </label>
                                 {/each}
                             </div>

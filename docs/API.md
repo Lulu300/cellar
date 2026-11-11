@@ -430,8 +430,10 @@ such as `id` or `createdAt`, are ignored.
 - `producer`: string, optional, at most 500 characters: the producer by its name, as before 1.8.0,
   when producers were a text on each wine. It is the producer whose name is the same but for case,
   accents, blanks and the apostrophe (’ or '), or a new producer of that name. Given with
-  `producerId`, both must name the same producer, else `422 invalid_body`. Leave both out, or send
-  them `null`, for a wine without a producer.
+  `producerId`, both must name the same producer, else `422 invalid_body`. An empty `producer`
+  names no producer, so `producerId` alone decides; a `producerId` that is `null` or `""` gives
+  none, so a `producer` name alone decides. Leave both out, or send them `null`, for a wine without
+  a producer.
 - `appellationId`: id of an appellation, required.
 - `typeId`: id of a wine type, required.
 - `colorId`: id of a wine color, required.

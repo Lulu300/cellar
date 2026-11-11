@@ -1,11 +1,11 @@
 import { describe, expect, it } from 'vitest';
-import { parseBottlePageQuery } from './bottle-list';
+import { parsePageQuery } from './bottle-list';
 
 const columns = ['definition', 'purchaseDate', 'barcode'] as const;
 const parse = (query: string) =>
-    parseBottlePageQuery(new URLSearchParams(query), columns, 'purchaseDate');
+    parsePageQuery(new URLSearchParams(query), columns, 'purchaseDate');
 
-describe('parseBottlePageQuery', () => {
+describe('parsePageQuery', () => {
     it('reads the sort, the direction, the page and the page size', () => {
         expect(parse('sort=barcode&dir=desc&page=3&perPage=25')).toEqual({
             sort: 'barcode',

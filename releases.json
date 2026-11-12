@@ -1,7 +1,7 @@
 [
   {
     "version": "1.9.0",
-    "summary": "1.9.0 brings Cellar’s dependencies up to date.\n\nThe Docker image moves to Node.js 24.22.3, a security release that fixes serious flaws of Node.js, mostly in HTTP/2 and TLS, one of them in the HTTP server that Cellar runs. The libraries in the image take their latest fixes and newer minor versions, among them the streams of the ZIP library that writes backups and exports, which also drops a few duplicate packages. The build and test tools take their latest fixes and minor versions. Nothing changes in how Cellar looks or works. The dependency audit still lists the moderate minimatch advisory of 1.1.0: Cellar still never uses the part of the ZIP library that runs minimatch, and that library still does not accept the fixed minimatch.",
+    "summary": "1.9.0 brings Cellar’s dependencies up to date.\n\nThe Docker image moves to Node.js 24.22.3, a security release that fixes serious flaws of Node.js, mostly in HTTP/2 and TLS, one of them in the HTTP server that Cellar runs. The libraries in the image take their fixes and minor versions published at least a week ago, among them the streams of the ZIP library that writes backups and exports; so do the build and test tools. Nothing changes in how Cellar looks or works. The dependency audit still lists the moderate minimatch advisory of 1.1.0: Cellar still never uses the part of the ZIP library that runs minimatch, and that library still does not accept the fixed minimatch.",
     "mandatoryStop": false,
     "actions": []
   },

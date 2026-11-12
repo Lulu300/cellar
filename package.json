@@ -44,7 +44,7 @@
     "@types/qrcode": "^1.5.6",
     "@types/yauzl": "^3.4.0",
     "barcode-detector": "^3.2.3",
-    "bits-ui": "^2.20.2",
+    "bits-ui": "^2.20.6",
     "clsx": "^2.1.1",
     "drizzle-kit": "^0.31.11",
     "eslint": "^10.14.0",

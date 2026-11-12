@@ -2524,8 +2524,8 @@ packages:
   package-manager-detector@1.9.0:
     resolution: {integrity: sha512-zAMfbta9nPA8AKkA4WdmNAT8R8s6Dk0/xwPsqNnRidMFcLo1YkLuPDTgs2f64XdzS8vbLNnoJ+uUIkgbz7oRHA==}
 
-  pako@2.1.0:
-    resolution: {integrity: sha512-w+eufiZ1WuJYgPXbV/PO3NCMEc3xqylkKHzp8bxp1uW4qaSNQUkwmLLEc3kKsfz8lpV1F8Ht3U1Cm+9Srog2ug==}
+  pako@2.2.0:
+    resolution: {integrity: sha512-zJq6RP/5q+TO2OpFV3FHzlPnFjmkb7Nc99a5SNjJE+uu/PkpChs+NIZSSzbBoD+6kjiISXjfYdwj1ZRQ81dz/w==}
 
   parse-ms@4.0.0:
     resolution: {integrity: sha512-TXfryirbmq34y8QBwgqCVLi+8oA3oWx2eAnSn62ITyEhEYaWRlVZ2DvMM9eZbMs/RfxPu/PK/aBLyGj4IrqMHw==}
@@ -4628,7 +4628,7 @@ snapshots:
     dependencies:
       '@types/pako': 2.0.4
       iobuffer: 5.4.0
-      pako: 2.1.0
+      pako: 2.2.0
 
   fd-package-json@2.0.0:
     dependencies:
@@ -5031,7 +5031,7 @@ snapshots:
 
   package-manager-detector@1.9.0: {}
 
-  pako@2.1.0: {}
+  pako@2.2.0: {}
 
   parse-ms@4.0.0: {}
 

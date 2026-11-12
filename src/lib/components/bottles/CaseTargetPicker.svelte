@@ -17,7 +17,6 @@
     let {
         caseId = $bindable(''),
         // An output: the picker sets it, the screen reads it.
-        // eslint-disable-next-line no-useless-assignment
         overfilled = $bindable(false),
         bottles,
         label,

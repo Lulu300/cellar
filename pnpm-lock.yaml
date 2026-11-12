@@ -46,8 +46,8 @@ importers:
         specifier: 2.29.3
         version: 2.29.3(eslint@10.14.0(jiti@2.7.0))(typescript@6.0.3)(vite@8.3.6(@types/node@24.19.2)(esbuild@0.28.2)(jiti@2.7.0)(tsx@4.23.15)(yaml@2.9.1))
       '@inlang/plugin-icu1':
-        specifier: ^1.3.5
-        version: 1.3.5
+        specifier: ^1.3.8
+        version: 1.3.8
       '@internationalized/date':
         specifier: ^3.12.4
         version: 3.12.4
@@ -796,8 +796,8 @@ packages:
       vite:
         optional: true
 
-  '@inlang/plugin-icu1@1.3.5':
-    resolution: {integrity: sha512-Mpza4z5soz52Jdcf552kH6XhTbte1WIQeZpK6sswZDssE2TrV0W0+SeHwD2HRWfC/BxZNwolOiedC09Xb4GTlw==}
+  '@inlang/plugin-icu1@1.3.8':
+    resolution: {integrity: sha512-P2VdqZm9YjIHW9p4zyxr/MlIB3rtoeL4JBvuT0KhypSZavKKcytlmGV0cl8blC5fkU588Qcdesi+2iyl9zp2Lw==}
 
   '@inlang/recommend-sherlock@0.2.1':
     resolution: {integrity: sha512-ckv8HvHy/iTqaVAEKrr+gnl+p3XFNwe5D2+6w6wJk2ORV2XkcRkKOJ/XsTUJbPSiyi4PI+p+T3bqbmNx/rDUlg==}
@@ -806,8 +806,8 @@ packages:
     resolution: {integrity: sha512-OJhVSGJa/Ak52WncgqIPHr9TyVJ1DuoublcmtNo9H8apoVn4Dr1DJNxUxawCCc01QmMSg8qoY8GrTV8SVIu1lg==}
     engines: {node: '>=20.0.0'}
 
-  '@inlang/sdk@4.1.0':
-    resolution: {integrity: sha512-pPlaxyemcFMBcwBx31zbSNWwKORSLc2yv93v0uGCh4QgNh/kBRuLlBxbubmME6UJFsj+5nbao2WDZjz3Fzs+FA==}
+  '@inlang/sdk@4.2.0':
+    resolution: {integrity: sha512-Cmaqvn34wsxiF27318Zw2rg+017HHNJWV5MH8rfyVKVANZNpzlztxzRbFienE/gASMLD8oluYHHolIb/p6Egrw==}
     engines: {node: '>=20.0.0'}
 
   '@internationalized/date@3.12.4':
@@ -3528,9 +3528,9 @@ snapshots:
       typescript: 6.0.3
       vite: 8.3.6(@types/node@24.19.2)(esbuild@0.28.2)(jiti@2.7.0)(tsx@4.23.15)(yaml@2.9.1)
 
-  '@inlang/plugin-icu1@1.3.5':
+  '@inlang/plugin-icu1@1.3.8':
     dependencies:
-      '@inlang/sdk': 4.1.0
+      '@inlang/sdk': 4.2.0
       '@messageformat/parser': 5.2.0
       '@sinclair/typebox': 0.31.30
 
@@ -3545,7 +3545,7 @@ snapshots:
       kysely: 0.28.19
       uuid: 14.0.3
 
-  '@inlang/sdk@4.1.0':
+  '@inlang/sdk@4.2.0':
     dependencies:
       '@lix-js/sdk': 0.20.1
       '@sinclair/typebox': 0.31.30

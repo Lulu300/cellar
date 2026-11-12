@@ -90,12 +90,6 @@ export default defineConfig(
         rules: { 'no-console': 'off' }
     },
     {
-        // The shadcn-svelte primitives stay as the CLI writes them (decision UI-01): this one
-        // declares `ref = $bindable(null)` and never reads it.
-        files: ['src/lib/components/ui/select/select-group.svelte'],
-        rules: { 'no-useless-assignment': 'off' }
-    },
-    {
         files: ['**/*.svelte', '**/*.svelte.ts', '**/*.svelte.js'],
         languageOptions: {
             parserOptions: {

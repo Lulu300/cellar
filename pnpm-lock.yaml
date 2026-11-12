@@ -2648,8 +2648,8 @@ packages:
   readable-stream@2.3.8:
     resolution: {integrity: sha512-8p0AUk4XODgIewSi0l8Epjs+EVnWiK7NoDIEGU0HhE7+ZyY8D1IMY7odu5lRrFXGg71L15KG8QrPmum45RTtdA==}
 
-  readable-stream@4.7.0:
-    resolution: {integrity: sha512-oIGGmcpTLwPga8Bn6/Z75SVaH1z5dUut2ibSyAMVhmUggWpmDn2dapB0n7f8nwaSiRtepAsfJyfXIO5DCVAODg==}
+  readable-stream@4.8.0:
+    resolution: {integrity: sha512-2jhTTU3Eilp/2DMT71gbcoqC35eQHasMJH0RHkYxwlxIv3+FR6Y5xAFZIwEGLxKkjZYEFlsiMNIdwUqjK2lLHQ==}
     engines: {node: ^12.22.0 || ^14.17.0 || >=16.0.0}
 
   readdir-glob@3.0.0:
@@ -4153,7 +4153,7 @@ snapshots:
       is-stream: 4.0.1
       lazystream: 1.0.1
       normalize-path: 3.0.0
-      readable-stream: 4.7.0
+      readable-stream: 4.8.0
       readdir-glob: 3.0.0
       tar-stream: 3.2.2(bare-buffer@3.7.1)
       zip-stream: 7.0.5
@@ -4311,7 +4311,7 @@ snapshots:
       crc32-stream: 7.0.1
       is-stream: 4.0.1
       normalize-path: 3.0.0
-      readable-stream: 4.7.0
+      readable-stream: 4.8.0
 
   consola@3.4.0: {}
 
@@ -4327,7 +4327,7 @@ snapshots:
   crc32-stream@7.0.1:
     dependencies:
       crc-32: 1.2.2
-      readable-stream: 4.7.0
+      readable-stream: 4.8.0
 
   cross-spawn@7.0.6:
     dependencies:
@@ -5128,7 +5128,7 @@ snapshots:
       string_decoder: 1.1.1
       util-deprecate: 1.0.2
 
-  readable-stream@4.7.0:
+  readable-stream@4.8.0:
     dependencies:
       abort-controller: 3.0.0
       buffer: 6.0.3
@@ -5540,7 +5540,7 @@ snapshots:
     dependencies:
       compress-commons: 7.0.1
       normalize-path: 3.0.0
-      readable-stream: 4.7.0
+      readable-stream: 4.8.0
 
   zod@4.6.7: {}
 

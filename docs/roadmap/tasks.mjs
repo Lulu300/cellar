@@ -105,6 +105,11 @@ export const versions = [
 		goal: 'Les petits défauts relevés depuis la 1.5.2 corrigés, et une seule barre de sélection des bouteilles, avec le même comportement pour un visiteur partout.'
 	},
 	{
+		id: 'Dépendances',
+		title: 'Dépendances à jour',
+		goal: 'Les correctifs et mineures en attente, puis les versions majeures (Paraglide 3, tailwind-variants 4, TypeScript 7, Node 26), essayées une à une.'
+	},
+	{
 		id: 'Dégustation',
 		title: 'Des fiches de dégustation à sa main',
 		goal: 'Des fiches de dégustation structurées et personnalisables, imprimables en A4, à remplir quand on boit une bouteille, plusieurs fiches et leurs versions, et un MCP qui aide à les remplir et à les faire évoluer. Sur sa propre branche.'
@@ -297,10 +302,16 @@ export const phases = [
 		goal: 'Les producteurs d’abord, parce que la revue de l’import doit savoir relier ou créer un producteur. Ordre : FEAT-07 ; FEAT-08 ; puis REL-12. Le 2026-11-11, le mainteneur sort le bloc sans attendre DEP-11, éligible le 2026-11-12, qui passe à la sortie suivante. Publiée en 1.8.0 le 2026-11-11.'
 	},
 	{
+		id: 'P24',
+		version: 'Dépendances',
+		title: 'Dépendances à jour',
+		goal: 'Juste après la 1.8.0, avant les autres blocs (décision « Versions majeures (DEP-12) ») : DEP-11 ; puis DEP-12 ; puis REL-24. Une version mineure.'
+	},
+	{
 		id: 'P19',
 		version: 'Notifications',
 		title: 'Notifications',
-		goal: 'Les notifications, qui utilisent « À boire » (FEAT-05), le statut hors cave et la vérification des mises à jour. Ordre : FEAT-09 ; puis REL-13. DEP-11 se fait sur develop juste avant la sortie suivante, quel que soit le bloc.'
+		goal: 'Les notifications, qui utilisent « À boire » (FEAT-05), le statut hors cave et la vérification des mises à jour. Ordre : FEAT-09 ; puis REL-13.'
 	},
 	{
 		id: 'P21',
@@ -442,6 +453,7 @@ export const decisions = [
 	{ topic: 'Achats plus clairs (1.5.3)', choice: 'Retours du mainteneur (2026-11-09) pour une 1.5.3. Pénurie : retirer la quantité cible d’un vin demande aujourd’hui de modifier le vin ; un bouton la retire d’un coup (sans la diminuer), sur chaque vin de l’onglet Pénurie et sur la fiche d’un vin quand il en a une, jamais depuis la liste Mes vins. Liste d’envies : des utilisateurs prennent « Ajouter une bouteille » d’une envie pour un ajout à la liste ; le bouton devient « J’en ai acheté » (« I bought some »), puisqu’il range en cave une bouteille achetée. Le formulaire d’ajout se lit dans l’ordre : photo de l’étiquette, nom, note et quantité, puis un seul bouton qui ajoute l’envie entière, au lieu d’un « Ajouter » collé au nom et d’une note qu’on ne saisit qu’après coup. La quantité d’une envie reste, renommée avec une aide qui dit qu’elle n’est qu’un pense-bête et ne déclenche aucune alerte, contrairement à la quantité cible de la pénurie (choix du mainteneur). Les libellés, les emplacements des boutons et le formulaire sont proposés sur captures avant d’être construits. Plage de dégustation : « À boire avant » (une année ou un mois) et l’année optimale ne disent pas « à boire entre 2027 et 2032 » ; un sous-agent propose d’abord deux ou trois modèles, avec maquettes et leur effet sur l’ordre de « À boire », sans code (FEAT-19) ; le mainteneur choisit ensuite le modèle et la version. Comme pour la 1.5.1, develop repasse de 1.6.0-rc.0 à 1.5.3-rc.0, et l’entrée 1.6.0 de `releases.json` revient au démarrage de la version suivante.' },
 	{ topic: 'Période de dégustation (FEAT-19)', choice: 'Choisi sur la proposition du 2026-11-09 (modèle A) : une bouteille peut porter « à partir de » à côté d’« À boire avant », chacun en année ou en mois, jamais au jour ; l’année optimale reste une année. Une nouvelle colonne, aucune valeur convertie : une bouteille sans début se range exactement comme avant. Un rang « Prête » (losange vide, après « À l’apogée ») vaut pour une bouteille dans sa période, dont la fin tombe après cette année ou n’existe pas, et dont l’apogée n’est pas venue ou n’existe pas ; une fin dépassée, ce mois-ci ou cette année range la bouteille comme aujourd’hui ; une période pas encore ouverte reste « Plus tard », écrite « pas encore prête », sans rang à elle. « Prête » ne se voit que sur la page « À boire », avec un filtre : le bandeau, le repère du stockage et le récapitulatif des notifications (FEAT-09) gardent les quatre rangs de FEAT-05. Noms : « Période de dégustation » (fenêtre, formulaire, menu ⋯, bouton de la sélection) et « Période » (colonne) ; « 2024 – 2032 », « sept. 2026 – mars 2027 », « dès 2028 » ; une bouteille en retard garde « avant fin … ». Les tuiles « Ce mois-ci » et « Cette année » retirent le début ; l’API et le MCP refusent une fin avant le début (422 qui nomme les bouteilles). « Après l’apogée » reste pour plus tard. Un petit bloc à lui seul, juste après la 1.5.3 : version mineure, puisqu’une version corrective ne porte pas de migration (choix du mainteneur, 2026-11-09).' },
 	{ topic: 'Finitions (UI-37, UI-34)', choice: 'Demande du mainteneur (2026-11-10) : une version mineure, juste après la 1.6.0, qui corrige les petits défauts relevés pendant UI-35, UI-36 et FEAT-19 (UI-37) et fait UI-34, la barre de sélection des bouteilles commune. UI-37 et UI-34 partent côte à côte, chacune sur sa branche, et fusionnent l’une après l’autre. Ce qui se voit (cartes de bouteilles, bouton « N bouteilles » sur téléphone, période d’un seul mois, majuscules des libellés anglais, pleine largeur à 2560 px, comportement du visiteur dans la barre de sélection) est proposé sur captures avant d’être construit. DEP-11 passe juste avant la sortie, Node 24.22.2 étant éligible le 2026-11-12.' },
+	{ topic: 'Versions majeures (DEP-12)', choice: 'Le 2026-11-12, le mainteneur demande si les dépendances sont à jour : aucune revue des versions majeures n’a eu lieu depuis SvelteKit 3, Vite 8 et TypeScript 6 (P3, avant la 1.0) ; DEP-08 à DEP-10 ne prenaient que les correctifs et quelques mineures. En retard, toutes en outils de développement : @inlang/paraglide-js 3 (2.29.3), tailwind-variants 4 (3.3.1), TypeScript 7 (6.0.3, la réécriture native), @types/node 26 (24, à suivre avec Node) ; et Node 26, LTS active depuis octobre 2026, alors que l’image reste sur Node 24 (LTS de maintenance). Les dépendances de production sont à jour. Un bloc à part, avant les autres : DEP-11 (correctifs et mineures en attente, Node 24.22.2) fusionnée d’abord, puis DEP-12, où chaque majeure est essayée dans son propre commit, portes à chaque fois, et proposée au mainteneur avant d’être gardée ; ce qui bloque (par exemple un outil qui ne supporte pas encore TypeScript 7) est expliqué et reporté. Node 26 change l’image publiée : bancs avant le merge (choix du mainteneur, 2026-11-12).' },
 	{ topic: 'Survol des boutons (UI-33)', choice: 'Choisi sur captures le 2026-11-02, une règle par sorte de bouton : un bouton plein (principal, secondaire, suppression, interrupteur) mêle au survol 15 % de la couleur du texte de la page à son fond, donc s’assombrit en clair et s’éclaircit en sombre (jetons `--primary-hover`, `--secondary-hover`, `--destructive-hover`) ; un bouton discret (transparent, icône, ligne de menu, section du menu, tri, case du stockage, croix d’un dialogue) prend au survol le fond `accent` entier et son texte, en clair comme en sombre, et les boutons à icône faits main aussi ; un bouton à contour et une liste déroulante gardent le survol de shadcn, la liste déroulante gagnant celui qui lui manquait en clair ; un choix non retenu suit la règle des boutons discrets, un choix retenu celle des boutons pleins, sans zoom ; liens et onglets inchangés ; un focus clavier net (anneau de 3 px en `--ring` entier) sur chaque bouton, lien et onglet ; un bouton désactivé à 50 %, sans survol, avec le curseur normal, faits main compris ; pas d’état appuyé à part, et seules les couleurs changent. L’`accent` n’est pas renforcé. Exception à la règle de `ui/` : `ui/button/button.svelte`, `ui/select/select-trigger.svelte` et `ui/dialog/dialog-content.svelte` portent des classes modifiées à la main, signalées par un commentaire, parce que le défaut est dans leurs variantes. Tous les conteneurs du stockage ont la même pastille neutre.' },
 	{ topic: 'Vue liste (FEAT-10)', choice: 'Choisie sur maquette (planche « D3 ») : une vue liste à côté des cartes, sans défilement (le mainteneur n’en veut pas dans la liste) ; un texte long passe à la ligne. Un sélecteur « Cartes / Liste » sur la page et la vue par défaut dans les préférences. Demandée avec UI-32, placée en tête de la 1.4.0 parce que c’est une nouvelle fonction et non un correctif.' },
 	{ topic: 'Couleurs des vins (FEAT-03)', choice: 'Chaque couleur de vin a une vraie couleur, enregistrée en base ; les couleurs de départ reçoivent celles des étiquettes d’aujourd’hui. Créée depuis un formulaire, une couleur reçoit une teinte par défaut ou neutre ; dans Admin › Data, le sélecteur s’affiche dès la création ou la modification. Choisi sur maquette : sur la page Stockage, chaque place occupée prend la couleur de son vin ; les camemberts des statistiques prennent les vraies couleurs ; la liste des vins garde l’étiquette, colorée, et ajoute une bande à gauche de la carte ; les listes de bouteilles montrent l’étiquette colorée à côté du nom du vin. Pas de carte teintée (décision du 2026-10-31). Précisé le 2026-11-01 : les couleurs de départ sont les teintes de vin de la maquette (Rouge #7b1e2b, Blanc #ead98b, Rosé #f2a08c, Jaune #d4952a, N/A #9ca3af) ; une couleur créée depuis un formulaire reçoit le gris de N/A, sauf un nom reconnu, qui reprend sa teinte de départ. Changé le 2026-11-02, sur captures : le contour « seulement quand le contraste manque » donnait des bouteilles avec contour, d’autres sans, et un orange entre les deux, ce que le mainteneur refuse ; toute couleur reçoit désormais le même contour, dans sa propre teinte mêlée de 40 % de noir en clair et de 40 % de blanc en sombre, sur le stockage (une silhouette de bouteille sans étiquette ; une place vide est la même silhouette en contour), les étiquettes, la bande des cartes et la légende des statistiques. Une couleur choisie par l’utilisateur peut avoir un contour sous 3:1 (le blanc pur en clair : 2,85:1) : accepté.' },
@@ -2995,7 +3007,7 @@ export const tasks = [
 	},
 	// ───────── P18 Producteurs et revue de l’import
 	{
-		id: 'DEP-11', phase: 'P19', size: 'S', sev: 'mineur',
+		id: 'DEP-11', phase: 'P24', size: 'S', sev: 'mineur',
 		title: 'Revue des dépendances d’après la 1.5.1',
 		why: 'Ce que DEP-10 n’a pas pris : Node 24.22.2 et docker/login-action 4.8.0 (éligibles le 2026-11-12), les correctifs pas encore âgés de 7 jours le 2026-11-08 (tinybench, svelte-check, bits-ui, tailwindcss 4.3.4, vite 8.3.6, semver, cookie…), et les mineures repoussées (@lucide/svelte 1.66, readable-stream, tar-stream, pako, core-js).',
 		where: ['package.json', 'pnpm-lock.yaml', '.github/workflows/', 'Dockerfile', '.nvmrc'],
@@ -3005,6 +3017,30 @@ export const tasks = [
 		],
 		done: 'Chaque dépendance, action et image de base est à son dernier correctif publié depuis au moins 7 jours, ou l’écart est justifié ; la CI tourne sur le Node de l’image.',
 		deps: ['DEP-10'], src: ['Trouvé pendant DEP-10']
+	},
+	{
+		id: 'DEP-12', phase: 'P24', size: 'M', sev: 'mineur',
+		title: 'Les versions majeures en retard',
+		why: 'Aucune revue des versions majeures depuis P3 : Paraglide 3, tailwind-variants 4, TypeScript 7 et @types/node 26 attendent, et l’image reste sur Node 24 quand Node 26 est la LTS active.',
+		where: ['package.json', 'pnpm-lock.yaml', 'Dockerfile', '.nvmrc', '.github/workflows/', 'project.inlang/', 'src/'],
+		todo: [
+			'Décision « Versions majeures (DEP-12) » : chaque majeure dans son propre commit, publiée depuis au moins 7 jours, portes à chaque fois ; ce qu’elle change dans le code, au plus juste ; les messages compilés comparés avant et après pour Paraglide.',
+			'Node 26 : image de base épinglée par tag et empreinte, `.nvmrc` et CI sur la même version, `@types/node` 26, image construite et saine ; bancs depuis la version précédente et la 1.0.0 avant le merge.',
+			'Ce qui bloque est expliqué et reporté ; chaque majeure gardée est validée par le mainteneur.'
+		],
+		done: 'Chaque majeure en retard est prise, ou reportée avec sa raison et l’accord du mainteneur ; portes, CI et bancs verts.',
+		deps: ['DEP-11'], src: ['Décision « Versions majeures (DEP-12) »']
+	},
+	{
+		id: 'REL-24', phase: 'P24', size: 'S', sev: 'evolution',
+		title: 'Publication du bloc « Dépendances »',
+		why: 'Le bloc apporte des dépendances à jour sans attendre les autres.',
+		where: ['releases.json', 'CHANGELOG.md', 'UPGRADING.md', 'package.json'],
+		todo: [
+			'Résumé complété par DEP-11 et DEP-12 ; bancs depuis la version précédente et la 1.0.0 ; release selon RELEASING.md, avec le mainteneur, sous le numéro de version suivant (décision « Blocs sans numéro »).'
+		],
+		done: 'La version est publiée sur `main` et son image se télécharge sans connexion ; develop passe à la rc suivante.',
+		deps: ['DEP-11', 'DEP-12'], src: ['Décision « Versions majeures (DEP-12) »']
 	},
 	{
 		id: 'UI-34', phase: 'P23', size: 'S', sev: 'mineur',

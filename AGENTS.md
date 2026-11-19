@@ -6,7 +6,7 @@ Stack: SvelteKit 3 (adapter-node), Svelte 5, SQLite through better-sqlite3 and D
 
 ## Commands
 
-Use pnpm 10 (`npx -y pnpm@10 …` if it is not installed) and Node 26. `packageManager` in `package.json` pins the exact pnpm version.
+Use pnpm 12 and Node 26. `packageManager` in `package.json` pins the exact pnpm version; if pnpm is not installed, `npx -y pnpm@<that version> …` runs it (not `pnpm@12`: npx ignores the 7-day rule below).
 
 - `pnpm install --frozen-lockfile`: install dependencies.
 - `pnpm dev`: start the dev server.
@@ -86,6 +86,7 @@ Test behaviour that matters: business rules, security checks, and every bug you 
 - Dependencies:
   - pnpm only. Commit `pnpm-lock.yaml` with any `package.json` change.
   - Only versions published at least 7 days ago are installed (`pnpm-workspace.yaml`). Never bypass this without the maintainer.
+  - A dependency with install scripts must be listed under `allowBuilds` in `pnpm-workspace.yaml` (`true` runs them, `false` skips them), or `pnpm install` stops.
   - A version range starts at the installed version (`^5.57.1`, not `^5.0.0`), so the declared minimum is the tested one.
   - GitHub Actions are pinned to a full commit SHA, with the version in a comment (`uses: actions/checkout@<sha> # v7.0.1`), because a tag can be moved. To update one, pick a release published at least 7 days ago (`gh release view <tag> -R <owner>/<repo> --json publishedAt`), get its commit with `gh api repos/<owner>/<repo>/commits/<tag> --jq .sha`, and change the SHA and the comment together, in every workflow that uses it.
   - The `node` base image of the `Dockerfile` is pinned the same way, by its full tag and digest (`node:26.x.y-alpine3.zz@sha256:…`), and updated under the same rule: pick a tag pushed at least 7 days ago (`tag_last_pushed` at `https://hub.docker.com/v2/repositories/library/node/tags/<tag>`, which gives its `digest` too), then check it with `docker buildx imagetools inspect node:<tag>@<digest>`. `.nvmrc` names the same Node version (`26.x.y`), so that CI tests and builds with the Node the image ships.

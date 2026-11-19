@@ -7,12 +7,12 @@ FROM ${NODE_IMAGE} AS base
 # Set working directory
 WORKDIR /app
 
-# Copy package files
-COPY package.json pnpm-lock.yaml* ./
+# Copy package files, with pnpm-workspace.yaml: the install below follows its settings
+# (minimumReleaseAge, allowBuilds)
+COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
 
-# Install the pnpm version pinned by "packageManager" in package.json: any other pnpm 10
-# would download that version on its first run. pnpm 11+ ignores the
-# "pnpm.onlyBuiltDependencies" field of package.json, so keep the pin on pnpm 10.
+# Install the pnpm version pinned by "packageManager" in package.json: any other pnpm would
+# download that version on its first run.
 RUN npm install -g "$(node -p "require('./package.json').packageManager")"
 # No install scripts. The project's prepare script would fail, since the sources are not copied
 # yet, and the build below does its work (Paraglide's compilation and svelte-kit sync). No

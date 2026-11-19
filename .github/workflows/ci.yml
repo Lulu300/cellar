@@ -32,8 +32,8 @@ jobs:
 
       # Same pnpm as the Dockerfile: the version pinned by packageManager in package.json.
       # Install scripts run, unlike in release.yml: esbuild's postinstall checks the native binary
-      # that the build and the tests use. pnpm.onlyBuiltDependencies in package.json lists the
-      # packages allowed to run them.
+      # that the build and the tests use. allowBuilds in pnpm-workspace.yaml says which packages
+      # may run them.
       - name: Install dependencies
         run: |
           npm install -g "$(node -p "require('./package.json').packageManager")"

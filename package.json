@@ -3,7 +3,7 @@
   "private": true,
   "version": "1.9.0-rc.0",
   "type": "module",
-  "packageManager": "pnpm@10.34.9",
+  "packageManager": "pnpm@12.20.0",
   "engines": {
     "node": "26.x"
   },
@@ -65,14 +65,6 @@
     "typescript-eslint": "^8.72.2",
     "vite": "^8.3.8",
     "vitest": "^5.1.0"
-  },
-  "pnpm": {
-    "onlyBuiltDependencies": [
-      "esbuild"
-    ],
-    "ignoredBuiltDependencies": [
-      "better-sqlite3"
-    ]
   },
   "dependencies": {
     "@modelcontextprotocol/server": "^2.4.0",

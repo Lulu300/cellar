@@ -41,6 +41,8 @@ describe('wine badges', () => {
             '#7e22ce',
             '#1d4ed8'
         ]);
+        // The one change, accepted: a typographic apostrophe is a straight one, as in `folded`.
+        expect(typeFill('Vin d’Alsace')).toBe(typeFill("Vin d'Alsace"));
     });
 
     // The type pie of the statistics page used to draw every type in shades of grey.

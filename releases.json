@@ -1,5 +1,11 @@
 [
   {
+    "version": "1.10.0",
+    "summary": "1.10.0 brings the next block of the roadmap.",
+    "mandatoryStop": false,
+    "actions": []
+  },
+  {
     "version": "1.9.0",
     "summary": "1.9.0 brings Cellar’s dependencies up to date.\n\nThe Docker image moves to Node.js 26.13.1, a security release that fixes serious flaws of Node.js, mostly in HTTP/2 and TLS, one of them in the HTTP server that Cellar runs. The libraries in the image take their fixes and minor versions published at least a week ago, among them the streams of the ZIP library that writes backups and exports; so do the build and test tools. Nothing changes in how Cellar looks or works. The dependency audit still lists the moderate minimatch advisory of 1.1.0: Cellar still never uses the part of the ZIP library that runs minimatch, and that library still does not accept the fixed minimatch.\n\nNode.js 26 is the long-term support version that follows Node.js 24, which now only receives maintenance fixes. If you run Cellar from its sources rather than from the Docker image, install Node.js 26 and pnpm 12 first: pnpm install now refuses Node.js 24.",
     "mandatoryStop": false,

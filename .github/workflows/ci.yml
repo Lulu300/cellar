@@ -110,8 +110,13 @@ jobs:
       - name: Build
         run: pnpm build
 
+      # No --with-deps: it installs through apt, and an outage of Ubuntu's apt mirror once failed
+      # this step on four attempts in a row, over an hour. The runner image already has every
+      # library Chromium needs; apt only added fonts that no journey needs and a few library
+      # updates. If a newer image lacks a library, Playwright refuses to launch Chromium and names
+      # it: the journeys fail, never skip.
       - name: Install Chromium
-        run: pnpm exec playwright install --with-deps chromium
+        run: pnpm exec playwright install chromium
 
       - name: Run the end-to-end journeys
         id: e2e

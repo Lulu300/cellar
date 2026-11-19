@@ -59,7 +59,7 @@ describe('WineTable', () => {
     // On a phone as on a computer, a button opens the table of the wine's bottles.
     it('shows the bottles of a wine on a phone and on a computer, to a visitor too', () => {
         expect(
-            renderTable(false).match(/<button [^\n]*?title="View bottle details"/g)
+            renderTable(false).match(/<button [^\n]*?title="View this wine's bottles"/g)
         ).toHaveLength(2);
     });
 

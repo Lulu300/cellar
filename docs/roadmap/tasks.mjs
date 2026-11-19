@@ -113,6 +113,7 @@ export const versions = [
 	{
 		id: '1.9.1',
 		title: 'Petites finitions',
+		released: '2026-11-19',
 		goal: 'Les petits défauts relevés pendant les tâches depuis la 1.7.0, et une CI qui ne tombe plus quand le miroir d’Ubuntu ne répond pas.'
 	},
 	{
@@ -317,7 +318,7 @@ export const phases = [
 		id: 'P25',
 		version: '1.9.1',
 		title: 'Petites finitions',
-		goal: 'Juste après la 1.9.0, avant les autres blocs (décision « Petites finitions (1.9.1) ») : UI-38 et QA-07, côte à côte, fusionnées l’une après l’autre ; puis REL-25.'
+		goal: 'Juste après la 1.9.0, avant les autres blocs (décision « Petites finitions (1.9.1) ») : UI-38 et QA-07, côte à côte, fusionnées l’une après l’autre ; puis REL-25. Publiée en 1.9.1 le 2026-11-19.'
 	},
 	{
 		id: 'P19',
@@ -3102,7 +3103,8 @@ export const tasks = [
 		why: 'La 1.9.1 apporte ces finitions sans attendre le bloc suivant.',
 		where: ['releases.json', 'CHANGELOG.md', 'UPGRADING.md', 'package.json'],
 		todo: [
-			'develop repasse de 1.10.0-rc.0 à 1.9.1-rc.0 au démarrage ; résumé 1.9.1 complété par UI-38 (et QA-07 si un utilisateur peut le remarquer) ; bancs depuis la 1.9.0 et la 1.0.0 ; release selon RELEASING.md ; puis develop passe à 1.10.0-rc.0 avec une nouvelle entrée 1.10.0.'
+			'develop repasse de 1.10.0-rc.0 à 1.9.1-rc.0 au démarrage ; résumé 1.9.1 complété par UI-38 (et QA-07 si un utilisateur peut le remarquer) ; bancs depuis la 1.9.0 et la 1.0.0 ; release selon RELEASING.md ; puis develop passe à 1.10.0-rc.0 avec une nouvelle entrée 1.10.0.',
+			'Fait le 2026-11-19 : bancs de la 1.9.0 et de la 1.0.0 vers la 1.9.1, 176 sur 176 chacun, sans changer le banc ; CI 44577715876 verte sur 8dbc0460 ; `main` avancée, tag v1.9.1, release 44580281143 verte ; image publique sans connexion (`1.9.1`, `1.9`, `latest`, amd64 et arm64). develop passe à 1.10.0-rc.0, avec une entrée 1.10.0 au résumé provisoire.'
 		],
 		done: 'v1.9.1 est publiée sur `main` et son image se télécharge sans connexion ; develop passe à 1.10.0-rc.0.',
 		deps: ['UI-38', 'QA-07'], src: ['Décision « Petites finitions (1.9.1) »']

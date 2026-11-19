@@ -194,7 +194,7 @@ Revue du code du 2026-10-08, commit `556c7bb`. Ce fichier est la version pour le
 | Dégustation | P20 · Fiches de dégustation | Décision « Fiches de dégustation (FEAT-06, FEAT-14 à FEAT-16) ». Sur la branche d’intégration `feat/tasting`, envoyée sur GitHub (décision « Blocs sans numéro ») : chaque tâche part de cette branche et y revient ; la branche rejoint develop quand le mainteneur valide le bloc entier. Ordre : FEAT-06 ; FEAT-14 ; FEAT-15 ; FEAT-16 ; puis REL-17. | FEAT-06, FEAT-14, FEAT-15, FEAT-16, REL-17 | 0 / 5 |
 | 1.8.0 | P18 · Producteurs et revue de l’import | Les producteurs d’abord, parce que la revue de l’import doit savoir relier ou créer un producteur. Ordre : FEAT-07 ; FEAT-08 ; puis REL-12. Le 2026-11-11, le mainteneur sort le bloc sans attendre DEP-11, éligible le 2026-11-12, qui passe à la sortie suivante. Publiée en 1.8.0 le 2026-11-11. | FEAT-07, FEAT-08, REL-12 | 3 / 3 |
 | 1.9.0 | P24 · Dépendances à jour | Juste après la 1.8.0, avant les autres blocs (décision « Versions majeures (DEP-12) ») : DEP-11 ; puis DEP-12 ; puis REL-24. Une version mineure. Publiée en 1.9.0 le 2026-11-19. | DEP-11, DEP-12, REL-24 | 3 / 3 |
-| 1.9.1 | P25 · Petites finitions | Juste après la 1.9.0, avant les autres blocs (décision « Petites finitions (1.9.1) ») : UI-38 et QA-07, côte à côte, fusionnées l’une après l’autre ; puis REL-25. | UI-38, QA-07, REL-25 | 2 / 3 |
+| 1.9.1 | P25 · Petites finitions | Juste après la 1.9.0, avant les autres blocs (décision « Petites finitions (1.9.1) ») : UI-38 et QA-07, côte à côte, fusionnées l’une après l’autre ; puis REL-25. Publiée en 1.9.1 le 2026-11-19. | UI-38, QA-07, REL-25 | 3 / 3 |
 | Notifications | P19 · Notifications | Les notifications, qui utilisent « À boire » (FEAT-05), le statut hors cave et la vérification des mises à jour. Ordre : FEAT-09 ; puis REL-13. | FEAT-09, REL-13 | 0 / 2 |
 | Statistiques de dégustation | P21 · Statistiques de dégustation | Après le bloc « Dégustation », dont elles lisent les fiches. Ordre : FEAT-17 ; puis REL-18. | FEAT-17, REL-18 | 0 / 2 |
 
@@ -4128,7 +4128,7 @@ Sévérité **évolution** · effort **S** · dépend de DEP-11, DEP-12 · statu
 
 ## P25 · Petites finitions (1.9.1)
 
-Juste après la 1.9.0, avant les autres blocs (décision « Petites finitions (1.9.1) ») : UI-38 et QA-07, côte à côte, fusionnées l’une après l’autre ; puis REL-25.
+Juste après la 1.9.0, avant les autres blocs (décision « Petites finitions (1.9.1) ») : UI-38 et QA-07, côte à côte, fusionnées l’une après l’autre ; puis REL-25. Publiée en 1.9.1 le 2026-11-19.
 
 ### UI-38 · Les petits défauts relevés depuis la 1.7.0
 
@@ -4181,7 +4181,9 @@ Sévérité **mineur** · effort **S** · dépend de REL-24 · statut **Fait**
 
 ### REL-25 · Publication de la 1.9.1
 
-Sévérité **évolution** · effort **S** · dépend de UI-38, QA-07 · statut **À faire**
+Sévérité **évolution** · effort **S** · dépend de UI-38, QA-07 · statut **Fait**
+
+**Suivi** (2026-11-19) : 8dbc0460, v1.9.1
 
 **Problème** : La 1.9.1 apporte ces finitions sans attendre le bloc suivant.
 
@@ -4190,6 +4192,7 @@ Sévérité **évolution** · effort **S** · dépend de UI-38, QA-07 · statut 
 **À faire**
 
 - develop repasse de 1.10.0-rc.0 à 1.9.1-rc.0 au démarrage ; résumé 1.9.1 complété par UI-38 (et QA-07 si un utilisateur peut le remarquer) ; bancs depuis la 1.9.0 et la 1.0.0 ; release selon RELEASING.md ; puis develop passe à 1.10.0-rc.0 avec une nouvelle entrée 1.10.0.
+- Fait le 2026-11-19 : bancs de la 1.9.0 et de la 1.0.0 vers la 1.9.1, 176 sur 176 chacun, sans changer le banc ; CI 44577715876 verte sur 8dbc0460 ; `main` avancée, tag v1.9.1, release 44580281143 verte ; image publique sans connexion (`1.9.1`, `1.9`, `latest`, amd64 et arm64). develop passe à 1.10.0-rc.0, avec une entrée 1.10.0 au résumé provisoire.
 
 **Critère d’acceptation** : v1.9.1 est publiée sur `main` et son image se télécharge sans connexion ; develop passe à 1.10.0-rc.0.
 

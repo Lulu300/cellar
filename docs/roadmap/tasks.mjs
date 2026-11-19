@@ -111,6 +111,11 @@ export const versions = [
 		goal: 'Les correctifs et mineures en attente, puis les versions majeures (Paraglide 3, tailwind-variants 4, TypeScript 7, Node 26), essayées une à une.'
 	},
 	{
+		id: '1.9.1',
+		title: 'Petites finitions',
+		goal: 'Les petits défauts relevés pendant les tâches depuis la 1.7.0, et une CI qui ne tombe plus quand le miroir d’Ubuntu ne répond pas.'
+	},
+	{
 		id: 'Dégustation',
 		title: 'Des fiches de dégustation à sa main',
 		goal: 'Des fiches de dégustation structurées et personnalisables, imprimables en A4, à remplir quand on boit une bouteille, plusieurs fiches et leurs versions, et un MCP qui aide à les remplir et à les faire évoluer. Sur sa propre branche.'
@@ -309,6 +314,12 @@ export const phases = [
 		goal: 'Juste après la 1.8.0, avant les autres blocs (décision « Versions majeures (DEP-12) ») : DEP-11 ; puis DEP-12 ; puis REL-24. Une version mineure. Publiée en 1.9.0 le 2026-11-19.'
 	},
 	{
+		id: 'P25',
+		version: '1.9.1',
+		title: 'Petites finitions',
+		goal: 'Juste après la 1.9.0, avant les autres blocs (décision « Petites finitions (1.9.1) ») : UI-38 et QA-07, côte à côte, fusionnées l’une après l’autre ; puis REL-25.'
+	},
+	{
 		id: 'P19',
 		version: 'Notifications',
 		title: 'Notifications',
@@ -455,6 +466,7 @@ export const decisions = [
 	{ topic: 'Période de dégustation (FEAT-19)', choice: 'Choisi sur la proposition du 2026-11-09 (modèle A) : une bouteille peut porter « à partir de » à côté d’« À boire avant », chacun en année ou en mois, jamais au jour ; l’année optimale reste une année. Une nouvelle colonne, aucune valeur convertie : une bouteille sans début se range exactement comme avant. Un rang « Prête » (losange vide, après « À l’apogée ») vaut pour une bouteille dans sa période, dont la fin tombe après cette année ou n’existe pas, et dont l’apogée n’est pas venue ou n’existe pas ; une fin dépassée, ce mois-ci ou cette année range la bouteille comme aujourd’hui ; une période pas encore ouverte reste « Plus tard », écrite « pas encore prête », sans rang à elle. « Prête » ne se voit que sur la page « À boire », avec un filtre : le bandeau, le repère du stockage et le récapitulatif des notifications (FEAT-09) gardent les quatre rangs de FEAT-05. Noms : « Période de dégustation » (fenêtre, formulaire, menu ⋯, bouton de la sélection) et « Période » (colonne) ; « 2024 – 2032 », « sept. 2026 – mars 2027 », « dès 2028 » ; une bouteille en retard garde « avant fin … ». Les tuiles « Ce mois-ci » et « Cette année » retirent le début ; l’API et le MCP refusent une fin avant le début (422 qui nomme les bouteilles). « Après l’apogée » reste pour plus tard. Un petit bloc à lui seul, juste après la 1.5.3 : version mineure, puisqu’une version corrective ne porte pas de migration (choix du mainteneur, 2026-11-09).' },
 	{ topic: 'Finitions (UI-37, UI-34)', choice: 'Demande du mainteneur (2026-11-10) : une version mineure, juste après la 1.6.0, qui corrige les petits défauts relevés pendant UI-35, UI-36 et FEAT-19 (UI-37) et fait UI-34, la barre de sélection des bouteilles commune. UI-37 et UI-34 partent côte à côte, chacune sur sa branche, et fusionnent l’une après l’autre. Ce qui se voit (cartes de bouteilles, bouton « N bouteilles » sur téléphone, période d’un seul mois, majuscules des libellés anglais, pleine largeur à 2560 px, comportement du visiteur dans la barre de sélection) est proposé sur captures avant d’être construit. DEP-11 passe juste avant la sortie, Node 24.22.2 étant éligible le 2026-11-12.' },
 	{ topic: 'Versions majeures (DEP-12)', choice: 'Le 2026-11-12, le mainteneur demande si les dépendances sont à jour : aucune revue des versions majeures n’a eu lieu depuis SvelteKit 3, Vite 8 et TypeScript 6 (P3, avant la 1.0) ; DEP-08 à DEP-10 ne prenaient que les correctifs et quelques mineures. En retard, toutes en outils de développement : @inlang/paraglide-js 3 (2.29.3), tailwind-variants 4 (3.3.1), TypeScript 7 (6.0.3, la réécriture native), @types/node 26 (24, à suivre avec Node) ; et Node 26, LTS active depuis octobre 2026, alors que l’image reste sur Node 24 (LTS de maintenance). Les dépendances de production sont à jour. Un bloc à part, avant les autres : DEP-11 (correctifs et mineures en attente, Node 24.22.2) fusionnée d’abord, puis DEP-12, où chaque majeure est essayée dans son propre commit, portes à chaque fois, et proposée au mainteneur avant d’être gardée ; ce qui bloque (par exemple un outil qui ne supporte pas encore TypeScript 7) est expliqué et reporté. Node 26 change l’image publiée : bancs avant le merge (choix du mainteneur, 2026-11-12).' },
+	{ topic: 'Petites finitions (1.9.1)', choice: 'Demande du mainteneur (2026-11-19) : une tâche pour les petits défauts relevés depuis la 1.7.0 (« Trouvé » de UI-34, UI-37, FEAT-07 et FEAT-08) : UI-38. La CI a perdu quatre fois son job e2e sur le miroir apt d’Ubuntu pendant FEAT-07 : QA-07 la rend robuste, sans rien changer à ce qu’elle vérifie. Que des corrections, sans migration : une version corrective, 1.9.1 ; comme pour la 1.5.1, develop repasse de 1.10.0-rc.0 à 1.9.1-rc.0, aucune image ni base ne tournant sous ce numéro hors de la CI. Ce qui se voit est proposé sur captures avant d’être construit. Restent hors de la tâche : l’annonce « 0 bouteille sélectionnée » (à vérifier avec un vrai lecteur d’écran), la durée d’une revue CSV à la limite de 50 Mo, et ce qui attend une dépendance (TypeScript 7, minimatch, runed, rolldown).' },
 	{ topic: 'Survol des boutons (UI-33)', choice: 'Choisi sur captures le 2026-11-02, une règle par sorte de bouton : un bouton plein (principal, secondaire, suppression, interrupteur) mêle au survol 15 % de la couleur du texte de la page à son fond, donc s’assombrit en clair et s’éclaircit en sombre (jetons `--primary-hover`, `--secondary-hover`, `--destructive-hover`) ; un bouton discret (transparent, icône, ligne de menu, section du menu, tri, case du stockage, croix d’un dialogue) prend au survol le fond `accent` entier et son texte, en clair comme en sombre, et les boutons à icône faits main aussi ; un bouton à contour et une liste déroulante gardent le survol de shadcn, la liste déroulante gagnant celui qui lui manquait en clair ; un choix non retenu suit la règle des boutons discrets, un choix retenu celle des boutons pleins, sans zoom ; liens et onglets inchangés ; un focus clavier net (anneau de 3 px en `--ring` entier) sur chaque bouton, lien et onglet ; un bouton désactivé à 50 %, sans survol, avec le curseur normal, faits main compris ; pas d’état appuyé à part, et seules les couleurs changent. L’`accent` n’est pas renforcé. Exception à la règle de `ui/` : `ui/button/button.svelte`, `ui/select/select-trigger.svelte` et `ui/dialog/dialog-content.svelte` portent des classes modifiées à la main, signalées par un commentaire, parce que le défaut est dans leurs variantes. Tous les conteneurs du stockage ont la même pastille neutre.' },
 	{ topic: 'Vue liste (FEAT-10)', choice: 'Choisie sur maquette (planche « D3 ») : une vue liste à côté des cartes, sans défilement (le mainteneur n’en veut pas dans la liste) ; un texte long passe à la ligne. Un sélecteur « Cartes / Liste » sur la page et la vue par défaut dans les préférences. Demandée avec UI-32, placée en tête de la 1.4.0 parce que c’est une nouvelle fonction et non un correctif.' },
 	{ topic: 'Couleurs des vins (FEAT-03)', choice: 'Chaque couleur de vin a une vraie couleur, enregistrée en base ; les couleurs de départ reçoivent celles des étiquettes d’aujourd’hui. Créée depuis un formulaire, une couleur reçoit une teinte par défaut ou neutre ; dans Admin › Data, le sélecteur s’affiche dès la création ou la modification. Choisi sur maquette : sur la page Stockage, chaque place occupée prend la couleur de son vin ; les camemberts des statistiques prennent les vraies couleurs ; la liste des vins garde l’étiquette, colorée, et ajoute une bande à gauche de la carte ; les listes de bouteilles montrent l’étiquette colorée à côté du nom du vin. Pas de carte teintée (décision du 2026-10-31). Précisé le 2026-11-01 : les couleurs de départ sont les teintes de vin de la maquette (Rouge #7b1e2b, Blanc #ead98b, Rosé #f2a08c, Jaune #d4952a, N/A #9ca3af) ; une couleur créée depuis un formulaire reçoit le gris de N/A, sauf un nom reconnu, qui reprend sa teinte de départ. Changé le 2026-11-02, sur captures : le contour « seulement quand le contraste manque » donnait des bouteilles avec contour, d’autres sans, et un orange entre les deux, ce que le mainteneur refuse ; toute couleur reçoit désormais le même contour, dans sa propre teinte mêlée de 40 % de noir en clair et de 40 % de blanc en sombre, sur le stockage (une silhouette de bouteille sans étiquette ; une place vide est la même silhouette en contour), les étiquettes, la bande des cartes et la légende des statistiques. Une couleur choisie par l’utilisateur peut avoir un contour sous 3:1 (le blanc pur en clair : 2,85:1) : accepté.' },
@@ -3047,6 +3059,49 @@ export const tasks = [
 		],
 		done: 'La version est publiée sur `main` et son image se télécharge sans connexion ; develop passe à la rc suivante.',
 		deps: ['DEP-11', 'DEP-12'], src: ['Décision « Versions majeures (DEP-12) »']
+	},
+	// ───────── P25 Petites finitions
+	{
+		id: 'UI-38', phase: 'P25', size: 'M', sev: 'mineur',
+		title: 'Les petits défauts relevés depuis la 1.7.0',
+		why: 'UI-34, UI-37, FEAT-07 et FEAT-08 ont relevé, sans les corriger, des défauts hors de leur périmètre : des recherches qui comptent encore les accents, des onglets sans flèches du clavier, un libellé au singulier, deux pages avec leur propre invite de connexion, « cave » en anglais, une note qui déborde, un titre serré sur téléphone et un focus perdu.',
+		where: ['src/routes/admin/data/wines/+page.svelte', 'src/routes/admin/data/bottles/+page.svelte', 'src/lib/components/storage/AllBottlesDialog.svelte', 'src/lib/components/bottles/to-drink.ts', 'src/lib/components/wishlist/WishAdd.svelte', 'src/lib/components/forms/SearchableSelect.svelte', 'src/lib/shared/wine-colors.ts', 'src/lib/components/admin/csv-review/CsvReviewDialog.svelte', 'src/lib/components/wines/WineCard.svelte', 'src/lib/components/wines/WineTable.svelte', 'src/routes/wines/+page.svelte', 'src/routes/storage/+page.svelte', 'src/lib/i18n/locales/', 'src/lib/components/bottles/BottleCard.svelte', 'src/routes/out-of-cellar/+page.svelte', 'src/lib/components/bottles/BottleSelectionBar.svelte'],
+		todo: [
+			'Recherches sans accents, avec `folded` (`src/lib/shared/names.ts`) : Admin › Data › Vins et Bouteilles, toutes les bouteilles du stockage, la page « À boire », les suggestions de la liste d’envies ; `findOption` et `chooseTypedName` de `SearchableSelect` ; `paletteKey` réutilise `folded` au lieu de son propre code.',
+			'Les onglets de la revue CSV se parcourent aux flèches du clavier (tabindex mobile), comme le veut le rôle `tab`.',
+			'« Voir détails de la bouteille » (`wines.view_bottle_details`) dit qu’il ouvre toutes les bouteilles d’un vin.',
+			'`/wines` et `/storage` demandent la connexion à un visiteur par `requireLogin`, comme l’onglet Pénurie.',
+			'En anglais, « cellar » au lieu de « cave » (`history.wines_in_cave`, `history.in_cave`, et tout autre « cave » restant).',
+			'Carte de bouteille : une note sans espace reste dans son cadre (sans défilement de côté entre 360 et 768 px), et « Notes : » n’est plus serré à côté d’une note longue.',
+			'Hors cave : la ligne de titre passe à la ligne à 390 px.',
+			'Après « Effacer la sélection », le focus clavier va à un endroit stable de la liste.',
+			'Ce qui se voit est proposé d’abord sur captures, puis construit selon le choix du mainteneur.'
+		],
+		done: 'Chaque défaut listé est corrigé, ou écarté avec l’accord du mainteneur ; captures avant et après.',
+		deps: ['REL-24'], src: ['Trouvé pendant UI-34', 'Trouvé pendant UI-37', 'Trouvé pendant FEAT-07', 'Trouvé pendant FEAT-08', 'Décision « Petites finitions (1.9.1) »']
+	},
+	{
+		id: 'QA-07', phase: 'P25', size: 'S', sev: 'mineur',
+		title: 'Une CI qui survit au miroir apt d’Ubuntu',
+		why: 'Pendant FEAT-07, le job e2e a échoué quatre fois de suite à l’étape « Install Chromium », avant tout test, sur « Temporary failure resolving azure.archive.ubuntu.com » : `playwright install --with-deps` passe par apt, et un miroir qui ne répond pas fait tomber toute la CI.',
+		where: ['.github/workflows/ci.yml', '.github/workflows/release.yml'],
+		todo: [
+			'Rendre l’installation de Chromium et de ses dépendances système robuste à un miroir apt indisponible (par exemple une nouvelle tentative, un autre miroir, ou un cache), sans rien changer à ce que la CI vérifie ; actions épinglées par SHA, publiées depuis au moins 7 jours.',
+			'Le même traitement partout où une installation par apt peut tomber (release.yml si concerné).'
+		],
+		done: 'Une panne simulée du miroir n’empêche plus le job e2e de tourner ; la CI reste verte et vérifie la même chose.',
+		deps: ['REL-24'], src: ['Trouvé pendant FEAT-07', 'Décision « Petites finitions (1.9.1) »']
+	},
+	{
+		id: 'REL-25', phase: 'P25', size: 'S', sev: 'evolution',
+		title: 'Publication de la 1.9.1',
+		why: 'La 1.9.1 apporte ces finitions sans attendre le bloc suivant.',
+		where: ['releases.json', 'CHANGELOG.md', 'UPGRADING.md', 'package.json'],
+		todo: [
+			'develop repasse de 1.10.0-rc.0 à 1.9.1-rc.0 au démarrage ; résumé 1.9.1 complété par UI-38 (et QA-07 si un utilisateur peut le remarquer) ; bancs depuis la 1.9.0 et la 1.0.0 ; release selon RELEASING.md ; puis develop passe à 1.10.0-rc.0 avec une nouvelle entrée 1.10.0.'
+		],
+		done: 'v1.9.1 est publiée sur `main` et son image se télécharge sans connexion ; develop passe à 1.10.0-rc.0.',
+		deps: ['UI-38', 'QA-07'], src: ['Décision « Petites finitions (1.9.1) »']
 	},
 	{
 		id: 'UI-34', phase: 'P23', size: 'S', sev: 'mineur',

@@ -194,7 +194,7 @@ Revue du code du 2026-10-08, commit `556c7bb`. Ce fichier est la version pour le
 | Dégustation | P20 · Fiches de dégustation | Décision « Fiches de dégustation (FEAT-06, FEAT-14 à FEAT-16) ». Sur la branche d’intégration `feat/tasting`, envoyée sur GitHub (décision « Blocs sans numéro ») : chaque tâche part de cette branche et y revient ; la branche rejoint develop quand le mainteneur valide le bloc entier. Ordre : FEAT-06 ; FEAT-14 ; FEAT-15 ; FEAT-16 ; puis REL-17. | FEAT-06, FEAT-14, FEAT-15, FEAT-16, REL-17 | 0 / 5 |
 | 1.8.0 | P18 · Producteurs et revue de l’import | Les producteurs d’abord, parce que la revue de l’import doit savoir relier ou créer un producteur. Ordre : FEAT-07 ; FEAT-08 ; puis REL-12. Le 2026-11-11, le mainteneur sort le bloc sans attendre DEP-11, éligible le 2026-11-12, qui passe à la sortie suivante. Publiée en 1.8.0 le 2026-11-11. | FEAT-07, FEAT-08, REL-12 | 3 / 3 |
 | 1.9.0 | P24 · Dépendances à jour | Juste après la 1.8.0, avant les autres blocs (décision « Versions majeures (DEP-12) ») : DEP-11 ; puis DEP-12 ; puis REL-24. Une version mineure. Publiée en 1.9.0 le 2026-11-19. | DEP-11, DEP-12, REL-24 | 3 / 3 |
-| 1.9.1 | P25 · Petites finitions | Juste après la 1.9.0, avant les autres blocs (décision « Petites finitions (1.9.1) ») : UI-38 et QA-07, côte à côte, fusionnées l’une après l’autre ; puis REL-25. | UI-38, QA-07, REL-25 | 0 / 3 |
+| 1.9.1 | P25 · Petites finitions | Juste après la 1.9.0, avant les autres blocs (décision « Petites finitions (1.9.1) ») : UI-38 et QA-07, côte à côte, fusionnées l’une après l’autre ; puis REL-25. | UI-38, QA-07, REL-25 | 1 / 3 |
 | Notifications | P19 · Notifications | Les notifications, qui utilisent « À boire » (FEAT-05), le statut hors cave et la vérification des mises à jour. Ordre : FEAT-09 ; puis REL-13. | FEAT-09, REL-13 | 0 / 2 |
 | Statistiques de dégustation | P21 · Statistiques de dégustation | Après le bloc « Dégustation », dont elles lisent les fiches. Ordre : FEAT-17 ; puis REL-18. | FEAT-17, REL-18 | 0 / 2 |
 
@@ -4156,7 +4156,9 @@ Sévérité **mineur** · effort **M** · dépend de REL-24 · statut **À faire
 
 ### QA-07 · Une CI qui survit au miroir apt d’Ubuntu
 
-Sévérité **mineur** · effort **S** · dépend de REL-24 · statut **À faire**
+Sévérité **mineur** · effort **S** · dépend de REL-24 · statut **Fait**
+
+**Suivi** (2026-11-19) : 0d5334ae..6d25d5b1
 
 **Problème** : Pendant FEAT-07, le job e2e a échoué quatre fois de suite à l’étape « Install Chromium », avant tout test, sur « Temporary failure resolving azure.archive.ubuntu.com » : `playwright install --with-deps` passe par apt, et un miroir qui ne répond pas fait tomber toute la CI.
 
@@ -4166,6 +4168,8 @@ Sévérité **mineur** · effort **S** · dépend de REL-24 · statut **À faire
 
 - Rendre l’installation de Chromium et de ses dépendances système robuste à un miroir apt indisponible (par exemple une nouvelle tentative, un autre miroir, ou un cache), sans rien changer à ce que la CI vérifie ; actions épinglées par SHA, publiées depuis au moins 7 jours.
 - Le même traitement partout où une installation par apt peut tomber (release.yml si concerné).
+- Fait en P25 (2026-11-19, 0d5334ae..6d25d5b1) : option A choisie par le mainteneur (2026-11-19) parmi trois (A sans apt, B nouvelles tentatives, C dépendances au mieux) : l’étape « Install Chromium » du job e2e lance `pnpm exec playwright install chromium`, sans `--with-deps`, avec un commentaire qui dit pourquoi. L’image du runner a déjà toutes les bibliothèques de Chromium : apt n’ajoutait que des polices dont aucun parcours n’a besoin (japonaises, chinoises, thaï, unifont, polices X) et quatre mises à jour de mesa ; si une image future perd une bibliothèque, Playwright refuse de lancer Chromium en la nommant, et les parcours échouent. Le navigateur vient toujours du CDN de Playwright ; mêmes jobs, mêmes étapes, mêmes quatre parcours, aucune action ajoutée. release.yml est couvert par son job `verify`, qui appelle ci.yml ; ses autres jobs et le Dockerfile (Alpine) n’utilisent pas apt. Preuves sur une branche jetable `test/qa-07-proof` (accord du mainteneur) : run 44558158549 avec les trois miroirs d’Ubuntu détournés vers 0.0.0.0 dans /etc/hosts, où l’ancienne commande échoue comme pendant FEAT-07 (code 100) et la nouvelle installe Chromium en 10 s, quatre parcours verts ; run normal 44558941649, trois jobs verts, aucune ligne apt, « Install Chromium » en 8 s au lieu de 31 s et job e2e en 1 min 38 au lieu de 2 min 03. Branche supprimée sur GitHub et en local. Revue indépendante : rien de bloquant, commentaire et message de commit reformulés. Preuves dans p15-notes/qa-07-evidence.
+- Trouvé pendant QA-07 : la panne de FEAT-07 (run 43050024346) a duré plus d’une heure (tentatives 1 à 4 de 15 h 36 à 16 h 40 UTC, la 5e verte) : une nouvelle tentative dans le job ne l’aurait pas sauvée. Le job e2e dépend encore du réseau pour le registre npm et le CDN de Playwright (pas d’apt) ; rien à changer pour l’instant.
 
 **Critère d’acceptation** : Une panne simulée du miroir n’empêche plus le job e2e de tourner ; la CI reste verte et vérifie la même chose.
 

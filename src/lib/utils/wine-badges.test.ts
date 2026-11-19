@@ -29,6 +29,20 @@ describe('wine badges', () => {
         expect(typeBadgeClass('cidre')).toBe(cidre);
     });
 
+    // UI-38: paletteKey reuses `folded`, which keys any name written in Latin letters as before.
+    it('keeps the hue that each name had', () => {
+        expect(
+            ['Cidre', 'Saké', 'Liqueur', 'Vin de paille', 'Poiré', 'Hydromel', 'Crémant'].map(
+                typeFill
+            )
+        ).toEqual(['#a21caf', '#0f766e', '#c2410c', '#a21caf', '#be123c', '#c2410c', '#0f766e']);
+        expect([' CHAMPAGNE ', 'Spíritueux', 'Wine'].map(typeFill)).toEqual([
+            '#a16207',
+            '#7e22ce',
+            '#1d4ed8'
+        ]);
+    });
+
     // The type pie of the statistics page used to draw every type in shades of grey.
     it('fills a type in a chart with the hue of its badge, N/A in grey', () => {
         expect(typeFill('Vin')).toBe('#1d4ed8'); // blue, as its badge

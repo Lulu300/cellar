@@ -44,7 +44,11 @@ const config: KnipConfig = {
     ],
     // The shadcn-svelte primitives (components.json) stay as their CLI writes them, with every
     // part exported under two names, used or not
-    ignoreIssues: { 'src/lib/components/ui/*/index.ts': ['exports', 'types'] },
+    ignoreIssues: {
+        'src/lib/components/ui/*/index.ts': ['exports', 'types'],
+        // "extends": "$app/tsconfig" is not a package: svelte-kit sync writes node_modules/$app
+        'tsconfig.json': ['unlisted']
+    },
     compilers: { svelte }
 };
 

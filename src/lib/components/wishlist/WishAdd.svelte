@@ -11,14 +11,10 @@
     import LongTextarea from '#lib/components/forms/LongTextarea.svelte';
     import PhotoField from '#lib/components/forms/PhotoField.svelte';
     import { iconButton, refocus } from '#lib/components/layout/button-states.js';
-    import { matchesEveryWord } from '#lib/shared/names.js';
     import { NAME_MAX_LENGTH } from '#lib/shared/schemas/common.js';
-    import { addWholeWish } from './wishes.js';
+    import { addWholeWish, wishSuggestions } from './wishes.js';
 
     type Wine = { id: string; name: string; producer: string | null };
-
-    /** The most wines that the field suggests. */
-    const MAX_SUGGESTIONS = 5;
 
     /**
      * The form that adds a wish, whole, in the order it is read: the photo of the label, the name,
@@ -48,14 +44,7 @@
     // Loaded by the root layout: the wines already on the list
     const wishedWines: Record<string, string> = $derived(page.data.wishedWines ?? {});
 
-    // The wines whose name and producer hold every word typed, capitals and accents aside
-    const suggestions = $derived.by(() => {
-        if (!text.trim()) return [];
-        const matches = matchesEveryWord(text);
-        return wines
-            .filter((wine) => matches([wine.name, wine.producer]))
-            .slice(0, MAX_SUGGESTIONS);
-    });
+    const suggestions = $derived(wishSuggestions(wines, text));
 
     // The field that takes the place of the other gets the focus, which would otherwise fall back
     // to the page.

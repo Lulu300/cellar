@@ -4,6 +4,7 @@ import type { ImageUploads } from '#lib/components/forms/image-uploads.js';
 import { confirm } from '#lib/components/layout/confirm.svelte.js';
 import { m } from '#lib/paraglide/messages.js';
 import { CELLAR } from '#lib/shared/dependencies.js';
+import { matchesEveryWord } from '#lib/shared/names.js';
 import type { Jsonified, WishDTO } from '#lib/shared/dto.js';
 import type { WishInput } from '#lib/shared/schemas/wish.js';
 import { toasts } from '#lib/stores/toast.svelte.js';
@@ -13,6 +14,19 @@ export type Wish = Omit<Jsonified<WishDTO>, 'createdAt' | 'updatedAt'>;
 
 /** The fields of a wish as the API takes them: those left out are empty. */
 export type WishFields = Partial<WishInput>;
+
+/** The most wines that the name of a new wish suggests. */
+const MAX_SUGGESTIONS = 5;
+
+/** The wines of the cellar whose name and producer hold every word typed, capitals and accents aside. */
+export function wishSuggestions<W extends { name: string; producer: string | null }>(
+    wines: W[],
+    text: string
+): W[] {
+    if (!text.trim()) return [];
+    const matches = matchesEveryWord(text);
+    return wines.filter((wine) => matches([wine.name, wine.producer])).slice(0, MAX_SUGGESTIONS);
+}
 
 /** Adds a wish; throws the ApiError of a refusal. */
 const addWish = (wish: WishFields) => request<Wish>('/api/wishes', { method: 'POST', json: wish });

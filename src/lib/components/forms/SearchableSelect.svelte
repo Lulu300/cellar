@@ -3,7 +3,7 @@
     import { Input } from '#lib/components/ui/input/index.js';
     import { Button } from '#lib/components/ui/button/index.js';
     import { m } from '#lib/paraglide/messages.js';
-    import { folded } from '#lib/shared/names.js';
+    import { folded, isSameName } from '#lib/shared/names.js';
 
     type Option = { id: string; name: string };
     /** A line of the list: an option, or one of the actions around them. */
@@ -147,10 +147,8 @@
         activeIndex = -1;
     }
 
-    /** The option of that name, capitals and accents aside: « chateau » is « Château ». */
     function findOption(name: string) {
-        const wanted = folded(name.trim());
-        return options.find((option) => option?.name && folded(option.name) === wanted);
+        return options.find((option) => option?.name && isSameName(option.name, name));
     }
 
     function selectOption(option: Option) {

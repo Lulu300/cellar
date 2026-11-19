@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { anyHolds, areClose, folded, matchesEveryWord, producerKey, tidyName } from './names';
+import { anyHolds, areClose, folded, isSameName, producerKey, tidyName } from './names';
 
 describe('the names of producers', () => {
     it('are stored with one space between words, and none around', () => {
@@ -43,14 +43,13 @@ describe('a search', () => {
         expect(anyHolds(wine, 'CHÂTEAU')).toBe(true);
         expect(anyHolds(wine, '')).toBe(true);
         expect(anyHolds(wine, 'margaux chateau')).toBe(false);
-        expect(anyHolds([null, undefined], '')).toBe(false);
+        expect(anyHolds([null, undefined], '')).toBe(true);
     });
 
-    // UI-38: the wish list's suggestions
-    it('finds every word in any order across the texts', () => {
-        const matches = matchesEveryWord('margaux chateau');
-        expect(matches(['Château Margaux', 'Château Margaux SA'])).toBe(true);
-        expect(matches(['Chateau Latour', null])).toBe(false);
+    // UI-38: a searchable list finds the option of the name typed before creating one
+    it('knows a name typed without its capitals, accents or apostrophe', () => {
+        expect(isSameName(" chateau d'yquem ", 'Château d’Yquem')).toBe(true);
+        expect(isSameName('chateau', 'Château Margaux')).toBe(false);
     });
 });
 

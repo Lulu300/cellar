@@ -1,6 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import type { ImageUploads } from '#lib/components/forms/image-uploads.js';
-import { addsBottles, addWholeWish, offerToRemoveBought } from './wishes';
+import { addsBottles, addWholeWish, offerToRemoveBought, wishSuggestions } from './wishes';
 
 const { invalidate, confirm } = vi.hoisted(() => ({ invalidate: vi.fn(), confirm: vi.fn() }));
 vi.mock('$app/navigation', () => ({ invalidate }));
@@ -120,5 +120,24 @@ describe('addWholeWish', () => {
                 body: { definitionId: 'wine-1', note: 'The 2020 if possible', quantity: null }
             }
         ]);
+    });
+});
+
+// UI-38: the suggestions under the name of a new wish
+describe('wishSuggestions', () => {
+    const wine = (name: string, producer: string | null = null) => ({ name, producer });
+    const names = (text: string, wines = [wine('Château Margaux', 'Château Margaux SA')]) =>
+        wishSuggestions(wines, text).map((suggested) => suggested.name);
+
+    it('finds every word typed in the name and producer, capitals and accents aside', () => {
+        expect(names('chateau')).toEqual(['Château Margaux']);
+        expect(names('margaux CHATEAU')).toEqual(['Château Margaux']);
+        expect(names('chateau latour')).toEqual([]);
+    });
+
+    it('suggests nothing for a blank name, and five wines at most', () => {
+        expect(names('  ')).toEqual([]);
+        const many = Array.from({ length: 7 }, (_, i) => wine(`Côte ${i}`));
+        expect(names('cote', many)).toHaveLength(5);
     });
 });

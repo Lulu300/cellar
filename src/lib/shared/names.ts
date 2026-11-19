@@ -23,9 +23,16 @@ export function folded(text: string): string {
  * « chateau » is in « Château Margaux ». Every text holds an empty query.
  */
 export function anyHolds(texts: (string | null | undefined)[], query: string): boolean {
+    if (!query) return true;
     const wanted = folded(query);
     return texts.some((text) => text != null && folded(text).includes(wanted));
 }
+
+/**
+ * Whether two names are the same, capitals, accents, the kind of apostrophe and the blanks around
+ * them aside: « chateau margaux » is « Château Margaux ».
+ */
+export const isSameName = (a: string, b: string) => folded(a.trim()) === folded(b.trim());
 
 /**
  * Whether the texts given hold every word of `query` between them, capitals, accents and the kind

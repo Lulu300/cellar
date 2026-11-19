@@ -108,7 +108,7 @@ describe('filterWines', () => {
             filterWines(searched, readWineListQuery(new URLSearchParams({ search }))).map(
                 (shown) => shown.definition.id
             );
-        expect(found('bug04')).toEqual(['a', 'b', 'd']);
+        expect(found('bug04 ')).toEqual(['a', 'b', 'd']);
         // UI-38
         expect(found('chateau')).toEqual(['d']);
         expect(found('cote-rotie')).toEqual(['e']);

@@ -44,7 +44,8 @@ export function adapterWithoutUploads(out = 'build'): Adapter {
 export default defineConfig({
     plugins: [
         tailwindcss(),
-        // Compiles the messages into src/lib/paraglide (options in project.inlang/paraglide.config.js)
+        // Writes the runtime into src/lib/paraglide and serves the messages as virtual modules
+        // (options in project.inlang/paraglide.config.js)
         paraglideVitePlugin({ project: './project.inlang' }),
         sveltekit({
             preprocess: vitePreprocess(),

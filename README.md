@@ -77,7 +77,7 @@ Cellar runs from its published image, `ghcr.io/lulu300/cellar`, with Docker and 
 
 ## Development
 
-Use Node 24 and pnpm 10. `packageManager` in `package.json` pins the exact pnpm version (`npx -y pnpm@10 …` works if pnpm is not installed), and `pnpm install` refuses other Node versions.
+Use Node 26 and pnpm 10. `packageManager` in `package.json` pins the exact pnpm version (`npx -y pnpm@10 …` works if pnpm is not installed), and `pnpm install` refuses other Node versions.
 
 ```sh
 pnpm install --frozen-lockfile

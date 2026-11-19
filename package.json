@@ -5,7 +5,7 @@
   "type": "module",
   "packageManager": "pnpm@10.34.9",
   "engines": {
-    "node": "24.x"
+    "node": "26.x"
   },
   "scripts": {
     "dev": "vite dev",
@@ -40,7 +40,7 @@
     "@tailwindcss/vite": "^4.3.5",
     "@types/archiver": "^8.0.0",
     "@types/better-sqlite3": "^9.6.0",
-    "@types/node": "^24.19.2",
+    "@types/node": "^26.6.6",
     "@types/qrcode": "^1.5.6",
     "@types/yauzl": "^3.4.0",
     "barcode-detector": "^3.2.3",

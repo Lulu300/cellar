@@ -4,6 +4,50 @@
 
 Upgrade actions are also collected in [UPGRADING.md](UPGRADING.md).
 
+## 1.9.1
+
+1.9.1 fixes small defects found since 1.7.0.
+
+The searches of the wine list, Admin › Data › Wines and Wine bottles, the storage’s « View all bottles », « To drink » and the wish list’s suggestions now ignore accents: « chateau » finds « Château ». In the searchable lists of the forms, Enter picks the option whose name was typed, capitals and accents aside, even when other options hold it too, and adding « chateau margaux » picks the existing « Château Margaux » instead of creating a second one. A wine type you created with a typographic apostrophe (’) or a lone accent sign in its name may change badge colour after the upgrade: it now has the colour of the same name with a straight apostrophe (') or without the sign. On a wine’s page, a long note stays inside its bottle card: a word longer than the card, such as a web address, breaks instead of scrolling the page sideways on a phone, and « Notes: » no longer squeezes beside a long note. On a phone, the titles of « Out of cellar » and « Cellar history » no longer squeeze beside « Back ». The hover title of the « N bottles » buttons says « View this wine's bottles », and the English pages say « In the cellar » where they said « In cave ». With the keyboard, the arrow keys, Home and End move between the parts of a CSV review, and after « Clear selection » the focus stays in the list, on « Select all ». Nothing changes for scripts or assistants.
+
+### Upgrade actions
+
+None.
+
+### Changes
+
+#### Bug fixes
+
+- **search:** Ignore accents in the remaining searches (1df0e9c)
+- **csv-review:** Move between the review's tabs with the arrow keys (2a75ecb)
+- **bottles:** Keep the keyboard focus in the list after clearing the selection (ff8a666)
+- **search:** Ignore accents in the wine list's search (91f1b6e)
+- **i18n:** Say what the bottles button opens, and « cellar » in English (44a1ea3)
+- **bottles:** Keep a long note inside its bottle card (05369ce)
+- **layout:** Wrap the title rows of « Out of cellar » and the history on a phone (fa0cbed)
+- **bottles:** Focus the list after clearing inside a dialog too (ceb3245)
+
+#### Refactoring
+
+- **palette:** PaletteKey reuses folded (dbc6183)
+- **auth:** Ask a visitor to log in through requireLogin on /wines and /storage (1418677)
+- **search:** AnyHolds trims the query itself (1f1d5b5)
+
+#### Documentation
+
+- **releases:** Describe UI-38 in the 1.9.1 summary (44a336d)
+- **releases:** Name the searches that now ignore accents (bc7597e)
+- **releases:** Say what Enter changes and which badge colours may move (e294711)
+
+#### Build and CI
+
+- Install Chromium without apt in the e2e job (6d25d5b)
+
+#### Other changes
+
+- **wines:** Read the new title of the bottles button (577e8ad)
+- **search:** Test the wish suggestions and the name match, trim the wine list's search (d55a112)
+
 ## 1.9.0
 
 1.9.0 brings Cellar’s dependencies up to date.

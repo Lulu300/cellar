@@ -1,7 +1,7 @@
 [
   {
-    "version": "1.10.0",
-    "summary": "1.10.0 brings the next block of the roadmap.",
+    "version": "1.9.1",
+    "summary": "1.9.1 fixes small defects found since 1.7.0.",
     "mandatoryStop": false,
     "actions": []
   },

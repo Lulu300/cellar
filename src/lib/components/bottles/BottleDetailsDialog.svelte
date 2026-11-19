@@ -36,6 +36,8 @@
     } = $props();
 
     const selectedBottles = new SvelteSet<string>();
+    // Where the focus goes once the selection is cleared
+    let selectAllBox = $state<HTMLElement | null>(null);
     let sort = $state<BottleSort>({ column: 'purchaseDate', direction: 'desc' });
 
     const dialogs = new BottleDialogs<Bottle>(selectedBottles, () => onBottlesChanged());
@@ -111,6 +113,7 @@
                 </p>
                 <BottleSelectionBar
                     selection={selectedBottles}
+                    focusAfterClear={() => selectAllBox}
                     actions={[
                         {
                             label: m['drinking.window'](),
@@ -152,6 +155,7 @@
             selection={selectedBottles}
             onToggle={toggleBottleSelection}
             onToggleAll={selectAll}
+            bind:selectAllBox
             onEdit={editBottle}
         />
     </ScrollingDialogContent>

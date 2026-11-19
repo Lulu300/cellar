@@ -39,6 +39,7 @@
         onToggle,
         selectLabel,
         onToggleAll,
+        selectAllBox = $bindable(null),
         onEdit,
         actions,
         linkWine = false,
@@ -57,6 +58,8 @@
         selectLabel?: (bottle: B) => string;
         /** Selects every bottle shown, or none of them. */
         onToggleAll?: (select: boolean) => void;
+        /** The box that selects them all, which takes the focus once the selection is cleared. */
+        selectAllBox?: HTMLElement | null;
         /** With it, each row gets an edit button. */
         onEdit?: (bottle: B) => void;
         /** With it, what each row offers to do with its bottle, such as a menu. */
@@ -124,6 +127,7 @@
                         <!-- Bound through the selection: a box whose click selects nothing, as for
                              a visitor, stays as it was rather than ticked by the checkbox itself. -->
                         <Checkbox
+                            bind:ref={selectAllBox}
                             bind:checked={() => allSelected, () => onToggleAll?.(!allSelected)}
                             bind:indeterminate={() => someSelected && !allSelected, () => {}}
                             aria-label={m['common.select_all']()}

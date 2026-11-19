@@ -42,6 +42,8 @@
     let failed = $state(false);
     let sort = $state<BottleSort>({ column: 'definition', direction: 'asc' });
     const selected = new SvelteSet<string>();
+    // Where the focus goes once the selection is cleared
+    let selectAllBox = $state<HTMLElement | null>(null);
 
     // A change of status or place changes the case and the map behind it.
     const dialogs = new BottleDialogs<Bottle>(selected, () =>
@@ -91,6 +93,7 @@
 {#snippet toolbar()}
     <BottleSelectionBar
         selection={selected}
+        focusAfterClear={() => selectAllBox}
         actions={[
             {
                 label: m['drinking.window'](),
@@ -134,6 +137,7 @@
                 selection={selected}
                 onToggle={toggle}
                 onToggleAll={toggleAll}
+                bind:selectAllBox
                 {actions}
                 linkWine
             />

@@ -68,6 +68,8 @@
 
     // The selection holds bottles, whatever the view, the filters and the page.
     const selected = new SvelteSet<string>();
+    // Where the focus goes once the selection is cleared, in either view
+    let selectAllBox = $state<HTMLElement | null>(null);
     const dialogs = new BottleDialogs<Bottle>(selected, () => invalidate(CELLAR));
     let editingBottle = $state<ComponentProps<typeof WineBottleDialog>['editBottle']>(null);
     let showEditDialog = $state(false);
@@ -204,6 +206,7 @@
 
     <BottleSelectionBar
         selection={selected}
+        focusAfterClear={() => selectAllBox}
         actions={[
             {
                 label: m['drinking.window'](),
@@ -239,6 +242,7 @@
                     pageSlice(wineRows).flatMap((row) => row.bottles),
                     on
                 )}
+            bind:selectAllBox
             linkWine
         />
     {:else}
@@ -252,6 +256,7 @@
             selection={selected}
             onToggle={(bottle) => toggle([bottle])}
             onToggleAll={(on) => select(pageSlice(bottleRows), on)}
+            bind:selectAllBox
             {actions}
             linkWine
         />

@@ -21,6 +21,9 @@
     // keeps the bottles chosen on other pages, which the page no longer has.
     const selectedBottles = new SvelteMap<string, Bottle>();
 
+    // Where the focus goes once the selection is cleared
+    let selectAllBox = $state<HTMLElement | null>(null);
+
     // The bottles whose status changes, while its dialog is open
     let statusBottles = $state.raw<Bottle[]>([]);
 
@@ -73,6 +76,7 @@
 
     <BottleSelectionBar
         selection={selectedBottles}
+        focusAfterClear={() => selectAllBox}
         actions={[
             {
                 label: m['out_of_cellar.change_availability_selected'](),
@@ -94,6 +98,7 @@
         selection={selectedBottles}
         onToggle={toggleBottleSelection}
         onToggleAll={selectAllVisible}
+        bind:selectAllBox
     />
 
     <Pagination

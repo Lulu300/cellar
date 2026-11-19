@@ -14,7 +14,9 @@ const actions: ComponentProps<typeof BottleSelectionBar>['actions'] = [
 ];
 
 const barOf = (size: number, list = actions) =>
-    render(BottleSelectionBar, { props: { selection: selection(size), actions: list } }).body;
+    render(BottleSelectionBar, {
+        props: { selection: selection(size), actions: list, focusAfterClear: () => null }
+    }).body;
 /** The count, read out by its role: its text, and whether it is only for a screen reader */
 const status = (body: string) => {
     const [, attributes, text] = body.match(/<span([^>]*role="status"[^>]*)>([\s\S]*?)<\/span>/)!;

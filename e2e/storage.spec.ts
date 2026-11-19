@@ -182,6 +182,8 @@ test('add a container on the storage page, put bottles in its cases, move three 
         await expect(page.getByRole('button', { name, exact: true })).toBeVisible();
     }
     await page.getByRole('button', { name: 'Clear selection' }).click();
+    // The button leaves with the selection: the focus goes to the list, not the page (UI-38).
+    await expect(page.getByRole('checkbox', { name: 'Select all' })).toBeFocused();
 
     // A window open since last year that ends next year makes it ready, a rank of this page only,
     // with its filter (FEAT-19).

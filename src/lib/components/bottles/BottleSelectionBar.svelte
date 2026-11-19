@@ -1,6 +1,7 @@
 <script lang="ts">
     import type { CalendarClock } from '@lucide/svelte';
     import { Button } from '#lib/components/ui/button/index.js';
+    import { refocus } from '#lib/components/layout/button-states.js';
     import { m } from '#lib/paraglide/messages.js';
     import { whenLoggedIn } from './bottle-dialogs.svelte.js';
 
@@ -10,9 +11,15 @@
      */
     let {
         selection,
-        actions
+        actions,
+        focusAfterClear
     }: {
         selection: { readonly size: number; clear(): void };
+        /**
+         * Where the keyboard focus goes once « Effacer la sélection » has cleared the selection and
+         * left with it, rather than to the page: a place of the list that stays.
+         */
+        focusAfterClear: () => HTMLElement | null | undefined;
         /** In their order; `primary` is the list's main action, filled. */
         actions: {
             label: string;
@@ -22,6 +29,11 @@
             run: () => void;
         }[];
     } = $props();
+
+    function clear() {
+        selection.clear();
+        refocus(focusAfterClear);
+    }
 </script>
 
 <!-- Wrapping: the actions stay in view on a narrow screen. While nothing is ticked, only the count
@@ -35,7 +47,7 @@
         {m['common.bottles_selected']({ count: selection.size })}
     </span>
     {#if selection.size > 0}
-        <Button variant="ghost" size="sm" onclick={() => selection.clear()}>
+        <Button variant="ghost" size="sm" onclick={clear}>
             {m['common.clear_selection']()}
         </Button>
         <div class="flex flex-wrap gap-2 sm:ml-auto">

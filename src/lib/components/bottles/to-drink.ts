@@ -94,7 +94,7 @@ export function filterToDrink<B extends ToDrinkBottle>(
         ({ rank: bottleRank, definition }) =>
             (!rank || bottleRank === rank) &&
             (!color || definition.colorId === color) &&
-            anyHolds([definition.name, definition.producer], search.trim())
+            anyHolds([definition.name, definition.producer], search)
     );
 }
 

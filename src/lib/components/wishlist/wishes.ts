@@ -18,7 +18,10 @@ export type WishFields = Partial<WishInput>;
 /** The most wines that the name of a new wish suggests. */
 const MAX_SUGGESTIONS = 5;
 
-/** The wines of the cellar whose name and producer hold every word typed, capitals and accents aside. */
+/**
+ * The wines of the cellar whose name and producer hold every word typed, capitals and accents
+ * aside.
+ */
 export function wishSuggestions<W extends { name: string; producer: string | null }>(
     wines: W[],
     text: string

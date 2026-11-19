@@ -41,7 +41,8 @@ describe('wine badges', () => {
             '#7e22ce',
             '#1d4ed8'
         ]);
-        // The one change, accepted: a typographic apostrophe is a straight one, as in `folded`.
+        // The changes the maintainer accepted: a typographic apostrophe is a straight one, and a
+        // lone accent sign (´ ` ^ ¨) or a middle dot now counts, as in `folded`.
         expect(typeFill('Vin d’Alsace')).toBe(typeFill("Vin d'Alsace"));
     });
 

@@ -123,7 +123,7 @@ export function filterWines<W extends FilterWine>(wines: W[], query: WineListQue
 
     return wines.filter(
         ({ definition: wine, bottles }) =>
-            anyHolds([wine.name, wine.producer, wine.appellationName], query.search.trim()) &&
+            anyHolds([wine.name, wine.producer, wine.appellationName], query.search) &&
             (!query.type || wine.typeId === query.type) &&
             (!query.color || wine.colorId === query.color) &&
             (!query.region || wine.appellation?.regionId === query.region) &&

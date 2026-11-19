@@ -19,12 +19,13 @@ export function folded(text: string): string {
 }
 
 /**
- * Whether one of `texts` holds `query`, capitals, accents and the kind of apostrophe aside:
- * « chateau » is in « Château Margaux ». Every text holds an empty query.
+ * Whether one of `texts` holds `query`, capitals, accents, the kind of apostrophe and the blanks
+ * around the query aside: « chateau » is in « Château Margaux ». Every list of texts holds an
+ * empty query.
  */
 export function anyHolds(texts: (string | null | undefined)[], query: string): boolean {
-    if (!query) return true;
-    const wanted = folded(query);
+    const wanted = folded(query.trim());
+    if (!wanted) return true;
     return texts.some((text) => text != null && folded(text).includes(wanted));
 }
 

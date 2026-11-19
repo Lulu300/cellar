@@ -84,7 +84,7 @@
             if (barcodeFilter === 'with' && !bottle.barcode) return false;
             if (barcodeFilter === 'without' && bottle.barcode) return false;
             const { name, appellation } = bottle.definition;
-            return anyHolds([name, appellation], searchQuery.trim());
+            return anyHolds([name, appellation], searchQuery);
         })
     );
 

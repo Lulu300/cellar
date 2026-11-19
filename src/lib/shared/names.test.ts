@@ -42,6 +42,7 @@ describe('a search', () => {
         expect(anyHolds(wine, 'chateau marg')).toBe(true);
         expect(anyHolds(wine, 'CHÂTEAU')).toBe(true);
         expect(anyHolds(wine, '')).toBe(true);
+        expect(anyHolds(wine, ' chateau ')).toBe(true);
         expect(anyHolds(wine, 'margaux chateau')).toBe(false);
         expect(anyHolds([null, undefined], '')).toBe(true);
     });

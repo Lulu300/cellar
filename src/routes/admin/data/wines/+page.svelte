@@ -9,6 +9,7 @@
     import { wineLabel } from '#lib/components/admin/wine-labels.js';
     import { ApiError, errorMessage } from '#lib/api/client.js';
     import { toasts } from '#lib/stores/toast.svelte.js';
+    import { anyHolds } from '#lib/shared/names.js';
     import type { AdminDefinitionDTO } from '#lib/shared/dto.js';
     import type { PageProps } from './$types';
 
@@ -21,13 +22,10 @@
         () => data.items,
         '/api/admin/wine-definitions',
         (wine, query) =>
-            [
-                wine.name,
-                wine.producer,
-                wine.appellationName,
-                wine.regionName,
-                wine.countryName
-            ].some((text) => text?.toLowerCase().includes(query)) &&
+            anyHolds(
+                [wine.name, wine.producer, wine.appellationName, wine.regionName, wine.countryName],
+                query
+            ) &&
             (!filter.color || wine.colorId === filter.color) &&
             (!filter.type || wine.typeId === filter.type) &&
             (!filter.country || wine.countryId === filter.country) &&

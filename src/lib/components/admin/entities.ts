@@ -1,5 +1,5 @@
 import { m } from '#lib/paraglide/messages.js';
-import { folded } from '#lib/shared/names.js';
+import { anyHolds } from '#lib/shared/names.js';
 import type { ReferenceRow, ReferenceSlug } from '#lib/shared/reference-tables.js';
 
 interface EntityLabels {
@@ -208,6 +208,4 @@ export const referenceDetail = (row: ReferenceRow) =>
  * accents aside, as the searchable lists of the forms compare them.
  */
 export const matchesReference = (row: ReferenceRow, query: string) =>
-    [row.name, row.regionName, row.countryName].some(
-        (text) => text && folded(text).includes(folded(query))
-    );
+    anyHolds([row.name, row.regionName, row.countryName], query);

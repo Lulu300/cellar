@@ -23,8 +23,8 @@ export class EntityCollection<T extends { id: string }> {
     /**
      * @param items the entries, read on each use: the page's data, which a reload replaces
      * @param endpoint the URL of the API collection: DELETE goes to `<endpoint>/<id>`
-     * @param matches whether an entry matches the search, given in lower case, and any other
-     * filter of the page; called with an empty search too
+     * @param matches whether an entry matches the search, given trimmed, and any other filter of
+     * the page; called with an empty search too
      */
     constructor(
         items: () => T[],
@@ -40,7 +40,7 @@ export class EntityCollection<T extends { id: string }> {
     }
 
     filtered = $derived.by(() => {
-        const query = this.query.trim().toLowerCase();
+        const query = this.query.trim();
         return this.items.filter((item) => this.#matches(item, query));
     });
 

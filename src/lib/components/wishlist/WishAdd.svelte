@@ -11,6 +11,7 @@
     import LongTextarea from '#lib/components/forms/LongTextarea.svelte';
     import PhotoField from '#lib/components/forms/PhotoField.svelte';
     import { iconButton, refocus } from '#lib/components/layout/button-states.js';
+    import { matchesEveryWord } from '#lib/shared/names.js';
     import { NAME_MAX_LENGTH } from '#lib/shared/schemas/common.js';
     import { addWholeWish } from './wishes.js';
 
@@ -47,15 +48,12 @@
     // Loaded by the root layout: the wines already on the list
     const wishedWines: Record<string, string> = $derived(page.data.wishedWines ?? {});
 
-    // The wines whose name and producer hold every word typed, as the search of the wine list does
+    // The wines whose name and producer hold every word typed, capitals and accents aside
     const suggestions = $derived.by(() => {
-        const words = text.toLowerCase().split(/\s+/).filter(Boolean);
-        if (words.length === 0) return [];
+        if (!text.trim()) return [];
+        const matches = matchesEveryWord(text);
         return wines
-            .filter((wine) => {
-                const label = `${wine.name} ${wine.producer ?? ''}`.toLowerCase();
-                return words.every((word) => label.includes(word));
-            })
+            .filter((wine) => matches([wine.name, wine.producer]))
             .slice(0, MAX_SUGGESTIONS);
     });
 

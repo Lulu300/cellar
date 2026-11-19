@@ -118,10 +118,11 @@ describe('filterToDrink', () => {
         ]);
     });
 
-    it('finds the wine by its name or its producer, capitals aside', () => {
+    it('finds the wine by its name or its producer, capitals and accents aside', () => {
         const search = (text: string) =>
             ids(filterToDrink(bottles, { rank: '', color: '', search: text }));
         expect(search(' MARGAUX ')).toEqual(['a', 'b']);
+        expect(search('chateau')).toEqual(['a', 'b']);
         expect(search('roulot')).toEqual(['c']);
         expect(search('pétrus')).toEqual([]);
     });

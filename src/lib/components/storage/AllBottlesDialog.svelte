@@ -14,6 +14,7 @@
     import { compareText } from '#lib/utils/compare.js';
     import { sortBottles, type BottleSort } from '#lib/utils/bottle-sort.js';
     import { CELLAR } from '#lib/shared/dependencies.js';
+    import { anyHolds } from '#lib/shared/names.js';
     import { m } from '#lib/paraglide/messages.js';
     import type { Jsonified, OwnedBottleDTO } from '#lib/shared/dto.js';
 
@@ -82,10 +83,8 @@
             }
             if (barcodeFilter === 'with' && !bottle.barcode) return false;
             if (barcodeFilter === 'without' && bottle.barcode) return false;
-            const query = searchQuery.trim().toLowerCase();
-            if (!query) return true;
             const { name, appellation } = bottle.definition;
-            return [name, appellation].some((text) => text?.toLowerCase().includes(query));
+            return anyHolds([name, appellation], searchQuery.trim());
         })
     );
 

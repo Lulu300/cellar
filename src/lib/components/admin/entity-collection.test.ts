@@ -1,5 +1,6 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { ApiError } from '#lib/api/client.js';
+import { anyHolds } from '#lib/shared/names.js';
 import { EntityCollection, PER_PAGE } from './entity-collection.svelte';
 
 const invalidateAll = vi.hoisted(() => vi.fn(() => Promise.resolve()));
@@ -23,7 +24,7 @@ function collection(items: Row[]) {
     const list = new EntityCollection(
         () => data.items,
         '/api/wine-types',
-        (row, query) => row.name.toLowerCase().includes(query)
+        (row, query) => anyHolds([row.name], query)
     );
     return { list, data };
 }

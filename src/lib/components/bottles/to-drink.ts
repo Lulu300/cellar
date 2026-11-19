@@ -1,6 +1,7 @@
 import { z } from 'zod';
 import { m } from '#lib/paraglide/messages.js';
 import { TO_DRINK, type DrinkingRank } from '#lib/shared/drinking.js';
+import { anyHolds } from '#lib/shared/names.js';
 import { parsePageQuery, type QueryParams } from '#lib/shared/schemas/bottle-list.js';
 import { compareText } from '#lib/utils/compare.js';
 import { changedParams } from '#lib/utils/pagination.js';
@@ -89,15 +90,11 @@ export function filterToDrink<B extends ToDrinkBottle>(
     bottles: B[],
     { rank, color, search }: ToDrinkFilters
 ): B[] {
-    const text = search.trim().toLowerCase();
     return bottles.filter(
         ({ rank: bottleRank, definition }) =>
             (!rank || bottleRank === rank) &&
             (!color || definition.colorId === color) &&
-            (!text ||
-                [definition.name, definition.producer].some((field) =>
-                    field?.toLowerCase().includes(text)
-                ))
+            anyHolds([definition.name, definition.producer], search.trim())
     );
 }
 

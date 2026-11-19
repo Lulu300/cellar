@@ -147,9 +147,10 @@
         activeIndex = -1;
     }
 
+    /** The option of that name, capitals and accents aside: « chateau » is « Château ». */
     function findOption(name: string) {
-        const wanted = name.trim().toLowerCase();
-        return options.find((option) => option?.name?.toLowerCase() === wanted);
+        const wanted = folded(name.trim());
+        return options.find((option) => option?.name && folded(option.name) === wanted);
     }
 
     function selectOption(option: Option) {
@@ -169,7 +170,7 @@
         entries[index]?.choose();
     }
 
-    /** Selects the option of that name (in any case), or creates it. False if neither happened. */
+    /** Selects the option of that name (see findOption), or creates it. False if neither happened. */
     async function selectOrCreate(name: string): Promise<boolean> {
         const existingOption = findOption(name);
         if (existingOption) {
@@ -267,9 +268,7 @@
 
     /** Enter without an active entry: the exact name typed, the only match, or a new item. */
     function chooseTypedName() {
-        const exactMatch = filteredOptions.find(
-            (opt) => opt.name.toLowerCase() === searchTerm.trim().toLowerCase()
-        );
+        const exactMatch = findOption(searchTerm);
         if (exactMatch) {
             selectOption(exactMatch);
         } else if (filteredOptions.length === 1) {

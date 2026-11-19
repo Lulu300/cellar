@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { areClose, folded, producerKey, tidyName } from './names';
+import { anyHolds, areClose, folded, matchesEveryWord, producerKey, tidyName } from './names';
 
 describe('the names of producers', () => {
     it('are stored with one space between words, and none around', () => {
@@ -34,6 +34,23 @@ describe('a search', () => {
         expect(folded('Château Côté')).toBe('chateau cote');
         expect(folded('Château Margaux').includes(folded('CHAT'))).toBe(true);
         expect(folded('Château d’Yquem').includes(folded("d'yquem"))).toBe(true);
+    });
+
+    // UI-38: the searches of the admin, the storage and « À boire »
+    it('finds a text that one of several holds whole', () => {
+        const wine = ['Château Margaux', null, 'Margaux'];
+        expect(anyHolds(wine, 'chateau marg')).toBe(true);
+        expect(anyHolds(wine, 'CHÂTEAU')).toBe(true);
+        expect(anyHolds(wine, '')).toBe(true);
+        expect(anyHolds(wine, 'margaux chateau')).toBe(false);
+        expect(anyHolds([null, undefined], '')).toBe(false);
+    });
+
+    // UI-38: the wish list's suggestions
+    it('finds every word in any order across the texts', () => {
+        const matches = matchesEveryWord('margaux chateau');
+        expect(matches(['Château Margaux', 'Château Margaux SA'])).toBe(true);
+        expect(matches(['Chateau Latour', null])).toBe(false);
     });
 });
 

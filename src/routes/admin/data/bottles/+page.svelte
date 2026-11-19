@@ -11,6 +11,7 @@
     import { BottleAvailability } from '#lib/shared/bottle-availability.js';
     import { errorMessage } from '#lib/api/client.js';
     import { toasts } from '#lib/stores/toast.svelte.js';
+    import { anyHolds } from '#lib/shared/names.js';
     import type { AdminBottleDTO } from '#lib/shared/dto.js';
     import type { PageProps } from './$types';
 
@@ -23,15 +24,18 @@
         () => data.items,
         '/api/bottles',
         (bottle, query) =>
-            [
-                bottle.wineName,
-                bottle.producer,
-                bottle.vintage?.toString(),
-                bottle.appellationName,
-                bottle.regionName,
-                bottle.countryName,
-                bottle.barcode
-            ].some((text) => text?.toLowerCase().includes(query)) &&
+            anyHolds(
+                [
+                    bottle.wineName,
+                    bottle.producer,
+                    bottle.vintage?.toString(),
+                    bottle.appellationName,
+                    bottle.regionName,
+                    bottle.countryName,
+                    bottle.barcode
+                ],
+                query
+            ) &&
             (!filter.format || bottle.formatId === filter.format) &&
             (!filter.vintage || bottle.vintage?.toString() === filter.vintage) &&
             (!filter.availability || bottle.availability === filter.availability)

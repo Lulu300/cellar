@@ -17,7 +17,7 @@
     import type { StorageContainerDTO } from '#lib/shared/dto.js';
     import { auth } from '#lib/stores/auth.svelte.js';
     import { preferences } from '#lib/stores/preferences.svelte.js';
-    import { toasts } from '#lib/stores/toast.svelte.js';
+    import { requireLogin } from '#lib/components/layout/require-login.js';
     import { formatPercent } from '#lib/utils/format.js';
     import { clampPage } from '#lib/utils/pagination.js';
     import { showTablePage } from '#lib/utils/table-navigation.js';
@@ -85,8 +85,7 @@
     }
 
     function addContainer() {
-        if (auth.isAuthenticated) openContainerDialog(null);
-        else toasts.add(m['storage.please_login_to_add_containers'](), 'warning');
+        if (requireLogin(m['storage.please_login_to_add_containers']())) openContainerDialog(null);
     }
 
     const onEdit = $derived(auth.isAuthenticated ? openContainerDialog : undefined);

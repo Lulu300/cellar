@@ -6,7 +6,7 @@
     import DrinkSoonBanner from '#lib/components/bottles/DrinkSoonBanner.svelte';
     import { Button } from '#lib/components/ui/button/index.js';
     import { auth } from '#lib/stores/auth.svelte.js';
-    import { toasts } from '#lib/stores/toast.svelte.js';
+    import { requireLogin } from '#lib/components/layout/require-login.js';
     import { m } from '#lib/paraglide/messages.js';
     import type { SavedDefinitionDTO, WineGroupDTO } from '#lib/shared/dto.js';
     import { invalidate } from '$app/navigation';
@@ -38,6 +38,15 @@
         showBottleDialog = true;
     }
 
+    // A visitor sees the buttons too: a click asks them to log in.
+    function newWine() {
+        if (requireLogin(m['auth.please_login_to_add_wines']())) openWineDialog('add');
+    }
+
+    function newBottle() {
+        if (requireLogin(m['auth.please_login_to_add_bottles']())) openBottleDialog();
+    }
+
     // Reloads the list, the image URLs for a new image, and the shortage count of the navigation.
     async function wineSaved(wine: SavedDefinitionDTO, addBottle: boolean) {
         await invalidate(CELLAR);
@@ -57,27 +66,12 @@
     </div>
 
     <div class="flex flex-wrap gap-2">
-        {#if auth.isAuthenticated}
-            <Button onclick={() => openWineDialog('add')}>
-                {m['forms.add_wine']()}
-            </Button>
-            <Button onclick={() => openBottleDialog()} variant="outline">
-                {m['common.add_bottle']()}
-            </Button>
-        {:else}
-            <Button
-                onclick={() => toasts.add(m['auth.please_login_to_add_wines'](), 'warning')}
-                variant="outline"
-            >
-                {m['forms.add_wine']()}
-            </Button>
-            <Button
-                onclick={() => toasts.add(m['auth.please_login_to_add_bottles'](), 'warning')}
-                variant="outline"
-            >
-                {m['common.add_bottle']()}
-            </Button>
-        {/if}
+        <Button onclick={newWine} variant={auth.isAuthenticated ? 'default' : 'outline'}>
+            {m['forms.add_wine']()}
+        </Button>
+        <Button onclick={newBottle} variant="outline">
+            {m['common.add_bottle']()}
+        </Button>
     </div>
 </div>
 

@@ -205,10 +205,10 @@
         {/if}
     </div>
 
-    <div class="self-start text-xs bg-muted/50 p-2 rounded min-h-[2rem] flex items-center">
-        <strong class="text-foreground mr-1"
-            >{m['common.label']({ label: m['common.notes']() })}</strong
-        >
+    <!-- Text that flows: a long note wraps under its label, and a word longer than the line breaks
+         rather than widening the page. -->
+    <p class="self-start text-xs bg-muted/50 p-2 rounded min-h-[2rem] break-words">
+        <strong class="text-foreground">{m['common.label']({ label: m['common.notes']() })}</strong>
         <span class="text-muted-foreground">{bottle.notes || m['wine_details.no_notes']()}</span>
-    </div>
+    </p>
 </div>

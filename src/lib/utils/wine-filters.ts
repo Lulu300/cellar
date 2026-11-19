@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { anyHolds } from '#lib/shared/names.js';
 import { changedParams } from '#lib/utils/pagination.js';
 import { ownedBottles, WINE_GROUP_SORT_KEYS } from '#lib/utils/wine-group-sort.js';
 
@@ -116,17 +117,13 @@ interface FilterWine {
 
 /** The wines that pass the search and every filter of `query`. */
 export function filterWines<W extends FilterWine>(wines: W[], query: WineListQuery): W[] {
-    const search = query.search.toLowerCase();
     const count = parseInt(query.count, 10) || 0;
     const from = parseInt(query.from, 10) || null;
     const to = parseInt(query.to, 10) || null;
 
     return wines.filter(
         ({ definition: wine, bottles }) =>
-            (!search ||
-                [wine.name, wine.producer, wine.appellationName].some((text) =>
-                    text?.toLowerCase().includes(search)
-                )) &&
+            anyHolds([wine.name, wine.producer, wine.appellationName], query.search) &&
             (!query.type || wine.typeId === query.type) &&
             (!query.color || wine.colorId === query.color) &&
             (!query.region || wine.appellation?.regionId === query.region) &&

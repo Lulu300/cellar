@@ -96,17 +96,22 @@ describe('filterWines', () => {
         expect(ids('')).toEqual(['french', 'other']);
     });
 
-    it('searches the name, the producer and the appellation, in any case', () => {
+    it('searches the name, the producer and the appellation, capitals and accents aside', () => {
         const searched = [
             wine('a', 'r', 'c', { name: 'Bug04 Wine' }),
             wine('b', 'r', 'c', { producer: 'Maison BUG04' }),
-            wine('c', 'r', 'c')
+            wine('c', 'r', 'c'),
+            wine('d', 'r', 'c', { name: 'Château Bug04' }),
+            wine('e', 'r', 'c', { appellationName: 'Côte-Rôtie' })
         ];
-        const query = readWineListQuery(new URLSearchParams('search=bug04'));
-        expect(filterWines(searched, query).map((shown) => shown.definition.id)).toEqual([
-            'a',
-            'b'
-        ]);
+        const found = (search: string) =>
+            filterWines(searched, readWineListQuery(new URLSearchParams({ search }))).map(
+                (shown) => shown.definition.id
+            );
+        expect(found('bug04')).toEqual(['a', 'b', 'd']);
+        // UI-38
+        expect(found('chateau')).toEqual(['d']);
+        expect(found('cote-rotie')).toEqual(['e']);
     });
 
     it('combines the filters', () => {

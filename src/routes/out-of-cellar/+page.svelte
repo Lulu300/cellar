@@ -60,7 +60,7 @@
     <meta name="description" content={m['out_of_cellar.subtitle']()} />
 </svelte:head>
 
-<div class="flex justify-between items-center mb-8">
+<div class="flex flex-wrap justify-between items-center gap-4 mb-8">
     <div>
         <h1 class="text-3xl font-bold">{m['common.out_of_cellar']()}</h1>
         <p class="text-muted-foreground">{m['out_of_cellar.subtitle']()}</p>

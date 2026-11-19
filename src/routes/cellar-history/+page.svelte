@@ -23,7 +23,7 @@
     <meta name="description" content={m['history.subtitle']()} />
 </svelte:head>
 
-<div class="flex justify-between items-center mb-8">
+<div class="flex flex-wrap justify-between items-center gap-4 mb-8">
     <div>
         <h1 class="text-3xl font-bold">{m['history.title']()}</h1>
         <p class="text-muted-foreground">{m['history.subtitle']()}</p>

@@ -37,7 +37,7 @@
         <div class="flex flex-wrap justify-between items-center gap-4">
             <CardTitle>
                 {data.filter === 'in_cave'
-                    ? m['history.wines_in_cave']()
+                    ? m['history.wines_in_cellar']()
                     : data.filter === 'consumed'
                       ? m['history.consumed_wines']()
                       : m['common.all_bottles']()}
@@ -54,7 +54,7 @@
                             {#if data.filter === 'all'}
                                 {m['history.all_wines']()}
                             {:else if data.filter === 'in_cave'}
-                                {m['history.in_cave']()}
+                                {m['common.in_cellar']()}
                             {:else if data.filter === 'consumed'}
                                 {m['availability.consumed']()}
                             {/if}
@@ -63,8 +63,8 @@
                             <Select.Item value="all" label={m['history.all_wines']()}
                                 >{m['history.all_wines']()}</Select.Item
                             >
-                            <Select.Item value="in_cave" label={m['history.in_cave']()}
-                                >{m['history.in_cave']()}</Select.Item
+                            <Select.Item value="in_cave" label={m['common.in_cellar']()}
+                                >{m['common.in_cellar']()}</Select.Item
                             >
                             <Select.Item value="consumed" label={m['availability.consumed']()}
                                 >{m['availability.consumed']()}</Select.Item

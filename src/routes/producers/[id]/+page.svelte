@@ -175,7 +175,7 @@
                             <Table.Head class="hidden sm:table-cell"
                                 >{m['common.appellation']()}</Table.Head
                             >
-                            <Table.Head class="text-end">{m['producers.in_cellar']()}</Table.Head>
+                            <Table.Head class="text-end">{m['common.in_cellar']()}</Table.Head>
                             <Table.Head class="pe-6 text-end">{m['producers.drunk']()}</Table.Head>
                         </Table.Row>
                     </Table.Header>

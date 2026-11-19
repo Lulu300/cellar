@@ -129,7 +129,7 @@
                             onSort={sortBy('wineCount')}
                         />
                         <SortableHeader
-                            label={m['producers.in_cellar']()}
+                            label={m['common.in_cellar']()}
                             direction={direction('bottleCount')}
                             onSort={sortBy('bottleCount')}
                         />

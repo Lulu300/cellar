@@ -1,7 +1,7 @@
 [
   {
     "version": "1.9.1",
-    "summary": "1.9.1 fixes small defects found since 1.7.0.",
+    "summary": "1.9.1 fixes small defects found since 1.7.0.\n\nEvery search now ignores accents, as the lists of the forms already did: « chateau » finds « Château » in the wine list, Admin › Data › Wines and Wine bottles, the storage's « View all bottles », « To drink » and the wish list's suggestions. On a wine's page, a long note stays inside its bottle card: a word longer than the card, such as a web address, breaks instead of scrolling the page sideways on a phone, and « Notes: » no longer squeezes beside a long note. On a phone, the titles of « Out of cellar » and « Cellar history » no longer squeeze beside « Back ». The hover title of the « N bottles » buttons says « View this wine's bottles », and the English pages say « In the cellar » where they said « In cave ». With the keyboard, the arrow keys, Home and End move between the parts of a CSV review, and after « Clear selection » the focus stays in the list, on « Select all ». Nothing changes for scripts or assistants.",
     "mandatoryStop": false,
     "actions": []
   },

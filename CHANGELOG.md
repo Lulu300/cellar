@@ -4,6 +4,81 @@
 
 Upgrade actions are also collected in [UPGRADING.md](UPGRADING.md).
 
+## 1.9.0
+
+1.9.0 brings Cellar’s dependencies up to date.
+
+The Docker image moves to Node.js 26.13.1, a security release that fixes serious flaws of Node.js, mostly in HTTP/2 and TLS, one of them in the HTTP server that Cellar runs. The libraries in the image take their fixes and minor versions published at least a week ago, among them the streams of the ZIP library that writes backups and exports; so do the build and test tools. Nothing changes in how Cellar looks or works. The dependency audit still lists the moderate minimatch advisory of 1.1.0: Cellar still never uses the part of the ZIP library that runs minimatch, and that library still does not accept the fixed minimatch.
+
+Node.js 26 is the long-term support version that follows Node.js 24, which now only receives maintenance fixes. If you run Cellar from its sources rather than from the Docker image, install Node.js 26 and pnpm 12 first: pnpm install now refuses Node.js 24.
+
+### Upgrade actions
+
+None.
+
+### Changes
+
+#### Documentation
+
+- **release:** Say which dependency updates 1.9.0 takes (b8e6e95)
+- **release:** Word the 1.9.0 dependency paragraph exactly (ec13501)
+- **release:** Say that 1.9.0 moves to Node.js 26 and pnpm 12 (9c0b338)
+
+#### Build and CI
+
+- **deps:** Update tailwindcss to 4.3.4 (9c026a0)
+- **deps:** Update vite to 8.3.6 (08c6a0f)
+- **deps:** Update bits-ui to 2.20.6 (3747992)
+- **deps:** Update svelte-check to 4.7.8 (7638481)
+- **deps:** Update tinybench to 6.2.3 (e9de6b6)
+- **deps:** Update semver to 7.8.6 (ee1cfbf)
+- **deps:** Update svelte-eslint-parser to 1.10.1 (ff07a29)
+- **deps:** Update @swc/helpers to 0.5.24 (14e6a3d)
+- **deps:** Update @napi-rs/wasm-runtime to 1.2.7 (92d5ce4)
+- **deps:** Update cookie to 2.0.2 (bbc053c)
+- **deps:** Update @babel/runtime to 7.29.13 (6568a8c)
+- **deps:** Update bare-url to 2.5.6 (f03cb01)
+- Update docker/login-action to 4.8.0 (8050f0a)
+- **deps:** Update vitest to 5.1.0 (b8563c9)
+- **deps:** Update eslint-plugin-svelte to 3.24.0 (45f7bd9)
+- **deps:** Update @inlang/plugin-icu1 to 1.3.8 (953da78)
+- **deps:** Update @playwright/test to 1.65.0 (22e834f)
+- **deps:** Update @lucide/svelte to 1.69.0 (1e770b6)
+- **deps:** Update tar-stream to 3.2.2 (844d40e)
+- **deps:** Update readable-stream to 4.8.0 (8d11882)
+- **deps:** Update pako to 2.2.0 (5ca53df)
+- **deps:** Update core-js to 3.51.0 (a5bb977)
+- **docker:** Update the Node.js image to 24.22.3 (88c5ea8)
+- **deps:** Update get-tsconfig to 4.14.3 (31839f4)
+- **deps:** Update @jridgewell/sourcemap-codec to 1.6.0 (416c32a)
+- **deps:** Update bare-events to 2.9.2 (ded5578)
+- **deps:** Update tailwindcss to 4.3.5 (13ee9e1)
+- **deps:** Update vite to 8.3.8 (a0b6a7a)
+- **deps:** Update typescript-eslint to 8.72.2 (c44b646)
+- **deps:** Update @sveltejs/adapter-node to 6.0.2 (3e63a0d)
+- **deps:** Update eslint-plugin-svelte to 3.24.1 (bb63af9)
+- **deps:** Update @lucide/svelte to 1.72.0 (b12bdab)
+- **deps:** Update knip to 6.44.2 (64e5a92)
+- **deps:** Update @babel/runtime to 7.29.14 (7096916)
+- **deps:** Update bare-path to 3.1.3 (344e2b5)
+- **deps:** Update brace-expansion to 5.0.13 (129fe09)
+- **deps:** Update @eslint-community/regexpp to 4.12.3 (93da74a)
+- **deps:** Update postcss-selector-parser to 7.1.8 (20e1f64)
+- **deps:** Update @inlang/paraglide-js to 3.2.2 (f4aa8b8)
+- **deps:** Update tailwind-variants to 4.0.2 (a19688c)
+- **docker:** Move to Node.js 26.13.1 (0cbaa0f)
+- **deps:** Update @sveltejs/kit to 3.2.0 (4d8e3cd)
+- **deps:** Update bits-ui to 2.21.0 (5cccfa5)
+- **deps:** Update better-sqlite3 to 13.1.1 (157bbe3)
+- **deps:** Update knip to 6.45.1 (cfd0d9a)
+- **deps:** Update prettier to 3.10.1 (48e37bc)
+- **deps:** Move to pnpm 12.20.0 (414a0d5)
+
+#### Other changes
+
+- **lint:** Drop an eslint-disable directive that lint no longer needs (8d5597c)
+- **lint:** Drop an eslint override that no longer applies (d8227f2)
+
 ## 1.8.0
 
 1.8.0 makes the producers a list of their own, each with its page, and has you review a CSV import before anything is written.

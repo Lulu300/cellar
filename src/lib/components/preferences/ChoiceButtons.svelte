@@ -2,7 +2,7 @@
     import type { HTMLAttributes } from 'svelte/elements';
     import { Button } from '#lib/components/ui/button/index.js';
     import { cn } from '#lib/utils.js';
-    import { moveChoice } from './radio-group.js';
+    import { moveChoice } from '#lib/components/forms/arrow-keys.js';
 
     /**
      * A few choices, as buttons that work as radios and tell which one is on. The group takes its

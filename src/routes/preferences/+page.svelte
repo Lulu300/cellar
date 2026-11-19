@@ -6,7 +6,7 @@
     import { Button } from '#lib/components/ui/button/index.js';
     import { Badge } from '#lib/components/ui/badge/index.js';
     import ChoiceGroup from '#lib/components/preferences/ChoiceGroup.svelte';
-    import { moveChoice } from '#lib/components/preferences/radio-group.js';
+    import { moveChoice } from '#lib/components/forms/arrow-keys.js';
     import { viewOptions } from '#lib/components/wines/wine-list.js';
     import { Check, Clock, Palette, Languages, MoveHorizontal } from '@lucide/svelte';
     import { DrinkingHorizon } from '#lib/shared/drinking.js';

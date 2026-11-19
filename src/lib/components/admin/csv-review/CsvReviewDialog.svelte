@@ -3,6 +3,7 @@
     import { Dialog } from '#lib/components/ui/dialog/index.js';
     import { Button } from '#lib/components/ui/button/index.js';
     import ScrollingDialogContent from '#lib/components/layout/ScrollingDialogContent.svelte';
+    import { moveChoice } from '#lib/components/forms/arrow-keys.js';
     import { CSV_TABLE_TEXTS } from '#lib/components/admin/csv-tables.js';
     import { m } from '#lib/paraglide/messages.js';
     import { CSV_OTHERS_KEY, csvRowKey } from '#lib/shared/csv-import.js';
@@ -123,7 +124,9 @@
                         id="{uid}-tab-{tab.id}"
                         aria-selected={selected}
                         aria-controls="{uid}-part"
+                        tabindex={selected ? 0 : -1}
                         onclick={() => (part = tab.id)}
+                        onkeydown={moveChoice}
                         class="rounded-lg border p-1 text-center transition-colors sm:p-2 {selected
                             ? 'border-primary bg-primary/10'
                             : 'hover:bg-accent hover:text-accent-foreground'}"

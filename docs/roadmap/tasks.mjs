@@ -105,8 +105,9 @@ export const versions = [
 		goal: 'Les petits défauts relevés depuis la 1.5.2 corrigés, et une seule barre de sélection des bouteilles, avec le même comportement pour un visiteur partout.'
 	},
 	{
-		id: 'Dépendances',
+		id: '1.9.0',
 		title: 'Dépendances à jour',
+		released: '2026-11-19',
 		goal: 'Les correctifs et mineures en attente, puis les versions majeures (Paraglide 3, tailwind-variants 4, TypeScript 7, Node 26), essayées une à une.'
 	},
 	{
@@ -303,9 +304,9 @@ export const phases = [
 	},
 	{
 		id: 'P24',
-		version: 'Dépendances',
+		version: '1.9.0',
 		title: 'Dépendances à jour',
-		goal: 'Juste après la 1.8.0, avant les autres blocs (décision « Versions majeures (DEP-12) ») : DEP-11 ; puis DEP-12 ; puis REL-24. Une version mineure.'
+		goal: 'Juste après la 1.8.0, avant les autres blocs (décision « Versions majeures (DEP-12) ») : DEP-11 ; puis DEP-12 ; puis REL-24. Une version mineure. Publiée en 1.9.0 le 2026-11-19.'
 	},
 	{
 		id: 'P19',
@@ -3041,7 +3042,8 @@ export const tasks = [
 		why: 'Le bloc apporte des dépendances à jour sans attendre les autres.',
 		where: ['releases.json', 'CHANGELOG.md', 'UPGRADING.md', 'package.json'],
 		todo: [
-			'Résumé complété par DEP-11 et DEP-12 ; bancs depuis la version précédente et la 1.0.0 ; release selon RELEASING.md, avec le mainteneur, sous le numéro de version suivant (décision « Blocs sans numéro »).'
+			'Résumé complété par DEP-11 et DEP-12 ; bancs depuis la version précédente et la 1.0.0 ; release selon RELEASING.md, avec le mainteneur, sous le numéro de version suivant (décision « Blocs sans numéro »).',
+			'Fait le 2026-11-19 : publiée en 1.9.0, première version faite sous Node 26 et pnpm 12 (outils des agents passés à pnpm 12.20.0 et à Node 26 après DEP-12, copies `bin/pnpm10.bak` et `gates.sh.bak-node24`) ; le banc apprend, pendant DEP-11, que la restauration de la sauvegarde d’avant 0.2.0 recrée les producteurs avec leurs propres identifiants à partir de la 1.8.0 (copie `upgrade-test.sh.bak-before-1.9`) ; bancs de la 1.8.0 et de la 1.0.0 vers la 1.9.0, 176 sur 176 chacun, image sous Node 26.13.1 ; CI 44551744810 verte sur de06cd47 ; `main` avancée, tag v1.9.0, release 44552943911 verte ; image publique sans connexion (`1.9.0`, `1.9`, `latest`, amd64 et arm64). develop passe à 1.10.0-rc.0, avec une entrée 1.10.0 au résumé provisoire. Pendant le bloc, OrbStack s’est arrêté et le mainteneur l’a relancé (`wine-cellar` reparti sain).'
 		],
 		done: 'La version est publiée sur `main` et son image se télécharge sans connexion ; develop passe à la rc suivante.',
 		deps: ['DEP-11', 'DEP-12'], src: ['Décision « Versions majeures (DEP-12) »']

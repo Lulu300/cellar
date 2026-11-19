@@ -192,7 +192,7 @@ Revue du code du 2026-10-08, commit `556c7bb`. Ce fichier est la version pour le
 | 1.7.0 | P23 · Finitions et barre de sélection | Juste après la 1.6.0, avant les autres blocs (décision « Finitions (UI-37, UI-34) ») : UI-37 et UI-34, menées côte à côte et fusionnées l’une après l’autre ; puis REL-23. Une version mineure. Le 2026-11-10, le mainteneur la sort sans attendre DEP-11, éligible le 2026-11-12, qui passe à la sortie suivante. Publiée en 1.7.0 le 2026-11-11. | UI-34, UI-37, REL-23 | 3 / 3 |
 | Dégustation | P20 · Fiches de dégustation | Décision « Fiches de dégustation (FEAT-06, FEAT-14 à FEAT-16) ». Sur la branche d’intégration `feat/tasting`, envoyée sur GitHub (décision « Blocs sans numéro ») : chaque tâche part de cette branche et y revient ; la branche rejoint develop quand le mainteneur valide le bloc entier. Ordre : FEAT-06 ; FEAT-14 ; FEAT-15 ; FEAT-16 ; puis REL-17. | FEAT-06, FEAT-14, FEAT-15, FEAT-16, REL-17 | 0 / 5 |
 | 1.8.0 | P18 · Producteurs et revue de l’import | Les producteurs d’abord, parce que la revue de l’import doit savoir relier ou créer un producteur. Ordre : FEAT-07 ; FEAT-08 ; puis REL-12. Le 2026-11-11, le mainteneur sort le bloc sans attendre DEP-11, éligible le 2026-11-12, qui passe à la sortie suivante. Publiée en 1.8.0 le 2026-11-11. | FEAT-07, FEAT-08, REL-12 | 3 / 3 |
-| Dépendances | P24 · Dépendances à jour | Juste après la 1.8.0, avant les autres blocs (décision « Versions majeures (DEP-12) ») : DEP-11 ; puis DEP-12 ; puis REL-24. Une version mineure. | DEP-11, DEP-12, REL-24 | 2 / 3 |
+| 1.9.0 | P24 · Dépendances à jour | Juste après la 1.8.0, avant les autres blocs (décision « Versions majeures (DEP-12) ») : DEP-11 ; puis DEP-12 ; puis REL-24. Une version mineure. Publiée en 1.9.0 le 2026-11-19. | DEP-11, DEP-12, REL-24 | 3 / 3 |
 | Notifications | P19 · Notifications | Les notifications, qui utilisent « À boire » (FEAT-05), le statut hors cave et la vérification des mises à jour. Ordre : FEAT-09 ; puis REL-13. | FEAT-09, REL-13 | 0 / 2 |
 | Statistiques de dégustation | P21 · Statistiques de dégustation | Après le bloc « Dégustation », dont elles lisent les fiches. Ordre : FEAT-17 ; puis REL-18. | FEAT-17, REL-18 | 0 / 2 |
 
@@ -4058,9 +4058,9 @@ Sévérité **évolution** · effort **S** · dépend de FEAT-07, FEAT-08 · sta
 
 **Sources** : Décision « Blocs sans numéro »
 
-## P24 · Dépendances à jour (Dépendances)
+## P24 · Dépendances à jour (1.9.0)
 
-Juste après la 1.8.0, avant les autres blocs (décision « Versions majeures (DEP-12) ») : DEP-11 ; puis DEP-12 ; puis REL-24. Une version mineure.
+Juste après la 1.8.0, avant les autres blocs (décision « Versions majeures (DEP-12) ») : DEP-11 ; puis DEP-12 ; puis REL-24. Une version mineure. Publiée en 1.9.0 le 2026-11-19.
 
 ### DEP-11 · Revue des dépendances d’après la 1.5.1
 
@@ -4107,7 +4107,9 @@ Sévérité **mineur** · effort **M** · dépend de DEP-11 · statut **Fait**
 
 ### REL-24 · Publication du bloc « Dépendances »
 
-Sévérité **évolution** · effort **S** · dépend de DEP-11, DEP-12 · statut **À faire**
+Sévérité **évolution** · effort **S** · dépend de DEP-11, DEP-12 · statut **Fait**
+
+**Suivi** (2026-11-19) : de06cd47, v1.9.0
 
 **Problème** : Le bloc apporte des dépendances à jour sans attendre les autres.
 
@@ -4116,6 +4118,7 @@ Sévérité **évolution** · effort **S** · dépend de DEP-11, DEP-12 · statu
 **À faire**
 
 - Résumé complété par DEP-11 et DEP-12 ; bancs depuis la version précédente et la 1.0.0 ; release selon RELEASING.md, avec le mainteneur, sous le numéro de version suivant (décision « Blocs sans numéro »).
+- Fait le 2026-11-19 : publiée en 1.9.0, première version faite sous Node 26 et pnpm 12 (outils des agents passés à pnpm 12.20.0 et à Node 26 après DEP-12, copies `bin/pnpm10.bak` et `gates.sh.bak-node24`) ; le banc apprend, pendant DEP-11, que la restauration de la sauvegarde d’avant 0.2.0 recrée les producteurs avec leurs propres identifiants à partir de la 1.8.0 (copie `upgrade-test.sh.bak-before-1.9`) ; bancs de la 1.8.0 et de la 1.0.0 vers la 1.9.0, 176 sur 176 chacun, image sous Node 26.13.1 ; CI 44551744810 verte sur de06cd47 ; `main` avancée, tag v1.9.0, release 44552943911 verte ; image publique sans connexion (`1.9.0`, `1.9`, `latest`, amd64 et arm64). develop passe à 1.10.0-rc.0, avec une entrée 1.10.0 au résumé provisoire. Pendant le bloc, OrbStack s’est arrêté et le mainteneur l’a relancé (`wine-cellar` reparti sain).
 
 **Critère d’acceptation** : La version est publiée sur `main` et son image se télécharge sans connexion ; develop passe à la rc suivante.
 

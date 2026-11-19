@@ -1,7 +1,7 @@
 <script lang="ts">
+    import { tick } from 'svelte';
     import type { CalendarClock } from '@lucide/svelte';
     import { Button } from '#lib/components/ui/button/index.js';
-    import { refocus } from '#lib/components/layout/button-states.js';
     import { m } from '#lib/paraglide/messages.js';
     import { whenLoggedIn } from './bottle-dialogs.svelte.js';
 
@@ -30,9 +30,11 @@
         }[];
     } = $props();
 
-    function clear() {
+    // The button leaves with the selection, and a dialog would send the focus to its top.
+    async function clear() {
         selection.clear();
-        refocus(focusAfterClear);
+        await tick();
+        focusAfterClear()?.focus();
     }
 </script>
 

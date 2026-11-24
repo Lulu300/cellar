@@ -130,9 +130,22 @@ function toolRefusal(refusal: ApiError | ReadOnlyTokenError): ApiError | ReadOnl
  * error that the API would answer, such as an unknown wine or a full case, and the refusal of a
  * read-only token say what went wrong; any other is logged and stays here.
  */
-async function answer(tool: string, read: () => unknown): Promise<CallToolResult> {
+async function answer(
+    tool: string,
+    output: z.ZodType,
+    read: () => unknown
+): Promise<CallToolResult> {
     try {
         const structuredContent = await read();
+        // The SDK refuses an answer that the schema does not describe, and says nothing in the
+        // logs: the owner learns it here, since a write tool has written by then.
+        const checked = output.safeParse(structuredContent);
+        if (!checked.success) {
+            console.error(
+                `MCP tool ${tool} answered outside its outputSchema:`,
+                checked.error.message
+            );
+        }
         const text = JSON.stringify(structuredContent, withoutNulls);
         return { content: [{ type: 'text', text }], structuredContent };
     } catch (error) {
@@ -274,7 +287,11 @@ function createServer({ authInfo }: McpRequestContext): McpServer {
         config: ToolConfig<Input, Output>,
         run: (args: ArgumentsOf<Input>) => z.output<Output> | Promise<z.output<Output>>
     ): void {
-        const handle = (args: ArgumentsOf<Input>) => answer(name, () => run(args));
+        // A tool without inputs is called with the context of the request alone: it gets nothing.
+        const handle = (args: ArgumentsOf<Input>) =>
+            answer(name, config.outputSchema, () =>
+                run((config.inputSchema ? args : undefined) as ArgumentsOf<Input>)
+            );
         server.registerTool(name, config, handle as ToolCallback<Input>);
     }
 

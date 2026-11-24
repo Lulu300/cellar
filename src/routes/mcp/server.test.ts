@@ -223,6 +223,29 @@ describe('POST /mcp', () => {
         errors.mockRestore();
     });
 
+    // The SDK refuses an answer that its outputSchema does not describe, without a word in the
+    // logs; for a write tool, the write is done by then.
+    it('logs an answer that its outputSchema does not describe', async () => {
+        const errors = vi.spyOn(console, 'error').mockImplementation(() => {});
+        // A capacity that a later change would give as text, as the schema does not say.
+        const container = {
+            name: 'A',
+            cases: [{ id: 'a1', name: 'A1', capacity: '6', bottles: 1 }]
+        };
+        vi.mocked(storageOverview).mockImplementationOnce(
+            () => [container] as unknown as ReturnType<typeof storageOverview>
+        );
+
+        const { result } = await legacy('tools/call', { name: 'get_free_space', arguments: {} });
+
+        expect(result.isError).toBe(true);
+        expect(errors).toHaveBeenCalledWith(
+            'MCP tool get_free_space answered outside its outputSchema:',
+            expect.stringContaining('capacity')
+        );
+        errors.mockRestore();
+    });
+
     it('lists what was drunk in a month, from the days an assistant gives', async () => {
         const drunk = (id: string, day: string) => ({
             id,

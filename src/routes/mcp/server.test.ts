@@ -183,7 +183,9 @@ describe('POST /mcp', () => {
         });
 
         expect(result.isError).toBeUndefined();
-        const [bottle] = JSON.parse(result.content[0].text);
+        const {
+            bottles: [bottle]
+        } = JSON.parse(result.content[0].text);
         expect(bottle).toMatchObject({ vintage: 2015, wine: { name: 'Château Margaux' } });
         expect(bottle).not.toHaveProperty('notes');
     });
@@ -381,14 +383,16 @@ describe('POST /mcp', () => {
                 notes: 'With friends\nCorked'
             });
             const { result } = await modernCall('get_wishlist', {});
-            expect(JSON.parse(result.content[0].text)).toEqual([
-                {
-                    id: expect.any(String),
-                    text: 'Clos Rougeard',
-                    quantity: 2,
-                    note: 'For the wedding'
-                }
-            ]);
+            expect(JSON.parse(result.content[0].text)).toEqual({
+                wishes: [
+                    {
+                        id: expect.any(String),
+                        text: 'Clos Rougeard',
+                        quantity: 2,
+                        note: 'For the wedding'
+                    }
+                ]
+            });
         });
 
         it('changes only the fields given, leaving out those a tool may clear with null', async () => {
@@ -408,14 +412,16 @@ describe('POST /mcp', () => {
             );
             expect(
                 await call('update_bottles', { bottleIds: [bottle.id], purchasePrice: 52 })
-            ).toEqual([
-                expect.objectContaining({
-                    purchaseDate: '2026-10-01',
-                    purchasePrice: 52,
-                    barcode: 'CV0001',
-                    vintage: 2015
-                })
-            ]);
+            ).toEqual({
+                bottles: [
+                    expect.objectContaining({
+                        purchaseDate: '2026-10-01',
+                        purchasePrice: 52,
+                        barcode: 'CV0001',
+                        vintage: 2015
+                    })
+                ]
+            });
             expect(await call('update_wish', { wishId: wish.id, quantity: 2 })).toEqual({
                 id: wish.id,
                 text: 'Clos Rougeard',

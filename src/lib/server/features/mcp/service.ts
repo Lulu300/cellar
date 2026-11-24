@@ -53,10 +53,10 @@ import { sortBottles } from '#lib/utils/bottle-sort.js';
 import { compareText } from '#lib/utils/compare.js';
 import { today } from '#lib/utils/format.js';
 
-// What the tools of the MCP server answer. An assistant reads every word of an answer: each one
-// keeps the fields that help it answer a question about the cellar, flat, and leaves out the
-// images, the timestamps and the ids of references that the API gives, but those a write tool
-// takes.
+// What the tools of the MCP server answer, as outputs.ts declares it: every field, null when empty.
+// An assistant reads every word of an answer: each one keeps the fields that help it answer a
+// question about the cellar, flat, and leaves out the images, the timestamps and the ids of
+// references that the API gives, but those a write tool takes.
 
 /** A wine as the wine list and the wine page give it. */
 type Wine = Pick<
@@ -77,7 +77,7 @@ function wineSummary(wine: Wine) {
         producerId: wine.producerId,
         color: wine.color,
         type: wine.type,
-        classification: wine.classification,
+        classification: wine.classification ?? null,
         appellation: appellation.name,
         region: appellation.region.name,
         country: appellation.region.country.name,
@@ -94,7 +94,8 @@ const isIn =
 
 // A bottle out of the cellar or drunk keeps the case it left, without taking a place there: the
 // answers name it `formerLocation` or `formerCaseId`, so that an assistant does not read it as where
-// the bottle is. `location` and `caseId` are those of a bottle in the cellar only.
+// the bottle is. `location` and `caseId` are those of a bottle in the cellar only: the other one of
+// each pair is null.
 const inCellar = isIn(BottleAvailability.AVAILABLE);
 
 function bottleSummary(bottle: Bottle) {
@@ -111,12 +112,14 @@ function bottleSummary(bottle: Bottle) {
         drinkFrom: bottle.drinkFrom,
         drinkBefore: bottle.drinkBefore,
         format: bottle.format,
-        ...(inCellar(bottle) ? { location } : { formerLocation: location }),
+        location: inCellar(bottle) ? location : null,
+        formerLocation: inCellar(bottle) ? null : location,
         barcode: bottle.barcode,
         origin: bottle.origin?.name ?? null,
         purchasePrice: bottle.purchasePrice,
         purchaseDate: day(bottle.purchaseDate),
         currentValue: bottle.currentValue,
+        currentValueDate: day(bottle.currentValueDate),
         consumedDate: day(bottle.consumedDate),
         notes: bottle.notes
     };
@@ -215,7 +218,7 @@ export function bottlesByBarcode(barcode: string) {
     const coded = listBottlesWithDefinitions().filter(
         (bottle): bottle is BottleWithDefinitionDTO & { barcode: string } => bottle.barcode !== null
     );
-    return findBarcodeMatches(coded, barcode).map(bottleWithWine);
+    return { bottles: findBarcodeMatches(coded, barcode).map(bottleWithWine) };
 }
 
 /** A day of a search: a bound left out or null sets no limit. */
@@ -311,7 +314,7 @@ export function bottlesToDrink({ rank, colorId, order = 'urgency', ...page }: To
 
 /** The wines below their target quantity, the largest shortage first. */
 export async function wineShortages() {
-    return (await getWineShortages()).map((wine) => ({
+    const wines = (await getWineShortages()).map((wine) => ({
         id: wine.id,
         name: wine.name,
         producer: wine.producer,
@@ -325,6 +328,7 @@ export async function wineShortages() {
         missing: wine.shortage,
         averagePrice: wine.avgPrice
     }));
+    return { wines };
 }
 
 interface Load {
@@ -412,9 +416,8 @@ function writtenBottle(bottle: WineBottleWithFormat) {
         drinkFrom: bottle.drinkFrom,
         drinkBefore: bottle.drinkBefore,
         format: bottle.format,
-        ...(inCellar(bottle)
-            ? { caseId: bottle.storageCaseId }
-            : { formerCaseId: bottle.storageCaseId }),
+        caseId: inCellar(bottle) ? bottle.storageCaseId : null,
+        formerCaseId: inCellar(bottle) ? null : bottle.storageCaseId,
         barcode: bottle.barcode,
         originId: bottle.originId,
         purchasePrice: bottle.purchasePrice,
@@ -425,6 +428,9 @@ function writtenBottle(bottle: WineBottleWithFormat) {
         notes: bottle.notes
     };
 }
+
+/** The bottles that a write tool wrote, as it answers them. */
+const written = (bottles: WineBottleWithFormat[]) => ({ bottles: bottles.map(writtenBottle) });
 
 /** Creates the wine, and answers it as get_wine does: without bottles yet. */
 export function addWine(wine: WineDefinitionInput) {
@@ -469,7 +475,7 @@ export function addBottles({ wineId, quantity, caseId, ...bottle }: NewBottles) 
         },
         quantity
     );
-    return created.map(writtenBottle);
+    return written(created);
 }
 
 /**
@@ -482,7 +488,7 @@ export function markDrunk(ids: string[], date: Date | null, note: string | null)
         // Today on the server's calendar, stored as its midnight in UTC like a date of the forms.
         consumedDate: date ?? new Date(today())
     };
-    return updateBottles(ids, changes, note).map(writtenBottle);
+    return written(updateBottles(ids, changes, note));
 }
 
 /**
@@ -490,9 +496,7 @@ export function markDrunk(ids: string[], date: Date | null, note: string | null)
  * in, which keeps no room for it, and a drunk one loses its consumed date.
  */
 export function takeOut(ids: string[]) {
-    return updateBottles(ids, { availability: BottleAvailability.OUT_OF_CELLAR }).map(
-        writtenBottle
-    );
+    return written(updateBottles(ids, { availability: BottleAvailability.OUT_OF_CELLAR }));
 }
 
 /**
@@ -505,7 +509,7 @@ export function putBack(ids: string[], caseId: string | null) {
         availability: BottleAvailability.AVAILABLE,
         ...(caseId !== null && { storageCaseId: caseId })
     };
-    return updateBottles(ids, changes).map(writtenBottle);
+    return written(updateBottles(ids, changes));
 }
 
 /**
@@ -513,7 +517,7 @@ export function putBack(ids: string[], caseId: string | null) {
  * that is the case it goes back to.
  */
 export function moveBottles(ids: string[], caseId: string) {
-    return updateBottles(ids, { storageCaseId: caseId }).map(writtenBottle);
+    return written(updateBottles(ids, { storageCaseId: caseId }));
 }
 
 /** The fields of bottles that update_bottles changes: those of their purchase and their label. */
@@ -534,7 +538,7 @@ export type BottleEdits = Pick<
 
 /** Sets the fields of `changes` on each bottle, all or none, as PATCH /api/bottles does. */
 export function editBottles(ids: string[], changes: BottleEdits) {
-    return updateBottles(ids, changes).map(writtenBottle);
+    return written(updateBottles(ids, changes));
 }
 
 /** Deletes the bottles, all or none, and answers their ids. */
@@ -549,7 +553,7 @@ export function changeBottleNotes(
     addedNote: string | null
 ) {
     const changes = notes === undefined ? {} : { notes };
-    return updateBottles(ids, changes, addedNote).map(writtenBottle);
+    return written(updateBottles(ids, changes, addedNote));
 }
 
 /** Gives the wine `rating`, or none with null, and answers the wine without its bottles. */
@@ -580,7 +584,7 @@ function wishSummary({ id, text, quantity, note, wine }: ReturnType<typeof listW
 }
 
 /** The wishes, the newest first: a wine of the cellar, or the name of a wine not in it yet. */
-export const wishlist = () => listWishes().map(wishSummary);
+export const wishlist = () => ({ wishes: listWishes().map(wishSummary) });
 
 /** Adds a wine of the cellar, or a text, to the wishlist, and answers the wish as wishlist does. */
 export const addWish = (wish: Omit<WishInput, 'imageId'>) =>

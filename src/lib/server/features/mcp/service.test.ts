@@ -183,11 +183,13 @@ describe('wineWithBottles', () => {
         const places = (bottles: object[]) =>
             bottles.map((bottle) => pick(bottle, ['id', 'location', 'formerLocation']));
         expect(places(wine.bottles)).toEqual([
-            { id: 'here', location: b1 },
-            { id: 'out', formerLocation: b1 },
-            { id: 'nowhere', formerLocation: null }
+            { id: 'here', location: b1, formerLocation: null },
+            { id: 'out', location: null, formerLocation: b1 },
+            { id: 'nowhere', location: null, formerLocation: null }
         ]);
-        expect(places(wine.consumed)).toEqual([{ id: 'drunk', formerLocation: b1 }]);
+        expect(places(wine.consumed)).toEqual([
+            { id: 'drunk', location: null, formerLocation: b1 }
+        ]);
         expect(wine.consumed).toEqual([
             expect.objectContaining({
                 consumedDate: '2026-09-12',
@@ -209,13 +211,13 @@ describe('bottlesByBarcode', () => {
             { id: 'other', barcode: 'XX00000142' },
             { id: 'none', barcode: null }
         ]);
-        const idsOf = (code: string) => bottlesByBarcode(code).map((bottle) => bottle.id);
+        const idsOf = (code: string) => bottlesByBarcode(code).bottles.map((bottle) => bottle.id);
 
         expect(idsOf('CV00000042')).toEqual(['upper']);
         expect(idsOf('Cv00000042')).toEqual(['upper', 'lower']);
         expect(idsOf('42').sort()).toEqual(['lower', 'other', 'upper']);
         expect(idsOf('nothing')).toEqual([]);
-        expect(bottlesByBarcode('CV00000042')[0]).toMatchObject({
+        expect(bottlesByBarcode('CV00000042').bottles[0]).toMatchObject({
             availability: 'consumed',
             wine: { id: margaux, name: 'Château Margaux' }
         });
@@ -434,7 +436,7 @@ describe('wineShortages', () => {
     it('gives the wines below their target with how many bottles they miss', async () => {
         await insertBottles(barolo, [{ availability: 'available' }, { availability: 'consumed' }]);
 
-        expect(await wineShortages()).toEqual([
+        expect((await wineShortages()).wines).toEqual([
             expect.objectContaining({ id: barolo, targetQuantity: 4, inCellar: 1, missing: 3 })
         ]);
     });
@@ -584,7 +586,7 @@ describe('addBottles', () => {
     it('adds the bottles in the cellar, each with its own id', () => {
         const { cases } = createContainer({ name: 'Rack', cases: ['1'], caseCapacities: [6] });
 
-        const added = addBottles({ ...purchase, quantity: 2, caseId: cases[0].id });
+        const added = addBottles({ ...purchase, quantity: 2, caseId: cases[0].id }).bottles;
 
         expect(added).toEqual([
             expect.objectContaining({
@@ -617,9 +619,9 @@ describe('markDrunk', () => {
             { id: 'b', storageCaseId: cases[0].id }
         ]);
 
-        const drunk = markDrunk(['a', 'b'], new Date('2026-10-30'), 'With roast chicken');
+        const drunk = markDrunk(['a', 'b'], new Date('2026-10-30'), 'With roast chicken').bottles;
 
-        expect(drunk[0]).not.toHaveProperty('caseId');
+        expect(drunk[0]).toHaveProperty('caseId', null);
         // Drunk, they take no room in their case.
         expect(freeSpace().containers[0].cases[0]).toMatchObject({ bottles: 0, free: 6 });
         expect(drunk).toEqual([
@@ -642,7 +644,7 @@ describe('markDrunk', () => {
         await insertBottles(margaux, [{ id: 'a' }]);
 
         try {
-            expect(markDrunk(['a'], null, null)).toEqual([
+            expect(markDrunk(['a'], null, null).bottles).toEqual([
                 expect.objectContaining({ consumedDate: '2026-10-31', notes: null })
             ]);
         } finally {
@@ -671,7 +673,7 @@ describe('moveBottles', () => {
             { id: 'b', storageCaseId: cases[0].id }
         ]);
 
-        expect(moveBottles(['a'], cases[1].id)).toEqual([
+        expect(moveBottles(['a'], cases[1].id).bottles).toEqual([
             expect.objectContaining({ id: 'a', caseId: cases[1].id })
         ]);
         expect(() => moveBottles(['b'], cases[1].id)).toThrow(
@@ -688,9 +690,11 @@ describe('changeBottleNotes', () => {
             { id: 'c', notes: 'Old note' }
         ]);
 
-        expect(changeBottleNotes(['a'], 'New note', null)[0].notes).toBe('New note');
-        expect(changeBottleNotes(['b'], undefined, 'Added')[0].notes).toBe('Old note\nAdded');
-        expect(changeBottleNotes(['c'], null, 'Added')[0].notes).toBe('Added');
+        expect(changeBottleNotes(['a'], 'New note', null).bottles[0].notes).toBe('New note');
+        expect(changeBottleNotes(['b'], undefined, 'Added').bottles[0].notes).toBe(
+            'Old note\nAdded'
+        );
+        expect(changeBottleNotes(['c'], null, 'Added').bottles[0].notes).toBe('Added');
     });
 });
 
@@ -706,7 +710,7 @@ describe('takeOut and putBack', () => {
             { id: 'b', storageCaseId: cases[0].id, availability: 'out_of_cellar' }
         ]);
 
-        expect(takeOut(['a'])).toEqual([
+        expect(takeOut(['a']).bottles).toEqual([
             expect.objectContaining({
                 id: 'a',
                 availability: 'out_of_cellar',
@@ -714,11 +718,11 @@ describe('takeOut and putBack', () => {
             })
         ]);
         // Out of the cellar, a bottle takes no room in its case: the other one goes back there.
-        expect(putBack(['b'], null)).toEqual([
+        expect(putBack(['b'], null).bottles).toEqual([
             expect.objectContaining({ id: 'b', availability: 'available', caseId: cases[0].id })
         ]);
         expect(() => putBack(['a'], null)).toThrow(expect.objectContaining({ code: 'case_full' }));
-        expect(putBack(['a'], cases[1].id)).toEqual([
+        expect(putBack(['a'], cases[1].id).bottles).toEqual([
             expect.objectContaining({ id: 'a', availability: 'available', caseId: cases[1].id })
         ]);
     });
@@ -728,8 +732,8 @@ describe('takeOut and putBack', () => {
         await insertBottles(margaux, [{ id: 'a' }, { id: 'b' }]);
         markDrunk(['a', 'b'], new Date('2026-10-30'), null);
 
-        const [back] = putBack(['a'], cases[0].id);
-        const [out] = takeOut(['b']);
+        const [back] = putBack(['a'], cases[0].id).bottles;
+        const [out] = takeOut(['b']).bottles;
 
         expect(back).toMatchObject({ availability: 'available', caseId: cases[0].id });
         expect(back).toHaveProperty('consumedDate', null);
@@ -755,7 +759,7 @@ describe('takeOut and putBack', () => {
         markDrunk(['a', 'b'], new Date('2026-10-30'), null);
         expect(counts()).toEqual([0, 0]);
 
-        expect(putBack(['b', 'old'], null)).toEqual([
+        expect(putBack(['b', 'old'], null).bottles).toEqual([
             expect.objectContaining({ id: 'b', availability: 'available', caseId: large }),
             expect.objectContaining({ id: 'old', availability: 'available' })
         ]);
@@ -772,7 +776,7 @@ describe('takeOut and putBack', () => {
             availability: 'consumed',
             storageCaseId: small
         });
-        expect(putBack(['a'], large)[0]).toMatchObject({ caseId: large });
+        expect(putBack(['a'], large).bottles[0]).toMatchObject({ caseId: large });
     });
 
     it('change none of the bottles when one does not exist or the case has no room for them', async () => {
@@ -808,7 +812,7 @@ describe('editBottles', () => {
             drinkBefore: '2027-03',
             purchaseDate: new Date('2026-10-01'),
             barcode: undefined
-        });
+        }).bottles;
 
         expect(edited).toEqual([
             expect.objectContaining({
@@ -824,10 +828,12 @@ describe('editBottles', () => {
             }),
             expect.objectContaining({ id: 'b', vintage: 2016, barcode: 'CV1' })
         ]);
-        expect(editBottles(['a'], { vintage: null, purchasePrice: null })[0]).toMatchObject({
-            vintage: null,
-            purchasePrice: null
-        });
+        expect(editBottles(['a'], { vintage: null, purchasePrice: null }).bottles[0]).toMatchObject(
+            {
+                vintage: null,
+                purchasePrice: null
+            }
+        );
     });
 
     it('refuses a barcode for several bottles, or one another bottle has, changing none', async () => {
@@ -937,7 +943,7 @@ describe('the wishlist', () => {
             note: 'Saumur'
         });
 
-        expect(wishlist()).toEqual([
+        expect(wishlist().wishes).toEqual([
             { id: text.id, text: 'Clos Rougeard', quantity: null, note: 'Saumur', wine: null },
             {
                 id: wine.id,
@@ -979,7 +985,7 @@ describe('the wishlist', () => {
             addWish({ definitionId: margaux, text: null, quantity: 2, note: null })
         ).toThrow('This wine is already on the wishlist');
         expect(await removeWishById(wish.id)).toEqual({ removed: wish.id });
-        expect(wishlist()).toEqual([]);
+        expect(wishlist().wishes).toEqual([]);
         await expect(removeWishById(wish.id)).rejects.toThrow('Wish not found');
     });
 });

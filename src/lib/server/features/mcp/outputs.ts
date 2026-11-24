@@ -54,25 +54,11 @@ const bottleWithWine = bottle.extend({
 });
 
 /** A bottle as the write tools answer it: the ids of its wine, its case and its origin. */
-const writtenBottle = z.strictObject({
-    id: text,
+const writtenBottle = bottle.omit({ location: true, formerLocation: true, origin: true }).extend({
     wineId: text,
-    availability,
-    vintage: count.nullable(),
-    optimum: count.nullable(),
-    drinkFrom: maybeText,
-    drinkBefore: maybeText,
-    format: text,
     caseId: maybeText,
     formerCaseId: maybeText,
-    barcode: maybeText,
-    originId: maybeText,
-    purchasePrice: amount,
-    purchaseDate: day,
-    currentValue: amount,
-    currentValueDate: day,
-    consumedDate: day,
-    notes: maybeText
+    originId: maybeText
 });
 
 /** The answer of the tools that write bottles. */

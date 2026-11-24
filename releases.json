@@ -1,5 +1,11 @@
 [
   {
+    "version": "1.11.0",
+    "summary": "1.11.0 brings the next block of the roadmap.",
+    "mandatoryStop": false,
+    "actions": []
+  },
+  {
     "version": "1.10.0",
     "summary": "1.10.0 gives the tools of the MCP server answers that a program can rely on.\n\nEach tool of the MCP server now declares the shape of its answer and returns it as structured content, every field there and null when empty, besides the JSON text it already gave, which still leaves the empty fields out. An assistant that writes a program against the tools (« Code Mode ») knows every field in advance. Ten tools that answered a list now answer an object that holds it, for every client: find_bottle_by_barcode, get_wine_shortage and the seven tools that write bottles answer { \"bottles\" } or { \"wines\" }, and get_wishlist answers { \"wishes\" }. The bottles of the tools that read now give currentValueDate, the day of their current value. An assistant needs nothing new; a script that called one of these ten tools reads the list inside the object.",
     "mandatoryStop": false,

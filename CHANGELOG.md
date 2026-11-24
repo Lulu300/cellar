@@ -4,6 +4,41 @@
 
 Upgrade actions are also collected in [UPGRADING.md](UPGRADING.md).
 
+## 1.10.0
+
+1.10.0 gives the tools of the MCP server answers that a program can rely on.
+
+Each tool of the MCP server now declares the shape of its answer and returns it as structured content, every field there and null when empty, besides the JSON text it already gave, which still leaves the empty fields out. An assistant that writes a program against the tools (« Code Mode ») knows every field in advance. Ten tools that answered a list now answer an object that holds it, for every client: find_bottle_by_barcode, get_wine_shortage and the seven tools that write bottles answer { "bottles" } or { "wines" }, and get_wishlist answers { "wishes" }. The bottles of the tools that read now give currentValueDate, the day of their current value. An assistant needs nothing new; a script that called one of these ten tools reads the list inside the object.
+
+### Upgrade actions
+
+None.
+
+### Changes
+
+#### Features
+
+- **mcp:** Declare each tool's output and answer it structured (c3a8a0d)
+
+#### Bug fixes
+
+- **mcp:** Log an answer that its outputSchema does not describe (d1b5998)
+
+#### Refactoring
+
+- **mcp:** Build the written bottle from the read bottle's fields (52d3c3d)
+
+#### Documentation
+
+- **mcp:** Describe the structured answers of the tools (7f9cd81)
+- **mcp:** Rewrap the paragraphs changed for the structured answers (354c708)
+- **mcp:** Tidy a docs line and two test comments from the second review (f390987)
+
+#### Other changes
+
+- **mcp:** Validate every tool's answer with the SDK's client (ef84706)
+- **mcp:** Check that every answer field is required and every answer validated (196e1e2)
+
 ## 1.9.1
 
 1.9.1 fixes small defects found since 1.7.0.

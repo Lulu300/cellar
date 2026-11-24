@@ -196,7 +196,7 @@ Revue du code du 2026-10-08, commit `556c7bb`. Ce fichier est la version pour le
 | 1.8.0 | P18 · Producteurs et revue de l’import | Les producteurs d’abord, parce que la revue de l’import doit savoir relier ou créer un producteur. Ordre : FEAT-07 ; FEAT-08 ; puis REL-12. Le 2026-11-11, le mainteneur sort le bloc sans attendre DEP-11, éligible le 2026-11-12, qui passe à la sortie suivante. Publiée en 1.8.0 le 2026-11-11. | FEAT-07, FEAT-08, REL-12 | 3 / 3 |
 | 1.9.0 | P24 · Dépendances à jour | Juste après la 1.8.0, avant les autres blocs (décision « Versions majeures (DEP-12) ») : DEP-11 ; puis DEP-12 ; puis REL-24. Une version mineure. Publiée en 1.9.0 le 2026-11-19. | DEP-11, DEP-12, REL-24 | 3 / 3 |
 | 1.9.1 | P25 · Petites finitions | Juste après la 1.9.0, avant les autres blocs (décision « Petites finitions (1.9.1) ») : UI-38 et QA-07, côte à côte, fusionnées l’une après l’autre ; puis REL-25. Publiée en 1.9.1 le 2026-11-19. | UI-38, QA-07, REL-25 | 3 / 3 |
-| MCP structuré | P26 · Un MCP aux sorties structurées | Juste après la 1.9.1, avant les autres blocs (décision « Sorties structurées du MCP (FEAT-20) ») : FEAT-20 ; puis REL-26. Une version mineure. | FEAT-20, REL-26 | 0 / 2 |
+| MCP structuré | P26 · Un MCP aux sorties structurées | Juste après la 1.9.1, avant les autres blocs (décision « Sorties structurées du MCP (FEAT-20) ») : FEAT-20 ; puis REL-26. Une version mineure. | FEAT-20, REL-26 | 1 / 2 |
 | Notifications | P19 · Notifications | Les notifications, qui utilisent « À boire » (FEAT-05), le statut hors cave et la vérification des mises à jour. Ordre : FEAT-09 ; puis REL-13. | FEAT-09, REL-13 | 0 / 2 |
 | Statistiques de dégustation | P21 · Statistiques de dégustation | Après le bloc « Dégustation », dont elles lisent les fiches. Ordre : FEAT-17 ; puis REL-18. | FEAT-17, REL-18 | 0 / 2 |
 
@@ -4206,7 +4206,9 @@ Juste après la 1.9.1, avant les autres blocs (décision « Sorties structurées
 
 ### FEAT-20 · Des sorties structurées pour chaque outil du MCP
 
-Sévérité **évolution** · effort **M** · dépend de REL-25 · statut **À faire**
+Sévérité **évolution** · effort **M** · dépend de REL-25 · statut **Fait**
+
+**Suivi** (2026-11-24) : db63f214..f3909879
 
 **Problème** : Les 29 outils du MCP décrivent ce qu’ils acceptent mais pas ce qu’ils renvoient, et renvoient du JSON en texte : un assistant doit en deviner la forme, et un client « Code Mode » ne peut pas typer ses résultats.
 
@@ -4217,6 +4219,8 @@ Sévérité **évolution** · effort **M** · dépend de REL-25 · statut **À f
 - Décision « Sorties structurées du MCP (FEAT-20) » : un `outputSchema` (zod, partagé avec ce qui existe déjà) pour chaque outil, et `structuredContent` conforme dans chaque réponse réussie, avec le texte JSON gardé pour les anciens clients ; les erreurs gardent leurs détails.
 - Relire chaque réponse du point de vue d’un assistant : champs inutiles, tailles, pagination, noms cohérents ; ce qui change la forme d’une réponse est proposé au mainteneur avant d’être construit.
 - Un test qui appelle chaque outil par un vrai client MCP et valide sa sortie contre son schéma ; la documentation du MCP suit.
+- Fait en P26 (2026-11-24, db63f214..f3909879) : proposition d’abord (p15-notes/feat-20-evidence/proposal.md), choix du mainteneur : Q1 A (`@modelcontextprotocol/client` 2.4.0 en devDependency, pour le test), Q2 B (`structuredContent` donne chaque champ, `null` quand il est vide ; le texte reste sans les champs vides), Q3 B (les dix outils qui répondaient une liste répondent un objet, texte compris : `{ "bottles" }` pour `find_bottle_by_barcode` et les sept outils qui écrivent des bouteilles, `{ "wines" }` pour `get_wine_shortage`, `{ "wishes" }` pour `get_wishlist`), Q4 B (`get_statistics` et `get_wine_shortage` inchangés, seulement décrits), Q5 A (`currentValueDate` sur les bouteilles des outils de lecture), Q6 A (les bouteilles écrites gardent leurs ids). Schémas zod stricts dans `features/mcp/outputs.ts`, par blocs partagés ; un seul `tool()` dans `server.ts` enregistre chaque outil avec son `outputSchema`, et son type lie ce que construit le service au schéma (`pnpm check` échoue sinon) ; une réponse que son schéma refuse est journalisée (le SDK la refuse sans rien dire, après l’écriture). Preuves : `src/routes/mcp/structured.test.ts`, le client du SDK en processus sur 2026-07-28 et 2025-11-25, 29 outils sur 29 validés par son ajv, chaque objet fermé et chaque champ requis, texte égal au contenu structuré sans les `null`, refus et jeton en lecture seule inchangés (mutations vérifiées) ; avant et après sur le même scénario, 32 réponses sur 33 identiques une fois déballées (la 33e, `list_bottles` à 50, ne diffère que par l’ordre des égalités départagées par id) ; rejeu HTTP sur l’app construite (port 5001), 29 sur 29 validés sur les deux révisions. `tools/list` passe de 37,6 à 83,7 Ko (schémas de sortie 44,5 Ko). API.md, README-Docker et le résumé 1.10.0 suivent ; l’API HTTP et `docs/openapi.json` ne changent pas. Deux revues : 2 corrections et 7 détails, tous faits.
+- Trouvé pendant FEAT-20 : des lignes trop longues, d’avant FEAT-20, dans la section MCP de `docs/API.md` (paragraphe de `get_free_space`, 170 caractères ; requêtes de `search_wines` et `list_producers`) ; `pnpm peers check` signale que runed 0.35.1 attend `@sveltejs/kit` ^2.21.0 (3.2.0 installé) ; le schéma de `get_statistics` recopie à la main la réponse de `GET /api/statistics` (choix Q4 B) : un champ ajouté là ferait échouer l’outil, ce que le test et le journal signaleraient.
 
 **Critère d’acceptation** : Chaque outil déclare sa sortie et la renvoie structurée, validée par un client MCP dans les tests ; les anciens clients reçoivent toujours le texte ; documentation à jour.
 

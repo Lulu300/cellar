@@ -2683,9 +2683,10 @@ README-Docker says how to set up an assistant (see
   place there: it gives it as `formerLocation` or `formerCaseId` instead, so that an assistant does
   not read it as where the bottle is. `put_bottles_back` returns it there.
 - **Errors:** a tool that cannot answer, for an unknown wine for example, answers `isError: true`,
-  without `structuredContent`, with the reason as its text: the `message` that this API would answer for the same refusal, then,
-  when the refusal has `details`, a second line `Details: ` followed by them as JSON. The message
-  names at most 10 unknown bottles; the details name them all:
+  without `structuredContent`, with the reason as its text: the `message` that this API would
+  answer for the same refusal, then, when the refusal has `details`, a second line `Details: `
+  followed by them as JSON. The message names at most 10 unknown bottles; the details name them
+  all:
 
   ```text
   No bottle with the id a, b, c, d, e, f, g, h, i, j and 2 more
@@ -2776,13 +2777,12 @@ The tools that read:
     with its `rank` (`late`, `this_month`, `this_year`, `optimum_reached`, `ready`), in the order
     asked, from `offset`; `total` counts them all.
 - `get_wine_shortage`: no parameters; `{ "wines" }`: the wines below their target quantity, the
-  largest shortage first, with `id`, `name`, `producer`, `color`, `type`, `appellation`, `region`, `country`,
-  `targetQuantity`, `inCellar`, `missing` and `averagePrice`.
+  largest shortage first, with `id`, `name`, `producer`, `color`, `type`, `appellation`, `region`,
+  `country`, `targetQuantity`, `inCellar`, `missing` and `averagePrice`.
 - `get_wishlist`: no parameters; `{ "wishes" }`: the [wishlist](#wishlist), the newest first: each
-  wish has `id`,
-  `quantity`, `note`, and either `text` (a wine not in the cellar yet) or `wine` (`id`, `name`,
-  `producer`, `color`, `type`, `appellation`, `region`, `country`, and `inCellar`, its bottles in
-  the cellar). Photos are left out.
+  wish has `id`, `quantity`, `note`, and either `text` (a wine not in the cellar yet) or `wine`
+  (`id`, `name`, `producer`, `color`, `type`, `appellation`, `region`, `country`, and `inCellar`,
+  its bottles in the cellar). Photos are left out.
 - `get_free_space`: no parameters; `{ "capacity", "bottles", "free", "containers" }`: each container
   by the name the storage page shows, with its totals and its `cases` (`id`, `name`, `capacity`,
   `bottles`, `free`). A case holds its capacity in bottles in the cellar; one that holds more has

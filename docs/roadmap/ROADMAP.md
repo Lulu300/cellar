@@ -149,6 +149,7 @@ Revue du code du 2026-10-08, commit `556c7bb`. Ce fichier est la version pour le
 - **Finitions (UI-37, UI-34)** : Demande du mainteneur (2026-11-10) : une version mineure, juste après la 1.6.0, qui corrige les petits défauts relevés pendant UI-35, UI-36 et FEAT-19 (UI-37) et fait UI-34, la barre de sélection des bouteilles commune. UI-37 et UI-34 partent côte à côte, chacune sur sa branche, et fusionnent l’une après l’autre. Ce qui se voit (cartes de bouteilles, bouton « N bouteilles » sur téléphone, période d’un seul mois, majuscules des libellés anglais, pleine largeur à 2560 px, comportement du visiteur dans la barre de sélection) est proposé sur captures avant d’être construit. DEP-11 passe juste avant la sortie, Node 24.22.2 étant éligible le 2026-11-12.
 - **Versions majeures (DEP-12)** : Le 2026-11-12, le mainteneur demande si les dépendances sont à jour : aucune revue des versions majeures n’a eu lieu depuis SvelteKit 3, Vite 8 et TypeScript 6 (P3, avant la 1.0) ; DEP-08 à DEP-10 ne prenaient que les correctifs et quelques mineures. En retard, toutes en outils de développement : @inlang/paraglide-js 3 (2.29.3), tailwind-variants 4 (3.3.1), TypeScript 7 (6.0.3, la réécriture native), @types/node 26 (24, à suivre avec Node) ; et Node 26, LTS active depuis octobre 2026, alors que l’image reste sur Node 24 (LTS de maintenance). Les dépendances de production sont à jour. Un bloc à part, avant les autres : DEP-11 (correctifs et mineures en attente, Node 24.22.2) fusionnée d’abord, puis DEP-12, où chaque majeure est essayée dans son propre commit, portes à chaque fois, et proposée au mainteneur avant d’être gardée ; ce qui bloque (par exemple un outil qui ne supporte pas encore TypeScript 7) est expliqué et reporté. Node 26 change l’image publiée : bancs avant le merge (choix du mainteneur, 2026-11-12).
 - **Petites finitions (1.9.1)** : Demande du mainteneur (2026-11-19) : une tâche pour les petits défauts relevés depuis la 1.7.0 (« Trouvé » de UI-34, UI-37, FEAT-07 et FEAT-08) : UI-38. La CI a perdu quatre fois son job e2e sur le miroir apt d’Ubuntu pendant FEAT-07 : QA-07 la rend robuste, sans rien changer à ce qu’elle vérifie. Que des corrections, sans migration : une version corrective, 1.9.1 ; comme pour la 1.5.1, develop repasse de 1.10.0-rc.0 à 1.9.1-rc.0, aucune image ni base ne tournant sous ce numéro hors de la CI. Ce qui se voit est proposé sur captures avant d’être construit. Restent hors de la tâche : l’annonce « 0 bouteille sélectionnée » (à vérifier avec un vrai lecteur d’écran), la durée d’une revue CSV à la limite de 50 Mo, et ce qui attend une dépendance (TypeScript 7, minimatch, runed, rolldown).
+- **Sorties structurées du MCP (FEAT-20)** : Le 2026-11-24, le mainteneur demande ce qu’est « Code Mode » : une façon, côté assistant ou passerelle, d’utiliser un serveur MCP en présentant ses outils comme une bibliothèque de code que l’assistant appelle dans un programme exécuté en bac à sable, au lieu d’un appel d’outil par étape (idée de Cloudflare, active par défaut sur ses portails MCP depuis mars 2026). Ce n’est pas un remplaçant de MCP : Cellar garde son serveur. Une passerelle sur Internet n’atteint pas Cellar (décision « Serveur MCP (P14) ») ; un client local le peut. Ce qui manque à Cellar : ses 29 outils décrivent leurs entrées (zod) mais pas leurs sorties, et renvoient du JSON en texte. Dans la logique du « MCP le plus complet possible », le mainteneur veut tout de suite que chaque outil déclare son `outputSchema` et renvoie `structuredContent`, en gardant le texte pour les clients qui ne lisent que lui, et que les réponses restent sobres pour un assistant. Ce qui changerait la forme d’une réponse ou ce que voit un assistant est proposé avant d’être construit. Un bloc à lui seul, version mineure (décision du 2026-11-24).
 - **Survol des boutons (UI-33)** : Choisi sur captures le 2026-11-02, une règle par sorte de bouton : un bouton plein (principal, secondaire, suppression, interrupteur) mêle au survol 15 % de la couleur du texte de la page à son fond, donc s’assombrit en clair et s’éclaircit en sombre (jetons `--primary-hover`, `--secondary-hover`, `--destructive-hover`) ; un bouton discret (transparent, icône, ligne de menu, section du menu, tri, case du stockage, croix d’un dialogue) prend au survol le fond `accent` entier et son texte, en clair comme en sombre, et les boutons à icône faits main aussi ; un bouton à contour et une liste déroulante gardent le survol de shadcn, la liste déroulante gagnant celui qui lui manquait en clair ; un choix non retenu suit la règle des boutons discrets, un choix retenu celle des boutons pleins, sans zoom ; liens et onglets inchangés ; un focus clavier net (anneau de 3 px en `--ring` entier) sur chaque bouton, lien et onglet ; un bouton désactivé à 50 %, sans survol, avec le curseur normal, faits main compris ; pas d’état appuyé à part, et seules les couleurs changent. L’`accent` n’est pas renforcé. Exception à la règle de `ui/` : `ui/button/button.svelte`, `ui/select/select-trigger.svelte` et `ui/dialog/dialog-content.svelte` portent des classes modifiées à la main, signalées par un commentaire, parce que le défaut est dans leurs variantes. Tous les conteneurs du stockage ont la même pastille neutre.
 - **Vue liste (FEAT-10)** : Choisie sur maquette (planche « D3 ») : une vue liste à côté des cartes, sans défilement (le mainteneur n’en veut pas dans la liste) ; un texte long passe à la ligne. Un sélecteur « Cartes / Liste » sur la page et la vue par défaut dans les préférences. Demandée avec UI-32, placée en tête de la 1.4.0 parce que c’est une nouvelle fonction et non un correctif.
 - **Couleurs des vins (FEAT-03)** : Chaque couleur de vin a une vraie couleur, enregistrée en base ; les couleurs de départ reçoivent celles des étiquettes d’aujourd’hui. Créée depuis un formulaire, une couleur reçoit une teinte par défaut ou neutre ; dans Admin › Data, le sélecteur s’affiche dès la création ou la modification. Choisi sur maquette : sur la page Stockage, chaque place occupée prend la couleur de son vin ; les camemberts des statistiques prennent les vraies couleurs ; la liste des vins garde l’étiquette, colorée, et ajoute une bande à gauche de la carte ; les listes de bouteilles montrent l’étiquette colorée à côté du nom du vin. Pas de carte teintée (décision du 2026-10-31). Précisé le 2026-11-01 : les couleurs de départ sont les teintes de vin de la maquette (Rouge #7b1e2b, Blanc #ead98b, Rosé #f2a08c, Jaune #d4952a, N/A #9ca3af) ; une couleur créée depuis un formulaire reçoit le gris de N/A, sauf un nom reconnu, qui reprend sa teinte de départ. Changé le 2026-11-02, sur captures : le contour « seulement quand le contraste manque » donnait des bouteilles avec contour, d’autres sans, et un orange entre les deux, ce que le mainteneur refuse ; toute couleur reçoit désormais le même contour, dans sa propre teinte mêlée de 40 % de noir en clair et de 40 % de blanc en sombre, sur le stockage (une silhouette de bouteille sans étiquette ; une place vide est la même silhouette en contour), les étiquettes, la bande des cartes et la légende des statistiques. Une couleur choisie par l’utilisateur peut avoir un contour sous 3:1 (le blanc pur en clair : 2,85:1) : accepté.
@@ -195,6 +196,7 @@ Revue du code du 2026-10-08, commit `556c7bb`. Ce fichier est la version pour le
 | 1.8.0 | P18 · Producteurs et revue de l’import | Les producteurs d’abord, parce que la revue de l’import doit savoir relier ou créer un producteur. Ordre : FEAT-07 ; FEAT-08 ; puis REL-12. Le 2026-11-11, le mainteneur sort le bloc sans attendre DEP-11, éligible le 2026-11-12, qui passe à la sortie suivante. Publiée en 1.8.0 le 2026-11-11. | FEAT-07, FEAT-08, REL-12 | 3 / 3 |
 | 1.9.0 | P24 · Dépendances à jour | Juste après la 1.8.0, avant les autres blocs (décision « Versions majeures (DEP-12) ») : DEP-11 ; puis DEP-12 ; puis REL-24. Une version mineure. Publiée en 1.9.0 le 2026-11-19. | DEP-11, DEP-12, REL-24 | 3 / 3 |
 | 1.9.1 | P25 · Petites finitions | Juste après la 1.9.0, avant les autres blocs (décision « Petites finitions (1.9.1) ») : UI-38 et QA-07, côte à côte, fusionnées l’une après l’autre ; puis REL-25. Publiée en 1.9.1 le 2026-11-19. | UI-38, QA-07, REL-25 | 3 / 3 |
+| MCP structuré | P26 · Un MCP aux sorties structurées | Juste après la 1.9.1, avant les autres blocs (décision « Sorties structurées du MCP (FEAT-20) ») : FEAT-20 ; puis REL-26. Une version mineure. | FEAT-20, REL-26 | 0 / 2 |
 | Notifications | P19 · Notifications | Les notifications, qui utilisent « À boire » (FEAT-05), le statut hors cave et la vérification des mises à jour. Ordre : FEAT-09 ; puis REL-13. | FEAT-09, REL-13 | 0 / 2 |
 | Statistiques de dégustation | P21 · Statistiques de dégustation | Après le bloc « Dégustation », dont elles lisent les fiches. Ordre : FEAT-17 ; puis REL-18. | FEAT-17, REL-18 | 0 / 2 |
 
@@ -4197,6 +4199,44 @@ Sévérité **évolution** · effort **S** · dépend de UI-38, QA-07 · statut 
 **Critère d’acceptation** : v1.9.1 est publiée sur `main` et son image se télécharge sans connexion ; develop passe à 1.10.0-rc.0.
 
 **Sources** : Décision « Petites finitions (1.9.1) »
+
+## P26 · Un MCP aux sorties structurées (MCP structuré)
+
+Juste après la 1.9.1, avant les autres blocs (décision « Sorties structurées du MCP (FEAT-20) ») : FEAT-20 ; puis REL-26. Une version mineure.
+
+### FEAT-20 · Des sorties structurées pour chaque outil du MCP
+
+Sévérité **évolution** · effort **M** · dépend de REL-25 · statut **À faire**
+
+**Problème** : Les 29 outils du MCP décrivent ce qu’ils acceptent mais pas ce qu’ils renvoient, et renvoient du JSON en texte : un assistant doit en deviner la forme, et un client « Code Mode » ne peut pas typer ses résultats.
+
+**Fichiers** : `src/lib/server/features/mcp/`, `src/routes/mcp/`, `src/lib/shared/`, `docs/API.md`, `README-Docker.md`
+
+**À faire**
+
+- Décision « Sorties structurées du MCP (FEAT-20) » : un `outputSchema` (zod, partagé avec ce qui existe déjà) pour chaque outil, et `structuredContent` conforme dans chaque réponse réussie, avec le texte JSON gardé pour les anciens clients ; les erreurs gardent leurs détails.
+- Relire chaque réponse du point de vue d’un assistant : champs inutiles, tailles, pagination, noms cohérents ; ce qui change la forme d’une réponse est proposé au mainteneur avant d’être construit.
+- Un test qui appelle chaque outil par un vrai client MCP et valide sa sortie contre son schéma ; la documentation du MCP suit.
+
+**Critère d’acceptation** : Chaque outil déclare sa sortie et la renvoie structurée, validée par un client MCP dans les tests ; les anciens clients reçoivent toujours le texte ; documentation à jour.
+
+**Sources** : Décision « Sorties structurées du MCP (FEAT-20) », Décision « MCP le plus complet possible (FEAT-12) »
+
+### REL-26 · Publication du bloc « MCP structuré »
+
+Sévérité **évolution** · effort **S** · dépend de FEAT-20 · statut **À faire**
+
+**Problème** : Le bloc apporte les sorties structurées du MCP sans attendre les autres.
+
+**Fichiers** : `releases.json`, `CHANGELOG.md`, `UPGRADING.md`, `package.json`
+
+**À faire**
+
+- Résumé complété par FEAT-20 ; bancs depuis la version précédente et la 1.0.0 ; release selon RELEASING.md, avec le mainteneur, sous le numéro de version suivant (décision « Blocs sans numéro »).
+
+**Critère d’acceptation** : La version est publiée sur `main` et son image se télécharge sans connexion ; develop passe à la rc suivante.
+
+**Sources** : Décision « Sorties structurées du MCP (FEAT-20) »
 
 ## P19 · Notifications (Notifications)
 

@@ -2860,8 +2860,8 @@ one is not dropped; each one writes all or nothing.
     the Docker image unless `TZ` is set, so an assistant should give the user's day; `note`:
     string, optional, at most 5,000 characters: added after the notes of each bottle, as the
     `addedNote` of [`PATCH /api/bottles`](#patch-apibottles).
-  - **Answer:** `{ "bottles" }`: the bottles changed, as `add_bottles` answers them. A bottle already
-    drunk takes the new day, and the note too, as with `PATCH /api/bottles`.
+  - **Answer:** `{ "bottles" }`: the bottles changed, as `add_bottles` answers them. A bottle
+    already drunk takes the new day, and the note too, as with `PATCH /api/bottles`.
   - **Refusals:** those of `PATCH /api/bottles`, such as an unknown bottle or a note that does not
     fit after the notes.
 - `move_bottles`: puts bottles in a case. Their availability stays: for a bottle out of the cellar

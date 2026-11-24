@@ -56,8 +56,10 @@ async function connect(mode: VersionNegotiationMode, access: McpAccess) {
 }
 
 /**
- * The objects of a JSON Schema that may leave out a field or hold one more, by their path: every
- * field of an answer is there, null when empty, and no other.
+ * The objects of an advertised JSON Schema that may leave out a field, or that a client would let
+ * hold one more, by their path: every field of an answer is there, null when empty. (zod closes
+ * the objects of an output schema even when they are not strict: outputs.ts keeps them strict, so
+ * that the server refuses an extra field too.)
  */
 function looseObjects(schema: unknown, path = ''): string[] {
     if (!schema || typeof schema !== 'object') return [];

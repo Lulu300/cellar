@@ -227,7 +227,7 @@ describe('POST /mcp', () => {
     // logs; for a write tool, the write is done by then.
     it('logs an answer that its outputSchema does not describe', async () => {
         const errors = vi.spyOn(console, 'error').mockImplementation(() => {});
-        // A capacity that a later change would give as text, as the schema does not say.
+        // A capacity given as text, which the schema does not allow, as a later change might.
         const container = {
             name: 'A',
             cases: [{ id: 'a1', name: 'A1', capacity: '6', bottles: 1 }]

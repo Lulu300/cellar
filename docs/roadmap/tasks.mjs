@@ -117,8 +117,9 @@ export const versions = [
 		goal: 'Les petits défauts relevés pendant les tâches depuis la 1.7.0, et une CI qui ne tombe plus quand le miroir d’Ubuntu ne répond pas.'
 	},
 	{
-		id: 'MCP structuré',
+		id: '1.10.0',
 		title: 'Un MCP aux sorties structurées',
+		released: '2026-11-24',
 		goal: 'Chaque outil du MCP dit ce qu’il renvoie et le renvoie sous forme structurée, pour les assistants classiques comme pour ceux qui écrivent du code contre les outils (« Code Mode »).'
 	},
 	{
@@ -327,9 +328,9 @@ export const phases = [
 	},
 	{
 		id: 'P26',
-		version: 'MCP structuré',
+		version: '1.10.0',
 		title: 'Un MCP aux sorties structurées',
-		goal: 'Juste après la 1.9.1, avant les autres blocs (décision « Sorties structurées du MCP (FEAT-20) ») : FEAT-20 ; puis REL-26. Une version mineure.'
+		goal: 'Juste après la 1.9.1, avant les autres blocs (décision « Sorties structurées du MCP (FEAT-20) ») : FEAT-20 ; puis REL-26. Une version mineure. Publiée en 1.10.0 le 2026-11-24.'
 	},
 	{
 		id: 'P19',
@@ -3143,7 +3144,8 @@ export const tasks = [
 		why: 'Le bloc apporte les sorties structurées du MCP sans attendre les autres.',
 		where: ['releases.json', 'CHANGELOG.md', 'UPGRADING.md', 'package.json'],
 		todo: [
-			'Résumé complété par FEAT-20 ; bancs depuis la version précédente et la 1.0.0 ; release selon RELEASING.md, avec le mainteneur, sous le numéro de version suivant (décision « Blocs sans numéro »).'
+			'Résumé complété par FEAT-20 ; bancs depuis la version précédente et la 1.0.0 ; release selon RELEASING.md, avec le mainteneur, sous le numéro de version suivant (décision « Blocs sans numéro »).',
+			'Fait le 2026-11-24 : publiée en 1.10.0 ; bancs de la 1.9.1 et de la 1.0.0 vers la 1.10.0, 176 sur 176 chacun, sans changer le banc (le banc ne passe pas par le MCP) ; CI 45429407717 verte sur 60a9c465 ; `main` avancée, tag v1.10.0, release 45433661448 verte ; image publique sans connexion (`1.10.0`, `1.10`, `latest`, amd64 et arm64). develop passe à 1.11.0-rc.0, avec une entrée 1.11.0 au résumé provisoire.'
 		],
 		done: 'La version est publiée sur `main` et son image se télécharge sans connexion ; develop passe à la rc suivante.',
 		deps: ['FEAT-20'], src: ['Décision « Sorties structurées du MCP (FEAT-20) »']

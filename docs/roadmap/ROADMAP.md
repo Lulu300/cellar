@@ -196,7 +196,7 @@ Revue du code du 2026-10-08, commit `556c7bb`. Ce fichier est la version pour le
 | 1.8.0 | P18 · Producteurs et revue de l’import | Les producteurs d’abord, parce que la revue de l’import doit savoir relier ou créer un producteur. Ordre : FEAT-07 ; FEAT-08 ; puis REL-12. Le 2026-11-11, le mainteneur sort le bloc sans attendre DEP-11, éligible le 2026-11-12, qui passe à la sortie suivante. Publiée en 1.8.0 le 2026-11-11. | FEAT-07, FEAT-08, REL-12 | 3 / 3 |
 | 1.9.0 | P24 · Dépendances à jour | Juste après la 1.8.0, avant les autres blocs (décision « Versions majeures (DEP-12) ») : DEP-11 ; puis DEP-12 ; puis REL-24. Une version mineure. Publiée en 1.9.0 le 2026-11-19. | DEP-11, DEP-12, REL-24 | 3 / 3 |
 | 1.9.1 | P25 · Petites finitions | Juste après la 1.9.0, avant les autres blocs (décision « Petites finitions (1.9.1) ») : UI-38 et QA-07, côte à côte, fusionnées l’une après l’autre ; puis REL-25. Publiée en 1.9.1 le 2026-11-19. | UI-38, QA-07, REL-25 | 3 / 3 |
-| MCP structuré | P26 · Un MCP aux sorties structurées | Juste après la 1.9.1, avant les autres blocs (décision « Sorties structurées du MCP (FEAT-20) ») : FEAT-20 ; puis REL-26. Une version mineure. | FEAT-20, REL-26 | 1 / 2 |
+| 1.10.0 | P26 · Un MCP aux sorties structurées | Juste après la 1.9.1, avant les autres blocs (décision « Sorties structurées du MCP (FEAT-20) ») : FEAT-20 ; puis REL-26. Une version mineure. Publiée en 1.10.0 le 2026-11-24. | FEAT-20, REL-26 | 2 / 2 |
 | Notifications | P19 · Notifications | Les notifications, qui utilisent « À boire » (FEAT-05), le statut hors cave et la vérification des mises à jour. Ordre : FEAT-09 ; puis REL-13. | FEAT-09, REL-13 | 0 / 2 |
 | Statistiques de dégustation | P21 · Statistiques de dégustation | Après le bloc « Dégustation », dont elles lisent les fiches. Ordre : FEAT-17 ; puis REL-18. | FEAT-17, REL-18 | 0 / 2 |
 
@@ -4200,9 +4200,9 @@ Sévérité **évolution** · effort **S** · dépend de UI-38, QA-07 · statut 
 
 **Sources** : Décision « Petites finitions (1.9.1) »
 
-## P26 · Un MCP aux sorties structurées (MCP structuré)
+## P26 · Un MCP aux sorties structurées (1.10.0)
 
-Juste après la 1.9.1, avant les autres blocs (décision « Sorties structurées du MCP (FEAT-20) ») : FEAT-20 ; puis REL-26. Une version mineure.
+Juste après la 1.9.1, avant les autres blocs (décision « Sorties structurées du MCP (FEAT-20) ») : FEAT-20 ; puis REL-26. Une version mineure. Publiée en 1.10.0 le 2026-11-24.
 
 ### FEAT-20 · Des sorties structurées pour chaque outil du MCP
 
@@ -4228,7 +4228,9 @@ Sévérité **évolution** · effort **M** · dépend de REL-25 · statut **Fait
 
 ### REL-26 · Publication du bloc « MCP structuré »
 
-Sévérité **évolution** · effort **S** · dépend de FEAT-20 · statut **À faire**
+Sévérité **évolution** · effort **S** · dépend de FEAT-20 · statut **Fait**
+
+**Suivi** (2026-11-24) : 60a9c465, v1.10.0
 
 **Problème** : Le bloc apporte les sorties structurées du MCP sans attendre les autres.
 
@@ -4237,6 +4239,7 @@ Sévérité **évolution** · effort **S** · dépend de FEAT-20 · statut **À 
 **À faire**
 
 - Résumé complété par FEAT-20 ; bancs depuis la version précédente et la 1.0.0 ; release selon RELEASING.md, avec le mainteneur, sous le numéro de version suivant (décision « Blocs sans numéro »).
+- Fait le 2026-11-24 : publiée en 1.10.0 ; bancs de la 1.9.1 et de la 1.0.0 vers la 1.10.0, 176 sur 176 chacun, sans changer le banc (le banc ne passe pas par le MCP) ; CI 45429407717 verte sur 60a9c465 ; `main` avancée, tag v1.10.0, release 45433661448 verte ; image publique sans connexion (`1.10.0`, `1.10`, `latest`, amd64 et arm64). develop passe à 1.11.0-rc.0, avec une entrée 1.11.0 au résumé provisoire.
 
 **Critère d’acceptation** : La version est publiée sur `main` et son image se télécharge sans connexion ; develop passe à la rc suivante.
 

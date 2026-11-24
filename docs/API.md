@@ -2666,7 +2666,13 @@ README-Docker says how to set up an assistant (see
 - **Instructions:** the answer to `initialize` gives the assistant `instructions`: what a wine, a
   producer and a bottle are, the units, which tool gives the ids that the others take, which tool
   to use for a bottle drunk or taken away, and how errors read.
-- **Answers:** a tool answers one text item that holds JSON. The fields that are empty are left out.
+- **Answers:** each tool declares the JSON Schema of its answer, its `outputSchema` in
+  `tools/list`, and answers an object that follows it in `structuredContent`: every field is there,
+  `null` when empty. A client that types the results of the tools, such as a « Code Mode » client
+  that has the assistant write a program against them, reads these schemas. The answer also holds
+  one text item with the same JSON, for the clients that read only the text, where the fields that
+  are empty are left out. A tool that answered a list before 1.10.0 answers an object that holds it:
+  `{ "bottles" }`, `{ "wines" }` or `{ "wishes" }`.
   Prices are in the currency of the cellar (the app shows euros), dates are `YYYY-MM-DD`. A
   bottle's `availability` is `available` (in the cellar), `out_of_cellar` or `consumed`, its
   `optimum` is the year it is at its best, and its `drinkFrom` and `drinkBefore` its drinking
@@ -2676,8 +2682,8 @@ README-Docker says how to set up an assistant (see
   (write tools). A bottle `out_of_cellar` or `consumed` keeps the case it left, without taking a
   place there: it gives it as `formerLocation` or `formerCaseId` instead, so that an assistant does
   not read it as where the bottle is. `put_bottles_back` returns it there.
-- **Errors:** a tool that cannot answer, for an unknown wine for example, answers `isError: true`
-  with the reason as its text: the `message` that this API would answer for the same refusal, then,
+- **Errors:** a tool that cannot answer, for an unknown wine for example, answers `isError: true`,
+  without `structuredContent`, with the reason as its text: the `message` that this API would answer for the same refusal, then,
   when the refusal has `details`, a second line `Details: ` followed by them as JSON. The message
   names at most 10 unknown bottles; the details name them all:
 
@@ -2718,7 +2724,7 @@ The tools that read:
     `consumed`. Each bottle has `id`, `availability`, `vintage`, `optimum`, `drinkFrom`,
     `drinkBefore`, `format`, `location` (`container`, `case`) when it is in the cellar or
     `formerLocation` (the same) when it is not, `barcode`, `origin`, `purchasePrice`,
-    `purchaseDate`, `currentValue`, `consumedDate` and `notes`.
+    `purchaseDate`, `currentValue`, `currentValueDate`, `consumedDate` and `notes`.
 - `list_producers`: finds producers, the estates and houses of the wines.
   - **Parameters:** `query`: string, optional, at most 500 characters: words that the producer must
     all hold, capitals, accents and the kind of apostrophe aside, in its name, region or country; `limit` and `offset`, as
@@ -2736,9 +2742,9 @@ The tools that read:
   - **Refusals:** an unknown producer.
 - `find_bottle_by_barcode`: the bottles of a barcode, whatever their availability.
   - **Parameters:** `barcode`: string, required, 1 to 1000 characters.
-  - **Answer:** an array of bottles as in `get_wine`, each with its `wine` (`id`, `name`,
+  - **Answer:** `{ "bottles" }`: bottles as in `get_wine`, each with its `wine` (`id`, `name`,
     `producer`, `color`, `type`): the code as given, then in other capitals, then the codes that
-    end with it. `[]` when none has it.
+    end with it. `bottles` is empty when none has it.
 - `get_statistics`: no parameters; the answer of [`GET /api/statistics`](#get-apistatistics).
 - `list_bottles`: the bottles of the whole cellar, or of one case, by availability, by day and by
   optimum year: what is in case B2, what was drunk this month, what is out of the cellar, what was
@@ -2769,10 +2775,11 @@ The tools that read:
   - **Answer:** `{ "total", "bottles" }`: the bottles found, as `list_bottles` gives them, each
     with its `rank` (`late`, `this_month`, `this_year`, `optimum_reached`, `ready`), in the order
     asked, from `offset`; `total` counts them all.
-- `get_wine_shortage`: no parameters; the wines below their target quantity, the largest shortage
-  first, with `id`, `name`, `producer`, `color`, `type`, `appellation`, `region`, `country`,
+- `get_wine_shortage`: no parameters; `{ "wines" }`: the wines below their target quantity, the
+  largest shortage first, with `id`, `name`, `producer`, `color`, `type`, `appellation`, `region`, `country`,
   `targetQuantity`, `inCellar`, `missing` and `averagePrice`.
-- `get_wishlist`: no parameters; the [wishlist](#wishlist), the newest first: each wish has `id`,
+- `get_wishlist`: no parameters; `{ "wishes" }`: the [wishlist](#wishlist), the newest first: each
+  wish has `id`,
   `quantity`, `note`, and either `text` (a wine not in the cellar yet) or `wine` (`id`, `name`,
   `producer`, `color`, `type`, `appellation`, `region`, `country`, and `inCellar`, its bottles in
   the cellar). Photos are left out.
@@ -2824,7 +2831,7 @@ one is not dropped; each one writes all or nothing.
     [bottle fields](#bottle-fields) `vintage`, `optimum`, `drinkFrom`, `drinkBefore`, `originId`
     (from `list_choices`), `purchasePrice`, `purchaseDate`, `barcode` (with `quantity` 1 only) and
     `notes`.
-  - **Answer:** an array of the bottles created, each with `id`, `wineId`, `availability`,
+  - **Answer:** `{ "bottles" }`: the bottles created, each with `id`, `wineId`, `availability`,
     `vintage`, `optimum`, `drinkFrom`, `drinkBefore`, `format`, `caseId` (or `formerCaseId` for a
     bottle not in the cellar, as in the answers of the tools below), `barcode`, `originId`,
     `purchasePrice`, `purchaseDate`, `currentValue`, `currentValueDate`, `consumedDate` and
@@ -2853,21 +2860,21 @@ one is not dropped; each one writes all or nothing.
     the Docker image unless `TZ` is set, so an assistant should give the user's day; `note`:
     string, optional, at most 5,000 characters: added after the notes of each bottle, as the
     `addedNote` of [`PATCH /api/bottles`](#patch-apibottles).
-  - **Answer:** an array of the bottles changed, as `add_bottles` answers them. A bottle already
+  - **Answer:** `{ "bottles" }`: the bottles changed, as `add_bottles` answers them. A bottle already
     drunk takes the new day, and the note too, as with `PATCH /api/bottles`.
   - **Refusals:** those of `PATCH /api/bottles`, such as an unknown bottle or a note that does not
     fit after the notes.
 - `move_bottles`: puts bottles in a case. Their availability stays: for a bottle out of the cellar
   or drunk, the case becomes the one that `put_bottles_back` returns it to.
   - **Parameters:** `bottleIds` as above; `caseId`: string, required (from `get_free_space`).
-  - **Answer:** an array of the bottles, as `add_bottles` answers them.
+  - **Answer:** `{ "bottles" }`: the bottles, as `add_bottles` answers them.
   - **Refusals:** those of `PATCH /api/bottles`, such as a case without room for them all.
 - `update_bottle_notes`: changes the notes of bottles.
   - **Parameters:** `bottleIds` as above; `notes`: string or `null`, optional, at most 5,000
     characters: their new notes, in place of the old ones (empty or `null` removes them);
     `addedNote`: string, optional, at most 5,000 characters: added after their notes, after `notes`
     when both are given. One of the two is required.
-  - **Answer:** an array of the bottles changed, as `add_bottles` answers them.
+  - **Answer:** `{ "bottles" }`: the bottles changed, as `add_bottles` answers them.
 - `rate_wine`: gives a wine its rating.
   - **Parameters:** `wineId`: string, required; `rating`: number from 1 to 5, half points
     included, or `null`, required: `null` removes the rating. The other fields of the wine stay.
@@ -2900,7 +2907,7 @@ one is not dropped; each one writes all or nothing.
     `currentValueDate`, `vintage`, `optimum`, `drinkFrom`, `drinkBefore`, `formatId`, `originId` and
     `barcode` (one bottle only). `null` removes an optional field. The notes, the case and the
     availability have their own tools.
-  - **Answer:** an array of the bottles changed, as `add_bottles` answers them.
+  - **Answer:** `{ "bottles" }`: the bottles changed, as `add_bottles` answers them.
   - **Refusals:** those of `PATCH /api/bottles`, such as an unknown bottle, a barcode that another
     bottle has, one barcode for several bottles, or a drinking window that would end before it
     starts. The description of `drinkBefore` tells the assistant to send `drinkFrom` null with it
@@ -2909,7 +2916,7 @@ one is not dropped; each one writes all or nothing.
   keeps its case as its `formerCaseId`, which keeps no room for it: `put_bottles_back` can return
   it there. A bottle `consumed` by mistake loses its `consumedDate`.
   - **Parameters:** `bottleIds` as above.
-  - **Answer:** an array of the bottles changed, as `add_bottles` answers them.
+  - **Answer:** `{ "bottles" }`: the bottles changed, as `add_bottles` answers them.
   - **Refusals:** those of `PATCH /api/bottles`, such as an unknown bottle.
 - `put_bottles_back`: makes bottles `available` again: taken out, or `consumed` by mistake, which
   lose their `consumedDate`.
@@ -2917,7 +2924,7 @@ one is not dropped; each one writes all or nothing.
     case to put them in. Left out, each bottle goes back to the case it kept when it was taken out
     or drunk, its `formerCaseId`, as in the app; a bottle drunk before 1.4.0 has no case left, and
     is back in the cellar without a place unless `caseId` is given.
-  - **Answer:** an array of the bottles changed, as `add_bottles` answers them.
+  - **Answer:** `{ "bottles" }`: the bottles changed, as `add_bottles` answers them.
   - **Refusals:** those of `PATCH /api/bottles`, such as a case without room for them all.
 - `update_wish`: changes the quantity or the note of a wish, as
   [`PUT /api/wishes/{id}`](#put-apiwishesid) would with the other fields unchanged.

@@ -688,6 +688,10 @@ during a restore or an import, a change is refused until it ends. When Cellar re
 tells the assistant why and names everything in cause, such as each bottle it does not know, so
 that the assistant can correct its request.
 
+Each tool also declares the shape of its answer and answers it as structured data, besides the
+text: an assistant that works by writing a small program against the tools (« Code Mode ») knows
+the fields of every answer in advance.
+
 1. In Cellar, open Admin › Settings › MCP access and create the token. Copy it: it is shown once.
    It is read-only unless you allow changes there.
 2. Give the assistant the address `http://<NAS-IP>:3005/mcp` (your `ORIGIN` followed by `/mcp`) and

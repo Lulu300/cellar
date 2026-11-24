@@ -55,6 +55,24 @@ async function connect(mode: VersionNegotiationMode, access: McpAccess) {
     return { client, revisions, validator };
 }
 
+/**
+ * The objects of a JSON Schema that may leave out a field or hold one more, by their path: every
+ * field of an answer is there, null when empty, and no other.
+ */
+function looseObjects(schema: unknown, path = ''): string[] {
+    if (!schema || typeof schema !== 'object') return [];
+    const node = schema as { type?: unknown; properties?: object; required?: string[] };
+    const fields = Object.keys(node.properties ?? {});
+    const loose =
+        node.type === 'object' &&
+        ((schema as { additionalProperties?: unknown }).additionalProperties !== false ||
+            fields.some((field) => !node.required?.includes(field)));
+    return [
+        ...(loose ? [path || '/'] : []),
+        ...Object.entries(schema).flatMap(([key, value]) => looseObjects(value, `${path}/${key}`))
+    ];
+}
+
 /** What the text of an answer holds: its structured content without the empty fields. */
 const withoutNulls = (value: unknown) =>
     JSON.parse(JSON.stringify(value, (_key, field) => (field === null ? undefined : field)));
@@ -74,12 +92,14 @@ describe.each([
         const { client, revisions, validator } = await connect(mode, { write: true });
         const { tools } = await client.listTools();
         const answered = new Map<string, CallToolResult>();
+        let calls = 0;
 
         /** Calls a tool, which must succeed, and returns its structured content. */
         const call = async (name: string, args: Record<string, unknown> = {}) => {
             const result = (await client.callTool({ name, arguments: args })) as CallToolResult;
             expect(result.isError, `${name}: ${JSON.stringify(result.content)}`).toBeFalsy();
             answered.set(name, result);
+            calls += 1;
             // The content of a 2025 client is the same: every answer is an object.
             // eslint-disable-next-line @typescript-eslint/no-explicit-any -- any tool's answer, which the client has validated against the schema it declares
             return result.structuredContent as Record<string, any>;
@@ -207,7 +227,8 @@ describe.each([
         // Every tool declares its answer, and was called: the client validated each answer.
         expect(tools.filter((tool) => tool.outputSchema?.type !== 'object')).toEqual([]);
         expect([...answered.keys()].sort()).toEqual(tools.map((tool) => tool.name).sort());
-        expect(validator.validated).toBeGreaterThanOrEqual(answered.size);
+        expect(validator.validated).toBe(calls);
+        expect(tools.flatMap((tool) => looseObjects(tool.outputSchema, tool.name))).toEqual([]);
 
         // The text is the structured content, but for the empty fields, which it leaves out.
         for (const [name, result] of answered) {
